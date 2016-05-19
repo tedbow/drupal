@@ -298,21 +298,23 @@ class BlockForm extends EntityForm {
    */
   protected function validateVisibility(array $form, FormStateInterface $form_state) {
     // Validate visibility condition settings.
-    foreach ($form_state->getValue('visibility') as $condition_id => $values) {
-      // All condition plugins use 'negate' as a Boolean in their schema.
-      // However, certain form elements may return it as 0/1. Cast here to
-      // ensure the data is in the expected type.
-      if (array_key_exists('negate', $values)) {
-        $values['negate'] = (bool) $values['negate'];
-      }
+    if ($visibility_conditions = $form_state->getValue('visibility')) {
+      foreach ($visibility_conditions as $condition_id => $values) {
+        // All condition plugins use 'negate' as a Boolean in their schema.
+        // However, certain form elements may return it as 0/1. Cast here to
+        // ensure the data is in the expected type.
+        if (array_key_exists('negate', $values)) {
+          $values['negate'] = (bool) $values['negate'];
+        }
 
-      // Allow the condition to validate the form.
-      $condition = $form_state->get(['conditions', $condition_id]);
-      $condition_values = (new FormState())
-        ->setValues($values);
-      $condition->validateConfigurationForm($form, $condition_values);
-      // Update the original form values.
-      $form_state->setValue(['visibility', $condition_id], $condition_values->getValues());
+        // Allow the condition to validate the form.
+        $condition = $form_state->get(['conditions', $condition_id]);
+        $condition_values = (new FormState())
+          ->setValues($values);
+        $condition->validateConfigurationForm($form, $condition_values);
+        // Update the original form values.
+        $form_state->setValue(['visibility', $condition_id], $condition_values->getValues());
+      }
     }
   }
 
@@ -365,15 +367,16 @@ class BlockForm extends EntityForm {
     drupal_set_message($this->t('The block configuration has been saved.'));
     $destination = $this->getRequest()->query->get('destination');
     if (!$destination) {
-      $form_state->setRedirect(
-        'block.admin_display_theme',
-        array(
-          'theme' => $form_state->getValue('theme'),
-        ),
-        array('query' => array('block-placement' => Html::getClass($this->entity->id())))
-      );
+      if ($theme = $form_state->getValue('theme')) {
+        $form_state->setRedirect(
+          'block.admin_display_theme',
+          array(
+            'theme' => $form_state->getValue('theme'),
+          ),
+          array('query' => array('block-placement' => Html::getClass($this->entity->id())))
+        );
+      }
     }
-
   }
 
   /**

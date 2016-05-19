@@ -155,7 +155,6 @@ class BlockViewBuilder extends EntityViewBuilder {
           'route_parameters' => ['block' => $entity->id()],
         ],
       ],
-      '#attached' => ['library' => 'block/drupal.block'],
       '#weight' => $entity->getWeight(),
       '#configuration' => $configuration,
       '#plugin_id' => $plugin_id,
@@ -168,6 +167,10 @@ class BlockViewBuilder extends EntityViewBuilder {
       // Add the entity so that it can be used in the #pre_render method.
       '#block' => $entity,
     ];
+
+    if (\Drupal::currentUser()->hasPermission('administer blocks')) {
+      $build['#attached']['library'][] = 'block/drupal.block';
+    }
 
     // If an alter hook wants to modify the block contents, it can append
     // another #pre_render hook.
