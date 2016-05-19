@@ -22,10 +22,13 @@ class BlockQuickEditForm extends BlockForm {
     foreach ($advanced_elements as $advanced_element) {
       unset($form[$advanced_element]);
     }
+    $modal_attributes = [
+      'data-dialog-type' => 'modal',
+      'data-dialog-options' => Json::encode(['width' => 700]),
+      'class' => 'use-ajax',
+    ];
     // Change delete link into a modal.
-    $form['actions']['delete']['#attributes']['class'][] = 'use-ajax';
-    $form['actions']['delete']['#attributes']['data-dialog-type'] = 'modal';
-    $form['actions']['delete']['#attributes']['data-dialog-options'] = Json::encode(['width' => 700,]);
+    $form['actions']['delete']['#attributes'] = array_merge_recursive($form['actions']['delete']['#attributes'], $modal_attributes);
 
     // Create link to full block form.
     $query = [];
@@ -45,6 +48,7 @@ class BlockQuickEditForm extends BlockForm {
       '#type' => 'link',
       '#title' => $this->t('Advanced Options'),
       '#url' => $advance_url,
+      '#attributes' => $modal_attributes,
     ];
 
     return $form;

@@ -226,9 +226,9 @@
   };
 
   /**
-   * Detect contextual links on entities annotated by quickedit.
+   * Add Ajax behaviours to links added by contextual links
    *
-   * Queue contextual links to be processed.
+   * @todo Fix contextual links to work with modal links.
    *
    * @param {jQuery.Event} event
    *   The `drupalContextualLinkAdded` event.
@@ -239,7 +239,7 @@
    */
   $(document).on('drupalContextualLinkAdded', function (event, data) {
     // Bind Ajax behaviors to all items showing the class.
-    $('.use-ajax').once('ajax').each(function () {
+    $('.contextual-links .use-ajax').once('ajax').each(function () {
       var element_settings = {};
       // Clicked links look better with the throbber than the progress bar.
       element_settings.progress = {type: 'throbber'};
