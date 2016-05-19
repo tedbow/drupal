@@ -2,11 +2,11 @@
 
 namespace Drupal\block\Form;
 
-
 use Drupal\block\BlockForm;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 
 /**
  * Quick Edit form for editing blocks.
@@ -26,6 +26,26 @@ class BlockQuickEditForm extends BlockForm {
     $form['actions']['delete']['#attributes']['class'][] = 'use-ajax';
     $form['actions']['delete']['#attributes']['data-dialog-type'] = 'modal';
     $form['actions']['delete']['#attributes']['data-dialog-options'] = Json::encode(['width' => 700,]);
+
+    // Create link to full block form.
+    $query = [];
+    $advance_url = Url::fromRoute(
+      'entity.block.edit_form',
+      [
+        'block' => $this->entity->id(),
+      ]
+    );
+
+    if ($destination = $this->getRequest()->query->has('destination')) {
+      $query['destination'] = $this->getRequest()->query->get('destination');
+      $advance_url->setOption('query', $query);
+    }
+
+    $form['actions']['advanced'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Advanced Options'),
+      '#url' => $advance_url,
+    ];
 
     return $form;
   }
