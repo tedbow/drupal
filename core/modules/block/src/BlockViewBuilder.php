@@ -155,6 +155,7 @@ class BlockViewBuilder extends EntityViewBuilder {
           'route_parameters' => ['block' => $entity->id()],
         ],
       ],
+      '#attached' => ['library' => 'block/drupal.block'],
       '#weight' => $entity->getWeight(),
       '#configuration' => $configuration,
       '#plugin_id' => $plugin_id,

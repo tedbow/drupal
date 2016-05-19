@@ -339,35 +339,41 @@ class BlockForm extends EntityForm {
     // Update the original form values.
     $form_state->setValue('settings', $settings->getValues());
 
-    // Submit visibility condition settings.
-    foreach ($form_state->getValue('visibility') as $condition_id => $values) {
-      // Allow the condition to submit the form.
-      $condition = $form_state->get(['conditions', $condition_id]);
-      $condition_values = (new FormState())
-        ->setValues($values);
-      $condition->submitConfigurationForm($form, $condition_values);
-      if ($condition instanceof ContextAwarePluginInterface) {
-        $context_mapping = isset($values['context_mapping']) ? $values['context_mapping'] : [];
-        $condition->setContextMapping($context_mapping);
+    if ($visibility_conditions = $form_state->getValue('visibility')) {
+      // Submit visibility condition settings.
+      foreach ($visibility_conditions as $condition_id => $values) {
+        // Allow the condition to submit the form.
+        $condition = $form_state->get(['conditions', $condition_id]);
+        $condition_values = (new FormState())
+          ->setValues($values);
+        $condition->submitConfigurationForm($form, $condition_values);
+        if ($condition instanceof ContextAwarePluginInterface) {
+          $context_mapping = isset($values['context_mapping']) ? $values['context_mapping'] : [];
+          $condition->setContextMapping($context_mapping);
+        }
+        // Update the original form values.
+        $condition_configuration = $condition->getConfiguration();
+        $form_state->setValue(['visibility', $condition_id], $condition_configuration);
+        // Update the visibility conditions on the block.
+        $entity->getVisibilityConditions()->addInstanceId($condition_id, $condition_configuration);
       }
-      // Update the original form values.
-      $condition_configuration = $condition->getConfiguration();
-      $form_state->setValue(['visibility', $condition_id], $condition_configuration);
-      // Update the visibility conditions on the block.
-      $entity->getVisibilityConditions()->addInstanceId($condition_id, $condition_configuration);
     }
 
     // Save the settings of the plugin.
     $entity->save();
 
     drupal_set_message($this->t('The block configuration has been saved.'));
-    $form_state->setRedirect(
-      'block.admin_display_theme',
-      array(
-        'theme' => $form_state->getValue('theme'),
-      ),
-      array('query' => array('block-placement' => Html::getClass($this->entity->id())))
-    );
+    $destination = $this->getRequest()->query->get('destination');
+    if (!$destination) {
+      $form_state->setRedirect(
+        'block.admin_display_theme',
+        array(
+          'theme' => $form_state->getValue('theme'),
+        ),
+        array('query' => array('block-placement' => Html::getClass($this->entity->id())))
+      );
+    }
+
   }
 
   /**
