@@ -23,7 +23,8 @@ use Drupal\Core\Entity\EntityStorageInterface;
  *     "list_builder" = "Drupal\block\BlockListBuilder",
  *     "form" = {
  *       "default" = "Drupal\block\BlockForm",
- *       "delete" = "Drupal\block\Form\BlockDeleteForm"
+ *       "delete" = "Drupal\block\Form\BlockDeleteForm",
+ *       "quick_edit" = "Drupal\block\Form\BlockQuickEditForm"
  *     }
  *   },
  *   admin_permission = "administer blocks",

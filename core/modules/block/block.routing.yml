@@ -25,6 +25,14 @@ entity.block.edit_form:
   requirements:
     _entity_access: 'block.update'
 
+entity.block.quick_edit_form:
+  path: '/admin/structure/block/quick-edit/{block}'
+  defaults:
+    _entity_form: 'block.quick_edit'
+    _title: 'Configure block'
+  requirements:
+    _entity_access: 'block.update'
+
 block.admin_display:
   path: '/admin/structure/block'
   defaults:
