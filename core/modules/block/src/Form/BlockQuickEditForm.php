@@ -4,6 +4,7 @@ namespace Drupal\block\Form;
 
 
 use Drupal\block\BlockForm;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -21,6 +22,11 @@ class BlockQuickEditForm extends BlockForm {
     foreach ($advanced_elements as $advanced_element) {
       unset($form[$advanced_element]);
     }
+    // Change delete link into a modal.
+    $form['actions']['delete']['#attributes']['class'][] = 'use-ajax';
+    $form['actions']['delete']['#attributes']['data-dialog-type'] = 'modal';
+    $form['actions']['delete']['#attributes']['data-dialog-options'] = Json::encode(['width' => 700,]);
+
     return $form;
   }
 
@@ -33,19 +39,6 @@ class BlockQuickEditForm extends BlockForm {
       $form_id .= '_' . $this->entity->bundle();
     }
     return 'quick_edit_' . $form_id . '_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    // The Block Entity form puts all block plugin form elements in the
-    // settings form element, so just pass that to the block for validation.
-    $settings = (new FormState())->setValues($form_state->getValue('settings'));
-    // Call the plugin validate handler.
-    $this->entity->getPlugin()->validateConfigurationForm($form, $settings);
-    // Update the original form values.
-    $form_state->setValue('settings', $settings->getValues());
   }
 
 }

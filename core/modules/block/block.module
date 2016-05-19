@@ -287,32 +287,12 @@ function block_configurable_language_delete(ConfigurableLanguageInterface $langu
 }
 
 /**
- * {@inheritdoc}
+ * Implements hook_contextual_links_view_alter().
+ *
+ * Change Configure Blocks into modal links.
  */
-function block_contextual_links_alter(array &$links, $group, array $route_parameters) {
-  debug($links);
-  if ($group === 'block' && isset($links['block_configure'])) {
-    $links['block_configure']['localized_options']['attributes'] = [
-      'class' => ['use-ajax'],
-      'data-dialog-type' => 'modal',
-      'data-dialog-options' => Json::encode([
-        'width' => 700,
-      ]),
-    ];
-    $links['block_configure']['localized_options']['#attached']['library'][] = 'block/drupal.block';
-  }
-}
 function block_contextual_links_view_alter(&$element, $items) {
-  drupal_set_message('asdfasdfasdf');
-  debug($items);
   if (isset($element['#links']['block-configure'])) {
-   /* $element['#links']['block-configure']['#attributes'] = [
-      'class' => ['use-ajax'],
-      'data-dialog-type' => 'modal',
-      'data-dialog-options' => Json::encode([
-        'width' => 700,
-      ]),
-    ]; */
     $element['#links']['block-configure']['attributes'] = [
       'class' => ['use-ajax'],
       'data-dialog-type' => 'modal',
@@ -320,6 +300,5 @@ function block_contextual_links_view_alter(&$element, $items) {
         'width' => 700,
       ]),
     ];
-    $element['#links']['block-configure']['#attached']['library'][] = 'block/drupal.block';
   }
 }

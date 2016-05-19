@@ -1,4 +1,4 @@
 block_configure:
-  title: 'Configure blocky'
+  title: 'Configure block'
   route_name: 'entity.block.quick_edit_form'
   group: 'block'
