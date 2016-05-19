@@ -364,8 +364,10 @@ class DisplayBlockTest extends ViewTestBase {
     $response = $this->drupalPostWithFormat('contextual/render', 'json', $post, array('query' => array('destination' => 'test-page')));
     $this->assertResponse(200);
     $json = Json::decode($response);
-    $this->assertIdentical($json[$id], '<ul class="contextual-links"><li class="block-configure"><a href="' . base_path() . 'admin/structure/block/manage/' . $block->id() . '">Configure block</a></li><li class="entityviewedit-form"><a href="' . base_path() . 'admin/structure/views/view/test_view_block/edit/block_1">Edit view</a></li></ul>');
-    $this->assertIdentical($json[$cached_id], '<ul class="contextual-links"><li class="block-configure"><a href="' . base_path() . 'admin/structure/block/manage/' . $cached_block->id() . '">Configure block</a></li><li class="entityviewedit-form"><a href="' . base_path() . 'admin/structure/views/view/test_view_block/edit/block_1">Edit view</a></li></ul>');
+
+    $block_configure_tag_suffix = '" class="use-ajax" data-dialog-type="modal" data-dialog-options="{&quot;width&quot;:700}"';
+    $this->assertIdentical($json[$id], '<ul class="contextual-links"><li class="block-configure"><a href="' . base_path() . 'admin/structure/block/quick-edit/' . $block->id() . $block_configure_tag_suffix . '>Configure block</a></li><li class="entityviewedit-form"><a href="' . base_path() . 'admin/structure/views/view/test_view_block/edit/block_1">Edit view</a></li></ul>');
+    $this->assertIdentical($json[$cached_id], '<ul class="contextual-links"><li class="block-configure"><a href="' . base_path() . 'admin/structure/block/quick-edit/' . $cached_block->id() . $block_configure_tag_suffix . '>Configure block</a></li><li class="entityviewedit-form"><a href="' . base_path() . 'admin/structure/views/view/test_view_block/edit/block_1">Edit view</a></li></ul>');
   }
 
 }

@@ -580,7 +580,8 @@ class MenuTest extends MenuWebTestBase {
     $response = $this->drupalPost('contextual/render', 'application/json', $post, array('query' => array('destination' => 'test-page')));
     $this->assertResponse(200);
     $json = Json::decode($response);
-    $this->assertIdentical($json[$id], '<ul class="contextual-links"><li class="block-configure"><a href="' . base_path() . 'admin/structure/block/manage/' . $block->id() . '">Configure block</a></li><li class="entitymenuedit-form"><a href="' . base_path() . 'admin/structure/menu/manage/' . $custom_menu->id() . '">Edit menu</a></li></ul>');
+    $block_configure_tag_suffix = '" class="use-ajax" data-dialog-type="modal" data-dialog-options="{&quot;width&quot;:700}"';
+    $this->assertIdentical($json[$id], '<ul class="contextual-links"><li class="block-configure"><a href="' . base_path() . 'admin/structure/block/quick-edit/' . $block->id() . $block_configure_tag_suffix . '>Configure block</a></li><li class="entitymenuedit-form"><a href="' . base_path() . 'admin/structure/menu/manage/' . $custom_menu->id() . '">Edit menu</a></li></ul>');
   }
 
   /**
