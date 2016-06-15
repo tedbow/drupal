@@ -1099,7 +1099,7 @@ services:
     class: Drupal\Core\Access\CsrfAccessCheck
     tags:
       - { name: access_check, applies_to: _csrf_token, needs_incoming_request: TRUE }
-    arguments: ['@csrf_token']
+    arguments: ['@csrf_token', '@session_configuration']
   maintenance_mode:
     class: Drupal\Core\Site\MaintenanceMode
     arguments: ['@state', '@current_user']
