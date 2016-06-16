@@ -104,11 +104,8 @@ class UserLoginHttpTest extends BrowserTestBase {
         $name = $account->getUsername();
         $pass = $account->passRaw;
 
-        $user_login_status_url = Url::fromRoute('user.login_status.http');
-        $user_login_status_url->setRouteParameter('_format', $format);
-        $user_login_status_url->setAbsolute();
-
-        $response = $client->get($user_login_status_url->toString());
+        $login_status_url = $this->getLoginStatusUrlString($format);
+        $response = $client->get($login_status_url);
         $this->assertHttpResponse($response, 200, UserAuthenticationController::LOGGED_OUT);
 
         // Flooded.
@@ -166,15 +163,15 @@ class UserLoginHttpTest extends BrowserTestBase {
         $this->assertEquals($name, $result_data['current_user']['name']);
         $this->assertEquals($account->id(), $result_data['current_user']['uid']);
         $this->assertEquals($account->getRoles(), $result_data['current_user']['roles']);
+        $csrf_token = $result_data['csrf_token'];
 
-        $response = $client->get($user_login_status_url->toString(), ['cookies' => $this->cookies]);
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals(UserAuthenticationController::LOGGED_IN, (string) $response->getBody());
+        $response = $client->get($login_status_url, ['cookies' => $this->cookies]);
+        $this->assertHttpResponse($response, 200, UserAuthenticationController::LOGGED_IN);
 
-        $response = $this->logoutRequest($format);
+        $response = $this->logoutRequest($format, $csrf_token);
         $this->assertEquals(204, $response->getStatusCode());
 
-        $response = $client->get($user_login_status_url->toString(), ['cookies' => $this->cookies]);
+        $response = $client->get($login_status_url, ['cookies' => $this->cookies]);
         $this->assertHttpResponse($response, 200, UserAuthenticationController::LOGGED_OUT);
 
         $this->resetFlood();
@@ -300,8 +297,9 @@ class UserLoginHttpTest extends BrowserTestBase {
       }
 
       // A successful login will reset the per-user flood control count.
-      $this->loginRequest($user1->getUsername(), $user1->passRaw);
-      $this->logoutRequest();
+      $response = $this->loginRequest($user1->getUsername(), $user1->passRaw);
+      $result_data = $this->serializer->decode($response->getBody(), 'json');
+      $this->logoutRequest('json', $result_data['csrf_token']);
 
       // Try 3 failed logins for user 1, they will not trigger flood control.
       for ($i = 0; $i < 3; $i++) {
@@ -334,23 +332,89 @@ class UserLoginHttpTest extends BrowserTestBase {
    *
    * @param string $format
    *   The format to use to make the request.
+   * @param string $csrf_token
+   *   The csrf token.
    *
    * @return \Psr\Http\Message\ResponseInterface The HTTP response.
    *   The HTTP response.
    */
-  protected function logoutRequest($format = 'json') {
+  protected function logoutRequest($format = 'json', $csrf_token = NULL) {
+    /** @var \GuzzleHttp\Client $client */
     $client = $this->container->get('http_client');
     $user_logout_url = Url::fromRoute('user.logout.http')
       ->setRouteParameter('_format', $format)
       ->setAbsolute();
-    $response = $client->post($user_logout_url->toString(), [
+    $post_options = [
       'headers' => [
         'Accept' => "application/$format",
       ],
       'http_errors' => FALSE,
       'cookies' => $this->cookies,
-    ]);
+    ];
+
+    if ($csrf_token) {
+      $post_options['headers']['X-CSRF-Token'] = $csrf_token;
+    }
+
+    $response = $client->post($user_logout_url->toString(), $post_options);
     return $response;
+  }
+
+  /**
+   * Test csrf protection of User Logout route.
+   */
+  public function testLogoutCsrfProtection() {
+    $client = \Drupal::httpClient();
+    $login_status_url = $this->getLoginStatusUrlString();
+    $account = $this->drupalCreateUser();
+    $name = $account->getUsername();
+    $pass = $account->passRaw;
+
+    $response = $this->loginRequest($name, $pass);
+    $this->assertEquals(200, $response->getStatusCode());
+    $result_data = $this->serializer->decode($response->getBody(), 'json');
+
+    $csrf_token = $result_data['csrf_token'];
+
+    // Test third party site posting to current site with logout request.
+    // This should not logout the current user because it lacks the CSRF
+    // token.
+    $response = $this->logoutRequest('json', FALSE);
+    $this->assertEquals(403, $response->getStatusCode());
+
+    // Ensure still logged in.
+    $response = $client->get($login_status_url, ['cookies' => $this->cookies]);
+    $this->assertHttpResponse($response, 200, UserAuthenticationController::LOGGED_IN);
+
+    // Try with an incorrect token.
+    $response = $this->logoutRequest('json', 'not-the-correct-token');
+    $this->assertEquals(403, $response->getStatusCode());
+
+    // Ensure still logged in.
+    $response = $client->get($login_status_url, ['cookies' => $this->cookies]);
+    $this->assertHttpResponse($response, 200, UserAuthenticationController::LOGGED_IN);
+
+    // Try a logout request with correct token.
+    $response = $this->logoutRequest('json', $csrf_token);
+    $this->assertEquals(204, $response->getStatusCode());
+    $response = $client->get($login_status_url, ['cookies' => $this->cookies]);
+    $this->assertHttpResponse($response, 200, UserAuthenticationController::LOGGED_OUT);
+  }
+
+  /**
+   * Gets the URL string for checking login.
+   *
+   * @param string $format
+   *   The format to use to make the request.
+   *
+   * @return string
+   *   The URL string.
+   */
+  protected function getLoginStatusUrlString($format = 'json') {
+    $user_login_status_url = Url::fromRoute('user.login_status.http');
+    $user_login_status_url->setRouteParameter('_format', $format);
+    $user_login_status_url->setAbsolute();
+    return $user_login_status_url->toString();
   }
 
 }

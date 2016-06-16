@@ -155,6 +155,7 @@ user.logout.http:
   requirements:
     _user_is_logged_in: 'TRUE'
     _format: 'json'
+    _csrf_token: 'TRUE'
 
 user.cancel_confirm:
   path: '/user/{user}/cancel/confirm/{timestamp}/{hashed_pass}'

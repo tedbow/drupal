@@ -31,18 +31,30 @@ class CsrfAccessCheckTest extends UnitTestCase {
   /**
    * The mock route match.
    *
-   * @var \Drupal\Core\RouteMatch\RouteMatchInterface|\PHPUnit_Framework_MockObject_MockObject
+   * @var \Drupal\Core\Routing\RouteMatchInterface|\PHPUnit_Framework_MockObject_MockObject
    */
   protected $routeMatch;
+  /**
+   * The mock account proxy.
+   *
+   * @var \Drupal\Core\Session\AccountProxy|\PHPUnit_Framework_MockObject_MockObject
+   */
+  protected $account;
 
   protected function setUp() {
     $this->csrfToken = $this->getMockBuilder('Drupal\Core\Access\CsrfTokenGenerator')
       ->disableOriginalConstructor()
       ->getMock();
 
+    $session_config = $this->getMockBuilder('Drupal\Core\Session\SessionConfiguration')
+      ->disableOriginalConstructor()
+      ->getMock();
+
     $this->routeMatch = $this->getMock('Drupal\Core\Routing\RouteMatchInterface');
 
-    $this->accessCheck = new CsrfAccessCheck($this->csrfToken);
+    $this->account = $this->getMock('Drupal\Core\Session\AccountProxy');
+
+    $this->accessCheck = new CsrfAccessCheck($this->csrfToken, $session_config);
   }
 
   /**
@@ -61,7 +73,7 @@ class CsrfAccessCheckTest extends UnitTestCase {
     $route = new Route('/test-path/{node}', array(), array('_csrf_token' => 'TRUE'));
     $request = Request::create('/test-path/42?token=test_query');
 
-    $this->assertEquals(AccessResult::allowed()->setCacheMaxAge(0), $this->accessCheck->access($route, $request, $this->routeMatch));
+    $this->assertEquals(AccessResult::allowed()->setCacheMaxAge(0), $this->accessCheck->access($route, $request, $this->routeMatch, $this->account));
   }
 
   /**
@@ -80,7 +92,7 @@ class CsrfAccessCheckTest extends UnitTestCase {
     $route = new Route('/test-path', array(), array('_csrf_token' => 'TRUE'));
     $request = Request::create('/test-path?token=test_query');
 
-    $this->assertEquals(AccessResult::forbidden()->setCacheMaxAge(0), $this->accessCheck->access($route, $request, $this->routeMatch));
+    $this->assertEquals(AccessResult::forbidden()->setCacheMaxAge(0), $this->accessCheck->access($route, $request, $this->routeMatch, $this->account));
   }
 
 }

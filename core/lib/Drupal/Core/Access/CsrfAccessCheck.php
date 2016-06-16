@@ -67,14 +67,19 @@ class CsrfAccessCheck implements RoutingAccessInterface {
    *   The access result.
    */
   public function access(Route $route, Request $request, RouteMatchInterface $route_match, AccountInterface $account) {
-    $path_access = $this->pathAccess($route, $request, $route_match);
-    if ($path_access->isNeutral()) {
-      $header_access = $this->headerAccess($request, $account);
-      if ($header_access->isAllowed()) {
-        return $header_access;
+    $result = AccessResult::forbidden();
+    $header_access = $this->headerAccess($request, $account);
+    if (!$header_access->isNeutral()) {
+      $result = $header_access;
+    }
+    else {
+      $path_access = $this->pathAccess($route, $request, $route_match);
+      if (!$path_access->isNeutral()) {
+        $result = $path_access;
       }
     }
-    return AccessResult::forbidden();
+    // Not cacheable because the CSRF token is highly dynamic.
+    return $result->setCacheMaxAge(0);
   }
 
   /**
@@ -91,7 +96,7 @@ class CsrfAccessCheck implements RoutingAccessInterface {
    *   The access result.
    */
   protected function pathAccess(Route $route, Request $request, RouteMatchInterface $route_match) {
-    if ($token = $request->query->get('token')) {
+    if ($request->query->has('token')) {
       $parameters = $route_match->getRawParameters();
       $path = ltrim($route->getPath(), '/');
       // Replace the path parameters with values from the parameters array.
