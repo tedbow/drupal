@@ -164,6 +164,9 @@ class BlockViewBuilder extends EntityViewBuilder {
       '#pre_render' => [
         static::class . '::preRender',
       ],
+      '#attached' => [
+        'library' => ['core/drupal.ajax'],
+      ],
       // Add the entity so that it can be used in the #pre_render method.
       '#block' => $entity,
     ];

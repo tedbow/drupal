@@ -15,24 +15,44 @@ class BlockModalTest extends JavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['system', 'block', 'contextual'];
-  /** @var \Behat\Mink\Driver\DriverInterface  */
-  protected $driver;
+  public static $modules = ['system', 'block', 'contextual', 'node'];
 
-  protected function setUp() {
-    parent::setUp();
-    //$this->placeBlock('system_powered_by_block', ['id' => 'content']);
-    $permissions = [
-
-    ];
-    //$this->driver = $this->getSession()->getDriver();
-  }
 
   public function testConfigureBlock() {
-    //$this->drupalGet('node');
-    //$session = $this->getSession();
+    $this->placeBlock('system_powered_by_block', ['id' => 'poweredbydrupal']);
+    $admin_user = $this->drupalCreateUser([
+      'administer blocks',
+      'administer site configuration',
+      'access contextual links',
+    ]);
+    $this->drupalLogin($admin_user);
 
-    //$this->assertElementPresent('.contextual-links a.use-ajax[data-dialog-type="modal"]');
+    $button_selector = '[data-contextual-id="block:block=poweredbydrupal:langcode=en"] button';
+    $this->waitForAjaxToFinish($button_selector);
+    $this->assertElementPresent('.contextual-links a.use-ajax[data-dialog-type="modal"]');
+
+
+    $this->assertElementPresent($button_selector);
+    $this->assertElementVisible($button_selector);
+    $session = $this->getSession();
+
+    $page = $session->getPage();
+    /** @var \Zumba\Mink\Driver\PhantomJSDriver $driver */
+    $driver = $session->getDriver();
+    $driver->focus($this->cssSelectToXpath($button_selector));
+    $page->pressButton('Open configuration options');
+
+    $configure_link = $session->getPage()->findLink('Configure block');
+    $this->assertTrue($configure_link->isVisible());
+    $configure_link->click();
+  }
+
+  /**
+   * Waits for jQuery to become active and animations to complete.
+   */
+  protected function waitForAjaxToFinish($button_selector) {
+    $condition = "(jQuery('$button_selector').length > 0)";
+    $this->assertJsCondition($condition, 10000);
   }
 
 }
