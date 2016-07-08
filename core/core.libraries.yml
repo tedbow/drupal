@@ -234,6 +234,15 @@ drupal.progress:
     - core/jquery
     - core/drupalSettings
 
+drupal.sidebar:
+  version: VERSION
+  js:
+      misc/sidebar.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.ajax
+    - core/drupal.dialog
+
 drupal.states:
   version: VERSION
   js:

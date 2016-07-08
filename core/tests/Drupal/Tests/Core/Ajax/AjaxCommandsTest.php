@@ -359,6 +359,40 @@ class AjaxCommandsTest extends UnitTestCase {
   }
 
   /**
+   * @covers \Drupal\Core\Ajax\OpenSidebarDialogCommand
+   */
+  public function testOpenSidebarDialogCommand() {
+    $command = $this->getMockBuilder('Drupal\Core\Ajax\OpenSidebarDialogCommand')
+      ->setConstructorArgs(array(
+        'Title', '<p>Text!</p>', array(
+          'url' => 'example',
+        ),
+      ))
+      ->setMethods(array('getRenderedContent'))
+      ->getMock();
+
+    // This method calls the render service, which isn't available. We want it
+    // to do nothing so we mock it to return a known value.
+    $command->expects($this->once())
+      ->method('getRenderedContent')
+      ->willReturn('rendered content');
+
+    $expected = array(
+      'command' => 'openSidebar',
+      'selector' => '#drupal-sidebar',
+      'settings' => NULL,
+      'data' => 'rendered content',
+      'dialogOptions' => array(
+        'url' => 'example',
+        'title' => 'Title',
+        'modal' => FALSE,
+      ),
+    );
+    $this->assertEquals($expected, $command->render());
+  }
+
+
+  /**
    * @covers \Drupal\Core\Ajax\CloseModalDialogCommand
    */
   public function testCloseModalDialogCommand() {
