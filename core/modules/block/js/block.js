@@ -225,4 +225,38 @@
     }
   };
 
+  /**
+   * Add Ajax behaviours to links added by contextual links
+   *
+   * @todo Fix contextual links to work with modal links.
+   *
+   * @param {jQuery.Event} event
+   *   The `drupalContextualLinkAdded` event.
+   * @param {object} data
+   *   An object containing the data relevant to the event.
+   *
+   * @listens event:drupalContextualLinkAdded
+   */
+  $(document).on('drupalContextualLinkAdded', function (event, data) {
+    // Bind Ajax behaviors to all items showing the class.
+    data.$el.find('.use-ajax').once('ajax').each(function () {
+      var element_settings = {};
+      // Clicked links look better with the throbber than the progress bar.
+      element_settings.progress = {type: 'throbber'};
+
+      // For anchor tags, these will go to the target of the anchor rather
+      // than the usual location.
+      var href = $(this).attr('href');
+      if (href) {
+        element_settings.url = href;
+        element_settings.event = 'click';
+      }
+      element_settings.dialogType = $(this).data('dialog-type');
+      element_settings.dialog = $(this).data('dialog-options');
+      element_settings.base = $(this).attr('id');
+      element_settings.element = this;
+      Drupal.ajax(element_settings);
+    });
+  });
+
 })(jQuery, window, Drupal);

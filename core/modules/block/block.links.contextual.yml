@@ -2,3 +2,8 @@ block_configure:
   title: 'Configure block'
   route_name: 'entity.block.edit_form'
   group: 'block'
+block_quick_edit:
+  title: 'Quick Edit'
+  route_name: 'block.quick_edit'
+  group: 'block'
+

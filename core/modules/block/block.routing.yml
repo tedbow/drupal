@@ -66,3 +66,10 @@ block.category_autocomplete:
     _controller: '\Drupal\block\Controller\CategoryAutocompleteController::autocomplete'
   requirements:
     _permission: 'administer blocks'
+
+block.quick_edit:
+  path: '/block-quick-edit'
+  defaults:
+    _controller: '\Drupal\block\Controller\Hello::world'
+  requirements:
+    _permission: 'administer blocks'
