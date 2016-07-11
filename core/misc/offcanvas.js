@@ -26,7 +26,7 @@
     var $page = $('#page');
     var $sidebar = $('<div />', {
       id: 'offcanvas',
-      text: response.data,
+      html: response.data,
       css: {
         'width': pageWidth * .2,
         'margin-right': -(pageWidth * .2)
