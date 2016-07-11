@@ -237,7 +237,10 @@ drupal.progress:
 drupal.sidebar:
   version: VERSION
   js:
-      misc/sidebar.js: {}
+      misc/offcanvas.js: {}
+  css:
+      component:
+        misc/offcanvas.css: {}
   dependencies:
     - core/drupal
     - core/drupal.ajax
