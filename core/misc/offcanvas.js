@@ -20,7 +20,7 @@
    *   Returns false if there was no selector property in the response object.
    */
   Drupal.AjaxCommands.prototype.openSidebar = function (ajax, response, status) {
-
+    var animationDuration = 600;
     var pageWidth = $('#page-wrapper').width();
 
     var $page = $('#page');
@@ -28,20 +28,20 @@
       id: 'offcanvas',
       html: response.data,
       css: {
-        'width': pageWidth * .2,
-        'margin-right': -(pageWidth * .2)
+        width: pageWidth * .2,
+        right: -(pageWidth * .2)
       }
     });
-    $('#page-wrapper').prepend($sidebar);
-    $sidebar.animate({'margin-right': 0}, 1000);
-    $page.animate({
-      width: pageWidth * .8,
-      float: 'left'
-    }, 1000);
+    $('#page-wrapper').append($sidebar);
 
-    // var $page
-    // $('#page').addClass('page-reduced');
-    // sidebar.addClass('showNav');
+    $sidebar
+      .animate({right: 0}, {duration: animationDuration, queue: false});
+    $page
+      .addClass('offCanvasDisplay')
+      .animate({
+        width: pageWidth * .8
+      }, {duration: animationDuration, queue: false});
+
     return false;
   };
 
