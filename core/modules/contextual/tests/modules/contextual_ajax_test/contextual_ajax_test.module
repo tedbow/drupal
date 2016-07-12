@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * @file
+ * Test Contextual links that use Ajax
+ */
+
+/**
+ * Implements hook_contextual_links_view_alter().
+ *
+ * Change Configure Blocks into modal links.
+ */
+function contextual_ajax_test_contextual_links_view_alter(&$element, $items) {
+  drupal_set_message('fffff');
+  if (isset($element['#links']['contextual-ajax-test'])) {
+    $element['#links']['contextual-ajax-test']['attributes'] = [
+      'class' => ['use-ajax'],
+      'data-dialog-type' => 'modal',
+    ];
+  }
+}

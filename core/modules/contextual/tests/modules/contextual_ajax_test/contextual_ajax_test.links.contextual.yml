@@ -1,0 +1,4 @@
+contextual_ajax_test:
+  title: 'Contextual Ajax Test'
+  route_name: 'router_test.2'
+  group: 'block'

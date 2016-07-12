@@ -1,0 +1,10 @@
+name: 'Contextual Ajax tests'
+type: module
+description: 'Provides contextual Ajax tests.'
+package: Testing
+version: VERSION
+core: 8.x
+dependencies:
+  - contextual
+  - block
+  - router_test
