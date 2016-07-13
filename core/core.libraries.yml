@@ -234,7 +234,7 @@ drupal.progress:
     - core/jquery
     - core/drupalSettings
 
-drupal.sidebar:
+drupal.offcanvas:
   version: VERSION
   js:
       misc/offcanvas.js: {}

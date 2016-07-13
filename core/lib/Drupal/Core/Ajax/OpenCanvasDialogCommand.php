@@ -7,12 +7,12 @@ namespace Drupal\Core\Ajax;
  *
  * @ingroup ajax
  */
-class OpenSidebarDialogCommand extends OpenDialogCommand {
+class OpenCanvasDialogCommand extends OpenDialogCommand {
 
   /**
-   * Constructs an OpenSidebarDialogCommand object.
+   * Constructs an OpenCanvasDialogCommand object.
    *
-   * Drupal provides a built-in sidebar for
+   * Drupal provides a built-in offcanvas tray for
    * this purpose, so no selector needs to be provided.
    *
    * @todo Do we need a selector? Or act the same as modal?
@@ -32,7 +32,7 @@ class OpenSidebarDialogCommand extends OpenDialogCommand {
    */
   public function __construct($title, $content, array $dialog_options = array(), $settings = NULL) {
     $dialog_options['modal'] = FALSE;
-    parent::__construct('#drupal-sidebar', $title, $content, $dialog_options, $settings);
+    parent::__construct('#drupal-offcanvas', $title, $content, $dialog_options, $settings);
   }
 
   /**
@@ -41,7 +41,7 @@ class OpenSidebarDialogCommand extends OpenDialogCommand {
   public function render() {
     $this->dialogOptions['modal'] = FALSE;
     return array(
-      'command' => 'openSidebar',
+      'command' => 'openOffCanvas',
       'selector' => $this->selector,
       'settings' => $this->settings,
       'data' => $this->getRenderedContent(),

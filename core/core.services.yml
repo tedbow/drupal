@@ -1029,10 +1029,10 @@ services:
     tags:
       - { name: render.main_content_renderer, format: drupal_modal }
   main_content_renderer.sidebar:
-    class: Drupal\Core\Render\MainContent\SidebarRender
+    class: Drupal\Core\Render\MainContent\OffCanvasRender
     arguments: ['@title_resolver']
     tags:
-      - { name: render.main_content_renderer, format: drupal_sidebar }
+      - { name: render.main_content_renderer, format: drupal_offcanvas }
   controller.form:
     class: Drupal\Core\Controller\HtmlFormController
     arguments: ['@controller_resolver', '@form_builder', '@class_resolver']

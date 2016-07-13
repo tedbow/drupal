@@ -359,10 +359,10 @@ class AjaxCommandsTest extends UnitTestCase {
   }
 
   /**
-   * @covers \Drupal\Core\Ajax\OpenSidebarDialogCommand
+   * @covers \Drupal\Core\Ajax\OpenCanvasDialogCommand
    */
-  public function testOpenSidebarDialogCommand() {
-    $command = $this->getMockBuilder('Drupal\Core\Ajax\OpenSidebarDialogCommand')
+  public function testOpenCanvasDialogCommand() {
+    $command = $this->getMockBuilder('Drupal\Core\Ajax\OpenCanvasDialogCommand')
       ->setConstructorArgs(array(
         'Title', '<p>Text!</p>', array(
           'url' => 'example',
@@ -378,8 +378,8 @@ class AjaxCommandsTest extends UnitTestCase {
       ->willReturn('rendered content');
 
     $expected = array(
-      'command' => 'openSidebar',
-      'selector' => '#drupal-sidebar',
+      'command' => 'openOffCanvas',
+      'selector' => '#drupal-offcanvas',
       'settings' => NULL,
       'data' => 'rendered content',
       'dialogOptions' => array(
