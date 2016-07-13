@@ -1,10 +1,11 @@
 <?php
 
-namespace Drupal\Core\Render\MainContent;
+namespace Drupal\outside_in\Render\MainContent;
 
 use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\OpenCanvasDialogCommand;
+use Drupal\Core\Render\MainContent\DialogRenderer;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\outside_in\Ajax\OpenOffCanvasDialogCommand;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -23,7 +24,7 @@ class OffCanvasRender extends DialogRenderer {
 
     // Attach the library necessary for using the OpenModalDialogCommand and set
     // the attachments for this Ajax response.
-    $main_content['#attached']['library'][] = 'core/drupal.offcanvas';
+    $main_content['#attached']['library'][] = 'core/drupal.off_canvas';
     $response->setAttachments($main_content['#attached']);
 
     // If the main content doesn't provide a title, use the title resolver.
@@ -33,7 +34,7 @@ class OffCanvasRender extends DialogRenderer {
     // otherwise get it from the routing information.
     $options = $request->request->get('dialogOptions', array());
 
-    $response->addCommand(new OpenCanvasDialogCommand($title, $content, $options));
+    $response->addCommand(new OpenOffCanvasDialogCommand($title, $content, $options));
     return $response;
   }
 }
