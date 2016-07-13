@@ -1,15 +1,7 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ted.bowman
- * Date: 7/12/16
- * Time: 3:27 PM
- */
 
 namespace Drupal\offcanvas_test\Plugin\Block;
 
-
-use Drupal\Component\Serialization\Json;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Url;
 
@@ -24,14 +16,23 @@ use Drupal\Core\Url;
 class TestBlock extends BlockBase{
   public function build() {
     return [
-      'offcanvas_link' => [
-        '#title' => $this->t('Click Me!'),
+      'offcanvas_link_1' => [
+        '#title' => $this->t('Click Me 1!'),
         '#type' => 'link',
-        '#url' => Url::fromRoute('router_test.2'),
+        '#url' => Url::fromRoute('offcanvas_test.thing1'),
         '#attributes' => [
           'class' => ['use-ajax'],
           'data-dialog-type' => 'offcanvas',
-        ]
+        ],
+      ],
+      'offcanvas_link_2' => [
+        '#title' => $this->t('Click Me 2!'),
+        '#type' => 'link',
+        '#url' => Url::fromRoute('offcanvas_test.thing2'),
+        '#attributes' => [
+          'class' => ['use-ajax'],
+          'data-dialog-type' => 'offcanvas',
+        ],
       ],
       '#attached' => [
         'library' => ['core/drupal.offcanvas'],
