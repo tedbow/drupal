@@ -3,14 +3,14 @@
 namespace Drupal\Core\Render\MainContent;
 
 use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\OpenSidebarDialogCommand;
+use Drupal\Core\Ajax\OpenCanvasDialogCommand;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Default main content renderer for sidebar dialog requests.
+ * Default main content renderer for offcanvas dialog requests.
  */
-class SidebarRender extends DialogRenderer {
+class OffCanvasRender extends DialogRenderer {
 
   /**
    * {@inheritdoc}
@@ -23,7 +23,7 @@ class SidebarRender extends DialogRenderer {
 
     // Attach the library necessary for using the OpenModalDialogCommand and set
     // the attachments for this Ajax response.
-    $main_content['#attached']['library'][] = 'core/drupal.sidebar';
+    $main_content['#attached']['library'][] = 'core/drupal.offcanvas';
     $response->setAttachments($main_content['#attached']);
 
     // If the main content doesn't provide a title, use the title resolver.
@@ -33,7 +33,7 @@ class SidebarRender extends DialogRenderer {
     // otherwise get it from the routing information.
     $options = $request->request->get('dialogOptions', array());
 
-    $response->addCommand(new OpenSidebarDialogCommand($title, $content, $options));
+    $response->addCommand(new OpenCanvasDialogCommand($title, $content, $options));
     return $response;
   }
 }

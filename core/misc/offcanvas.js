@@ -89,7 +89,7 @@
    * @return {bool}
    *   Returns false.
    */
-  Drupal.AjaxCommands.prototype.openSidebar = function (ajax, response, status) {
+  Drupal.AjaxCommands.prototype.openOffCanvas = function (ajax, response, status) {
     // Set animation duration and get #page-wrapper width.
     var animationDuration = 600;
     var $pageWrapper = $('#page-wrapper');

@@ -43,9 +43,9 @@ class DialogTest extends AjaxTestBase {
       ),
     );
 
-    $sidebar_expected_response = array(
-      'command' => 'openSidebar',
-      'selector' => '#drupal-sidebar',
+    $offcanvas_expected_response = array(
+      'command' => 'openOffCanvas',
+      'selector' => '#drupal-offcanvas',
       'settings' => NULL,
       'data' => $dialog_contents,
       'dialogOptions' => array(
@@ -110,8 +110,8 @@ class DialogTest extends AjaxTestBase {
     $this->assertEqual($modal_expected_response, $ajax_result[3], 'Modal dialog JSON response matches.');
 
     // Emulate going to the JS version of the page and check the JSON response.
-    $ajax_result = $this->drupalGetAjax('ajax-test/dialog-contents', array('query' => array(MainContentViewSubscriber::WRAPPER_FORMAT => 'drupal_sidebar')));
-    $this->assertEqual($sidebar_expected_response, $ajax_result[3], 'Modal dialog JSON response matches.');
+    $ajax_result = $this->drupalGetAjax('ajax-test/dialog-contents', array('query' => array(MainContentViewSubscriber::WRAPPER_FORMAT => 'drupal_offcanvas')));
+    $this->assertEqual($offcanvas_expected_response, $ajax_result[3], 'Modal dialog JSON response matches.');
 
     // Check that requesting a "normal" dialog without JS goes to a page.
     $this->drupalGet('ajax-test/dialog-contents');
