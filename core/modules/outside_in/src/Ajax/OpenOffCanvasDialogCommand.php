@@ -1,16 +1,18 @@
 <?php
 
-namespace Drupal\Core\Ajax;
+namespace Drupal\outside_in\Ajax;
+
+use Drupal\Core\Ajax\OpenDialogCommand;
 
 /**
  * Defines an AJAX command to open certain content in a dialog in a modal dialog.
  *
  * @ingroup ajax
  */
-class OpenCanvasDialogCommand extends OpenDialogCommand {
+class OpenOffCanvasDialogCommand extends OpenDialogCommand {
 
   /**
-   * Constructs an OpenCanvasDialogCommand object.
+   * Constructs an OpenOffCanvasDialogCommand object.
    *
    * Drupal provides a built-in offcanvas tray for
    * this purpose, so no selector needs to be provided.
