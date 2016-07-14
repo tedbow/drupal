@@ -1,3 +1,11 @@
+offcanvas_test.links:
+  path: '/offcanvas-test-links'
+  defaults:
+    _controller: '\Drupal\offcanvas_test\Controller\TestController::linksDisplay'
+    _title: 'Links'
+  requirements:
+    _access: 'TRUE'
+
 offcanvas_test.thing1:
   path: '/offcanvas-thing1'
   defaults:
