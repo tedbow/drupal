@@ -15,7 +15,7 @@ function outside_in_help($route_name, RouteMatchInterface $route_match) {
     case 'help.page.outside_in':
       $output = '<h3>' . t('About') . '</h3>';
       // @todo Update help text.
-      $output .= '<p>' . t('The Outside In module is something that we should have help for.') . '</p>';
+      $output .= '<p>' . t('The Outside In module is something that we should have help for. For more information, see the <a href=":outside-in-documentation">online documentation for the Outside In module</a>.', [':outside-in-documentation' => 'https://www.drupal.org/documentation/modules/outside_in']) . '</p>';
       return $output;
   }
 }

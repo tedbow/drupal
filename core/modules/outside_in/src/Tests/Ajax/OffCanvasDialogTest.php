@@ -18,7 +18,7 @@ class OffCanvasDialogTest extends AjaxTestBase {
    *
    * @var array
    */
-  public static $modules = array('ajax_test');
+  public static $modules = array('outside_in');
 
   /**
    * Test sending AJAX requests to open and manipulate offcanvas dialog.
@@ -45,7 +45,7 @@ class OffCanvasDialogTest extends AjaxTestBase {
 
     // Emulate going to the JS version of the page and check the JSON response.
     $ajax_result = $this->drupalGetAjax('ajax-test/dialog-contents', array('query' => array(MainContentViewSubscriber::WRAPPER_FORMAT => 'drupal_offcanvas')));
-    $this->assertEqual($offcanvas_expected_response, $ajax_result[3], 'Modal dialog JSON response matches.');
+    $this->assertEqual($offcanvas_expected_response, $ajax_result[3], 'Offcanvas dialog JSON response matches.');
   }
 
 }
