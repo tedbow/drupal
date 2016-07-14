@@ -5,7 +5,7 @@ namespace Drupal\outside_in\Ajax;
 use Drupal\Core\Ajax\OpenDialogCommand;
 
 /**
- * Defines an AJAX command to open certain content in a dialog in a modal dialog.
+ * Defines an AJAX command to open content in a dialog in a off canvas tray.
  *
  * @ingroup ajax
  */

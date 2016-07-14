@@ -13,7 +13,11 @@ use Drupal\Core\Url;
  *   admin_label = @Translation("Offcanvas test block")
  * )
  */
-class TestBlock extends BlockBase{
+class TestBlock extends BlockBase {
+
+  /**
+   * {@inheritdoc}
+   */
   public function build() {
     return [
       'offcanvas_link_1' => [

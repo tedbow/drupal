@@ -53,7 +53,7 @@
    *   The #page element.
    * @param  {number} pageWidth
    *   The width of #page-wrapper
-   * @param  {numer} animationDuration
+   * @param  {number} animationDuration
    *   The duration of the animation.
    * @return {object}
    *   jQuery object that is the off canvas close element.
