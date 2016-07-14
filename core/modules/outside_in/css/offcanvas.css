@@ -1,0 +1,41 @@
+#offcanvas {
+  background: #3c3c3c;
+  color: #fff;
+
+  box-sizing: border-box;
+  z-index: 1000;
+
+  position: fixed;
+  height: 100%;
+  overflow-y: auto;
+
+  border-left: 1px solid #000;
+  box-shadow: -2px 3px 1px 1px rgba(0, 0, 0, 0.3333);
+
+  display: inline-block;
+}
+
+#offcanvas span.offcanvasClose {
+  float: right;
+  margin: 15px 15px 0 0;
+}
+
+#offcanvas h1 {
+  margin: 0 0 15px 0;
+  padding: 15px;
+  color: #fff;
+  border-bottom: 1px solid #fff;
+}
+
+#offcanvas .content {
+  padding: 15px;
+}
+
+#page.offCanvasDisplayInProgress {
+  position: fixed;
+  display: inline-block;
+}
+
+#page.offCanvasDisplayed {
+  display: inline-block;
+}
