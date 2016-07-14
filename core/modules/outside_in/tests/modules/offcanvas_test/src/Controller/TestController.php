@@ -1,6 +1,7 @@
 <?php
 
 namespace Drupal\offcanvas_test\Controller;
+use Drupal\Core\Url;
 
 /**
  * Test controller for 2 different responses.
@@ -30,6 +31,44 @@ class TestController {
     return [
       '#type' => 'markup',
       '#markup' => 'Thing 2 says hello',
+    ];
+  }
+
+  /**
+   * Display test links that will open in offcanvas tray.
+   * @return array
+   */
+  public function linksDisplay() {
+    return [
+      'offcanvas_link_1' => [
+        '#title' => 'Click Me 1!',
+        '#type' => 'link',
+        '#url' => Url::fromRoute('offcanvas_test.thing1'),
+        '#attributes' => [
+          'class' => ['use-ajax'],
+          'data-dialog-type' => 'offcanvas',
+        ],
+        '#attached' => [
+          'library' => [
+            'outside_in/drupal.off_canvas',
+          ],
+        ],
+      ],
+      'offcanvas_link_2' => [
+        '#title' => 'Click Me 2!',
+        '#type' => 'link',
+        '#url' => Url::fromRoute('offcanvas_test.thing2'),
+        '#attributes' => [
+          'class' => ['use-ajax'],
+          'data-dialog-type' => 'offcanvas',
+        ],
+        '#attached' => [
+          'library' => [
+            'outside_in/drupal.off_canvas',
+          ],
+        ],
+      ],
+
     ];
   }
 
