@@ -82,7 +82,9 @@
     contextual.collection.add(model);
 
     // Enable Ajax functionality for contextual links.
-    Drupal.ajax.bindAjaxLinks($region);
+    if (typeof Drupal.ajax.bindAjaxLinks !== 'undefined') {
+      Drupal.ajax.bindAjaxLinks($region);
+    }
 
     // Let other JavaScript react to the adding of a new contextual link.
     $(document).trigger('drupalContextualLinkAdded', {
