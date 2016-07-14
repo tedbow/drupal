@@ -46,7 +46,7 @@ class OffCanvasRender extends DialogRenderer {
 
     // Attach the library necessary for using the OpenModalDialogCommand and set
     // the attachments for this Ajax response.
-    $main_content['#attached']['library'][] = 'core/drupal.off_canvas';
+    $main_content['#attached']['library'][] = 'outside_in/drupal.off_canvas';
     $response->setAttachments($main_content['#attached']);
 
     // If the main content doesn't provide a title, use the title resolver.

@@ -1,11 +1,13 @@
 drupal.off_canvas:
   version: VERSION
   js:
-      js/offcanvas.js: {}
+    js/offcanvas.js: {}
   css:
-      component:
-        css/offcanvas.css: {}
+    component:
+      css/offcanvas.css: {}
   dependencies:
+    - core/jquery
     - core/drupal
     - core/drupal.ajax
     - core/drupal.dialog
+    - core/drupal.dialog.ajax

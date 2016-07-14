@@ -39,7 +39,9 @@ class TestBlock extends BlockBase {
         ],
       ],
       '#attached' => [
-        'library' => ['outside_in/drupal.off_canvas'],
+        'library' => [
+          'outside_in/drupal.off_canvas',
+        ],
       ],
     ];
   }
