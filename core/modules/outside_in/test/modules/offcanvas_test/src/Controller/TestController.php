@@ -19,6 +19,7 @@ class TestController {
       '#markup' => 'Thing 1 says hello',
     ];
   }
+
   /**
    * Thing2.
    *
