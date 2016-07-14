@@ -234,18 +234,6 @@ drupal.progress:
     - core/jquery
     - core/drupalSettings
 
-drupal.offcanvas:
-  version: VERSION
-  js:
-      misc/offcanvas.js: {}
-  css:
-      component:
-        misc/offcanvas.css: {}
-  dependencies:
-    - core/drupal
-    - core/drupal.ajax
-    - core/drupal.dialog
-
 drupal.states:
   version: VERSION
   js:
