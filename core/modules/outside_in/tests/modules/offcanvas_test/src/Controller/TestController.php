@@ -36,7 +36,9 @@ class TestController {
 
   /**
    * Display test links that will open in offcanvas tray.
+   *
    * @return array
+   *   Render array with links.
    */
   public function linksDisplay() {
     return [
