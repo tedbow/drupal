@@ -12,10 +12,10 @@ use Drupal\Tests\UnitTestCase;
 class AjaxCommandsTest extends UnitTestCase {
 
   /**
-   * @covers \Drupal\Core\Ajax\OpenCanvasDialogCommand
+   * @covers \Drupal\outside_in\Ajax\OpenOffCanvasDialogCommand
    */
-  public function testOpenCanvasDialogCommand() {
-    $command = $this->getMockBuilder('Drupal\Core\Ajax\OpenCanvasDialogCommand')
+  public function testOpenOffCanvasDialogCommand() {
+    $command = $this->getMockBuilder('Drupal\outside_in\Ajax\OpenOffCanvasDialogCommand')
       ->setConstructorArgs(array(
         'Title', '<p>Text!</p>', array(
           'url' => 'example',
