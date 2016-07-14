@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\outside_in\Ajax;
+namespace Drupal\Tests\outside_in\Unit\Ajax;
 
 use Drupal\Tests\UnitTestCase;
 
