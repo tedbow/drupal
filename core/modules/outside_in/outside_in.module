@@ -3,13 +3,19 @@
 /**
  * Implements hook_contextual_links_view_alter().
  *
- * Change Configure Blocks into modal links.
+ * Change Configure Blocks into offcanvas links.
  */
 function outside_in_contextual_links_view_alter(&$element, $items) {
   if (isset($element['#links']['outside-inblock-configure'])) {
     $element['#links']['outside-inblock-configure']['attributes'] = [
       'class' => ['use-ajax'],
       'data-dialog-type' => 'offcanvas',
+    ];
+
+    $element['#attached'] = [
+      'library' => [
+        'outside_in/drupal.off_canvas',
+      ],
     ];
   }
 }

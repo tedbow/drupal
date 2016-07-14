@@ -108,7 +108,7 @@
 
     // Construct off canvas internal elements.
     var $offcanvasClose = createOffCanvasClose($offcanvasWrapper, $page, pageWidth, animationDuration);
-    var $title = createTitle('My Title');
+    var $title = createTitle(response.dialogOptions.title);
     var $offcanvasContent = createOffCanvasContent(response.data);
 
     // Put everything together.
