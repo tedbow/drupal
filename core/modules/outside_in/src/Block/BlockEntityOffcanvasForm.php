@@ -70,7 +70,7 @@ class BlockEntityOffCanvasForm extends EntityForm {
     $form['#tree'] = TRUE;
     $form['#attached']['library'][] = 'block/drupal.block.admin';
 
-    $form['settings'] = $this->blockManager->getFormObject($this->entity->getPlugin(), 'sidebar')->buildConfigurationForm([], $form_state);
+    $form['settings'] = $this->blockManager->getFormObject($this->entity->getPlugin(), 'offcavnas')->buildConfigurationForm([], $form_state);
 
     return $form;
   }

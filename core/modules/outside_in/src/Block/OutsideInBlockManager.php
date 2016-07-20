@@ -34,8 +34,15 @@ class OutsideInBlockManager implements OutsideInBlockManagerInterface {
    */
   public function getFormObject(PluginInspectionInterface $plugin, $operation) {
     $definition = $plugin->getPluginDefinition();
+
     if (!isset($definition['form'][$operation])) {
-      throw new InvalidPluginDefinitionException($plugin->getPluginId(), sprintf('The "%s" plugin did not specify a "%s" form class', $plugin->getPluginId(), $operation));
+      // Use the default form class if no form is specified for this operation.
+      if (isset($definition['form']['default'])) {
+        $operation = 'default';
+      }
+      else {
+        throw new InvalidPluginDefinitionException($plugin->getPluginId(), sprintf('The "%s" plugin did not specify a "%s" form class', $plugin->getPluginId(), $operation));
+      }
     }
 
     // If the form specified is the plugin itself, use it directly.
