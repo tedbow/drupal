@@ -1,0 +1,120 @@
+<?php
+
+/**
+ * @file
+ * Allows configuring blocks and other configuration from the front-end of the site.
+ */
+
+use Drupal\Core\Plugin\PluginFormInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\outside_in\Block\BlockEntityOffCanvasForm;
+
+/**
+ * Implements hook_help().
+ */
+function outside_in_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.outside_in':
+      $output = '<h3>' . t('About') . '</h3>';
+      // @todo Update help text.
+      $output .= '<p>' . t('The Outside In module is something that we should have help for. For more information, see the <a href=":outside-in-documentation">online documentation for the Outside In module</a>.', [':outside-in-documentation' => 'https://www.drupal.org/documentation/modules/outside_in']) . '</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_contextual_links_view_alter().
+ *
+ * Change Configure Blocks into offcanvas links.
+ */
+function outside_in_contextual_links_view_alter(&$element, $items) {
+  if (isset($element['#links']['outside-inblock-configure'])) {
+    $element['#links']['outside-inblock-configure']['attributes'] = [
+      'class' => ['use-ajax'],
+      'data-dialog-type' => 'offcanvas',
+    ];
+
+    $element['#attached'] = [
+      'library' => [
+        'outside_in/drupal.off_canvas',
+      ],
+    ];
+  }
+}
+
+/**
+ * Implements hook_page_top().
+ *
+ * Opens a div for consistent wrapping to all {{ page }} render in all themes.
+ */
+function outside_in_page_top(array &$page_top) {
+  $page_top['outside_in_tray_open'] = [
+    '#markup' => '<div id="canvas-tray-wrapper"><div id="canvas-tray">',
+    '#weight' => 1000
+    ];
+}
+
+/**
+ * Implements hook_page_bottom().
+ *
+ * Closes a div for consistent wrapping to all {{ page }} render in all themes.
+ */
+function outside_in_page_bottom(array &$page_bottom) {
+  $page_bottom['outside_in_tray_close'] = [
+    '#markup' => '</div></div>',
+    '#weight' => -1000
+  ];
+}
+
+/**
+ * Implements hook_block_alter().
+ */
+function outside_in_block_alter(&$definitions) {
+  foreach ($definitions as &$definition) {
+    // If no default form is defined and this plugin implements
+    // \Drupal\Core\Plugin\PluginFormInterface, use that for the default form.
+    if (!isset($definition['form']['default']) && is_subclass_of($definition['class'], PluginFormInterface::class)) {
+      $definition['form']['default'] = $definition['class'];
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_type_build().
+ */
+function outside_in_entity_type_build(array &$entity_types) {
+  /** @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
+  $entity_types['block']
+    ->setFormClass('offcanvas', BlockEntityOffCanvasForm::class)
+    ->setLinkTemplate('offcanvas-form', '/admin/structure/block/manage/{block}/offcanvas');
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for block templates.
+ *
+ * Adds 'outside-in-editable' class to all blocks to allow Javascript to target.
+ */
+function outside_in_preprocess_block(&$variables) {
+  // Remove on Admin routes.
+  $admin_route = \Drupal::service('router.admin_context')->isAdminRoute();
+  // @todo Check if there is actually different admin theme.
+  // Remove on Block Demo page.
+  $admin_demo = \Drupal::routeMatch()->getRouteName() === 'block.admin_demo';
+  $access = (\Drupal::currentUser()->hasPermission('administer blocks') && !$admin_route && !$admin_demo);
+
+  if (!$access) {
+    return;
+  }
+  $variables['attributes']['class'][] = 'outside-in-editable';
+}
+
+/**
+ * Implements hook_toolbar_alter().
+ *
+ * Includes outside_library if Edit link is in toolbar.
+ */
+function outside_in_toolbar_alter(&$items) {
+  if (isset($items['contextual']['tab'])) {
+    $items['contextual']['#attached']['library'][] = 'outside_in/drupal.outside_in';
+  }
+}

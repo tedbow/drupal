@@ -1,0 +1,128 @@
+/**
+ * @file
+ * Visual styling for Outside-In module.
+ *
+ * Since visual styling here differs from styling elsewhere in core,
+ * font and color styles are put here so they can be more easily changed.
+ *
+ */
+
+/* style the offcanvas container */
+#offcanvas {
+  color: #eee;
+  border-left: 1px solid #000;
+  background: #444;
+  font-family: 'Lucida Grande','Lucida Sans Unicode','Liberation Sans',sans-serif;
+}
+#offcanvas .content {
+  color: #eee;
+}
+#offcanvas h1 {
+  margin: 0 0 15px 0;
+  padding: 15px;
+  color: #eee;
+  border-bottom: 1px solid #777;
+}
+
+/**
+ * Buttons.
+ */
+#offcanvas button:hover,
+#offcanvas button:active,
+#offcanvas .button:hover,
+#offcanvas .button:active {
+  background-color: inherit;
+  background-image: inherit;
+  background-image: inherit;
+}
+/* style for primary button */
+#offcanvas .button--primary {
+  background-image: -webkit-linear-gradient(top,#007bc6,#0071b8);
+  background-image: linear-gradient(to bottom,#007bc6,#0071b8);
+  font-weight: bold;
+  text-shadow: none;
+  color: #fff;
+}
+#offcanvas .button--primary:hover,
+#offcanvas .button--primary:active {
+  background-color: inherit;
+  background-image: -webkit-linear-gradient(top,#007bc6,#0071b8); /* todo: make the hover gradient different from normal */
+  background-image: linear-gradient(to bottom,#007bc6,#0071b8);  /* todo: make the hover gradient different from normal */
+}
+/* Style for delete button */
+#offcanvas .button--danger {
+  font-weight: bold;
+  text-shadow: none;
+  color: #ff3333;
+}
+
+/**
+ * Inputs.
+ */
+#offcanvas textarea,
+#offcanvas select,
+#offcanvas input[type="date"],
+#offcanvas input[type="datetime"],
+#offcanvas input[type="datetime-local"],
+#offcanvas input[type="email"],
+#offcanvas input[type="month"],
+#offcanvas input[type="number"],
+#offcanvas input[type="password"],
+#offcanvas input[type="search"],
+#offcanvas input[type="tel"],
+#offcanvas input[type="text"],
+#offcanvas input[type="time"],
+#offcanvas input[type="url"],
+#offcanvas input[type="week"],
+#offcanvas input[type="range"] {
+  background-color: #ddd; /* darken inputs to reduce contrast on dark background */
+  border: 1px solid #333;
+}
+/* add focus effect to fields for dark background */
+#offcanvas textarea:focus,
+#offcanvas select:focus,
+#offcanvas input:focus {
+  background-color: #fff;
+}
+/* reduce the size of descriptions and other elements for scannability */
+#offcanvas .description,
+#offcanvas .machine-name-label,
+#offcanvas .machine-name-value {
+  font-family: 'Lucida Grande','Lucida Sans Unicode','Liberation Sans',sans-serif;
+  color: #bbb;
+}
+/* add a background to radio buttons for contrast */
+/*
+#offcanvas .radio-wrapper {
+  background-color: #000;
+}
+#offcanvas .checkbox-wrapper {
+  background-color: #000;
+}
+*/
+
+/**
+ * Fieldsets.
+ */
+#offcanvas fieldset {
+  background-color: #333;
+}
+
+/**
+ * Admin label.
+ */
+#offcanvas .form-item-settings-admin-label {
+  border-bottom-color: #777;
+}
+#offcanvas .form-item-settings-admin-label label {
+  color: #bbb;
+}
+
+/**
+ * Form actions.
+ */
+#offcanvas .form-actions {
+  border-bottom-color: #777;
+}
+
+
