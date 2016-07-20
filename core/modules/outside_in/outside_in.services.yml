@@ -1,0 +1,9 @@
+services:
+  main_content_renderer.off_canvas:
+      class: Drupal\outside_in\Render\MainContent\OffCanvasRender
+      arguments: ['@title_resolver', '@renderer']
+      tags:
+        - { name: render.main_content_renderer, format: drupal_offcanvas }
+  outside_in.block.manager:
+    class: Drupal\outside_in\Block\OutsideInBlockManager
+    arguments: ['@class_resolver']

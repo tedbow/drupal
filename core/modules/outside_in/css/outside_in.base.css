@@ -1,0 +1,184 @@
+/**
+ * @file
+ * Resets for Outside-In module.
+ */
+
+/**
+ * Resets
+ * inside the wrapper override font styling the page provides, this may look a bit extreme
+ * but any module may place any new form element in this tray therefore CSS from any
+ * front-end-theme needs to be overridden
+ */
+#offcanvas abbr,
+#offcanvas acronym,
+#offcanvas address,
+#offcanvas article,
+#offcanvas aside,
+#offcanvas audio,
+#offcanvas b,
+#offcanvas caption,
+#offcanvas center,
+#offcanvas cite,
+#offcanvas code,
+#offcanvas dd,
+#offcanvas del,
+#offcanvas details,
+#offcanvas dfn,
+#offcanvas dialog,
+#offcanvas div,
+#offcanvas dl,
+#offcanvas dt,
+#offcanvas em,
+#offcanvas embed,
+#offcanvas fieldset,
+#offcanvas figcaption,
+#offcanvas figure,
+#offcanvas font,
+#offcanvas footer,
+#offcanvas form,
+#offcanvas h1,
+#offcanvas h2,
+#offcanvas h3,
+#offcanvas h4,
+#offcanvas h5,
+#offcanvas h6,
+#offcanvas header,
+#offcanvas hgroup,
+#offcanvas i,
+#offcanvas img,
+#offcanvas ins,
+#offcanvas kbd,
+#offcanvas label,
+#offcanvas legend,
+#offcanvas li,
+#offcanvas mark,
+#offcanvas menu,
+#offcanvas meter,
+#offcanvas nav,
+#offcanvas object,
+#offcanvas ol,
+#offcanvas output,
+#offcanvas p,
+#offcanvas pre,
+#offcanvas progress,
+#offcanvas q,
+#offcanvas rp,
+#offcanvas rt,
+#offcanvas ruby,
+#offcanvas s,
+#offcanvas samp,
+#offcanvas section,
+#offcanvas small,
+#offcanvas span,
+#offcanvas strike,
+#offcanvas strong,
+#offcanvas sub,
+#offcanvas summary,
+#offcanvas sup,
+#offcanvas table,
+#offcanvas tbody,
+#offcanvas td,
+#offcanvas tfoot,
+#offcanvas th,
+#offcanvas thead,
+#offcanvas time,
+#offcanvas tr,
+#offcanvas tt,
+#offcanvas u,
+#offcanvas ul,
+#offcanvas var,
+#offcanvas video {
+  font-family: 'Lucida Grande','Lucida Sans Unicode','Liberation Sans',sans-serif;
+  color: #eee;
+  font-size: 13px;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1.5em;
+  text-transform: none;
+  text-align: left; /* LTR */
+  text-indent: 0;
+  padding:0;
+}
+/* Reset font family rules from formalize to match Drupal (seven theme) */
+#offcanvas ::-webkit-validation-bubble-message,
+#offcanvas optgroup,
+#offcanvas .ie6_input,
+#offcanvas * html textarea,
+#offcanvas * html select,
+#offcanvas textarea,
+#offcanvas select,
+#offcanvas button,
+#offcanvas a.button,
+#offcanvas input[type="date"],
+#offcanvas input[type="datetime"],
+#offcanvas input[type="datetime-local"],
+#offcanvas input[type="email"],
+#offcanvas input[type="month"],
+#offcanvas input[type="number"],
+#offcanvas input[type="password"],
+#offcanvas input[type="search"],
+#offcanvas input[type="tel"],
+#offcanvas input[type="text"],
+#offcanvas input[type="time"],
+#offcanvas input[type="url"],
+#offcanvas input[type="week"],
+#offcanvas input[type="reset"],
+#offcanvas input[type="submit"],
+#offcanvas input[type="button"]  {
+  font-family: 'Lucida Grande','Lucida Sans Unicode','Liberation Sans',sans-serif;
+}
+/* Reset the link color to one that stands out on dark background */
+#offcanvas a {
+  color: #33aaff;
+  text-decoration: none;
+}
+/* Reset to sensible vertical rhythm */
+#offcanvas .form-item,
+#offcanvas details,
+#offcanvas button,
+.form-type-checkbox,
+.form-type-radio {
+  margin-top: 0;
+  margin-bottom: 1.25em;
+  padding-right: .5em; /* LTR */
+  display: inline-block;
+}
+/* Re-set defaults for fieldsets */
+#offcanvas .fieldset-wrapper {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+/* Override formalize label styling */
+#offcanvas label {
+  font-size: 85%;
+  font-weight: bold;
+  line-height: 1.5em;
+}
+/* Override formalize button styling */
+#offcanvas button,
+#offcanvas .button,
+#offcanvas input[type="button"],
+#offcanvas input[type="reset"] {
+  font-weight: normal;
+  text-shadow: none;
+  width: auto;
+  max-width: 50%;
+  color: #fff;
+  border-radius: 30px;
+  border: none;
+  background-color: #777;
+  background-image: none;
+  background-image: none;
+}
+ /* Remove browser and formalize focus effects for dark background */
+#offcanvas input:focus,
+#offcanvas button:focus,
+#offcanvas a.button:focus,
+#offcanvas select:focus,
+#offcanvas textarea:focus {
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  outline: none;
+}
