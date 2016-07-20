@@ -10,10 +10,11 @@
   // Toggle the js-outside-edit-mode class on items that we want
   // to disable while in edit mode.
   $('div.contextual-toolbar-tab.toolbar-tab button').click(function (e) {
-    $('.outside-in-editable a, .outside-in-editable button')
+    $('#toolbar-bar, .outside-in-editable a, .outside-in-editable button')
       .not('div.contextual a, div.contextual button')
       .toggleClass('js-outsidein-edit-mode');
     $('.outside-in-editable').toggleClass('focus');
+    $('.edit-mode-inactive').toggleClass('hidden');
   });
 
   // Bind an event listener to the .outside-in-editable div
@@ -31,6 +32,9 @@
     .not('div.contextual a, div.contextual button')
     .click(function (e) {
       if ($(e.target.offsetParent).hasClass('contextual')) {
+        return;
+      }
+      if (!localStorage.getItem('Drupal.contextualToolbar.isViewing')) {
         return;
       }
       var editLink = $(e.target).find('li.outside-inblock-configure a')[0];
@@ -89,11 +93,12 @@
       var editMode = localStorage.getItem('Drupal.contextualToolbar.isViewing') === 'false';
       if (editMode) {
         $('.outside-in-editable').addClass('focus');
-        var itemsToDisable = $('.outside-in-editable a, .outside-in-editable button')
+        var itemsToToggle = $('#toolbar-bar, .outside-in-editable a, .outside-in-editable button')
           .not('div.contextual a, div.contextual button');
 
-        itemsToDisable
+        itemsToToggle
           .addClass('js-outsidein-edit-mode');
+        $('.edit-mode-inactive').addClass('hidden');
       }
     }
   };

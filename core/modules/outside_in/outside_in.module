@@ -116,5 +116,15 @@ function outside_in_preprocess_block(&$variables) {
 function outside_in_toolbar_alter(&$items) {
   if (isset($items['contextual']['tab'])) {
     $items['contextual']['#attached']['library'][] = 'outside_in/drupal.outside_in';
+
+    // Set a class on items to mark whether they should be active in edit mode.
+    // @todo Create a dynamic method for modules to set their own items.
+    $edit_mode_items = ['contextual', 'block_place'];
+    foreach ($items as $key => $item) {
+      if (!in_array($key, $edit_mode_items)
+          && !in_array('hidden',$items[$key]['#wrapper_attributes']['class'])) {
+        $items[$key]['#wrapper_attributes']['class'][] = 'edit-mode-inactive';
+      }
+    }
   }
 }
