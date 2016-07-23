@@ -3,6 +3,7 @@
 namespace Drupal\Tests\block\Unit;
 
 use Drupal\block\BlockForm;
+use Drupal\Core\Plugin\PluginFormManagerInterface;
 use Drupal\Tests\UnitTestCase;
 
 /**
@@ -55,6 +56,13 @@ class BlockFormTest extends UnitTestCase {
   protected $contextRepository;
 
   /**
+   * The plugin form manager.
+   *
+   * @var \Drupal\Core\Plugin\PluginFormManagerInterface|\Prophecy\Prophecy\ProphecyInterface
+   */
+  protected $pluginFormManager;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -71,6 +79,7 @@ class BlockFormTest extends UnitTestCase {
       ->method('getStorage')
       ->will($this->returnValue($this->storage));
 
+    $this->pluginFormManager = $this->prophesize(PluginFormManagerInterface::class);
   }
 
   /**
@@ -99,7 +108,7 @@ class BlockFormTest extends UnitTestCase {
       ->method('getQuery')
       ->will($this->returnValue($query));
 
-    $block_form_controller = new BlockForm($this->entityManager, $this->conditionManager, $this->contextRepository, $this->language, $this->themeHandler);
+    $block_form_controller = new BlockForm($this->entityManager, $this->conditionManager, $this->contextRepository, $this->language, $this->themeHandler, $this->pluginFormManager->reveal());
 
     // Ensure that the block with just one other instance gets the next available
     // name suggestion.
