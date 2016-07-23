@@ -21,7 +21,8 @@ class MultipleBlockFormTest extends KernelTestBase {
    * Tests that blocks can have multiple forms.
    */
   public function testMultipleForms() {
-    $block = \Drupal::service('plugin.manager.block')->createInstance('test_multiple_forms_block');
+    $configuration = ['label' => 'A very cool block'];
+    $block = \Drupal::service('plugin.manager.block')->createInstance('test_multiple_forms_block', $configuration);
 
     $form_object1 = \Drupal::service('plugin_form.manager')->getFormObject($block, 'default');
     $form_object2 = \Drupal::service('plugin_form.manager')->getFormObject($block, 'secondary');
@@ -31,6 +32,7 @@ class MultipleBlockFormTest extends KernelTestBase {
 
     $expected_secondary = new SecondaryBlockForm();
     $expected_secondary->setOperation('secondary');
+    $expected_secondary->setPlugin($block);
     $this->assertEquals($expected_secondary, $form_object2);
   }
 

@@ -2,19 +2,26 @@
 
 namespace Drupal\block_test\Form;
 
+use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\OperationAwareFormInterface;
+use Drupal\Core\Plugin\PluginAwareInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 
 /**
  * Provides a form that is used as a secondary form for a block.
  */
-class SecondaryBlockForm implements PluginFormInterface, OperationAwareFormInterface {
+class SecondaryBlockForm implements PluginAwareInterface, PluginFormInterface, OperationAwareFormInterface {
 
   /**
    * @var string
    */
   protected $operation;
+
+  /**
+   * @var PluginInspectionInterface
+   */
+  protected $plugin;
 
   /**
    * {@inheritdoc}
@@ -42,6 +49,13 @@ class SecondaryBlockForm implements PluginFormInterface, OperationAwareFormInter
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     // Intentionally empty.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setPlugin(PluginInspectionInterface $plugin) {
+    $this->plugin = $plugin;
   }
 
 }

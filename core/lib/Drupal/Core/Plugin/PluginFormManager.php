@@ -57,6 +57,10 @@ class PluginFormManager implements PluginFormManagerInterface {
       throw new InvalidPluginDefinitionException($plugin->getPluginId(), sprintf('The "%s" plugin did not specify a valid "%s" form class, must implement \Drupal\Core\Plugin\PluginFormInterface', $plugin->getPluginId(), $operation));
     }
 
+    if ($form_object instanceof PluginAwareInterface) {
+      $form_object->setPlugin($plugin);
+    }
+
     if ($form_object instanceof OperationAwareFormInterface) {
       $form_object->setOperation($operation);
     }
