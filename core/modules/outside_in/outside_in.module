@@ -49,12 +49,10 @@ function outside_in_contextual_links_view_alter(&$element, $items) {
  * Opens a div for consistent wrapping to all {{ page }} render in all themes.
  */
 function outside_in_page_top(array &$page_top) {
-  if (_outside_in_apply_on_current_page()) {
-    $page_top['outside_in_tray_open'] = [
-      '#markup' => '<div id="main-canvas-wrapper"><div id="main-canvas">',
-      '#weight' => 1000,
-    ];
-  }
+  $page_top['outside_in_tray_open'] = [
+    '#markup' => '<div id="main-canvas-wrapper"><div id="main-canvas">',
+    '#weight' => 1000,
+  ];
 }
 
 /**
@@ -63,12 +61,10 @@ function outside_in_page_top(array &$page_top) {
  * Closes a div for consistent wrapping to all {{ page }} render in all themes.
  */
 function outside_in_page_bottom(array &$page_bottom) {
-  if (_outside_in_apply_on_current_page()) {
-    $page_bottom['outside_in_tray_close'] = [
-      '#markup' => '</div></div>',
-      '#weight' => -1000,
-    ];
-  }
+  $page_bottom['outside_in_tray_close'] = [
+    '#markup' => '</div></div>',
+    '#weight' => -1000,
+  ];
 }
 
 /**
