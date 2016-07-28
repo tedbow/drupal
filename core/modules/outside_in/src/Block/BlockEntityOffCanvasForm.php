@@ -3,12 +3,16 @@
 namespace Drupal\outside_in\Block;
 
 use Drupal\block\BlockForm;
+use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\PluginWithFormsInterface;
 use Drupal\Core\Url;
 
 /**
- * @todo.
+ * Provides form for block instance forms when used in the off-canvas tray.
+ *
+ * This form will remove advanced sections of regular block form such as the
+ * visibility settings, machine id and region.
  */
 class BlockEntityOffCanvasForm extends BlockForm {
 
@@ -67,8 +71,11 @@ class BlockEntityOffCanvasForm extends BlockForm {
   /**
    * {@inheritdoc}
    */
-  protected function getPluginForm(PluginWithFormsInterface $block) {
-    return $this->pluginFormFactory->createInstance($block, 'offcanvas', 'configuration');
+  protected function getPluginForm(BlockPluginInterface $block) {
+    if ($block instanceof PluginWithFormsInterface) {
+      return $this->pluginFormFactory->createInstance($block, 'offcanvas', 'configure');
+    }
+    return $block;
   }
 
 }

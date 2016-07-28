@@ -14,6 +14,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Plugin\ContextAwarePluginInterface;
 use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
+use Drupal\Core\Plugin\PluginWithFormsInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -436,7 +437,10 @@ class BlockForm extends EntityForm {
    *   The plugin form for the block.
    */
   protected function getPluginForm(BlockPluginInterface $block) {
-    return $this->pluginFormFactory->createInstance($block, 'configure');
+    if ($block instanceof PluginWithFormsInterface) {
+      return $this->pluginFormFactory->createInstance($block, 'configure');
+    }
+    return $block;
   }
 
 }
