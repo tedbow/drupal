@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Allows configuring blocks and other configuration from the front-end of the site.
+ * Allows configuring blocks and other configuration from the site front-end.
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -52,7 +52,7 @@ function outside_in_page_top(array &$page_top) {
   if (_outside_in_apply_on_current_page()) {
     $page_top['outside_in_tray_open'] = [
       '#markup' => '<div id="main-canvas-wrapper"><div id="main-canvas">',
-      '#weight' => 1000
+      '#weight' => 1000,
     ];
   }
 }
@@ -66,7 +66,7 @@ function outside_in_page_bottom(array &$page_bottom) {
   if (_outside_in_apply_on_current_page()) {
     $page_bottom['outside_in_tray_close'] = [
       '#markup' => '</div></div>',
-      '#weight' => -1000
+      '#weight' => -1000,
     ];
   }
 }
@@ -75,7 +75,7 @@ function outside_in_page_bottom(array &$page_bottom) {
  * Implements hook_entity_type_build().
  */
 function outside_in_entity_type_build(array &$entity_types) {
-  /** @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
+  /* @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
   $entity_types['block']
     ->setFormClass('offcanvas', BlockEntityOffCanvasForm::class)
     ->setLinkTemplate('offcanvas-form', '/admin/structure/block/manage/{block}/offcanvas');
@@ -101,7 +101,7 @@ function outside_in_preprocess_block(&$variables) {
  *   TRUE if the Outside In logic should be run.
  */
 function _outside_in_apply_on_current_page() {
-// Remove on Admin routes.
+  // Remove on Admin routes.
   $admin_route = \Drupal::service('router.admin_context')->isAdminRoute();
   // @todo Check if there is actually a different admin theme.
   // Remove on Block Demo page.
