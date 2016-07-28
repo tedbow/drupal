@@ -56,7 +56,7 @@ class BlockFormTest extends UnitTestCase {
   protected $contextRepository;
 
   /**
-   * The plugin form manager.
+   * The plugin form factory.
    *
    * @var \Drupal\Core\Plugin\PluginFormFactoryInterface|\Prophecy\Prophecy\ProphecyInterface
    */
