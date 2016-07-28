@@ -49,7 +49,7 @@ function outside_in_contextual_links_view_alter(&$element, $items) {
  * Opens a div for consistent wrapping to all {{ page }} render in all themes.
  */
 function outside_in_page_top(array &$page_top) {
-  if (Drupal::service('outside_in.info')->useOutsideIn()) {
+  if (_outside_in_apply_on_current_page()) {
     $page_top['outside_in_tray_open'] = [
       '#markup' => '<div id="main-canvas-wrapper"><div id="main-canvas">',
       '#weight' => 1000
@@ -63,7 +63,7 @@ function outside_in_page_top(array &$page_top) {
  * Closes a div for consistent wrapping to all {{ page }} render in all themes.
  */
 function outside_in_page_bottom(array &$page_bottom) {
-  if (Drupal::service('outside_in.info')->useOutsideIn()) {
+  if (_outside_in_apply_on_current_page()) {
     $page_bottom['outside_in_tray_close'] = [
       '#markup' => '</div></div>',
       '#weight' => -1000
@@ -87,18 +87,27 @@ function outside_in_entity_type_build(array &$entity_types) {
  * Adds 'outside-in-editable' class to all blocks to allow Javascript to target.
  */
 function outside_in_preprocess_block(&$variables) {
-  // Remove on Admin routes.
-  $admin_route = \Drupal::service('router.admin_context')->isAdminRoute();
-  // @todo Check if there is actually different admin theme.
-  // Remove on Block Demo page.
-  $admin_demo = \Drupal::routeMatch()->getRouteName() === 'block.admin_demo';
-  $access = (\Drupal::currentUser()->hasPermission('administer blocks') && !$admin_route && !$admin_demo);
-
   // The main system block does not contain the block contextual links.
-  if (!$access || $variables['plugin_id'] == 'system_main_block') {
+  if (!_outside_in_apply_on_current_page() || $variables['plugin_id'] == 'system_main_block') {
     return;
   }
   $variables['attributes']['class'][] = 'outside-in-editable';
+}
+
+/**
+ * Determines if the Outside In logic should be run on the current page.
+ *
+ * @return bool
+ *   TRUE if the Outside In logic should be run.
+ */
+function _outside_in_apply_on_current_page() {
+// Remove on Admin routes.
+  $admin_route = \Drupal::service('router.admin_context')->isAdminRoute();
+  // @todo Check if there is actually a different admin theme.
+  // Remove on Block Demo page.
+  $admin_demo = \Drupal::routeMatch()->getRouteName() === 'block.admin_demo';
+  return \Drupal::currentUser()->hasPermission('administer blocks') && !$admin_route && !$admin_demo;
+
 }
 
 /**
@@ -107,7 +116,7 @@ function outside_in_preprocess_block(&$variables) {
  * Includes outside_library if Edit link is in toolbar.
  */
 function outside_in_toolbar_alter(&$items) {
-  if (Drupal::service('outside_in.info')->useOutsideIn() && isset($items['contextual']['tab'])) {
+  if (_outside_in_apply_on_current_page() && isset($items['contextual']['tab'])) {
     $items['contextual']['#weight'] = -1000;
     $items['contextual']['#attached']['library'][] = 'outside_in/drupal.outside_in';
 

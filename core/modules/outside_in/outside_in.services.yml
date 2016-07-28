@@ -4,7 +4,3 @@ services:
       arguments: ['@title_resolver', '@renderer']
       tags:
         - { name: render.main_content_renderer, format: drupal_offcanvas }
-
-  outside_in.info:
-    class: Drupal\outside_in\PageInfo
-    arguments: ['@current_route_match', '@theme.negotiator.admin_theme']
