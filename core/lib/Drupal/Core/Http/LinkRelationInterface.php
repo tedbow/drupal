@@ -8,6 +8,7 @@ namespace Drupal\Core\Http;
  * An example of a link relationship is 'canonical'. It represents a canonical,
  * definite representation of a resource.
  *
+ * @see \Drupal\Core\Http\LinkRelationManager
  * @see https://tools.ietf.org/html/rfc5988#page-6
  */
 interface LinkRelationInterface {

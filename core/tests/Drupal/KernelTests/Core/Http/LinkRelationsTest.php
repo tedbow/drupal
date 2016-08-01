@@ -15,7 +15,6 @@ class LinkRelationsTest extends KernelTestBase {
   public function testAvailableLinkRelationships() {
     /** @var \Drupal\Core\Http\LinkRelationManager $link_relation_manager */
     $link_relation_manager = \Drupal::service('plugin.manager.link_relation');
-    /** @var  $canonical */
     /** @var \Drupal\Core\Http\LinkRelationInterface $canonical */
     $canonical = $link_relation_manager->createInstance('canonical');
     $this->assertInstanceOf(LinkRelation::class, $canonical);
