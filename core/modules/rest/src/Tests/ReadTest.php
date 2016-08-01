@@ -118,9 +118,13 @@ class ReadTest extends RESTTestBase {
         $entity->save();
         $response = $this->httpRequest($this->getReadUrl($entity), 'GET');
         $this->assertResponse(200);
-        $this->assertHeader('content-type', $this->defaultMimeType);
         $data = Json::decode($response);
         $this->assertFalse(isset($data['field_test_text']), 'Field access protected field is not visible in the response.');
+        $this->assertLinkHeader($entity, [
+          'add-form' => 'https://drupal.org/link-relations/add-form',
+          'edit-form' => 'https://drupal.org/link-relations/edit-form',
+          'canonical' => 'canonical',
+        ]);
       }
     }
     // Try to read a resource, the user entity, which is not REST API enabled.

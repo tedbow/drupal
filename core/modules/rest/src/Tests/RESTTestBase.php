@@ -540,4 +540,32 @@ abstract class RESTTestBase extends WebTestBase {
     return $values;
   }
 
+  /**
+   * Tests whether the link header was produced correctly.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity
+   * @param array $link_relationships
+   *   The used link relationships.
+   *
+   * @return bool
+   */
+  protected function assertLinkHeader($entity, array $link_relationships = [
+    'canonical',
+    'edit-form'
+  ]) {
+    // Add expected Link Headers.
+    $link_headers = [];
+    foreach ($link_relationships as $relation_name => $relationship) {
+      if ($entity->hasLinkTemplate($relation_name)) {
+        $canonical_url = $entity->toUrl($relation_name)
+          ->setAbsolute(TRUE)
+          ->toString(TRUE)
+          ->getGeneratedUrl();
+        $link_headers[] = '<' . $canonical_url . '>; rel="' . $relationship . '"';
+      }
+    }
+    return $this->assertHeader('Link', implode(',', $link_headers));
+  }
+
 }

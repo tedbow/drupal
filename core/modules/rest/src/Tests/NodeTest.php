@@ -82,6 +82,7 @@ class NodeTest extends RESTTestBase {
     $this->httpRequest($node->urlInfo()->setRouteParameter('_format', $this->defaultFormat), 'GET');
     $this->assertResponse(200);
     $this->assertHeader('Content-type', $this->defaultMimeType);
+    $this->assertLinkHeader($node, ['edit-form' => 'https://drupal.org/link-relations/edit-form', 'canonical' => 'canonical', 'version-history' => 'version-history']);
 
     // Also check that JSON works and the routing system selects the correct
     // REST route.
@@ -89,6 +90,7 @@ class NodeTest extends RESTTestBase {
     $this->httpRequest($node->urlInfo()->setRouteParameter('_format', 'json'), 'GET');
     $this->assertResponse(200);
     $this->assertHeader('Content-type', 'application/json');
+    $this->assertLinkHeader($node, ['edit-form' => 'https://drupal.org/link-relations/edit-form', 'canonical' => 'canonical', 'version-history' => 'version-history']);
 
     // Check that a simple PATCH update to the node title works as expected.
     $this->enableNodeConfiguration('PATCH', 'update');
