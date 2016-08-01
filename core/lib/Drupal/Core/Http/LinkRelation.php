@@ -22,7 +22,7 @@ class LinkRelation extends PluginBase implements LinkRelationInterface {
    * {@inheritdoc}
    */
   public function getRelationshipUrl() {
-    return isset($this->pluginDefinition['relationship']) ? $this->pluginDefinition['relationship'] : '';
+    return isset($this->pluginDefinition['relationship']) ? $this->pluginDefinition['relationship'] : $this->getName();
   }
 
   /**

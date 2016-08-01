@@ -397,8 +397,8 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
    * @see https://tools.ietf.org/html/rfc5988#section-5
    */
   protected function addLinkHeaders(EntityInterface $entity, CacheableResponseInterface $response) {
-    foreach ($this->linkRelationManager->getDefinitions() as $relation_name => $definition) {
-      if ($entity->hasLinkTemplate($relation_name)) {
+    foreach ($entity->getEntityType()->getLinkTemplates() as $relation_name => $link_template) {
+      if ($this->linkRelationManager->getDefinition($relation_name, FALSE)) {
         $generator_url = $entity->toUrl($relation_name)
           ->setAbsolute(TRUE)
           ->toString(TRUE);
