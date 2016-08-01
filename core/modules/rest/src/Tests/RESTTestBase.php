@@ -3,6 +3,7 @@
 namespace Drupal\rest\Tests;
 
 use Drupal\Core\Config\Entity\ConfigEntityType;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\node\NodeInterface;
 use Drupal\rest\RestResourceConfigInterface;
 use Drupal\simpletest\WebTestBase;
@@ -544,16 +545,13 @@ abstract class RESTTestBase extends WebTestBase {
    * Tests whether the link header was produced correctly.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity
+   *   The entity.
    * @param array $link_relationships
    *   The used link relationships.
    *
    * @return bool
    */
-  protected function assertLinkHeader($entity, array $link_relationships = [
-    'canonical',
-    'edit-form'
-  ]) {
+  protected function assertLinkHeader(EntityInterface $entity, array $link_relationships = ['canonical', 'edit-form']) {
     // Add expected Link Headers.
     $link_headers = [];
     foreach ($link_relationships as $relation_name => $relationship) {

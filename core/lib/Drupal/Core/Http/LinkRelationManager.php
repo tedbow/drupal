@@ -8,7 +8,7 @@ use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Plugin\Discovery\YamlDiscovery;
 
 /**
- * Provides a plugin manager for link relationships.
+ * Provides a plugin manager for link relations.
  */
 class LinkRelationManager extends DefaultPluginManager {
 
