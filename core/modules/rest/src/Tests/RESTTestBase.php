@@ -551,7 +551,7 @@ abstract class RESTTestBase extends WebTestBase {
    *
    * @return bool
    */
-  protected function assertLinkHeader(EntityInterface $entity, array $link_relationships = ['canonical', 'edit-form']) {
+  protected function assertLinkHeaders(EntityInterface $entity, array $link_relationships = ['canonical', 'edit-form']) {
     // Add expected Link Headers.
     $link_headers = [];
     foreach ($link_relationships as $relation_name => $relationship) {

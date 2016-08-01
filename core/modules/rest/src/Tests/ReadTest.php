@@ -120,10 +120,10 @@ class ReadTest extends RESTTestBase {
         $this->assertResponse(200);
         $data = Json::decode($response);
         $this->assertFalse(isset($data['field_test_text']), 'Field access protected field is not visible in the response.');
-        $this->assertLinkHeader($entity, [
+        $this->assertLinkHeaders($entity, [
+          'canonical' => 'canonical',
           'add-form' => 'https://drupal.org/link-relations/add-form',
           'edit-form' => 'https://drupal.org/link-relations/edit-form',
-          'canonical' => 'canonical',
         ]);
       }
     }

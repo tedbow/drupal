@@ -398,7 +398,7 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
    */
   protected function addLinkHeaders(EntityInterface $entity, CacheableResponseInterface $response) {
     foreach ($entity->getEntityType()->getLinkTemplates() as $relation_name => $link_template) {
-      if ($this->linkRelationManager->getDefinition($relation_name, FALSE)) {
+      if ($definition = $this->linkRelationManager->getDefinition($relation_name, FALSE)) {
         $generator_url = $entity->toUrl($relation_name)
           ->setAbsolute(TRUE)
           ->toString(TRUE);
