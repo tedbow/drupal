@@ -62,12 +62,17 @@ class YamlTest extends UnitTestCase {
    * @todo This should exist as an integration test not part of our unit tests.
    *   https://www.drupal.org/node/2597730
    *
-   * @requires extension yaml
+   *
    * @dataProvider providerYamlFilesInCore
    */
   public function testYamlFiles($file) {
     $data = file_get_contents($file);
     try {
+      $s = YamlSymfony::decode($data);
+      $p = YamlPecl::decode($data);
+      if ($s != $p) {
+        print_r(array_diff($s, $p));
+      }
       $this->assertEquals(YamlSymfony::decode($data), YamlPecl::decode($data), $file);
     }
     catch (InvalidDataTypeException $e) {
