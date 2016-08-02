@@ -11,7 +11,7 @@ create:
 
 # These are the one from IANA itself.
 about:
-  description: 'Refers to a resource that is the subject of the link''s context.'
+  description: "Refers to a resource that is the subject of the link's context."
   reference: '[RFC6903], section 2'
 alternate:
   description: 'Refers to a substitute for this context'
@@ -23,7 +23,7 @@ archives:
   description: "Refers to a collection of records, documents, or other\n      materials of historical interest."
   reference: '[http://www.w3.org/TR/2011/WD-html5-20110113/links.html#rel-archives]'
 author:
-  description: 'Refers to the context''s author.'
+  description: "Refers to the context's author."
   reference: '[http://www.w3.org/TR/html5/links.html#link-type-author]'
 blocked-by:
   description: "Identifies the entity that blocks access to a resource\n      following receipt of a legal demand."
@@ -103,7 +103,7 @@ hub:
   reference: '[http://pubsubhubbub.googlecode.com]'
   notes: 'This relation type was requested by Brett Slatkin.'
 icon:
-  description: 'Refers to an icon representing the link''s context.'
+  description: "Refers to an icon representing the link's context."
   reference: '[http://www.w3.org/TR/html5/links.html#link-type-icon]'
 index:
   description: 'Refers to an index.'
@@ -178,7 +178,7 @@ prev:
   description: "Indicates that the link's context is a part of a series, and\n      that the previous in the series is the link target."
   reference: '[http://www.w3.org/TR/html5/links.html#link-type-prev]'
 preview:
-  description: 'Refers to a resource that provides a preview of the link''s context.'
+  description: "Refers to a resource that provides a preview of the link's context."
   reference: '[RFC6903], section 3'
 previous:
   description: "Refers to the previous resource in an ordered series\n      of resources.  Synonym for \"prev\"."
@@ -187,7 +187,7 @@ prev-archive:
   description: 'Refers to the immediately preceding archive resource.'
   reference: '[RFC5005]'
 privacy-policy:
-  description: 'Refers to a privacy policy associated with the link''s context.'
+  description: "Refers to a privacy policy associated with the link's context."
   reference: '[RFC6903], section 4'
 profile:
   description: "Identifying that a resource representation conforms\nto a certain profile, without affecting the non-profile semantics\nof the resource representation."
@@ -206,7 +206,7 @@ section:
   description: 'Refers to a section in a collection of resources.'
   reference: '[http://www.w3.org/TR/1999/REC-html401-19991224]'
 self:
-  description: 'Conveys an identifier for the link''s context.'
+  description: "Conveys an identifier for the link's context."
   reference: '[RFC4287]'
 service:
   description: "Indicates a URI that can be used to retrieve a\n      service document."
@@ -228,7 +228,7 @@ tag:
   description: "Gives a tag (identified by the given address) that applies to\n      the current document."
   reference: '[http://www.w3.org/TR/html5/links.html#link-type-tag]'
 terms-of-service:
-  description: 'Refers to the terms of service associated with the link''s context.'
+  description: "Refers to the terms of service associated with the link's context."
   reference: '[RFC6903], section 5'
 timegate:
   description: 'The Target IRI points to a TimeGate for an Original Resource.'
@@ -239,7 +239,7 @@ timemap:
   reference: '[RFC7089]'
   notes: "A TimeMap for an Original Resource is a resource from which\n      a list of URIs of Mementos of the Original Resource is available."
 type:
-  description: 'Refers to a resource identifying the abstract semantic type of which the link''s context is considered to be an instance.'
+  description: "Refers to a resource identifying the abstract semantic type of which the link's context is considered to be an instance."
   reference: '[RFC6903], section 6'
 up:
   description: "Refers to a parent document in a hierarchy of\n      documents."
