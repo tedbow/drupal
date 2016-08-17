@@ -6,6 +6,7 @@ use Drupal\block\BlockRepositoryInterface;
 use Drupal\block\Plugin\DisplayVariant\BlockPageVariant;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\EntityViewBuilderInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\Core\Link;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -36,6 +37,13 @@ class PlaceBlockPageVariant extends BlockPageVariant {
   protected $requestStack;
 
   /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
    * Constructs a new PlaceBlockPageVariant.
    *
    * @param array $configuration
@@ -54,12 +62,15 @@ class PlaceBlockPageVariant extends BlockPageVariant {
    *   The theme manager.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The current request stack.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, BlockRepositoryInterface $block_repository, EntityViewBuilderInterface $block_view_builder, array $block_list_cache_tags, ThemeManagerInterface $theme_manager, RequestStack $request_stack) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, BlockRepositoryInterface $block_repository, EntityViewBuilderInterface $block_view_builder, array $block_list_cache_tags, ThemeManagerInterface $theme_manager, RequestStack $request_stack, ModuleHandlerInterface $module_handler) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $block_repository, $block_view_builder, $block_list_cache_tags);
 
     $this->themeManager = $theme_manager;
     $this->requestStack = $request_stack;
+    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -74,7 +85,8 @@ class PlaceBlockPageVariant extends BlockPageVariant {
       $container->get('entity_type.manager')->getViewBuilder('block'),
       $container->get('entity_type.manager')->getDefinition('block')->getListCacheTags(),
       $container->get('theme.manager'),
-      $container->get('request_stack')
+      $container->get('request_stack'),
+      $container->get('module_handler')
     );
   }
 
@@ -100,16 +112,24 @@ class PlaceBlockPageVariant extends BlockPageVariant {
         $query['destination'] = $destination;
       }
       $title = $this->t('Place block<span class="visually-hidden"> in the %region region</span>', ['%region' => $region_name]);
+      if ($this->moduleHandler->moduleExists('outside_in')) {
+        $place_block_route = 'block_place.admin_library';
+        $dialog_type = 'offcanvas';
+      }
+      else {
+        $place_block_route = 'block.admin_library';
+        $dialog_type = 'modal';
+      }
       $operations['block_description'] = [
         '#type' => 'inline_template',
         '#template' => '<div class="block-place-region">{{ link }}</div>',
         '#context' => [
-          'link' => Link::createFromRoute($title, 'block.admin_library', ['theme' => $theme_name], [
+          'link' => Link::createFromRoute($title, $place_block_route, ['theme' => $theme_name], [
             'query' => $query,
             'attributes' => [
               'title' => $title,
               'class' => ['use-ajax', 'button', 'button--small'],
-              'data-dialog-type' => 'modal',
+              'data-dialog-type' => $dialog_type,
               'data-dialog-options' => Json::encode([
                 'width' => 700,
               ]),

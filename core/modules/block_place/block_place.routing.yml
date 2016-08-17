@@ -1,0 +1,8 @@
+block_place.admin_library:
+  path: 'admin/structure/block-place/library/{theme}'
+  defaults:
+    _controller: '\Drupal\block_place\Controller\PlaceBlockLibraryController::listBlocks'
+    _title: 'Place block'
+  requirements:
+    _access_theme: 'TRUE'
+    _permission: 'administer blocks'
