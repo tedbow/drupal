@@ -3,7 +3,7 @@
  * Drupal's Outside-In library.
  */
 
-(function ($, window, Drupal) {
+(function ($, Drupal) {
 
   'use strict';
 
@@ -48,7 +48,7 @@
     // Bind Ajax behaviors to all items showing the class.
     // @todo Fix contextual links to work with use-ajax links in
     //    https://www.drupal.org/node/2764931.
-    Drupal.attachBehaviors(data.$el);
+    Drupal.attachBehaviors(data.$el[0]);
 
     // Bind a listener to all 'Quick edit' links for blocks
     // Click "Edit" button in toolbar to force Contextual Edit which starts
@@ -123,19 +123,26 @@
       $('.contextual-toolbar-tab.toolbar-tab button').on('click', function () {
         setToggleActiveMode();
       });
+
+      var search = Drupal.ajax.WRAPPER_FORMAT + '=drupal_dialog';
+      var replace =  Drupal.ajax.WRAPPER_FORMAT + '=drupal_dialog_offcanvas';
       // Loop through all Ajax links change the from to offcanvas when needed.
-      $.each(Drupal.ajax.instances, function( index, value ) {
-        // @todo Move logic for data-dialog-renderer attribute into ajax.js
-        //   https://www.drupal.org/node/2784443
-        var render = $(value.element).attr('data-dialog-renderer');
-        if (render == 'offcanvas') {
-          var url = Drupal.ajax.instances[index].options.url;
-          if (url.indexOf('drupal_dialog_offcanvas') === -1) {
-            url = url.replace(Drupal.ajax.WRAPPER_FORMAT + '=drupal_dialog', Drupal.ajax.WRAPPER_FORMAT + '=drupal_dialog_offcanvas' );
-            Drupal.ajax.instances[index].options.url = url;
+      Drupal.ajax.instances
+        .filter(function (instance) {
+          var hasElement = !!instance.element;
+          var rendererOffcanvas = false;
+          var wrapperOffcanvas = false;
+          if (hasElement) {
+            rendererOffcanvas = $(instance.element).attr('data-dialog-renderer') === 'offcanvas';
+            wrapperOffcanvas = instance.options.url.indexOf('drupal_dialog_offcanvas') === -1;
           }
-        }
-      });
+          return hasElement && rendererOffcanvas && wrapperOffcanvas;
+        })
+        .forEach(function (instance) {
+          // @todo Move logic for data-dialog-renderer attribute into ajax.js
+          //   https://www.drupal.org/node/2784443
+          instance.options.url = instance.options.url.replace(search, replace);
+        });
     }
   };
-})(jQuery, window, Drupal);
+})(jQuery, Drupal);
