@@ -127,7 +127,7 @@
       $.each(Drupal.ajax.instances, function( index, value ) {
         // @todo Move logic for data-dialog-renderer attribute into ajax.js
         //   https://www.drupal.org/node/2784443
-        var render = $(value.element).attr('data-dialog-renderer')
+        var render = $(value.element).attr('data-dialog-renderer');
         if (render == 'offcanvas') {
           var url = Drupal.ajax.instances[index].options.url;
           if (url.indexOf('drupal_dialog_offcanvas') === -1) {

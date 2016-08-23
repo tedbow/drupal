@@ -89,6 +89,7 @@
           at: 'right top',
           of: window
         };
+        settings.dialogClass = 'ui-dialog-offcanvas';
       }
     },
     'dialog:beforeclose': function (event, dialog, $element) {
