@@ -49,7 +49,8 @@ class TestController {
         '#url' => Url::fromRoute('offcanvas_test.thing1'),
         '#attributes' => [
           'class' => ['use-ajax'],
-          'data-dialog-type' => 'offcanvas',
+          'data-dialog-type' => 'dialog',
+          'data-dialog-renderer' => 'offcanvas'
         ],
         '#attached' => [
           'library' => [
@@ -63,7 +64,8 @@ class TestController {
         '#url' => Url::fromRoute('offcanvas_test.thing2'),
         '#attributes' => [
           'class' => ['use-ajax'],
-          'data-dialog-type' => 'offcanvas',
+          'data-dialog-type' => 'dialog',
+          'data-dialog-renderer' => 'offcanvas'
         ],
         '#attached' => [
           'library' => [

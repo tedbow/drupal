@@ -3,129 +3,99 @@
  * Drupal's off-canvas library.
  */
 
-(function ($, Drupal) {
+(function ($, Drupal, debounce, displace) {
 
   'use strict';
 
-  // Set the initial state of the off-canvas element.
-  // If the state has been set previously, use it.
-  Drupal.offCanvas = {
-    visible: (Drupal.offCanvas ? Drupal.offCanvas.visible : false)
-  };
+  function resetSize(event) {
+    var offsets = displace.offsets;
+    var $element = event.data.$element;
+    var $widget = $element.dialog('widget');
 
-  /**
-   * Create a wrapper container for the off-canvas element.
-   *
-   * @return {jQuery}
-   *   jQuery object that is the off-canvas wrapper element.
-   */
-  Drupal.theme.createOffCanvasWrapper = function createOffCanvasWrapper() {
-    return $('<div id="offcanvas" ' + (document.dir === 'ltr' ? 'data-offset-right' : 'data-offset-left') + ' role="region" aria-labelledby="offcanvas-header"></div>');
-  };
+    var adjustedOptions = {
+      position: {
+        my: 'right top',
+        at: 'right top' + (offsets.top !== 0 ? '+' + offsets.top : ''),
+        of: window
+      }
+    };
 
-  /**
-   * Create the title element for the off-canvas element.
-   *
-   * @param {string} title
-   *   The title string.
-   *
-   * @return {object}
-   *   jQuery object that is the off-canvas title element.
-   */
-  Drupal.theme.createTitle = function createTitle(title) {
-    return $('<h1 id="offcanvas-header">' + title + '</h1>');
-  };
-
-  /**
-   * Create the actual off-canvas content.
-   *
-   * @param {string} data
-   *   This is fully rendered HTML from Drupal.
-   *
-   * @return {object}
-   *   jQuery object that is the off-canvas content element.
-   */
-  Drupal.theme.createOffCanvasContent = function createOffCanvasContent(data) {
-    return $('<div class="offcanvas-content">' + data + '</div>');
-  };
-
-  /**
-   * Create the off-canvas close element.
-   *
-   * @param {object} offCanvasWrapper
-   *   The jQuery off-canvas wrapper element
-   * @param {object} pageWrapper
-   *   The jQuery off page wrapper element
-   *
-   * @return {jQuery}
-   *   jQuery object that is the off-canvas close element.
-   */
-  Drupal.theme.createOffCanvasClose = function createOffCanvasClose(offCanvasWrapper, pageWrapper) {
-    return $([
-      '<button class="offcanvasClose" aria-label="',
-      Drupal.t('Close configuration tray.'),
-      '"><span class="visually-hidden">',
-      Drupal.t('Close'),
-      '</span></button>'
-    ].join(''))
-    .on('click', function () {
-      pageWrapper
-        .removeClass('js-tray-open')
-        .one('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', function () {
-          Drupal.offCanvas.visible = false;
-          offCanvasWrapper.remove();
-          Drupal.announce(Drupal.t('Configuration tray closed.'));
-        }
-      );
+    $widget.css({
+      position: 'fixed',
+      height: ($(window).height() - (offsets.top + offsets.bottom)) + 'px'
     });
-  };
 
+    $element
+      .dialog('option', adjustedOptions)
+      .trigger('dialogContentResize.outsidein');
+  }
 
-  /**
-   * Command to open an off-canvas element.
-   *
-   * @param {Drupal.Ajax} ajax
-   *   The Drupal Ajax object.
-   * @param {object} response
-   *   Object holding the server response.
-   * @param {number} [status]
-   *   The HTTP status code.
-   */
-  Drupal.AjaxCommands.prototype.openOffCanvas = function (ajax, response, status) {
-    // Discover display/viewport size.
-    // @todo Work on breakpoints for tray size:
-    //   https://www.drupal.org/node/2784599.
-    var $pageWrapper = $('#main-canvas-wrapper');
-    // var pageWidth = $pageWrapper.width();
+  function handleDialogResize(event) {
+    var $element = event.data.$element;
+    var $widget = $element.dialog('widget');
 
-    // Construct off-canvas wrapper
-    var $offcanvasWrapper = Drupal.theme('createOffCanvasWrapper');
+    var $offsets = $widget.find('> :not(#drupal-offcanvas, .ui-resizable-handle)');
+    var offset = 0;
+    var modalHeight;
 
-    // Construct off-canvas internal elements.
-    var $offcanvasClose = Drupal.theme('createOffCanvasClose', $offcanvasWrapper, $pageWrapper);
-    var $title = Drupal.theme('createTitle', response.dialogOptions.title);
-    var $offcanvasContent = Drupal.theme('createOffCanvasContent', response.data);
+    // Let scroll element take all the height available.
+    $element.css({overflow: 'visible', height: 'auto'});
+    modalHeight = $widget.height();
+    $offsets.each(function () { offset += $(this).outerHeight(); });
 
-    // Put everything together.
-    $offcanvasWrapper.append([$offcanvasClose, $title, $offcanvasContent]);
+    // Take internal padding into account.
+    var scrollOffset = $element.outerHeight() - $element.height();
+    $element.height(modalHeight - offset - scrollOffset);
+  }
 
-    // Handle opening or updating tray with content.
-    var existingTray = false;
-    if (Drupal.offCanvas.visible) {
-      // Remove previous content then append new content.
-      $pageWrapper.find('#offcanvas').remove();
-      existingTray = true;
+  function bodyPadding(event) {
+    var $element = event.data.$element;
+    var $widget = $element.dialog('widget');
+    var $body = $('body');
+
+    var width = $widget.outerWidth();
+    var bodyPadding = $body.css('padding-right');
+    if (width !== bodyPadding) {
+      $body.css('padding-right', width + 'px');
+      $widget.attr('data-offset-right', width);
+      displace();
     }
-    $pageWrapper.addClass('js-tray-open');
-    Drupal.offCanvas.visible = true;
-    $pageWrapper.append($offcanvasWrapper);
-    if (existingTray) {
-      Drupal.announce(Drupal.t('Configuration tray content has been updated.'));
-    }
-    else {
-      Drupal.announce(Drupal.t('Configuration tray opened.'));
-    }
-    Drupal.attachBehaviors(document.querySelector('#offcanvas'), drupalSettings);
-  };
+  }
 
-})(jQuery, Drupal);
+
+  $(window).on({
+    'dialog:aftercreate': function (event, dialog, $element, settings) {
+      if ($element.is('#drupal-offcanvas')) {
+        var eventData = {settings: settings, $element: $element};
+
+        $element
+          .on('dialogresize.outsidein', eventData, debounce(bodyPadding, 100))
+          .on('dialogContentResize.outsidein', eventData, handleDialogResize)
+          .trigger('dialogresize.outsidein');
+
+        $element.dialog('widget').attr('data-offset-right', '');
+
+        $(window)
+          .on('resize.outsidein scroll.outsidein', eventData, debounce(resetSize, 100))
+          .trigger('resize.outsidein');
+
+        //$(document).on('drupalViewportOffsetChange.outsidein', eventData, autoResize);
+      }
+    },
+    'dialog:beforecreate': function (event, dialog, $element, settings) {
+      if ($element.is('#drupal-offcanvas')) {
+        settings.position = {
+          my: 'left top',
+          at: 'right top',
+          of: window
+        };
+      }
+    },
+    'dialog:beforeclose': function (event, dialog, $element) {
+      $(document).off('.outsidein');
+      $(window).off('.outsidein');
+      $('body').css('padding-right', 0);
+    }
+  });
+
+})(jQuery, Drupal, Drupal.debounce, Drupal.displace);

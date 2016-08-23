@@ -28,7 +28,7 @@ class OffCanvasTest extends OutsideInJavascriptTestBase {
       $web_assert = $this->assertSession();
 
       // Make sure off-canvas tray is on page when first loaded.
-      $web_assert->elementNotExists('css', '#offcanvas');
+      $web_assert->elementNotExists('css', '#drupal-offcanvas');
 
       // Check opening and closing with two separate links.
       // Make sure tray updates to new content.
@@ -38,18 +38,18 @@ class OffCanvasTest extends OutsideInJavascriptTestBase {
         $this->waitForOffCanvasToOpen();
 
         // Check that the canvas is not on the page.
-        $web_assert->elementExists('css', '#offcanvas');
+        $web_assert->elementExists('css', '#drupal-offcanvas');
         // Check that response text is on page.
         $web_assert->pageTextContains("Thing $link_index says hello");
         $offcanvas_tray = $this->getTray();
 
         // Check that tray is visible.
         $this->assertEquals(TRUE, $offcanvas_tray->isVisible());
-        $header_text = $offcanvas_tray->findById('offcanvas-header')->getText();
+        $header_text = $offcanvas_tray->find('css', '.ui-dialog-title')->getText();
 
         // Check that header is correct.
         $this->assertEquals("Thing $link_index", $header_text);
-        $tray_text = $offcanvas_tray->find('css', '.offcanvas-content')->getText();
+        $tray_text = $offcanvas_tray->findById('drupal-offcanvas')->getText();
         $this->assertEquals("Thing $link_index says hello", $tray_text);
       }
     }

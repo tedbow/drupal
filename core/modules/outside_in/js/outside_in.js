@@ -3,7 +3,7 @@
  * Drupal's Outside-In library.
  */
 
-(function ($, Drupal) {
+(function ($, window, Drupal) {
 
   'use strict';
 
@@ -26,10 +26,10 @@
       if (!localStorage.getItem('Drupal.contextualToolbar.isViewing')) {
         return;
       }
-      var editLink = $(e.target).find('li.outside-inblock-configure a')[0];
+      var editLink = $(e.target).find('a[data-dialog-renderer="offcanvas"]')[0];
       if (!editLink) {
         var closest = $(e.target).closest('.outside-in-editable');
-        editLink = closest.find('li.outside-inblock-configure a')[0];
+        editLink = closest.find('li a[data-dialog-renderer="offcanvas"]')[0];
       }
       editLink.click();
     });
@@ -48,25 +48,7 @@
     // Bind Ajax behaviors to all items showing the class.
     // @todo Fix contextual links to work with use-ajax links in
     //    https://www.drupal.org/node/2764931.
-    data.$el.find('.use-ajax').once('ajax').each(function () {
-      // Below is copied directly from ajax.js to keep behavior the same.
-      var element_settings = {};
-      // Clicked links look better with the throbber than the progress bar.
-      element_settings.progress = {type: 'throbber'};
-
-      // For anchor tags, these will go to the target of the anchor rather
-      // than the usual location.
-      var href = $(this).attr('href');
-      if (href) {
-        element_settings.url = href;
-        element_settings.event = 'click';
-      }
-      element_settings.dialogType = $(this).data('dialog-type');
-      element_settings.dialog = $(this).data('dialog-options');
-      element_settings.base = $(this).attr('id');
-      element_settings.element = this;
-      Drupal.ajax(element_settings);
-    });
+    Drupal.attachBehaviors(data.$el);
 
     // Bind a listener to all 'Quick edit' links for blocks
     // Click "Edit" button in toolbar to force Contextual Edit which starts
@@ -141,7 +123,19 @@
       $('.contextual-toolbar-tab.toolbar-tab button').on('click', function () {
         setToggleActiveMode();
       });
+      // Loop through all Ajax links change the from to offcanvas when needed.
+      $.each(Drupal.ajax.instances, function( index, value ) {
+        // @todo Move logic for data-dialog-renderer attribute into ajax.js
+        //   https://www.drupal.org/node/2784443
+        var render = $(value.element).attr('data-dialog-renderer')
+        if (render == 'offcanvas') {
+          var url = Drupal.ajax.instances[index].options.url;
+          if (url.indexOf('drupal_dialog_offcanvas') === -1) {
+            url = url.replace(Drupal.ajax.WRAPPER_FORMAT + '=drupal_dialog', Drupal.ajax.WRAPPER_FORMAT + '=drupal_dialog_offcanvas' );
+            Drupal.ajax.instances[index].options.url = url;
+          }
+        }
+      });
     }
   };
-
-})(jQuery, Drupal);
+})(jQuery, window, Drupal);
