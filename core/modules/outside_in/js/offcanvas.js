@@ -11,11 +11,12 @@
     var offsets = displace.offsets;
     var $element = event.data.$element;
     var $widget = $element.dialog('widget');
+    var edge = getEdge();
 
     var adjustedOptions = {
       position: {
-        my: 'right top',
-        at: 'right top' + (offsets.top !== 0 ? '+' + offsets.top : ''),
+        my: edge + ' top',
+        at: edge + ' top' + (offsets.top !== 0 ? '+' + offsets.top : ''),
         of: window
       }
     };
@@ -48,16 +49,27 @@
     $element.height(modalHeight - offset - scrollOffset);
   }
 
+  /**
+   * Determine on which screen edge the tray should appear.
+   *
+   * @returns {string}
+   *   'left' or 'right'
+   */
+  function getEdge() {
+    return (document.documentElement.dir === 'rtl') ? 'left' : 'right';
+  }
+
   function bodyPadding(event) {
+    var edge = getEdge();
     var $element = event.data.$element;
     var $widget = $element.dialog('widget');
     var $body = $('body');
 
     var width = $widget.outerWidth();
-    var bodyPadding = $body.css('padding-right');
+    var bodyPadding = $body.css('padding-' + edge);
     if (width !== bodyPadding) {
-      $body.css('padding-right', width + 'px');
-      $widget.attr('data-offset-right', width);
+      $body.css('padding-' + edge, width + 'px');
+      $widget.attr('data-offset-' + edge, width);
       displace();
     }
   }
@@ -73,7 +85,7 @@
           .on('dialogContentResize.outsidein', eventData, handleDialogResize)
           .trigger('dialogresize.outsidein');
 
-        $element.dialog('widget').attr('data-offset-right', '');
+        $element.dialog('widget').attr('data-offset-' + getEdge(), '');
 
         $(window)
           .on('resize.outsidein scroll.outsidein', eventData, debounce(resetSize, 100))
@@ -84,9 +96,10 @@
     },
     'dialog:beforecreate': function (event, dialog, $element, settings) {
       if ($element.is('#drupal-offcanvas')) {
+        var edge = getEdge();
         settings.position = {
           my: 'left top',
-          at: 'right top',
+          at: edge + ' top',
           of: window
         };
         settings.dialogClass = 'ui-dialog-offcanvas';
@@ -95,7 +108,7 @@
     'dialog:beforeclose': function (event, dialog, $element) {
       $(document).off('.outsidein');
       $(window).off('.outsidein');
-      $('body').css('padding-right', 0);
+      $('body').css('padding-' + getEdge(), 0);
     }
   });
 
