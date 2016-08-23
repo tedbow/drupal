@@ -4,7 +4,7 @@
  */
 
 /* Position the offcanvas tray container outside the right of the viewport. */
-.ui-dialog-offcanvas {
+.ui-dialog.ui-dialog-offcanvas {
   box-sizing: border-box;
   height: 100%;
   overflow-y: auto;
@@ -17,7 +17,7 @@
 }
 
 /* Position the button that closes the offcanvas tray. */
-.ui-dialog-offcanvas button.ui-dialog-titlebar-close .ui-button-icon-primary{
+.ui-dialog.ui-dialog-offcanvas button.ui-dialog-titlebar-close .ui-button-icon-primary{
   position: static;
   float: right; /* LTR */
   height: 52px;
@@ -29,36 +29,36 @@
   cursor: pointer;
   z-index: 501;
 }
-.ui-dialog-offcanvas button.ui-dialog-titlebar-close:focus .ui-button-icon-primary {
+.ui-dialog.ui-dialog-offcanvas button.ui-dialog-titlebar-close:focus .ui-button-icon-primary {
   outline: none;
 }
-[dir="rtl"] .ui-dialog-offcanvas button.ui-dialog-titlebar-close .ui-button-icon-primary {
+[dir="rtl"] .ui-dialog.ui-dialog-offcanvas button.ui-dialog-titlebar-close .ui-button-icon-primary {
   float: left;
 }
 
 /* Create a place to name the tray. */
-.ui-dialog-offcanvas h1 {
+.ui-dialog.ui-dialog-offcanvas h1 {
   padding: 15px 25% 15px 15px; /* LTR */
   margin-top: 0;
   margin-bottom: 0;
   font-size: 120%;
 }
-[dir="rtl"] .ui-dialog-offcanvas h1 {
+[dir="rtl"] .ui-dialog.ui-dialog-offcanvas h1 {
   text-align: right;
   padding-right: 0;
   padding-left: 25%;
 }
 
 /* Wrap the form that's inside the offcanvas tray. */
-.ui-dialog-offcanvas > .ui-dialog-content {
+.ui-dialog.ui-dialog-offcanvas > .ui-dialog-content {
   height: 10000px;
   padding: 0 15px;
 }
-[dir="rtl"] .ui-dialog-offcanvas .ui-dialog-content {
+[dir="rtl"] .ui-dialog.ui-dialog-offcanvas .ui-dialog-content {
   text-align: right;
 }
-.ui-dialog-offcanvas > .form-item,
-.ui-dialog-offcanvas > .form-item .form-item {
+.ui-dialog.ui-dialog-offcanvas > .form-item,
+.ui-dialog.ui-dialog-offcanvas > .form-item .form-item {
   width: 100%;
 }
 
@@ -74,7 +74,7 @@
 /* Media queries. */
 /* @todo Rework breakpoints: https://www.drupal.org/node/2784599. */
 @media (max-width: 700px) {
-  .ui-dialog-offcanvas {
+  .ui-dialog.ui-dialog-offcanvas {
     position: absolute;
     display: block;
     right: 0;
@@ -88,7 +88,7 @@
     display: inline-block;
     width: 100%;
   }
-  #main-canvas-wrapper.js-tray-open .ui-dialog-offcanvas {
+  #main-canvas-wrapper.js-tray-open .ui-dialog.ui-dialog-offcanvas {
     margin-right: 0;
     right: 0;
     top: 0;
@@ -100,7 +100,7 @@
 }
 @media (min-width: 700px) {
   /* Position the offcanvas tray container outside the right of the viewport. */
-  .ui-dialog-offcanvas {
+  .ui-dialog.ui-dialog-offcanvas {
     position: fixed;
     display: inline-block;
     width: 35%;
@@ -110,7 +110,7 @@
     -ms-transform: translateX(100%);
     transform: translateX(100%);
   }
-  [dir="rtl"] .ui-dialog-offcanvas {
+  [dir="rtl"] .ui-dialog.ui-dialog-offcanvas {
     text-align: right;
     -webkit-transform: translateX(-100%);
     -moz-transform: translateX(-100%);
@@ -124,7 +124,7 @@
     width: 100%;
   }
   /* Move the offcanvas tray on canvas. */
-  #main-canvas-wrapper.js-tray-open .ui-dialog-offcanvas {
+  #main-canvas-wrapper.js-tray-open .ui-dialog.ui-dialog-offcanvas {
     -webkit-transform: translateX(0);
     -moz-transform: translateX(0);
     -o-transform: translateX(0);
@@ -138,7 +138,7 @@
 }
 @media (min-width: 900px) {
   /* Position the offcanvas tray container outside the right of the viewport. */
-  .ui-dialog-offcanvas {
+  .ui-dialog.ui-dialog-offcanvas {
     position: fixed;
     display: inline-block;
     width: 30%;
@@ -155,7 +155,7 @@
 }
 @media (min-width: 1000px) {
   /* Position the offcanvas tray container outside the right of the viewport. */
-  .ui-dialog-offcanvas {
+  .ui-dialog.ui-dialog-offcanvas {
     position: fixed;
     display: inline-block;
     width: 25%;
@@ -176,27 +176,27 @@
  * @todo Remove when more general form styling is done:
  *    https://www.drupal.org/node/2784437.
  */
-.ui-dialog-offcanvas td {
+.ui-dialog.ui-dialog-offcanvas td {
     width: auto;
 }
-.ui-dialog-offcanvas .menu-enabled {
+.ui-dialog.ui-dialog-offcanvas .menu-enabled {
     width: auto;
 }
-.ui-dialog-offcanvas table#menu-overview th {
+.ui-dialog.ui-dialog-offcanvas table#menu-overview th {
   display: none;
 }
-.ui-dialog-offcanvas table#menu-overview tr td:first-child {
+.ui-dialog.ui-dialog-offcanvas table#menu-overview tr td:first-child {
   min-width: 110px;
 }
-.ui-dialog-offcanvas details > .details-wrapper {
+.ui-dialog.ui-dialog-offcanvas details > .details-wrapper {
   padding: 5px;
   overflow: scroll;
 }
-.ui-dialog-offcanvas .tabledrag-toggle-weight {
+.ui-dialog.ui-dialog-offcanvas .tabledrag-toggle-weight {
   font-size: 80%;
 }
-.ui-dialog-offcanvas input:focus,
-.ui-dialog-offcanvas summary:focus {
+.ui-dialog.ui-dialog-offcanvas input:focus,
+.ui-dialog.ui-dialog-offcanvas summary:focus {
   outline: none;
   box-shadow: 2px 2px #ddd;
 }
