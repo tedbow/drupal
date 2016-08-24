@@ -49,11 +49,12 @@ class TestController {
         '#url' => Url::fromRoute('offcanvas_test.thing1'),
         '#attributes' => [
           'class' => ['use-ajax'],
-          'data-dialog-type' => 'offcanvas',
+          'data-dialog-type' => 'dialog',
+          'data-dialog-renderer' => 'offcanvas'
         ],
         '#attached' => [
           'library' => [
-            'outside_in/drupal.off_canvas',
+            'outside_in/drupal.outside_in',
           ],
         ],
       ],
@@ -63,11 +64,12 @@ class TestController {
         '#url' => Url::fromRoute('offcanvas_test.thing2'),
         '#attributes' => [
           'class' => ['use-ajax'],
-          'data-dialog-type' => 'offcanvas',
+          'data-dialog-type' => 'dialog',
+          'data-dialog-renderer' => 'offcanvas'
         ],
         '#attached' => [
           'library' => [
-            'outside_in/drupal.off_canvas',
+            'outside_in/drupal.outside_in',
           ],
         ],
       ],
