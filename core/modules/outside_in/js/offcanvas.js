@@ -1,14 +1,29 @@
 /**
  * @file
  * Drupal's off-canvas library.
+ *
+ * @todo This functionality should extracted into a new core library or a part
+ *  of the current drupal.dialog.ajax library.
+ *  https://www.drupal.org/node/2784443
  */
 
 (function ($, Drupal, debounce, displace) {
 
   'use strict';
 
+  /**
+   * The edge of the screen that the dialog should appear on.
+   *
+   * @type {string}
+   */
   var edge = (document.documentElement.dir === 'rtl') ? 'left' : 'right';
 
+  /**
+   * Resets the size of the dialog.
+   *
+   * @param {jQuery.Event} event
+   *   The event triggered.
+   */
   function resetSize(event) {
     var offsets = displace.offsets;
     var $element = event.data.$element;
@@ -32,6 +47,12 @@
       .trigger('dialogContentResize.outsidein');
   }
 
+  /**
+   * Adjusts the dialog on resize.
+   *
+   * @param {jQuery.Event} event
+   *   The event triggered.
+   */
   function handleDialogResize(event) {
     var $element = event.data.$element;
     var $widget = $element.dialog('widget');
@@ -50,7 +71,12 @@
     $element.height(modalHeight - offset - scrollOffset);
   }
 
-
+  /**
+   * Adjusts the body padding when the dialog is resized.
+   *
+   * @param {jQuery.Event} event
+   *   The event triggered.
+   */
   function bodyPadding(event) {
     var $element = event.data.$element;
     var $widget = $element.dialog('widget');
@@ -65,8 +91,16 @@
     }
   }
 
-
   $(window).on({
+    /**
+     *
+     * @param {jQuery.Event} event
+     *   The event triggered.
+     * @param {jQuery.Ddialog
+     *
+     * @param $element
+     * @param settings
+     */
     'dialog:aftercreate': function (event, dialog, $element, settings) {
       if ($element.is('#drupal-offcanvas')) {
         var eventData = {settings: settings, $element: $element};
@@ -81,8 +115,6 @@
         $(window)
           .on('resize.outsidein scroll.outsidein', eventData, debounce(resetSize, 100))
           .trigger('resize.outsidein');
-
-        //$(document).on('drupalViewportOffsetChange.outsidein', eventData, autoResize);
       }
     },
     'dialog:beforecreate': function (event, dialog, $element, settings) {
