@@ -20,3 +20,10 @@ offcanvas_test.thing2:
     _controller: '\Drupal\offcanvas_test\Controller\TestController::thing2'
   requirements:
     _access: 'TRUE'
+
+offcanvas_test.dialog_links:
+  path: '/offcanvas-dialog-links'
+  defaults:
+    _controller: '\Drupal\offcanvas_test\Controller\TestController::otherDialogLinks'
+  requirements:
+    _access: 'TRUE'

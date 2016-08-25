@@ -129,7 +129,7 @@
       // Loop through all Ajax links change the from to offcanvas when needed.
       Drupal.ajax.instances
         .filter(function (instance) {
-          var hasElement = !!instance.element;
+          var hasElement = instance && !!instance.element;
           var rendererOffcanvas = false;
           var wrapperOffcanvas = false;
           if (hasElement) {
@@ -141,7 +141,7 @@
         .forEach(function (instance) {
           // @todo Move logic for data-dialog-renderer attribute into ajax.js
           //   https://www.drupal.org/node/2784443
-          instance.options.url = instance.options.url.replace(search, replace);
+            instance.options.url = instance.options.url.replace(search, replace);
         });
     }
   };
