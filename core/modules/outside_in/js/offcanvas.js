@@ -62,7 +62,7 @@
     var modalHeight;
 
     // Let scroll element take all the height available.
-    $element.css({overflow: 'visible', height: 'auto'});
+    $element.css({height: 'auto'});
     modalHeight = $widget.height();
     $offsets.each(function () { offset += $(this).outerHeight(); });
 
@@ -92,18 +92,10 @@
   }
 
   $(window).on({
-    /**
-     *
-     * @param {jQuery.Event} event
-     *   The event triggered.
-     * @param {jQuery.Ddialog
-     *
-     * @param $element
-     * @param settings
-     */
     'dialog:aftercreate': function (event, dialog, $element, settings) {
       if ($element.is('#drupal-offcanvas')) {
         var eventData = {settings: settings, $element: $element};
+        $('.ui-dialog-offcanvas, .ui-dialog-offcanvas .ui-dialog-titlebar').toggleClass('ui-dialog-empty-title', !settings.title);
 
         $element
           .on('dialogresize.outsidein', eventData, debounce(bodyPadding, 100))
