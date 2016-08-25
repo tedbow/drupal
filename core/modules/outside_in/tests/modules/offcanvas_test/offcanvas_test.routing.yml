@@ -18,6 +18,5 @@ offcanvas_test.thing2:
   path: '/offcanvas-thing2'
   defaults:
     _controller: '\Drupal\offcanvas_test\Controller\TestController::thing2'
-    _title: 'Thing 2'
   requirements:
     _access: 'TRUE'
