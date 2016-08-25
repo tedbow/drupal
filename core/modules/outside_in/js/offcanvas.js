@@ -120,9 +120,11 @@
       }
     },
     'dialog:beforeclose': function (event, dialog, $element) {
-      $(document).off('.outsidein');
-      $(window).off('.outsidein');
-      $('body').css('padding-' + edge, 0);
+      if ($element.is('#drupal-offcanvas')) {
+        $(document).off('.outsidein');
+        $(window).off('.outsidein');
+        $('body').css('padding-' + edge, 0);
+      }
     }
   });
 
