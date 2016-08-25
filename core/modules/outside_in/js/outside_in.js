@@ -126,7 +126,8 @@
 
       var search = Drupal.ajax.WRAPPER_FORMAT + '=drupal_dialog';
       var replace =  Drupal.ajax.WRAPPER_FORMAT + '=drupal_dialog_offcanvas';
-      // Loop through all Ajax links change the from to offcanvas when needed.
+      // Loop through all Ajax links and change the format to offcanvas when
+      // needed.
       Drupal.ajax.instances
         .filter(function (instance) {
           var hasElement = instance && !!instance.element;
@@ -145,4 +146,5 @@
         });
     }
   };
+
 })(jQuery, Drupal);
