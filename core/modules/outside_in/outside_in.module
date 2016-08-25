@@ -51,6 +51,7 @@ function outside_in_block_view_alter(array &$build) {
     'route_parameters' => [],
   ];
 }
+
 /**
  * Implements hook_element_info_alter().
  */
