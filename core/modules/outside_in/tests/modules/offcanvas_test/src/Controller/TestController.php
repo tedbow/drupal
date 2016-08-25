@@ -97,7 +97,8 @@ class TestController {
    * This links are used to test opening a modal and another offcanvas link from
    * inside the offcanvas tray.
    *
-   * @todo
+   * @todo Update tests to check these links work in the offcanvas tray.
+   *       https://www.drupal.org/node/2790073
    *
    * @return array
    *   Render array with links.
