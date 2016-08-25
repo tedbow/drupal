@@ -16,7 +16,7 @@
    *
    * @type {string}
    */
-  var edge = (document.documentElement.dir === 'rtl') ? 'left' : 'right';
+  var edge = document.documentElement.dir === 'rtl' ? 'left' : 'right';
 
   /**
    * Resets the size of the dialog.
@@ -30,6 +30,7 @@
     var $widget = $element.dialog('widget');
 
     var adjustedOptions = {
+      // @see http://api.jqueryui.com/position/
       position: {
         my: edge + ' top',
         at: edge + ' top' + (offsets.top !== 0 ? '+' + offsets.top : ''),
@@ -111,6 +112,7 @@
     },
     'dialog:beforecreate': function (event, dialog, $element, settings) {
       if ($element.is('#drupal-offcanvas')) {
+        // @see http://api.jqueryui.com/position/
         settings.position = {
           my: 'left top',
           at: edge + ' top',
