@@ -7,7 +7,7 @@
 .ui-dialog.ui-dialog-offcanvas {
   box-sizing: border-box;
   height: 100%;
-  overflow-y: auto;
+  overflow: hidden;
   z-index: 501;
 }
 
@@ -31,7 +31,6 @@
 
 /* Wrap the form that's inside the offcanvas tray. */
 .ui-dialog.ui-dialog-offcanvas > .ui-dialog-content {
-  height: 10000px;
   padding: 0 15px;
 }
 [dir="rtl"] .ui-dialog.ui-dialog-offcanvas .ui-dialog-content {
