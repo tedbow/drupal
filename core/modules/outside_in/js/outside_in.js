@@ -93,6 +93,12 @@
     }
   };
 
+  var findActiveElement = function(settings) {
+    if (settings.settings && settings.settings.editableId) {
+      return $('#' + settings.settings.editableId);
+    }
+  };
+
   /**
    * Attaches contextual's edit toolbar tab behavior.
    *
@@ -142,9 +148,36 @@
         .forEach(function (instance) {
           // @todo Move logic for data-dialog-renderer attribute into ajax.js
           //   https://www.drupal.org/node/2784443
-            instance.options.url = instance.options.url.replace(search, replace);
+          instance.options.url = instance.options.url.replace(search, replace);
+          var editableId = $(instance.element).parents('.outside-in-editable').attr('id');
+          instance.options.url += '&editable_id=' + editableId;
+          instance.options.data.settings = {editableId: editableId};
+
         });
     }
   };
+
+  $(window).on({
+    'dialog:aftercreate': function (event, dialog, $element, settings) {
+      if ($element.is('#drupal-offcanvas')) {
+      }
+    },
+    'dialog:beforecreate': function (event, dialog, $element, settings) {
+      if ($element.is('#drupal-offcanvas')) {
+        //alert('b');
+        $('body').find('*').removeClass('outside-in-active-editable');
+        var $activeElement = findActiveElement(settings);
+        if ($activeElement) {
+          $activeElement.addClass('outside-in-active-editable');
+        }
+      }
+    },
+    'dialog:beforeclose': function (event, dialog, $element) {
+      if ($element.is('#drupal-offcanvas')) {
+        $('body').find('*').removeClass('outside-in-active-editable');
+
+      }
+    }
+  });
 
 })(jQuery, Drupal);

@@ -37,6 +37,8 @@ class OpenOffCanvasDialogCommand extends OpenDialogCommand {
     $this->dialogOptions['resizable'] = 'w';
     $this->dialogOptions['draggable'] = FALSE;
     $this->dialogOptions['drupalAutoButtons'] = FALSE;
+    // How is this actually passed back?
+    $this->dialogOptions['settings'] = $settings;
   }
 
   /**
