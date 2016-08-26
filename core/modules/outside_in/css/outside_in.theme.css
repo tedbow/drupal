@@ -109,11 +109,8 @@ button.toolbar-icon.toolbar-icon-edit.toolbar-item:hover > .toolbar-icon-edit:be
 }
 
 .outside-in-active-editable {
-  -moz-transform: scaleX(-1);
-  -webkit-transform: scaleX(-1);
-  -o-transform: scaleX(-1);
-  transform: scaleX(-1);
-  -ms-filter: fliph; /*IE*/
-  filter: fliph; /*IE*/
-
+  /* Rotate div */
+  -ms-transform: rotate(7deg); /* IE 9 */
+  -webkit-transform: rotate(7deg); /* Chrome, Safari, Opera */
+  transform: rotate(7deg);
 }
