@@ -150,6 +150,7 @@
           //   https://www.drupal.org/node/2784443
           instance.options.url = instance.options.url.replace(search, replace);
           var editableId = $(instance.element).parents('.outside-in-editable').attr('id');
+          // @todo Is there a way to properly pass extra settings except in query string???
           instance.options.url += '&editable_id=' + editableId;
           instance.options.data.settings = {editableId: editableId};
 
@@ -157,14 +158,10 @@
     }
   };
 
+  // Manage Active editable class on open/closing of dialog.
   $(window).on({
-    'dialog:aftercreate': function (event, dialog, $element, settings) {
-      if ($element.is('#drupal-offcanvas')) {
-      }
-    },
     'dialog:beforecreate': function (event, dialog, $element, settings) {
       if ($element.is('#drupal-offcanvas')) {
-        //alert('b');
         $('body').find('*').removeClass('outside-in-active-editable');
         var $activeElement = findActiveElement(settings);
         if ($activeElement) {
@@ -175,7 +172,6 @@
     'dialog:beforeclose': function (event, dialog, $element) {
       if ($element.is('#drupal-offcanvas')) {
         $('body').find('*').removeClass('outside-in-active-editable');
-
       }
     }
   });
