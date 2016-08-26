@@ -108,9 +108,6 @@ button.toolbar-icon.toolbar-icon-edit.toolbar-item:hover > .toolbar-icon-edit:be
   border-bottom: 1px solid #ddd;
 }
 
-.outside-in-active-editable {
-  /* Rotate div */
-  -ms-transform: rotate(7deg); /* IE 9 */
-  -webkit-transform: rotate(7deg); /* Chrome, Safari, Opera */
-  transform: rotate(7deg);
+#main-canvas.js-outside-in-edit-mode .outside-in-editable.outside-in-active-editable {
+  outline: 2px dotted rgba(183, 36, 36, 0.5);
 }
