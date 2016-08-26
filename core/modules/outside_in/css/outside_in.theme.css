@@ -107,3 +107,13 @@ button.toolbar-icon.toolbar-icon-edit.toolbar-item:hover > .toolbar-icon-edit:be
   font-size: 120%;
   border-bottom: 1px solid #ddd;
 }
+
+.outside-in-active-editable {
+  -moz-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  transform: scaleX(-1);
+  -ms-filter: fliph; /*IE*/
+  filter: fliph; /*IE*/
+
+}
