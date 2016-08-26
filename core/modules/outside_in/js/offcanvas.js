@@ -81,7 +81,7 @@
   function bodyPadding(event) {
     var $element = event.data.$element;
     var $widget = $element.dialog('widget');
-    var $body = $('body');
+    var $body = $('#main-canvas-wrapper');
 
     var width = $widget.outerWidth();
     var bodyPadding = $body.css('padding-' + edge);
@@ -125,7 +125,7 @@
       if ($element.is('#drupal-offcanvas')) {
         $(document).off('.outsidein');
         $(window).off('.outsidein');
-        $('body').css('padding-' + edge, 0);
+        $('#main-canvas-wrapper').css('padding-' + edge, 0);
       }
     }
   });

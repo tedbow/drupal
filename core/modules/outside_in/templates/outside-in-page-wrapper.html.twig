@@ -13,10 +13,11 @@
 #}
 {% if children %}
   {% spaceless %}
-    <div id="main-canvas-wrapper">
+    <div id="main-canvas-wrapper" class="new">
       <div id="main-canvas">
         {{ children }}
       </div>
     </div>
+    <div id="offcanvas-lining"></div>
   {% endspaceless %}
 {% endif %}
