@@ -55,9 +55,8 @@ class OffCanvasRender extends DialogRenderer {
     // Determine the title: use the title provided by the main content if any,
     // otherwise get it from the routing information.
     $options = $request->request->get('dialogOptions', []);
-    $settings = $request->request->get('settings', []);
 
-    $response->addCommand(new OpenOffCanvasDialogCommand($title, $content, $options, $settings));
+    $response->addCommand(new OpenOffCanvasDialogCommand($title, $content, $options));
     return $response;
   }
 

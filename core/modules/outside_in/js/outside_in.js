@@ -149,7 +149,7 @@
     }
   };
 
-  // Manage Active editable class on open/closing of dialog.
+  // Manage Active editable class on opening and closing of the dialog.
   $(window).on({
     'dialog:beforecreate': function (event, dialog, $element, settings) {
       if ($element.is('#drupal-offcanvas')) {
