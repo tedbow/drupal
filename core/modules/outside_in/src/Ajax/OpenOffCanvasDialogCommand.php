@@ -37,13 +37,6 @@ class OpenOffCanvasDialogCommand extends OpenDialogCommand {
     $this->dialogOptions['resizable'] = 'w';
     $this->dialogOptions['draggable'] = FALSE;
     $this->dialogOptions['drupalAutoButtons'] = FALSE;
-    // How is this actually passed back?'
-    /**
-     * @wtf
-     * \Drupal\Core\Ajax\OpenDialogCommand seems to suggest that 'settings' top level element will be sent to command.
-     * But in openDialog(dialog.js) and other js 'settings' is actually dialogOptions
-     */
-    $this->dialogOptions['settings'] = $settings;
   }
 
   /**

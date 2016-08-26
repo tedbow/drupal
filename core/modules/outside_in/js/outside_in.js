@@ -93,12 +93,6 @@
     }
   };
 
-  var findActiveElement = function(settings) {
-    if (settings.settings && settings.settings.editableId) {
-      return $('#' + settings.settings.editableId);
-    }
-  };
-
   /**
    * Attaches contextual's edit toolbar tab behavior.
    *
@@ -149,10 +143,7 @@
           // @todo Move logic for data-dialog-renderer attribute into ajax.js
           //   https://www.drupal.org/node/2784443
           instance.options.url = instance.options.url.replace(search, replace);
-          var editableId = $(instance.element).parents('.outside-in-editable').attr('id');
-          // @todo Is there a way to properly pass extra settings except in query string???
-          instance.options.url += '&editable_id=' + editableId;
-          instance.options.data.settings = {editableId: editableId};
+          instance.options.data.dialogOptions = {outsideInActiveEditableId: $(instance.element).parents('.outside-in-editable').attr('id')};
 
         });
     }
@@ -163,7 +154,7 @@
     'dialog:beforecreate': function (event, dialog, $element, settings) {
       if ($element.is('#drupal-offcanvas')) {
         $('body').find('*').removeClass('outside-in-active-editable');
-        var $activeElement = findActiveElement(settings);
+        var $activeElement = $('#' + settings.outsideInActiveEditableId);
         if ($activeElement) {
           $activeElement.addClass('outside-in-active-editable');
         }
