@@ -7,7 +7,7 @@
 
   'use strict';
 
-  $('.outside-in-editable')
+  $('#main-canvas')
     // Bind an event listener to the .outside-in-editable div
     // This listen for click events and stops default actions of those elements.
     .on('click', '.js-outside-in-edit-mode', function (e) {
@@ -31,7 +31,16 @@
         var closest = $(e.target).closest('.outside-in-editable');
         editLink = closest.find('li a[data-dialog-renderer="offcanvas"]')[0];
       }
-      editLink.click();
+
+      if (editLink) {
+        // If we have an OutSide In edit link click it.
+        editLink.click();
+      }
+      else {
+        // Otherwise do not allow other links to leave the page.
+        e.preventDefault();
+      }
+
     });
 
   /**
@@ -75,6 +84,33 @@
     return $('#toolbar-bar').hasClass('js-outside-in-edit-mode');
   };
 
+  /**
+   * Disables all forms on the main canvas.
+   */
+  var disableForms = function () {
+    $('#main-canvas.js-outside-in-edit-mode :input').each(function() {
+      var $el = $(this);
+      // Don't disable elements that are already disabled.
+      // Don't disable button or other elements that might be in contextual
+      // element.
+      if ($el.not(":disabled") && !$el.closest('[data-contextual-id]').length) {
+        $el.prop('disabled', true);
+        // Mark with our attribute so we know which elements to re-enable.
+        $el.attr('data-outside-in-disabled', true);
+      }
+    });
+
+  };
+
+  /**
+   * Enables all forms inside editable elements.
+   */
+  var enableForms = function () {
+    // Re-enable only the elements that were disabled in disableForms().
+    $('*[data-outside-in-disabled="true"]').prop('disabled', false);
+    $('*').removeAttr('data-outside-in-disabled');
+  };
+
   var setToggleActiveMode = function setToggleActiveMode(forceActive) {
     forceActive = forceActive || false;
     if (forceActive || !isActiveMode()) {
@@ -85,11 +121,13 @@
       }
       getItemsToToggle().addClass('js-outside-in-edit-mode');
       $('.edit-mode-inactive').addClass('visually-hidden');
+      disableForms();
     }
     else {
       $('#toolbar-bar .contextual-toolbar-tab button').text(Drupal.t('Edit'));
       getItemsToToggle().removeClass('js-outside-in-edit-mode');
       $('.edit-mode-inactive').removeClass('visually-hidden');
+      enableForms();
     }
   };
 
@@ -120,7 +158,7 @@
    */
   Drupal.behaviors.toggleActiveMode = {
     attach: function () {
-      $('.contextual-toolbar-tab.toolbar-tab button').on('click', function () {
+      $('.contextual-toolbar-tab.toolbar-tab button').once('outside_in').on('click', function () {
         setToggleActiveMode();
       });
 
