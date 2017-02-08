@@ -42,12 +42,22 @@ class AjaxTestController {
     return $content;
   }
 
+  /**
+   * Example content for testing whether response should be wrapped in div.
+   *
+   * @param string $type
+   *   Type of response. Either 'wrapped' or 'not-wrapped'.
+   *
+   * @return array
+   *   Renderable array of AJAX dialog contents.
+   */
   public static function dialogContentsTypes($type) {
     // This is a regular render array; the keys do not have special meaning.
     switch ($type) {
       case 'wrapped':
         $markup = '<div>wrapped</div>';
         break;
+
       case 'not-wrapped':
         $markup = 'not-wrapped';
         break;

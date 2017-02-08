@@ -16,7 +16,7 @@ class AjaxTest extends JavascriptTestBase {
    */
   public static $modules = ['ajax_test'];
 
-  public function xtestAjaxWithAdminRoute() {
+  public function testAjaxWithAdminRoute() {
     \Drupal::service('theme_installer')->install(['stable', 'seven']);
     $theme_config = \Drupal::configFactory()->getEditable('system.theme');
     $theme_config->set('admin', 'seven');
@@ -47,7 +47,7 @@ class AjaxTest extends JavascriptTestBase {
    *
    * @see https://www.drupal.org/node/2647916
    */
-  public function xtestDrupalSettingsCachingRegression() {
+  public function testDrupalSettingsCachingRegression() {
     $this->drupalGet('ajax-test/dialog');
     $assert = $this->assertSession();
     $session = $this->getSession();
