@@ -42,6 +42,26 @@ class AjaxTestController {
     return $content;
   }
 
+  public static function dialogContentsTypes($type) {
+    // This is a regular render array; the keys do not have special meaning.
+    switch ($type) {
+      case 'wrapped':
+        $markup = '<div>wrapped</div>';
+        break;
+      case 'not-wrapped':
+        $markup = 'not-wrapped';
+        break;
+    }
+    $content = [
+      '#title' => '<em>AJAX Dialog & contents</em>',
+      'content' => [
+        '#markup' => $markup,
+      ],
+    ];
+
+    return $content;
+  }
+
   /**
    * Returns a render array that will be rendered by AjaxRenderer.
    *
@@ -202,6 +222,24 @@ class AjaxTestController {
             'data-dialog-options' => json_encode([
               'width' => 400,
             ]),
+          ],
+        ],
+        'link9' => [
+          'title' => 'Link 9 (ajax, wrapped response)',
+          'url' => Url::fromRoute('ajax_test.dialog_contents_types', ['type' => 'wrapped']),
+          'attributes' => [
+            'class' => ['use-ajax'],
+            'data-dialog-type' => 'modal',
+
+          ],
+        ],
+        'link10' => [
+          'title' => 'Link 10 (ajax, not-wrapped response)',
+          'url' => Url::fromRoute('ajax_test.dialog_contents_types', ['type' => 'not-wrapped']),
+          'attributes' => [
+            'class' => ['use-ajax'],
+            'data-dialog-type' => 'modal',
+
           ],
         ],
       ),

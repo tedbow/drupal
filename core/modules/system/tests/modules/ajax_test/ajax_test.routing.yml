@@ -6,6 +6,14 @@ ajax_test.dialog_contents:
   requirements:
     _access: 'TRUE'
 
+ajax_test.dialog_contents_types:
+  path: '/ajax-test/dialog-contents-types/{type}'
+  defaults:
+    _title: 'AJAX Dialog contents routing'
+    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::dialogContentsTypes'
+  requirements:
+    _access: 'TRUE'
+
 ajax_test.dialog_form:
   path: '/ajax-test/dialog-form'
   defaults:
