@@ -1,3 +1,6 @@
+ajax_insert:
+  js:
+    js/ajax.js: {}
 order:
  drupalSettings:
    ajax: test

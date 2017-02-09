@@ -51,7 +51,7 @@ class AjaxTestController {
    * @return array
    *   Renderable array of AJAX dialog contents.
    */
-  public static function dialogContentsTypes($type) {
+  public static function renderTypes($type) {
     // This is a regular render array; the keys do not have special meaning.
     switch ($type) {
       case 'wrapped':
@@ -60,6 +60,10 @@ class AjaxTestController {
 
       case 'not-wrapped':
         $markup = 'not-wrapped';
+        break;
+
+      case 'both':
+        $markup = 'outside<div>inside</div>';
         break;
     }
     $content = [
@@ -70,6 +74,47 @@ class AjaxTestController {
     ];
 
     return $content;
+  }
+
+  public function insertTest() {
+    $build['links'] = [
+      'ajax_target' => [
+        '#markup' => '<div id="ajax-target">Target</div>',
+      ],
+      'links' => [
+          '#theme' => 'links',
+          '#links' => [
+            'link1' => [
+              'title' => 'Link 2 (pre-wrapped)',
+              'url' => Url::fromRoute('ajax_test.ajax_render_types', ['type' => 'wrapped']),
+              'attributes' => [
+                'class' => ['ajax-insert'],
+              ],
+              '#attached' => ['library' => ['ajax_test/ajax_insert']],
+            ],
+            'link2' => [
+              'title' => 'Link 3 (not wrapped)',
+              'url' => Url::fromRoute('ajax_test.ajax_render_types', ['type' => 'not-wrapped']),
+              'attributes' => [
+                'class' => ['ajax-insert'],
+              ],
+              '#attached' => ['library' => ['ajax_test/ajax_insert']],
+            ],
+            'link3' => [
+              'title' => 'Link 3 (both)',
+              'url' => Url::fromRoute('ajax_test.ajax_render_types', ['type' => 'both']),
+              'attributes' => [
+                'class' => ['ajax-insert'],
+              ],
+              '#attached' => ['library' => ['ajax_test/ajax_insert']],
+            ],
+          ],
+          '#attached' => ['library' => ['ajax_test/ajax_insert']],
+      ],
+
+    ];
+
+    return $build;
   }
 
   /**
@@ -236,7 +281,7 @@ class AjaxTestController {
         ],
         'link9' => [
           'title' => 'Link 9 (ajax, wrapped response)',
-          'url' => Url::fromRoute('ajax_test.dialog_contents_types', ['type' => 'wrapped']),
+          'url' => Url::fromRoute('ajax_test.ajax_render_types', ['type' => 'wrapped']),
           'attributes' => [
             'class' => ['use-ajax'],
             'data-dialog-type' => 'modal',
@@ -245,7 +290,7 @@ class AjaxTestController {
         ],
         'link10' => [
           'title' => 'Link 10 (ajax, not-wrapped response)',
-          'url' => Url::fromRoute('ajax_test.dialog_contents_types', ['type' => 'not-wrapped']),
+          'url' => Url::fromRoute('ajax_test.ajax_render_types', ['type' => 'not-wrapped']),
           'attributes' => [
             'class' => ['use-ajax'],
             'data-dialog-type' => 'modal',

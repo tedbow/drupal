@@ -1027,6 +1027,8 @@
       // $(response.data) as new HTML rather than a CSS selector. Also, if
       // response.data contains top-level text nodes, they get lost with either
       // $(response.data) or $('<div></div>').replaceWith(response.data).
+      var $new_content_wrapped = $('<div></div>').html(response.data);
+      var $new_content = $new_content_wrapped.contents();
 
       // For legacy reasons, the effects processing code assumes that
       // $new_content consists of a single top-level element. Also, it has not
@@ -1039,16 +1041,9 @@
       // of a single top-level element, and only use the container <div> created
       // above when it doesn't. For more information, please see
       // https://www.drupal.org/node/736066.
-      var elementNodes = [];
-      $(response.data).each(function (index, value) {
-        if (value.nodeType !== 1) {
-          elementNodes.push(value);
-        }
-      });
-
-      var $new_content = elementNodes.length > 1 ?
-        $(response.data) :
-        $('<div class="wrapped-data"></div>').html(response.data);
+      if ($new_content.length !== 1 || $new_content.get(0).nodeType !== 1) {
+        $new_content = $new_content_wrapped;
+      }
 
       // If removing content from the wrapper, detach behaviors first.
       switch (method) {
