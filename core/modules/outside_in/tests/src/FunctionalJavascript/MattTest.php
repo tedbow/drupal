@@ -12,6 +12,9 @@ use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
 class MattTest extends JavascriptTestBase {
 
   public function testFail() {
+    $this->drupalGet('user');
+
     $this->getSession()->evaluateScript('throw "errroooorrrr";');
+    $this->assertSession()->pageTextContains('lkjasdf');
   }
 }
