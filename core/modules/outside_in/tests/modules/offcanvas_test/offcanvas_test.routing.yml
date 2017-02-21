@@ -27,3 +27,9 @@ offcanvas_test.dialog_links:
     _controller: '\Drupal\offcanvas_test\Controller\TestController::otherDialogLinks'
   requirements:
     _access: 'TRUE'
+offcanvas_test.js_erro:
+  path: '/offcanvas-js-error'
+  defaults:
+    _controller: '\Drupal\offcanvas_test\Controller\TestController::jsError'
+  requirements:
+    _access: 'TRUE'

@@ -10,11 +10,10 @@ use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
  * @group matt
  */
 class MattTest extends JavascriptTestBase {
+  public static $modules = ['offcanvas_test'];
 
   public function testFail() {
-    $this->drupalGet('user');
-
-    $this->getSession()->evaluateScript('throw "errroooorrrr";');
-    $this->assertSession()->pageTextContains('lkjasdf');
+    $this->drupalGet('offcanvas-js-error');
+    $this->assertSession()->pageTextContains('Hello');
   }
 }

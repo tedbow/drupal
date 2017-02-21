@@ -1,0 +1,7 @@
+drupal.js_error:
+  version: VERSION
+  js:
+    js/error.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal

@@ -137,4 +137,17 @@ class TestController {
     ];
   }
 
+  public function jsError() {
+    $build['string'] = array(
+      '#type' => 'markup',
+      '#markup' => 'Hello',
+      '#attached' => [
+        'library' => [
+          'offcanvas_test/drupal.js_error',
+        ],
+      ],
+    );
+    return $build;
+  }
+
 }
