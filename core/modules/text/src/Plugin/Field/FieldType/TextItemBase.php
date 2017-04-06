@@ -7,6 +7,8 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\TypedData\DataDefinition;
+use Drupal\text\TextProcessed;
+use Drupal\text\TextProcessedResult;
 
 /**
  * Base class for 'text' configurable field types.
@@ -29,6 +31,13 @@ abstract class TextItemBase extends FieldItemBase {
       ->setDescription(t('The text with the text format applied.'))
       ->setComputed(TRUE)
       ->setClass('\Drupal\text\TextProcessed')
+      ->setSetting('text source', 'value');
+
+    $properties['process_result'] = DataDefinition::create('string')
+      ->setLabel(t('Processed text (object)'))
+      ->setDescription(t('The text with the text format applied.'))
+      ->setComputed(TRUE)
+      ->setClass(TextProcessedResult::class)
       ->setSetting('text source', 'value');
 
     return $properties;
@@ -57,7 +66,7 @@ abstract class TextItemBase extends FieldItemBase {
   public function onChange($property_name, $notify = TRUE) {
     // Unset processed properties that are affected by the change.
     foreach ($this->definition->getPropertyDefinitions() as $property => $definition) {
-      if ($definition->getClass() == '\Drupal\text\TextProcessed') {
+      if (in_array($definition->getClass(), [TextProcessed::class, TextProcessedResult::class], TRUE)) {
         if ($property_name == 'format' || ($definition->getSetting('text source') == $property_name)) {
           $this->writePropertyValue($property, NULL);
         }

@@ -21,6 +21,7 @@ class FieldItemNormalizer extends NormalizerBase {
    * {@inheritdoc}
    */
   public function normalize($field_item, $format = NULL, array $context = []) {
+    /** @var \Drupal\Core\Field\FieldItemInterface $field_item */
     $values = [];
     // We normalize each individual property, so each can do their own casting,
     // if needed.

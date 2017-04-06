@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\rest\Functional\EntityResource\Term;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\Tests\rest\Functional\EntityResource\EntityResourceTestBase;
@@ -64,6 +65,7 @@ abstract class TermResourceTestBase extends EntityResourceTestBase {
     // Create a "Llama" taxonomy term.
     $term = Term::create(['vid' => $vocabulary->id()])
       ->setName('Llama')
+      ->setDescription("It is a little known fact that llamas cannot count higher the seven.")
       ->setChangedTime(123456789);
     $term->save();
 
@@ -93,8 +95,9 @@ abstract class TermResourceTestBase extends EntityResourceTestBase {
       ],
       'description' => [
         [
-          'value' => NULL,
+          'value' => 'It is a little known fact that llamas cannot count higher the seven.',
           'format' => NULL,
+          'processed' => "<p>It is a little known fact that llamas cannot count higher the seven.</p>\n",
         ],
       ],
       'parent' => [],
@@ -157,6 +160,20 @@ abstract class TermResourceTestBase extends EntityResourceTestBase {
       default:
         return parent::getExpectedUnauthorizedAccessMessage($method);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getExpectedCacheTags() {
+    return Cache::mergeTags(parent::getExpectedCacheTags(), ['config:filter.format.plain_text', 'config:filter.settings']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getExpectedCacheContexts() {
+    return $this->container->getParameter('renderer.config')['required_cache_contexts'];
   }
 
 }

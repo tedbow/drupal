@@ -1,0 +1,8 @@
+services:
+  serializer.normalizer.text_item_base:
+    class: Drupal\text\Normalizer\TextItemBaseNormalizer
+    arguments: ['@renderer', '@config.factory']
+    tags:
+      # This normalizer needs to be the same or greater priority than serializer.normalizer.field_item.hal
+      - { name: normalizer, priority: 10 }
+

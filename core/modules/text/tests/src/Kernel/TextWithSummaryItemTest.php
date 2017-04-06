@@ -81,6 +81,8 @@ class TextWithSummaryItemTest extends FieldKernelTestBase {
 
     // Change the format, this should update the processed properties.
     $entity->summary_field->format = 'no_filters';
+    $entity->save();
+    $entity = $storage->load($entity->id());
     $this->assertEqual($entity->summary_field->processed, $value);
     $this->assertEqual($entity->summary_field->summary_processed, $summary);
 

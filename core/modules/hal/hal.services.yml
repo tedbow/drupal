@@ -8,6 +8,11 @@ services:
     class: Drupal\hal\Normalizer\FieldItemNormalizer
     tags:
       - { name: normalizer, priority: 10 }
+  serializer.normalizer.text_item.hal:
+    class: Drupal\hal\Normalizer\TextItemBaseNormalizer
+    arguments: ['@renderer']
+    tags:
+      - { name: normalizer, priority: 20 }
   serializer.normalizer.field.hal:
     class: Drupal\hal\Normalizer\FieldNormalizer
     tags:
