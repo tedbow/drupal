@@ -41,6 +41,7 @@ class TextProcessedResult extends TypedData {
       return $this->processed;
     }
 
+    /** @var \Drupal\Core\Field\FieldItemInterface $item */
     $item = $this->getParent();
     $text = $item->{($this->definition->getSetting('text source'))};
 
@@ -54,7 +55,7 @@ class TextProcessedResult extends TypedData {
         '#text' => $text,
         '#format' => $item->format,
         '#filter_types_to_skip' => [],
-        '#langcode' => '',
+        '#langcode' => $item->getLangcode(),
       ];
       // It's necessary to capture the cacheability metadata associated with the
       // processed text. See https://www.drupal.org/node/2278483.

@@ -2,7 +2,6 @@
 
 namespace Drupal\hal\Normalizer;
 
-use Drupal\Core\Cache\ConditionalCacheabilityMetadataBubblingTrait;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\text\Plugin\Field\FieldType\TextItemBase;
 
@@ -14,8 +13,6 @@ use Drupal\text\Plugin\Field\FieldType\TextItemBase;
  * therefore it cannot be provided when creating new entities.
  */
 class TextItemBaseNormalizer extends FieldItemNormalizer {
-
-  use ConditionalCacheabilityMetadataBubblingTrait;
 
   /**
    * The renderer.
@@ -49,7 +46,11 @@ class TextItemBaseNormalizer extends FieldItemNormalizer {
     $field = $field_item->getParent();
 
     $processed_text = $field_item->process_result;
-    $this->bubble($processed_text);
+    if (!empty($context['cacheability'])) {
+      /** @var \Drupal\Core\Cache\CacheableMetadata $cacheability */
+      $cacheability = $context['cacheability'];
+      $cacheability->addCacheableDependency($processed_text);
+    }
     $values[$field->getName()][0]['processed'] = $this->serializer->normalize($processed_text->getProcessedText(), $format, $context);
     return $values;
   }

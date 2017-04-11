@@ -101,20 +101,17 @@ class TextItemBaseNormalizerTest extends KernelTestBase {
     $text_format = FilterFormat::load(empty($text_item['format']) ? static::$fallbackFormatId : $text_item['format']);
 
     $entity = clone $original_entity;
-    $context = new RenderContext();
-    $data = $this->container->get('renderer')
-      ->executeInRenderContext($context, function () use ($entity) {
-        return $this->serializer->normalize($entity);
-      });
+    $cacheable_metadata = new CacheableMetadata();
+    $data = $this->serializer->normalize($entity, 'json', ['cacheability' => $cacheable_metadata]);
 
-    $expected_cacheability = new BubbleableMetadata();
+    $expected_cacheability = new CacheableMetadata();
     $expected_cacheability->setCacheTags($text_format->getCacheTags());
     $contexts = $this->container->getParameter('renderer.config')['required_cache_contexts'];
     $expected_cacheability->setCacheContexts($contexts);
     // Merge the CacheableMetadata that is specific to this test.
     $expected_cacheability = $expected_cacheability->merge($extra_cacheability);
 
-    $this->assertEquals($expected_cacheability, $context->pop());
+    $this->assertEquals($expected_cacheability, $cacheable_metadata);
     $this->assertEquals($expected, $data['field_text'][0]);
 
     if ($filter_config_update) {
@@ -125,14 +122,10 @@ class TextItemBaseNormalizerTest extends KernelTestBase {
       $text_format->save();
 
       $entity = clone $original_entity;
-      $context = new RenderContext();
-      $data = $this->container->get('renderer')
-        ->executeInRenderContext($context, function () use ($entity) {
-          return $this->serializer->normalize($entity);
-        });
+      $cacheable_metadata = new CacheableMetadata();
+      $data = $this->serializer->normalize($entity, 'json', ['cacheability' => $cacheable_metadata]);
 
-      $this->assertFalse($context->isEmpty());
-      $this->assertEquals($expected_cacheability, $context->pop());
+      $this->assertEquals($expected_cacheability, $cacheable_metadata);
       $expected['processed'] = $updated_processed;
       $this->assertEquals($expected, $data['field_text'][0]);
     }
