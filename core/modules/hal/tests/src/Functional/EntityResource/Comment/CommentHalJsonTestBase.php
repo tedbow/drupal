@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\hal\Functional\EntityResource\Comment;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\entity_test\Entity\EntityTest;
 use Drupal\Tests\hal\Functional\EntityResource\HalEntityNormalizationTrait;
 use Drupal\Tests\rest\Functional\EntityResource\Comment\CommentResourceTestBase;

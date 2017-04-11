@@ -201,6 +201,7 @@ abstract class CommentResourceTestBase extends EntityResourceTestBase {
         [
           'value' => 'The name "llama" was adopted by European settlers from native Peruvians.',
           'format' => 'plain_text',
+          'lang' => 'en',
           'processed' => '<p>The name &quot;llama&quot; was adopted by European settlers from native Peruvians.</p>' . "\n",
         ],
       ],
@@ -264,9 +265,8 @@ abstract class CommentResourceTestBase extends EntityResourceTestBase {
    * {@inheritdoc}
    */
   protected function getExpectedCacheContexts() {
-    return $this->container->getParameter('renderer.config')['required_cache_contexts'];
+    return Cache::mergeContexts(['languages:language_interface', 'theme'], parent::getExpectedCacheContexts());
   }
-
   /**
    * Tests POSTing a comment without critical base fields.
    *

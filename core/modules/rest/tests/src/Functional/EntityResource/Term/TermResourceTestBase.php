@@ -97,6 +97,7 @@ abstract class TermResourceTestBase extends EntityResourceTestBase {
         [
           'value' => 'It is a little known fact that llamas cannot count higher the seven.',
           'format' => NULL,
+          'lang' => 'en',
           'processed' => "<p>It is a little known fact that llamas cannot count higher the seven.</p>\n",
         ],
       ],
@@ -173,7 +174,7 @@ abstract class TermResourceTestBase extends EntityResourceTestBase {
    * {@inheritdoc}
    */
   protected function getExpectedCacheContexts() {
-    return $this->container->getParameter('renderer.config')['required_cache_contexts'];
+    return Cache::mergeContexts(['url.site'], $this->container->getParameter('renderer.config')['required_cache_contexts']);
   }
 
 }
