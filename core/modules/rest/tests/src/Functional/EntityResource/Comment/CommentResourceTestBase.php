@@ -266,6 +266,7 @@ abstract class CommentResourceTestBase extends EntityResourceTestBase {
   protected function getExpectedCacheContexts() {
     return Cache::mergeContexts(['languages:language_interface', 'theme'], parent::getExpectedCacheContexts());
   }
+
   /**
    * Tests POSTing a comment without critical base fields.
    *
