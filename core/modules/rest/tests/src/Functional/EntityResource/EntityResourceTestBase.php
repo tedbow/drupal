@@ -583,7 +583,7 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
   /**
    * Tests a POST request for an entity, plus edge cases to ensure good DX.
    */
-  public function xtestPost() {
+  public function testPost() {
     // @todo Remove this in https://www.drupal.org/node/2300677.
     if ($this->entity instanceof ConfigEntityInterface) {
       $this->assertTrue(TRUE, 'POSTing config entities is not yet supported.');
@@ -774,7 +774,7 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
   /**
    * Tests a PATCH request for an entity, plus edge cases to ensure good DX.
    */
-  public function xtestPatch() {
+  public function testPatch() {
     // @todo Remove this in https://www.drupal.org/node/2300677.
     if ($this->entity instanceof ConfigEntityInterface) {
       $this->assertTrue(TRUE, 'PATCHing config entities is not yet supported.');
@@ -969,7 +969,7 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
   /**
    * Tests a DELETE request for an entity, plus edge cases to ensure good DX.
    */
-  public function xtestDelete() {
+  public function testDelete() {
     // @todo Remove this in https://www.drupal.org/node/2300677.
     if ($this->entity instanceof ConfigEntityInterface) {
       $this->assertTrue(TRUE, 'DELETEing config entities is not yet supported.');
