@@ -411,9 +411,9 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
     // for the keys with the array order the same (it needs to match with
     // identical comparison).
     $expected = $this->getExpectedNormalizedEntity();
-    ksort($expected);
+    $this->nestedKsort($expected);
     $actual = $this->serializer->decode((string) $response->getBody(), static::$format);
-    ksort($actual);
+    $this->nestedKsort($actual);
     $this->assertSame($expected, $actual);
 
     // Not only assert the normalization, also assert deserialization of the
@@ -474,9 +474,9 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
       // Config entities are not affected.
       // @see \Drupal\serialization\Normalizer\ConfigEntityNormalizer::normalize()
       $expected = static::castToString($expected);
-      ksort($expected);
+      $this->nestedKsort($expected);
       $actual = $this->serializer->decode((string) $response->getBody(), static::$format);
-      ksort($actual);
+      $this->nestedKsort($actual);
       $this->assertSame($expected, $actual);
     }
 
@@ -1212,6 +1212,21 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
     }
     else {
       $this->assert406Response($response);
+    }
+  }
+
+  /**
+   * Sorts a nested array with ksort().
+   *
+   * @param $array
+   *   The nested array to sort.
+   */
+  protected function nestedKsort(&$array) {
+    ksort($array);
+    foreach ($array as &$item) {
+      if (is_array($item)) {
+        $this->nestedKsort($item);
+      }
     }
   }
 

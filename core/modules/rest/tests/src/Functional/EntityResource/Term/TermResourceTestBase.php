@@ -97,7 +97,6 @@ abstract class TermResourceTestBase extends EntityResourceTestBase {
         [
           'value' => 'It is a little known fact that llamas cannot count higher the seven.',
           'format' => NULL,
-          'lang' => 'en',
           'processed' => "<p>It is a little known fact that llamas cannot count higher the seven.</p>\n",
         ],
       ],
