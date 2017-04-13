@@ -48,7 +48,8 @@ class TextProcessedResult extends TypedData {
     $item = $this->getParent();
     $text = $item->{($this->definition->getSetting('text source'))};
 
-    // Avoid running check_markup() on empty strings.
+    // Avoid running \Drupal\Core\Render\RendererInterface::renderPlain
+    // on empty strings.
     if (!isset($text) || $text === '') {
       $this->processed = '';
     }
