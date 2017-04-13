@@ -12,6 +12,9 @@ use Drupal\filter\FilterProcessResult;
  *
  * Required settings (below the definition's 'settings' key) are:
  *  - text source: The text property containing the to be processed text.
+ *
+ * @deprecated in Drupal 8.3.x and will be removed before Drupal 9.0.0.
+ *  This functionality will be moved into \Drupal\text\TextProcessed
  */
 class TextProcessedResult extends TypedData {
 

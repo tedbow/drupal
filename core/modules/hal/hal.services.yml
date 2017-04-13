@@ -12,6 +12,7 @@ services:
     class: Drupal\hal\Normalizer\TextItemBaseNormalizer
     arguments: ['@renderer']
     tags:
+      // The priority needs to higher than serializer.normalizer.field_item.hal.
       - { name: normalizer, priority: 20 }
   serializer.normalizer.field.hal:
     class: Drupal\hal\Normalizer\FieldNormalizer

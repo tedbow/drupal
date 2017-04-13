@@ -1221,11 +1221,11 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
    * @param $array
    *   The nested array to sort.
    */
-  protected function nestedKsort(&$array) {
+  public static function nestedKsort(&$array) {
     ksort($array);
     foreach ($array as &$item) {
       if (is_array($item)) {
-        $this->nestedKsort($item);
+        static::nestedKsort($item);
       }
     }
   }
