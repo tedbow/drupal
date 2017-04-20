@@ -68,7 +68,7 @@ class EntityTestTextItemNormalizerTest extends EntityTestResourceTestBase {
    * {@inheritdoc}
    */
   protected function getExpectedCacheTags() {
-    return Cache::mergeTags(['config:filter.format.plain_text'], parent::getExpectedCacheTags());
+    return Cache::mergeTags(['config:filter.format.plain_text', 'user:0'], parent::getExpectedCacheTags());
   }
 
   /**

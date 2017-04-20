@@ -4,6 +4,7 @@ namespace Drupal\text\Normalizer;
 
 use Drupal\Core\Render\RendererInterface;
 use Drupal\serialization\Normalizer\ComplexDataNormalizer;
+use Drupal\serialization\Normalizer\FieldItemNormalizer;
 
 /**
  * Adds processed text from text fields to normalizer data.
@@ -12,7 +13,7 @@ use Drupal\serialization\Normalizer\ComplexDataNormalizer;
  * attribute is computed and represents text processed by the filter system
  * therefore it cannot be provided when creating new entities.
  */
-class TextItemBaseNormalizer extends ComplexDataNormalizer {
+class TextItemBaseNormalizer extends FieldItemNormalizer {
 
   /**
    * The renderer.
@@ -40,7 +41,7 @@ class TextItemBaseNormalizer extends ComplexDataNormalizer {
    * {@inheritdoc}
    */
   public function normalize($field_item, $format = NULL, array $context = []) {
-    $attributes = parent::normalize($field_item, $format, $context);
+    return parent::normalize($field_item, $format, $context);
     /** @var \Drupal\filter\FilterProcessResult $processed_text */
     $processed_text = $field_item->process_result;
     if (!empty($context['cacheability'])) {
