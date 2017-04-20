@@ -67,7 +67,7 @@ class FieldItemNormalizer extends ComplexDataNormalizer implements DenormalizerI
         $cacheability = $context['cacheability'];
         $cacheability->addCacheableDependency($property_value);
         if (method_exists($property_value, '__toString')) {
-          //$property_value = (string) $property_value;
+          $property_value = (string) $property_value;
         }
       }
       $attributes[$name] = $property_value;
