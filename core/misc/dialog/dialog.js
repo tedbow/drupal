@@ -115,7 +115,7 @@
       var $element = event.data.$element;
       var $container = $(event.data.dialog.container());
 
-      var $offsets = $container.find('> :not(#drupal-off-canvas, .ui-resizable-handle)');
+      var $offsets = $container.find('> :not(#' + $element.attr('id') + ', .ui-resizable-handle)');
       var offset = 0;
       var modalHeight;
 
