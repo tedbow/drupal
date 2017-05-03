@@ -76,7 +76,8 @@
       },
       close: closeDialog,
       container: getContainer,
-      options: setOptions
+      options: setOptions,
+      handleDialogResize: handleDialogResize
     };
 
     function openDialog(settings) {
@@ -102,6 +103,30 @@
 
     function setOptions($options) {
       $element.dialog('option', $options);
+    }
+
+    /**
+     * Adjusts the dialog on resize.
+     *
+     * @param {jQuery.Event} event
+     *   The event triggered.
+     */
+    function handleDialogResize(event) {
+      var $element = event.data.$element;
+      var $container = $(event.data.dialog.container());
+
+      var $offsets = $container.find('> :not(#drupal-off-canvas, .ui-resizable-handle)');
+      var offset = 0;
+      var modalHeight;
+
+      // Let scroll element take all the height available.
+      $element.css({height: 'auto'});
+      modalHeight = $container.height();
+      $offsets.each(function () { offset += $(this).outerHeight(); });
+
+      // Take internal padding into account.
+      var scrollOffset = $element.outerHeight() - $element.height();
+      $element.height(modalHeight - offset - scrollOffset);
     }
 
     return dialog;

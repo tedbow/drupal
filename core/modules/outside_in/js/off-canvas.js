@@ -54,29 +54,7 @@
     $element.trigger('dialogContentResize.off-canvas');
   }
 
-  /**
-   * Adjusts the dialog on resize.
-   *
-   * @param {jQuery.Event} event
-   *   The event triggered.
-   */
-  function handleDialogResize(event) {
-    var $element = event.data.$element;
-    var $container = $(event.data.dialog.container());
 
-    var $offsets = $container.find('> :not(#drupal-off-canvas, .ui-resizable-handle)');
-    var offset = 0;
-    var modalHeight;
-
-    // Let scroll element take all the height available.
-    $element.css({height: 'auto'});
-    modalHeight = $container.height();
-    $offsets.each(function () { offset += $(this).outerHeight(); });
-
-    // Take internal padding into account.
-    var scrollOffset = $element.outerHeight() - $element.height();
-    $element.height(modalHeight - offset - scrollOffset);
-  }
 
   /**
    * Adjusts the body padding when the dialog is resized.
@@ -118,7 +96,7 @@
 
             $element
               .on('dialogresize.off-canvas', eventData, debounce(bodyPadding, 100))
-              .on('dialogContentResize.off-canvas', eventData, handleDialogResize)
+              .on('dialogContentResize.off-canvas', eventData, dialog.handleDialogResize)
               .on('dialogContentResize.off-canvas', eventData, debounce(bodyPadding, 100))
               .trigger('dialogresize.off-canvas');
 
