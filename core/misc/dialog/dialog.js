@@ -130,7 +130,7 @@
      */
     function handleDialogResize(event) {
       var $element = event.data.$element;
-      var $container = $(event.data.dialog.container());
+      var $container = $(event.data.dialog.getContainer());
 
       var $offsets = $container.find('> :not(#' + $element.attr('id') + ', .ui-resizable-handle)');
       var offset = 0;
