@@ -34,7 +34,7 @@
     var offsets = displace.offsets;
     var $element = event.data.$element;
     var dialog = event.data.dialog;
-    var $container = $(dialog.container());
+    var $container = $(dialog.getContainer());
 
     var adjustedOptions = {
       // @see http://api.jqueryui.com/position/
@@ -50,7 +50,7 @@
       height: ($(window).height() - (offsets.top + offsets.bottom)) + 'px'
     });
 
-    dialog.options(adjustedOptions);
+    dialog.setOptions(adjustedOptions);
     $element.trigger('dialogContentResize.off-canvas');
   }
 
@@ -66,7 +66,7 @@
     if ($('body').outerWidth() < minDisplaceWidth) {
       return;
     }
-    var $container = $(event.data.dialog.container());
+    var $container = $(event.data.dialog.getContainer());
 
     var width = $container.outerWidth();
     var mainCanvasPadding = $mainCanvasWrapper.css('padding-' + edge);
@@ -100,7 +100,7 @@
               .on('dialogContentResize.off-canvas', eventData, debounce(bodyPadding, 100))
               .trigger('dialogresize.off-canvas');
 
-            $(dialog.container()).attr('data-offset-' + edge, '');
+            $(dialog.getContainer()).attr('data-offset-' + edge, '');
 
             $(window)
                 .on('resize.off-canvas scroll.off-canvas', eventData, debounce(resetSize, 100))

@@ -75,8 +75,8 @@
         openDialog({modal: true});
       },
       close: closeDialog,
-      container: getContainer,
-      options: setOptions,
+      getContainer: getContainer,
+      setOptions: setOptions,
       handleDialogResize: handleDialogResize
     };
 
@@ -97,12 +97,29 @@
       $(window).trigger('dialog:afterclose', [dialog, $element]);
     }
 
+    /**
+     * Gets the HTMLElement that contains the dialog.
+     *
+     * jQuery UI dialogs are contained in outer HTMLElement.
+     * For themes or modules that override the Drupal.dialog with non jQuery UI
+     * dialogs that do not have a containing element other than the dialog
+     * itself should just return the dialog element.
+     *
+     * @return {HTMLElement} element
+     *   The HTMLElement that contains the dialog.
+     */
     function getContainer() {
       return $element.dialog('widget')[0];
     }
 
-    function setOptions($options) {
-      $element.dialog('option', $options);
+    /**
+     * Sets the options for the dialog.
+     *
+     * @param {object} options
+     *   jQuery UI options to be passed to the dialog.
+     */
+    function setOptions(options) {
+      $element.dialog('option', options);
     }
 
     /**
