@@ -143,7 +143,9 @@
 
     // Open the dialog itself.
     response.dialogOptions = response.dialogOptions || {};
-    var dialog = Drupal.dialog($dialog.get(0), response.dialogOptions);
+    var dialogObject = Drupal.dialog.getDialogRenderer(response.dialogOptions);
+    var dialog = dialogObject($dialog.get(0), response.dialogOptions);
+
     if (response.dialogOptions.modal) {
       dialog.showModal();
     }

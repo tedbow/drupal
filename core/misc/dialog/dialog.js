@@ -31,7 +31,7 @@
     // `jQuery(event.target).remove()` as well, to remove the dialog on
     // closing.
     close: function (event) {
-      Drupal.dialog(event.target).close();
+      Drupal.dialog.getDialogRendererFromEvent(event)(event.target).close();
       Drupal.detachBehaviors(event.target, null, 'unload');
     }
   };
@@ -79,6 +79,7 @@
 
     function openDialog(settings) {
       settings = $.extend({}, drupalSettings.dialog, options, settings);
+      $element.attr('data-dialog-render', 'dialog');
       // Trigger a global event to allow scripts to bind events to the dialog.
       $(window).trigger('dialog:beforecreate', [dialog, $element, settings]);
       $element.dialog(settings);
@@ -95,6 +96,23 @@
     }
 
     return dialog;
+  };
+
+  Drupal.dialog.getDialogRenderer = function (options) {
+    if (options.hasOwnProperty('drupalDialogType') && Drupal.hasOwnProperty(options.drupalDialogType)) {
+      return Drupal[options.drupalDialogType];
+    }
+    else {
+      return Drupal.dialog;
+    }
+  };
+
+  Drupal.dialog.getDialogRendererFromEvent = function (event) {
+    if ($(event.target).attr('data-dialog-render')) {
+      return Drupal[$(event.target).attr('data-dialog-render')];
+    }
+    return Drupal.dialog;
+
   };
 
 })(jQuery, Drupal, drupalSettings);
