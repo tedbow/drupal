@@ -74,7 +74,10 @@
       showModal: function () {
         openDialog({modal: true});
       },
-      close: closeDialog
+      close: closeDialog,
+      getContainer: getContainer,
+      setOptions: setOptions,
+      handleDialogResize: handleDialogResize
     };
 
     function openDialog(settings) {
@@ -92,6 +95,55 @@
       dialog.returnValue = value;
       dialog.open = false;
       $(window).trigger('dialog:afterclose', [dialog, $element]);
+    }
+
+    /**
+     * Gets the HTMLElement that contains the dialog.
+     *
+     * jQuery UI dialogs are contained in outer HTMLElement.
+     * For themes or modules that override the Drupal.dialog with non jQuery UI
+     * dialogs that do not have a containing element other than the dialog
+     * itself should just return the dialog element.
+     *
+     * @return {HTMLElement} element
+     *   The HTMLElement that contains the dialog.
+     */
+    function getContainer() {
+      return $element.dialog('widget')[0];
+    }
+
+    /**
+     * Sets the options for the dialog.
+     *
+     * @param {object} options
+     *   jQuery UI options to be passed to the dialog.
+     */
+    function setOptions(options) {
+      $element.dialog('option', options);
+    }
+
+    /**
+     * Adjusts the dialog on resize.
+     *
+     * @param {jQuery.Event} event
+     *   The event triggered.
+     */
+    function handleDialogResize(event) {
+      var $element = event.data.$element;
+      var $container = $(event.data.dialog.getContainer());
+
+      var $offsets = $container.find('> :not(#' + $element.attr('id') + ', .ui-resizable-handle)');
+      var offset = 0;
+      var modalHeight;
+
+      // Let scroll element take all the height available.
+      $element.css({height: 'auto'});
+      modalHeight = $container.height();
+      $offsets.each(function () { offset += $(this).outerHeight(); });
+
+      // Take internal padding into account.
+      var scrollOffset = $element.outerHeight() - $element.height();
+      $element.height(modalHeight - offset - scrollOffset);
     }
 
     return dialog;
