@@ -79,7 +79,7 @@
 
     function openDialog(settings) {
       settings = $.extend({}, drupalSettings.dialog, options, settings);
-      $element.attr('data-dialog-render', 'dialog');
+      $element.attr('data-dialog-renderer', 'dialog');
       // Trigger a global event to allow scripts to bind events to the dialog.
       $(window).trigger('dialog:beforecreate', [dialog, $element, settings]);
       $element.dialog(settings);
@@ -99,8 +99,8 @@
   };
 
   Drupal.dialog.getDialogRenderer = function (options) {
-    if (options.hasOwnProperty('drupalDialogType') && Drupal.hasOwnProperty(options.drupalDialogType)) {
-      return Drupal[options.drupalDialogType];
+    if (options.hasOwnProperty('drupalDialogRenderer') && Drupal.hasOwnProperty(options.drupalDialogRenderer)) {
+      return Drupal[options.drupalDialogRenderer];
     }
     else {
       return Drupal.dialog;
@@ -108,8 +108,8 @@
   };
 
   Drupal.dialog.getDialogRendererFromEvent = function (event) {
-    if ($(event.target).attr('data-dialog-render')) {
-      return Drupal[$(event.target).attr('data-dialog-render')];
+    if ($(event.target).attr('data-dialog-renderer')) {
+      return Drupal[$(event.target).attr('data-dialog-renderer')];
     }
     return Drupal.dialog;
 

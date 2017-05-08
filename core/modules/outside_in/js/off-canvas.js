@@ -60,7 +60,7 @@
       // Applies initial height to dialog based on window height.
       // See http://api.jqueryui.com/dialog for all dialog options.
       settings.height = $(window).height();
-      $element.attr('data-dialog-render', 'offCanvasDialog');
+      $element.attr('data-dialog-renderer', 'offCanvasDialog');
     }
 
     function afterCreate(settings) {
