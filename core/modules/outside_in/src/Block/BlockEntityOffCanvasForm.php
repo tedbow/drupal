@@ -7,6 +7,7 @@ use Drupal\block\BlockInterface;
 use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\PluginWithFormsInterface;
+use Drupal\Core\Render\Element\Form;
 
 /**
  * Provides form for block instance forms when used in the off-canvas dialog.
@@ -44,7 +45,7 @@ class BlockEntityOffCanvasForm extends BlockForm {
     }
     $form['advanced_link'] = [
       '#type' => 'link',
-      '#title' => $this->t('Advanced options'),
+      '#title' => $this->t('Advanced block options'),
       '#url' => $this->entity->toUrl('edit-form', ['query' => $query]),
       '#weight' => 1000,
     ];
@@ -52,7 +53,28 @@ class BlockEntityOffCanvasForm extends BlockForm {
     // Remove the ID and region elements.
     unset($form['id'], $form['region'], $form['settings']['admin_label']);
 
+    // Only show the label input if the label will be shown on the page.
+    $form['settings']['label_display']['#weight'] = -100;
+    $form['settings']['label']['#states']['visible'] = [
+      ':input[name="settings[label_display]"]' => ['checked' => TRUE],
+    ];
+
+    $form['settings']['label']['#process'][] = [get_class($this), 'processLabelInput'];
     return $form;
+  }
+
+  /**
+   * Element process callback for block label element.
+   *
+   * Checks to make sure the label has a value even if it was set to invisible
+   * on the form via javascript.
+   */
+  public static function processLabelInput(&$element, FormStateInterface &$form_state, array &$form) {
+    $input = $form_state->getUserInput();
+    if (isset($input['settings']['label']) && empty($input['settings']['label_display'])) {
+      $element['#value'] = $element['#default_value'];
+    }
+    return $element;
   }
 
   /**
