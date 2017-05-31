@@ -73,6 +73,12 @@ class BlockEntityOffCanvasForm extends BlockForm {
     $input = $form_state->getUserInput();
     if (isset($input['settings']['label']) && empty($input['settings']['label_display'])) {
       $element['#value'] = $element['#default_value'];
+      $input['settings']['label'] = $element['#value'];
+
+      $form_state->setUserInput($input);
+      $values = $form_state->getValues();
+      $values['settings']['label'] = $element['#value'];
+      $form_state->setValues($values);
     }
     return $element;
   }
