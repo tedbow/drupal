@@ -478,8 +478,8 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
 
     foreach ($this->getTestThemes() as $theme) {
       $this->enableTheme($theme);
-      $block_label = 'Block label';
-      $block = $this->placeBlock('system_powered_by_block', ['label' => $block_label]); //
+      $block_label = "Block label $theme";
+      $block = $this->placeBlock('system_powered_by_block', ['label' => $block_label]);
       // Hide the title.
       $block->getPlugin()->setConfigurationValue('label_display', FALSE);
       $block->save();
@@ -488,7 +488,7 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
       $this->drupalGet('user');
       $this->enableEditMode();
 
-      /* FIRST: Check that Title field is not marked as required if hidden. */
+      /* ** Check that Title field is not marked as required if hidden. **  */
       $this->openBlockForm($block_selector);
       // Confirm "Display Title" is not checked.
       $web_assert->checkboxNotChecked('settings[label_display]');
@@ -498,49 +498,44 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
       // Show Title.
       $page->checkField('settings[label_display]');
       $this->assertEquals($this->labelInputIsVisible(), TRUE, 'Label is visible');
-      //$web_assert->pageTextNotContains($block_label);
-      // Set Title to "".
       $page->fillField('settings[label]', "");
-      // Hide Title again.
       $page->uncheckField('settings[label_display]');
       $this->assertEquals($this->labelInputIsVisible(), FALSE, 'Label is not visible');
-      // Save and confirm no error for require field.
+      // Save and confirm no error for required field.
       $page->pressButton('Save Powered by Drupal');
       $web_assert->assertWaitOnAjaxRequest();
       $this->assertNotContains('admin/structure/block/manage', $this->getUrl());
       $web_assert->pageTextNotContains('Title field is required.');
 
+      /* ** Check Title is retained when previously hidden. **  */
       $this->openBlockForm($block_selector);
       $web_assert->checkboxNotChecked('settings[label_display]');
       $page->checkField('settings[label_display]');
-      $this->assertEquals($this->labelInputIsVisible(), TRUE, 'Label is visible');
       $web_assert->elementAttributeContains('css', 'input[data-drupal-selector="edit-settings-label"]', 'value', $block_label);
-      // Update Title.
+
+      /* ** Check Title can be updated when not hidden. **  */
       $page->fillField('settings[label]', "UPDATED:$block_label");
       $page->pressButton('Save Powered by Drupal');
       $web_assert->assertWaitOnAjaxRequest();
-
       $web_assert->pageTextContains("UPDATED:$block_label");
 
+      /* ** Check Title is not displayed. **  */
       $this->openBlockForm($block_selector);
       $web_assert->checkboxChecked('settings[label_display]');
-      $this->assertEquals($this->labelInputIsVisible(), TRUE, 'Label is visible');
       $page->uncheckField('settings[label_display]');
       $page->pressButton('Save Powered by Drupal');
       $web_assert->assertWaitOnAjaxRequest();
+      $web_assert->pageTextNotContains("$block_label");
 
-      $web_assert->pageTextNotContains("UPDATED:$block_label");
 
-
+      /* ** Check Title does not revert to original title after saving as hidden. **  */
       $this->openBlockForm($block_selector);
       $page->checkField('settings[label_display]');
-      //$this->assertEquals($this->labelInputIsVisible(), TRUE, 'Label is visible');
       $web_assert->elementAttributeContains('css', 'input[data-drupal-selector="edit-settings-label"]', 'value', "UPDATED:$block_label");
 
-
-
+      // Before enabling a new theme disable edit mode and delete the block .
+      $this->disableEditMode();
       $block->delete();
-      return;
     }
 
   }

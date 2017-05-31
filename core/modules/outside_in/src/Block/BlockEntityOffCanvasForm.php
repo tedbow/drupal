@@ -72,10 +72,10 @@ class BlockEntityOffCanvasForm extends BlockForm {
   public static function processLabelInput(&$element, FormStateInterface &$form_state, array &$form) {
     $input = $form_state->getUserInput();
     if (isset($input['settings']['label']) && empty($input['settings']['label_display'])) {
+      // Set element value because this is require field.
       $element['#value'] = $element['#default_value'];
-      $input['settings']['label'] = $element['#value'];
-
-      $form_state->setUserInput($input);
+      // Set the submitted value so the changes to the label will be retained if
+      // saved without displaying label.
       $values = $form_state->getValues();
       $values['settings']['label'] = $element['#value'];
       $form_state->setValues($values);
