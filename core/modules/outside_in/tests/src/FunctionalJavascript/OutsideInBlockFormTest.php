@@ -16,6 +16,8 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
 
   const TOOLBAR_EDIT_LINK_SELECTOR = '#toolbar-bar div.contextual-toolbar-tab button';
 
+  const LABEL_INPUT_SELECTOR = 'input[data-drupal-selector="edit-settings-label"]';
+
   /**
    * {@inheritdoc}
    */
@@ -60,7 +62,7 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
    *
    * @dataProvider providerTestBlocks
    */
-  public function xtestBlocks($block_plugin, $new_page_text, $element_selector, $label_selector, $button_text, $toolbar_item) {
+  public function testBlocks($block_plugin, $new_page_text, $element_selector, $label_selector, $button_text, $toolbar_item) {
     $web_assert = $this->assertSession();
     $page = $this->getSession()->getPage();
     foreach ($this->getTestThemes() as $theme) {
@@ -196,7 +198,7 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
   protected function assertOffCanvasBlockFormIsValid() {
     $web_assert = $this->assertSession();
     // Check that common block form elements exist.
-    $web_assert->elementExists('css', 'input[data-drupal-selector="edit-settings-label"]');
+    $web_assert->elementExists('css', static::LABEL_INPUT_SELECTOR);
     $web_assert->elementExists('css', 'input[data-drupal-selector="edit-settings-label-display"]');
     // Check that advanced block form elements do not exist.
     $web_assert->elementNotExists('css', 'input[data-drupal-selector="edit-visibility-request-path-pages"]');
@@ -219,7 +221,7 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
   /**
    * Tests QuickEdit links behavior.
    */
-  public function xtestQuickEditLinks() {
+  public function testQuickEditLinks() {
     $quick_edit_selector = '#quickedit-entity-toolbar';
     $node_selector = '[data-quickedit-entity-id="node/1"]';
     $body_selector = '[data-quickedit-field-id="node/1/body/en/full"]';
@@ -308,7 +310,7 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
   /**
    * Tests enabling and disabling Edit Mode.
    */
-  public function xtestEditModeEnableDisable() {
+  public function testEditModeEnableDisable() {
     foreach ($this->getTestThemes() as $theme) {
       $this->enableTheme($theme);
       $block = $this->placeBlock('system_powered_by_block');
@@ -441,7 +443,7 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
    * "Quick edit" is quickedit.module link.
    * "Quick edit settings" is outside_in.module link.
    */
-  public function xtestCustomBlockLinks() {
+  public function testCustomBlockLinks() {
     $this->drupalGet('user');
     $page = $this->getSession()->getPage();
     $links = $page->findAll('css', "#block-custom .contextual-links li a");
@@ -470,9 +472,11 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
   }
 
   /**
-   * Test hidden elements on
+   * Test block title input.
+   *
+   * @see \Drupal\outside_in\Block\BlockEntityOffCanvasForm::processLabelInput()
    */
-  public function testHiddenFormElements() {
+  public function testTitleInput() {
     $web_assert = $this->assertSession();
     $page = $this->getSession()->getPage();
 
@@ -494,7 +498,7 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
       $web_assert->checkboxNotChecked('settings[label_display]');
       // Confirm Title is not visible.
       $this->assertEquals($this->labelInputIsVisible(), FALSE, 'Label is not visible');
-      $web_assert->elementAttributeContains('css', 'input[data-drupal-selector="edit-settings-label"]', 'value', $block_label);
+      $web_assert->elementAttributeContains('css', static::LABEL_INPUT_SELECTOR, 'value', $block_label);
       // Show Title.
       $page->checkField('settings[label_display]');
       $this->assertEquals($this->labelInputIsVisible(), TRUE, 'Label is visible');
@@ -511,7 +515,7 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
       $this->openBlockForm($block_selector);
       $web_assert->checkboxNotChecked('settings[label_display]');
       $page->checkField('settings[label_display]');
-      $web_assert->elementAttributeContains('css', 'input[data-drupal-selector="edit-settings-label"]', 'value', $block_label);
+      $web_assert->elementAttributeContains('css', static::LABEL_INPUT_SELECTOR, 'value', $block_label);
 
       /* ** Check Title can be updated when not hidden. **  */
       $page->fillField('settings[label]', "UPDATED:$block_label");
@@ -531,7 +535,7 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
       /* ** Check Title does not revert to original title after saving as hidden. **  */
       $this->openBlockForm($block_selector);
       $page->checkField('settings[label_display]');
-      $web_assert->elementAttributeContains('css', 'input[data-drupal-selector="edit-settings-label"]', 'value', "UPDATED:$block_label");
+      $web_assert->elementAttributeContains('css', static::LABEL_INPUT_SELECTOR, 'value', "UPDATED:$block_label");
 
       // Before enabling a new theme disable edit mode and delete the block .
       $this->disableEditMode();
@@ -541,11 +545,13 @@ class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
   }
 
   /**
-   * @param $page
-   * @return mixed
+   * Determine if the label input is visible.
+   *
+   * @return bool
+   *   TRUE if the label is visible, FALSE if it is not.
    */
   protected function labelInputIsVisible() {
-    return $this->getSession()->getPage()->find('css', 'input[data-drupal-selector="edit-settings-label"]')->isVisible();
+    return $this->getSession()->getPage()->find('css', static::LABEL_INPUT_SELECTOR)->isVisible();
   }
 
 }
