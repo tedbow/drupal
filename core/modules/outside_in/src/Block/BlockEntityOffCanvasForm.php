@@ -7,7 +7,6 @@ use Drupal\block\BlockInterface;
 use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\PluginWithFormsInterface;
-use Drupal\Core\Render\Element\Form;
 
 /**
  * Provides form for block instance forms when used in the off-canvas dialog.
@@ -60,6 +59,12 @@ class BlockEntityOffCanvasForm extends BlockForm {
     ];
 
     $form['settings']['label']['#process'][] = [get_class($this), 'processLabelInput'];
+
+    // Relabel to "Block title" because on the front-end this may be confused
+    // with page title.
+    $form['settings']['label']['#title'] = $this->t("Block title");
+    $form['settings']['label_display']['#title'] = $this->t("Display block title");
+
     return $form;
   }
 
