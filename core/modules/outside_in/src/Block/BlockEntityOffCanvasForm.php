@@ -52,19 +52,19 @@ class BlockEntityOffCanvasForm extends BlockForm {
     // Remove the ID and region elements.
     unset($form['id'], $form['region'], $form['settings']['admin_label']);
 
-    // Only show the label input if the label will be shown on the page.
-    $form['settings']['label_display']['#weight'] = -100;
-    $form['settings']['label']['#states']['visible'] = [
-      ':input[name="settings[label_display]"]' => ['checked' => TRUE],
-    ];
+    if (isset($form['settings']['label_display']) && isset($form['settings']['label'])) {
+      // Only show the label input if the label will be shown on the page.
+      $form['settings']['label_display']['#weight'] = -100;
+      $form['settings']['label']['#states']['visible'] = [
+        ':input[name="settings[label_display]"]' => ['checked' => TRUE],
+      ];
+      $form['settings']['label']['#process'][] = [static::class, 'processLabelInput'];
 
-    $form['settings']['label']['#process'][] = [get_class($this), 'processLabelInput'];
-
-    // Relabel to "Block title" because on the front-end this may be confused
-    // with page title.
-    $form['settings']['label']['#title'] = $this->t("Block title");
-    $form['settings']['label_display']['#title'] = $this->t("Display block title");
-
+      // Relabel to "Block title" because on the front-end this may be confused
+      // with page title.
+      $form['settings']['label']['#title'] = $this->t("Block title");
+      $form['settings']['label_display']['#title'] = $this->t("Display block title");
+    }
     return $form;
   }
 
@@ -75,15 +75,15 @@ class BlockEntityOffCanvasForm extends BlockForm {
    * on the form via javascript.
    */
   public static function processLabelInput(&$element, FormStateInterface &$form_state, array &$form) {
+    // Use getUserInput() instead of getValues() because 'label_display' will
+    // not be available from getValues() at this point.
     $input = $form_state->getUserInput();
     if (isset($input['settings']['label']) && empty($input['settings']['label_display'])) {
-      // Set element value because this is require field.
+      // Set element value because this is required field.
       $element['#value'] = $element['#default_value'];
       // Set the submitted value so the changes to the label will be retained if
       // saved without displaying label.
-      $values = $form_state->getValues();
-      $values['settings']['label'] = $element['#value'];
-      $form_state->setValues($values);
+      $form_state->setValue(['settings', 'label'], $element['#value']);
     }
     return $element;
   }
