@@ -78,6 +78,8 @@ class BlockEntityOffCanvasForm extends BlockForm {
     // Use getUserInput() instead of getValues() because 'label_display' will
     // not be available from getValues() at this point.
     $input = $form_state->getUserInput();
+    $values = $form_state->getValues();
+    // check here 'settings' element under both ^^^!!!
     if (isset($input['settings']['label']) && empty($input['settings']['label_display'])) {
       // Set element value because this is required field.
       $element['#value'] = $element['#default_value'];
