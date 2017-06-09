@@ -18,15 +18,16 @@
    *   The event triggered.
    */
   function resetSize(event) {
+    var offCanvasDialog = event.data.offCanvasDialog;
     var offsets = displace.offsets;
     var $element = event.data.$element;
-    var $widget = this.getContainer($element);
+    var $widget = offCanvasDialog.getContainer($element);
 
     var adjustedOptions = {
       // @see http://api.jqueryui.com/position/
       position: {
-        my: edge + ' top',
-        at: edge + ' top' + (offsets.top !== 0 ? '+' + offsets.top : ''),
+        my: offCanvasDialog.edge + ' top',
+        at: offCanvasDialog.edge + ' top' + (offsets.top !== 0 ? '+' + offsets.top : ''),
         of: window
       }
     };
@@ -49,15 +50,16 @@
    */
   function handleDialogResize(event) {
     var $element = event.data.$element;
-    var $widget = $element.dialog('widget');
+    var offCanvasDialog = event.data.offCanvasDialog;
+    var $container = offCanvasDialog.getContainer($element);
 
-    var $offsets = $widget.find('> :not(#drupal-off-canvas, .ui-resizable-handle)');
+    var $offsets = $container.find('> :not(#drupal-off-canvas, .ui-resizable-handle)');
     var offset = 0;
     var modalHeight;
 
     // Let scroll element take all the height available.
     $element.css({height: 'auto'});
-    modalHeight = $widget.height();
+    modalHeight = $container.height();
     $offsets.each(function () { offset += $(this).outerHeight(); });
 
     // Take internal padding into account.
@@ -72,17 +74,19 @@
    *   The event triggered.
    */
   function bodyPadding(event) {
-    if ($('body').outerWidth() < minDisplaceWidth) {
+    var offCanvasDialog = event.data.offCanvasDialog;
+    if ($('body').outerWidth() < offCanvasDialog.minDisplaceWidth) {
       return;
     }
     var $element = event.data.$element;
-    var $widget = this.getContainer($element);
+    var $container = offCanvasDialog.getContainer($element);
+    var $mainCanvasWrapper = offCanvasDialog.$mainCanvasWrapper;
 
-    var width = $widget.outerWidth();
-    var mainCanvasPadding = $mainCanvasWrapper.css('padding-' + edge);
+    var width = $container.outerWidth();
+    var mainCanvasPadding = $mainCanvasWrapper.css('padding-' + offCanvasDialog.edge);
     if (width !== mainCanvasPadding) {
-      $mainCanvasWrapper.css('padding-' + edge, width + 'px');
-      $widget.attr('data-offset-' + edge, width);
+      $mainCanvasWrapper.css('padding-' + offCanvasDialog.edge, width + 'px');
+      $container.attr('data-offset-' + offCanvasDialog.edge, width);
       displace();
     }
   }
@@ -109,12 +113,12 @@
     edge: document.documentElement.dir === 'rtl' ? 'left' : 'right',
 
     $mainCanvasWrapper: $('[data-off-canvas-main-canvas]'),
-    open: function () {
+    open: function (event, dialog, $element, settings) {
       $('body').addClass('js-tray-open');
       // @see http://api.jqueryui.com/position/
       settings.position = {
         my: 'left top',
-        at: edge + ' top',
+        at: this.edge + ' top',
         of: window
       };
       settings.dialogClass += ' ui-dialog-off-canvas';
@@ -122,15 +126,15 @@
       // See http://api.jqueryui.com/dialog for all dialog options.
       settings.height = $(window).height();
     },
-    close: function () {
+    close: function (event, dialog, $element) {
       $('body').removeClass('js-tray-open');
       // Remove all *.off-canvas events
       $(document).off('.off-canvas');
       $(window).off('.off-canvas');
-      $mainCanvasWrapper.css('padding-' + edge, 0);
+      this.$mainCanvasWrapper.css('padding-' + this.edge, 0);
     },
-    render: function () {
-      var eventData = {settings: settings, $element: $element};
+    render: function (event, dialog, $element, settings) {
+      var eventData = {settings: settings, $element: $element, offCanvasDialog: this};
       $('.ui-dialog-off-canvas, .ui-dialog-off-canvas .ui-dialog-titlebar').toggleClass('ui-dialog-empty-title', !settings.title);
 
       $element
@@ -139,7 +143,7 @@
           .on('dialogContentResize.off-canvas', eventData, debounce(bodyPadding, 100))
           .trigger('dialogresize.off-canvas');
 
-      this.getContainer($element).attr('data-offset-' + edge, '');
+      this.getContainer($element).attr('data-offset-' + this.edge, '');
 
       $(window)
           .on('resize.off-canvas scroll.off-canvas', eventData, debounce(resetSize, 100))
@@ -152,18 +156,18 @@
       return $element.dialog('widget');
     }
   };
-  
+
   Drupal.behaviors.offCanvasEvents = {
     attach: function () {
       $(window).once('off-canvas').on({
         'dialog:aftercreate': function (event, dialog, $element, settings) {
-          Drupal.offCanvas.render()
+          Drupal.offCanvas.render(event, dialog, $element, settings)
         },
         'dialog:beforecreate': function (event, dialog, $element, settings) {
-          Drupal.offCanvas.open()
+          Drupal.offCanvas.open(event, dialog, $element, settings)
         },
         'dialog:beforeclose': function (event, dialog, $element) {
-          Drupal.offCanvas.close()
+          Drupal.offCanvas.close(event, dialog, $element)
         }
       });
     }
