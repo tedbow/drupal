@@ -21,18 +21,18 @@
     var offCanvasDialog = event.data.offCanvasDialog;
     var offsets = displace.offsets;
     var $element = event.data.$element;
-    var $widget = offCanvasDialog.getContainer($element);
+    var container = offCanvasDialog.getContainer($element);
 
     var adjustedOptions = {
       // @see http://api.jqueryui.com/position/
       position: {
-        my: offCanvasDialog.edge + ' top',
-        at: offCanvasDialog.edge + ' top' + (offsets.top !== 0 ? '+' + offsets.top : ''),
+        my: offCanvasDialog.getEdge() + ' top',
+        at: offCanvasDialog.getEdge() + ' top' + (offsets.top !== 0 ? '+' + offsets.top : ''),
         of: window
       }
     };
 
-    $widget.css({
+    container.css({
       position: 'fixed',
       height: ($(window).height() - (offsets.top + offsets.bottom)) + 'px'
     });
@@ -83,10 +83,10 @@
     var $mainCanvasWrapper = offCanvasDialog.$mainCanvasWrapper;
 
     var width = $container.outerWidth();
-    var mainCanvasPadding = $mainCanvasWrapper.css('padding-' + offCanvasDialog.edge);
+    var mainCanvasPadding = $mainCanvasWrapper.css('padding-' + offCanvasDialog.getEdge());
     if (width !== mainCanvasPadding) {
-      $mainCanvasWrapper.css('padding-' + offCanvasDialog.edge, width + 'px');
-      $container.attr('data-offset-' + offCanvasDialog.edge, width);
+      $mainCanvasWrapper.css('padding-' + offCanvasDialog.getEdge(), width + 'px');
+      $container.attr('data-offset-' + offCanvasDialog.getEdge(), width);
       displace();
     }
   }
@@ -105,23 +105,23 @@
     // the tray will be %100 width. @see outside_in.module.css
     minDisplaceWidth: 768,
 
-    /**
-     * The edge of the screen that the dialog should appear on.
-     *
-     * @type {string}
-     */
-    edge: document.documentElement.dir === 'rtl' ? 'left' : 'right',
-
     $mainCanvasWrapper: $('[data-off-canvas-main-canvas]'),
+    /**
+     * Determines if a
+     * @return {bool}
+     */
+    isOffCanvas: function (dialog, $element, settings) {
+      return $element.is('#drupal-off-canvas');
+    },
     open: function (event, dialog, $element, settings) {
       $('body').addClass('js-tray-open');
+      settings.dialogClass += ' ui-dialog-off-canvas';
       // @see http://api.jqueryui.com/position/
       settings.position = {
         my: 'left top',
-        at: this.edge + ' top',
+        at: this.getEdge() + ' top',
         of: window
       };
-      settings.dialogClass += ' ui-dialog-off-canvas';
       // Applies initial height to dialog based on window height.
       // See http://api.jqueryui.com/dialog for all dialog options.
       settings.height = $(window).height();
@@ -131,7 +131,7 @@
       // Remove all *.off-canvas events
       $(document).off('.off-canvas');
       $(window).off('.off-canvas');
-      this.$mainCanvasWrapper.css('padding-' + this.edge, 0);
+      this.$mainCanvasWrapper.css('padding-' + this.getEdge(), 0);
     },
     render: function (event, dialog, $element, settings) {
       var eventData = {settings: settings, $element: $element, offCanvasDialog: this};
@@ -143,7 +143,7 @@
           .on('dialogContentResize.off-canvas', eventData, debounce(bodyPadding, 100))
           .trigger('dialogresize.off-canvas');
 
-      this.getContainer($element).attr('data-offset-' + this.edge, '');
+      this.getContainer($element).attr('data-offset-' + this.getEdge(), '');
 
       $(window)
           .on('resize.off-canvas scroll.off-canvas', eventData, debounce(resetSize, 100))
@@ -154,20 +154,34 @@
     bodyPadding: bodyPadding,
     getContainer: function ($element) {
       return $element.dialog('widget');
+    },
+    /**
+     * The edge of the screen that the dialog should appear on.
+     *
+     * @return {string}
+     */
+    getEdge: function () {
+      return document.documentElement.dir === 'rtl' ? 'left' : 'right';
     }
   };
 
   Drupal.behaviors.offCanvasEvents = {
     attach: function () {
       $(window).once('off-canvas').on({
-        'dialog:aftercreate': function (event, dialog, $element, settings) {
-          Drupal.offCanvas.render(event, dialog, $element, settings)
-        },
         'dialog:beforecreate': function (event, dialog, $element, settings) {
-          Drupal.offCanvas.open(event, dialog, $element, settings)
+          if (Drupal.offCanvas.isOffCanvas(dialog, $element, settings)) {
+            Drupal.offCanvas.open(event, dialog, $element, settings)
+          }
+        },
+        'dialog:aftercreate': function (event, dialog, $element, settings) {
+          if (Drupal.offCanvas.isOffCanvas(dialog, $element, settings)) {
+            Drupal.offCanvas.render(event, dialog, $element, settings);
+          }
         },
         'dialog:beforeclose': function (event, dialog, $element) {
-          Drupal.offCanvas.close(event, dialog, $element)
+          if (Drupal.offCanvas.render(event, dialog, $element, settings)) {
+            Drupal.offCanvas.close(event, dialog, $element)
+          }
         }
       });
     }
