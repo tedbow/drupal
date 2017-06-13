@@ -1266,7 +1266,12 @@ class DrupalKernel implements DrupalKernelInterface, TerminableInterface {
     // Register application services.
     $yaml_loader = new YamlFileLoader($container);
     foreach ($this->serviceYamls['app'] as $filename) {
-      $yaml_loader->load($filename);
+      try {
+        $yaml_loader->load($filename);
+      }
+      catch (\Exception $exception) {
+        throw new \Exception("file - $filename :" . $exception->getMessage(), $exception->getCode(), $exception);
+      }
     }
     foreach ($this->serviceProviders['app'] as $provider) {
       if ($provider instanceof ServiceProviderInterface) {
