@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\Tests\outside_in\FunctionalJavascript;
+namespace Drupal\Tests\system\FunctionalJavascript;
 
 use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
 
 /**
  * Base class contains common test functionality for the Settings Tray module.
  */
-abstract class OutsideInJavascriptTestBase extends JavascriptTestBase {
+abstract class OffCanvasTestBase extends JavascriptTestBase {
 
   /**
    * {@inheritdoc}

@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\Tests\outside_in\FunctionalJavascript;
+namespace Drupal\Tests\system\FunctionalJavascript;
 
 /**
  * Tests the off-canvas dialog functionality.
  *
  * @group outside_in
  */
-class OffCanvasTest extends OutsideInJavascriptTestBase {
+class OffCanvasTest extends OffCanvasTestBase {
 
   /**
    * {@inheritdoc}

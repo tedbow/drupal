@@ -5,6 +5,7 @@ namespace Drupal\Tests\outside_in\FunctionalJavascript;
 use Drupal\block\Entity\Block;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
+use Drupal\Tests\system\FunctionalJavascript\OffCanvasTestBase;
 use Drupal\user\Entity\Role;
 
 /**
@@ -12,7 +13,7 @@ use Drupal\user\Entity\Role;
  *
  * @group outside_in
  */
-class OutsideInBlockFormTest extends OutsideInJavascriptTestBase {
+class OutsideInBlockFormTest extends OffCanvasTestBase {
 
   const TOOLBAR_EDIT_LINK_SELECTOR = '#toolbar-bar div.contextual-toolbar-tab button';
 
