@@ -1,13 +1,12 @@
 <?php
 
-namespace Drupal\outside_in\Render\MainContent;
+namespace Drupal\Core\Render\MainContent;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Controller\TitleResolverInterface;
-use Drupal\Core\Render\MainContent\DialogRenderer;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\outside_in\Ajax\OpenOffCanvasDialogCommand;
+use Drupal\Core\Ajax\OpenOffCanvasDialogCommand;
 use Symfony\Component\HttpFoundation\Request;
 
 /**

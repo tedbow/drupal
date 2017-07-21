@@ -1,8 +1,6 @@
 <?php
 
-namespace Drupal\outside_in\Ajax;
-
-use Drupal\Core\Ajax\OpenDialogCommand;
+namespace Drupal\Core\Ajax;
 
 /**
  * Defines an AJAX command to open content in a dialog in a off-canvas dialog.

@@ -2,11 +2,11 @@
 
 namespace Drupal\Tests\outside_in\Unit\Ajax;
 
-use Drupal\outside_in\Ajax\OpenOffCanvasDialogCommand;
+use Drupal\Core\Ajax\OpenOffCanvasDialogCommand;
 use Drupal\Tests\UnitTestCase;
 
 /**
- * @coversDefaultClass \Drupal\outside_in\Ajax\OpenOffCanvasDialogCommand
+ * @coversDefaultClass \Drupal\Core\Ajax\OpenOffCanvasDialogCommand
  * @group outside_in
  */
 class OpenOffCanvasDialogCommandTest extends UnitTestCase {
@@ -15,7 +15,7 @@ class OpenOffCanvasDialogCommandTest extends UnitTestCase {
    * @covers ::render
    */
   public function testRender() {
-    $command = new OpenOffCanvasDialogCommand('Title', '<p>Text!</p>', ['url' => 'example']);
+    $command = new \Drupal\Core\Ajax\OpenOffCanvasDialogCommand('Title', '<p>Text!</p>', ['url' => 'example']);
 
     $expected = [
       'command' => 'openDialog',

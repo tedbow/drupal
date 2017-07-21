@@ -1,30 +1,22 @@
 <?php
 
-namespace Drupal\outside_in\Tests\Ajax;
+namespace Drupal\system\Tests\Ajax;
 
 use Drupal\ajax_test\Controller\AjaxTestController;
 use Drupal\Core\EventSubscriber\MainContentViewSubscriber;
-use Drupal\system\Tests\Ajax\AjaxTestBase;
 
 /**
  * Performs tests on opening and manipulating dialogs via AJAX commands.
  *
- * @group outside_in
+ * @group Ajax
  */
 class OffCanvasDialogTest extends AjaxTestBase {
 
-  /**
-   * Modules to enable.
-   *
-   * @var array
-   */
-  public static $modules = ['outside_in'];
 
   /**
    * Test sending AJAX requests to open and manipulate off-canvas dialog.
    */
   public function testDialog() {
-    $this->drupalLogin($this->drupalCreateUser(['administer contact forms']));
     // Ensure the elements render without notices or exceptions.
     $this->drupalGet('ajax-test/dialog');
 
@@ -55,6 +47,7 @@ class OffCanvasDialogTest extends AjaxTestBase {
 
     // Emulate going to the JS version of the page and check the JSON response.
     $ajax_result = $this->drupalGetAjax('ajax-test/dialog-contents', ['query' => [MainContentViewSubscriber::WRAPPER_FORMAT => 'drupal_dialog.off_canvas']]);
+    var_dump($ajax_result);
     $this->assertEqual($off_canvas_expected_response, $ajax_result[3], 'off-canvas dialog JSON response matches.');
   }
 

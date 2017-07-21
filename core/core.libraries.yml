@@ -903,3 +903,30 @@ underscore:
     gpl-compatible: true
   js:
     assets/vendor/underscore/underscore-min.js: { weight: -20, minified: true }
+
+drupal.dialog.off_canvas:
+  version: VERSION
+  js:
+    misc/dialog/off-canvas.js: {}
+  css:
+    base:
+      misc/dialog/css/off-canvas.reset.css: {}
+      misc/dialog/css/off-canvas.base.css: {}
+      misc/dialog/css/off-canvas.css: {}
+      misc/dialog/css/off-canvas.theme.css: { group: 200 }
+    component:
+      misc/dialog/css/off-canvas.motion.css: {}
+      misc/dialog/css/off-canvas.button.css: {}
+      misc/dialog/css/off-canvas.form.css: {}
+      misc/dialog/css/off-canvas.table.css: {}
+      misc/dialog/css/off-canvas.details.css: {}
+      misc/dialog/css/off-canvas.tabledrag.css: {}
+      misc/dialog/css/off-canvas.dropbutton.css: {}
+
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupal.ajax
+    - core/drupal.announce
+    - core/drupal.dialog
+    - core/drupal.dialog.ajax

@@ -55,7 +55,7 @@ class TestController {
         ],
         '#attached' => [
           'library' => [
-            'outside_in/drupal.outside_in',
+            'core/drupal.dialog.off_canvas',
           ],
         ],
       ],
@@ -73,7 +73,7 @@ class TestController {
         ],
         '#attached' => [
           'library' => [
-            'outside_in/drupal.outside_in',
+            'core/drupal.dialog.off_canvas',
           ],
         ],
       ],
@@ -88,7 +88,7 @@ class TestController {
         ],
         '#attached' => [
           'library' => [
-            'outside_in/drupal.outside_in',
+            'core/drupal.dialog.off_canvas',
           ],
         ],
       ],
@@ -131,7 +131,7 @@ class TestController {
       ],
       '#attached' => [
         'library' => [
-          'outside_in/drupal.outside_in',
+          'core/drupal.dialog.off_canvas',
         ],
       ],
     ];
