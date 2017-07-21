@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\outside_in\Block;
+namespace Drupal\block\Form;
 
 use Drupal\block\BlockForm;
 use Drupal\block\BlockInterface;

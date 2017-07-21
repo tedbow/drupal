@@ -1,3 +1,7 @@
+block_quick_edit:
+  title: 'Quick edit'
+  route_name: 'entity.block.off_canvas_form'
+  group: 'block'
 block_configure:
   title: 'Configure block'
   route_name: 'entity.block.edit_form'

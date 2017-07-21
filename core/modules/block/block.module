@@ -280,3 +280,31 @@ function block_configurable_language_delete(ConfigurableLanguageInterface $langu
     }
   }
 }
+
+/**
+ * Implements hook_contextual_links_view_alter().
+ *
+ * Change Configure Blocks into off_canvas links.
+ */
+function block_contextual_links_view_alter(&$element, $items) {
+  if (isset($element['#links']['block-quick-edit'])) {
+    // Place outside_in link first.
+    $quickedit_link = $element['#links']['block-quick-edit'];
+    unset($element['#links']['block-quick-edit']);
+    $element['#links'] = ['block-quick-edit' => $quickedit_link] + $element['#links'];
+
+    // @todo Move to block.links.contextual.yml in https://www.drupal.org/node/2892942
+    $element['#links']['block-quick-edit']['attributes'] = [
+      'class' => ['use-ajax'],
+      'data-dialog-type' => 'dialog',
+      'data-dialog-renderer' => 'off_canvas',
+      'data-outside-in-edit' => TRUE,
+    ];
+    // If this is content block change title to avoid duplicate "Quick Edit".
+    if (isset($element['#links']['block-contentblock-edit'])) {
+      $element['#links']['block-quick-edit']['title'] = t('Quick edit settings');
+    }
+
+    $element['#attached']['library'][] = 'core/drupal.dialog.off_canvas';
+  }
+}

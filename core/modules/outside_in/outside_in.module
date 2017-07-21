@@ -7,9 +7,9 @@
 
 use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\outside_in\Block\BlockEntityOffCanvasForm;
-use Drupal\outside_in\Form\SystemBrandingOffCanvasForm;
-use Drupal\outside_in\Form\SystemMenuOffCanvasForm;
+use Drupal\block\Form\BlockEntityOffCanvasForm;
+use Drupal\system\Form\SystemBrandingOffCanvasForm;
+use Drupal\system\Form\SystemMenuOffCanvasForm;
 
 /**
  * Implements hook_help().
@@ -64,16 +64,6 @@ function outside_in_block_view_alter(array &$build) {
   $build['#contextual_links']['outside_in'] = [
     'route_parameters' => [],
   ];
-}
-
-/**
- * Implements hook_entity_type_build().
- */
-function outside_in_entity_type_build(array &$entity_types) {
-  /* @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
-  $entity_types['block']
-    ->setFormClass('off_canvas', BlockEntityOffCanvasForm::class)
-    ->setLinkTemplate('off_canvas-form', '/admin/structure/block/manage/{block}/off-canvas');
 }
 
 /**
