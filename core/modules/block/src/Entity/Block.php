@@ -23,7 +23,8 @@ use Drupal\Core\Entity\EntityStorageInterface;
  *     "list_builder" = "Drupal\block\BlockListBuilder",
  *     "form" = {
  *       "default" = "Drupal\block\BlockForm",
- *       "delete" = "Drupal\block\Form\BlockDeleteForm"
+ *       "delete" = "Drupal\block\Form\BlockDeleteForm",
+ *       "off_canvas" = "Drupal\block\Form\BlockEntityOffCanvasForm",
  *     }
  *   },
  *   admin_permission = "administer blocks",
@@ -36,6 +37,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
  *     "edit-form" = "/admin/structure/block/manage/{block}",
  *     "enable" = "/admin/structure/block/manage/{block}/enable",
  *     "disable" = "/admin/structure/block/manage/{block}/disable",
+ *     "off_canvas-form" = "/admin/structure/block/manage/{block}/off-canvas",
  *   },
  *   config_export = {
  *     "id",

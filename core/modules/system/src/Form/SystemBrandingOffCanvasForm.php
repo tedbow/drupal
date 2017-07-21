@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\outside_in\Form;
+namespace Drupal\system\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
