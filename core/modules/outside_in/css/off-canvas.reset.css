@@ -5,6 +5,10 @@
  *
  */
 
+/*
+ * Do not include div in then initial overrides because including div will
+ * cause the need for many more overrides in this file.
+ */
 #drupal-off-canvas *:not(div),
 #drupal-off-canvas *:after,
 #drupal-off-canvas *:before {
