@@ -39,7 +39,8 @@
     "selector-type-no-unknown": null,
     "shorthand-property-no-redundant-values": null,
     "unit-whitelist": ["deg", "em", "ex", "ms", "rem", "%", "s", "px"],
-    "selector-no-id": null
+    "selector-no-id": null,
+    "indentation": 4
   },
   "ignoreFiles": [
     "assets/vendor/**/*.css",
