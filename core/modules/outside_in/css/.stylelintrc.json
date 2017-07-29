@@ -4,6 +4,7 @@
     "./../../../.stylelintrc"
   ],
   "rules": {
-    "declaration-no-important": null
+    "declaration-no-important": null,
+    "selector-no-id": null
   }
 }
