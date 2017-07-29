@@ -38,7 +38,8 @@
     "selector-pseudo-element-colon-notation": null,
     "selector-type-no-unknown": null,
     "shorthand-property-no-redundant-values": null,
-    "unit-whitelist": ["deg", "em", "ex", "ms", "rem", "%", "s", "px"]
+    "unit-whitelist": ["deg", "em", "ex", "ms", "rem", "%", "s", "px"],
+    "selector-no-id": null
   },
   "ignoreFiles": [
     "assets/vendor/**/*.css",
