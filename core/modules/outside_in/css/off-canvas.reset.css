@@ -1,11 +1,11 @@
-/*
+/**
  * @file
  * Reset most HTML elements styles for the off-canvas dialog.
- * This is a generic reset. Drupal-specific classes are reset in components.
  *
+ * This is a generic reset. Drupal-specific classes are reset in components.
  */
 
-/*
+/**
  * Do not include div in then initial overrides because including div will
  * cause the need for many more overrides in this file.
  */
