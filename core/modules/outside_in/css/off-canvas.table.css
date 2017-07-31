@@ -3,10 +3,12 @@
  * Visual styling for tables in the Settings Tray module's off canvas tray.
  */
 
+/* stylelint-disable */
 /*csslint ids:false */
+/* stylelint-enable */
 
 #drupal-off-canvas table * {
-  font-family: "Lucida Grande", 'Lucida Sans Unicode','liberation sans', sans-serif;
+  font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
 }
 #drupal-off-canvas table {
   display: table;
@@ -51,7 +53,7 @@
   color: #bbb;
 }
 #drupal-off-canvas th.checkbox,
-#drupal-off-canvas td.checkbox  {
+#drupal-off-canvas td.checkbox {
   width: 20px;
   padding: 0;
   text-align: center;
@@ -90,9 +92,3 @@
 [dir="rtl"] #drupal-off-canvas tr th:first-child {
   padding-right: 20px;
 }
-/*
-#drupal-off-canvas .odd,
-#drupal-off-canvas .even {
-  background-image: none;
-  background-color: transparent;
-}*/

@@ -5,7 +5,9 @@
  * This is a generic reset. Drupal-specific classes are reset in components.
  */
 
+/* stylelint-disable */
 /*csslint ids:false, qualified-headings:false */
+/* stylelint-enable */
 
 /**
  * Do not include div in then initial overrides because including div will

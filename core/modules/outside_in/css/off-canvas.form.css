@@ -3,10 +3,12 @@
  * Visual styling for forms in the Settings Tray module's off canvas tray.
  */
 
+/* stylelint-disable */
 /*csslint ids:false */
+/* stylelint-enable */
 
 #drupal-off-canvas form {
-  font-family: "Lucida Grande", 'Lucida Sans Unicode','liberation sans', sans-serif;
+  font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
   color: #ddd;
 }
 #drupal-off-canvas input[type="checkbox"] {
@@ -21,7 +23,7 @@
 }
 #drupal-off-canvas option {
   display: block;
-  font-family: "Lucida Grande", 'Lucida Sans Unicode','liberation sans', sans-serif;
+  font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
 }
 #drupal-off-canvas label {
   line-height: normal;

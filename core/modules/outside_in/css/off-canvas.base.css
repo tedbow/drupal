@@ -3,13 +3,15 @@
  * Set base styles for the settings tray.
  */
 
+/* stylelint-disable */
 /*csslint ids:false, qualified-headings:false */
+/* stylelint-enable */
 
 /* Set some global attributes. */
 #drupal-off-canvas *,
 #drupal-off-canvas *:not(div) {
   background: #444;
-  font-family: "Lucida Grande", 'Lucida Sans Unicode','liberation sans', sans-serif;
+  font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
   color: #ddd;
 }
 
@@ -17,7 +19,7 @@
 #drupal-off-canvas a,
 #drupal-off-canvas .link {
   border-bottom: none;
-  font-family: "Lucida Grande", 'Lucida Sans Unicode','liberation sans', sans-serif;
+  font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
   font-size: inherit;
   font-weight: normal;
   color: #85bef4;

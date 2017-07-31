@@ -4,7 +4,9 @@
  * See seven/css/components/buttons.css
  */
 
+/* stylelint-disable */
 /*csslint ids:false */
+/* stylelint-enable */
 
 #drupal-off-canvas button,
 #drupal-off-canvas .button {
@@ -14,7 +16,7 @@
   padding: 0;
   border: 0;
   box-shadow: none;
-  font-family: "Lucida Grande", 'Lucida Sans Unicode','liberation sans', sans-serif;
+  font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
   line-height: normal;
   text-transform: none;
   text-decoration: none;

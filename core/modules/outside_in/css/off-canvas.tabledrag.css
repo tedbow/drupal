@@ -5,7 +5,9 @@
  * @see tabledrag.js
  */
 
+/* stylelint-disable */
 /*csslint ids:false */
+/* stylelint-enable */
 
 #drupal-off-canvas .drag {
   cursor: move;
@@ -66,7 +68,7 @@
   margin-left: 0;
   margin-right: 5px;
 }
-#drupal-off-canvas tr:hover td  {
+#drupal-off-canvas tr:hover td {
   background: #222;
 }
 #drupal-off-canvas tr.drag td {

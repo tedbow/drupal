@@ -5,7 +5,9 @@
  * @todo Move CSS into core dialog library https://www.drupal.org/node/2784443.
  */
 
+/* stylelint-disable */
 /*csslint ids:false */
+/* stylelint-enable */
 
 /* Position the off-canvas dialog container outside the right of the viewport. */
 .ui-dialog-off-canvas {

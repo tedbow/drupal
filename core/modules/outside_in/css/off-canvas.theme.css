@@ -50,7 +50,7 @@
   /* Ensure that long titles do not overlap the close button. */
   max-width: 210px;
   font-size: 16px;
-  font-family: "Lucida Grande", 'Lucida Sans Unicode','liberation sans', sans-serif;
+  font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
   text-align: left; /* LTR */
 }
 [dir="rtl"] .ui-dialog.ui-dialog-off-canvas .ui-dialog-title {
@@ -75,7 +75,9 @@
   right: 1em;
 }
 
+/* stylelint-disable */
 /*csslint ids:false */
+/* stylelint-enable */
 
 /* Override default styling from jquery UI. */
 #drupal-off-canvas .ui-state-default,

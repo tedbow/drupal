@@ -10,7 +10,9 @@
  *   file: https://www.drupal.org/node/2784443.
  */
 
+/* stylelint-disable */
 /*csslint ids:false */
+/* stylelint-enable */
 
 .dialog-off-canvas__main-canvas {
   -webkit-transition: all .7s ease;
