@@ -3,7 +3,7 @@
  * Set base styles for the settings tray.
  */
 
-/*csslint qualified-headings:false ids:false */
+/*csslint allow: qualified-headings, ids */
 
 /* Set some global attributes. */
 #drupal-off-canvas *,
