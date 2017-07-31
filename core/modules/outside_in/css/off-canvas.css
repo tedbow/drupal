@@ -4,6 +4,9 @@
  *
  * @todo Move CSS into core dialog library https://www.drupal.org/node/2784443.
  */
+
+/*csslint ids:false */
+
 /* Position the off-canvas dialog container outside the right of the viewport. */
 .ui-dialog-off-canvas {
   box-sizing: border-box;
