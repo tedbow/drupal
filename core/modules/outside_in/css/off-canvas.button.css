@@ -4,6 +4,8 @@
  * See seven/css/components/buttons.css
  */
 
+/*csslint ids:false */
+
 #drupal-off-canvas button,
 #drupal-off-canvas .button {
   -webkit-appearance: none;
