@@ -75,6 +75,8 @@
   right: 1em;
 }
 
+/*csslint ids:false */
+
 /* Override default styling from jquery UI. */
 #drupal-off-canvas .ui-state-default,
 #drupal-off-canvas .ui-widget-content .ui-state-default,

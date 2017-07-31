@@ -3,6 +3,8 @@
  * Visual styling for forms in the Settings Tray module's off canvas tray.
  */
 
+/*csslint ids:false */
+
 #drupal-off-canvas form {
   font-family: "Lucida Grande", 'Lucida Sans Unicode','liberation sans', sans-serif;
   color: #ddd;

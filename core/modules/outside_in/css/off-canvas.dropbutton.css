@@ -3,6 +3,8 @@
  * Styles for dropbuttons in the off-canvas tray.
  */
 
+/*csslint ids:false */
+
 #drupal-off-canvas .dropbutton-wrapper,
 #drupal-off-canvas .dropbutton-widget {
   -webkit-appearance: none;

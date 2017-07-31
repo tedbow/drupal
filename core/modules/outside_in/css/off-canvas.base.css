@@ -1,8 +1,9 @@
 /*
  * @file
  * Set base styles for the settings tray.
- *
  */
+
+/*csslint ids:false */
 
 /* Set some global attributes. */
 #drupal-off-canvas *,

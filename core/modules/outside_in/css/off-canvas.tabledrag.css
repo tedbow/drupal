@@ -5,6 +5,8 @@
  * @see tabledrag.js
  */
 
+/*csslint ids:false */
+
 #drupal-off-canvas .drag {
   cursor: move;
 }
