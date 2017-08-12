@@ -11,12 +11,9 @@
 
 (($, Drupal, debounce, displace) => {
   /**
-   * Attaches off-canvas dialog behaviors.
+   * what goes here???
    *
-   * @type {Drupal~behavior}
-   *
-   * @prop {Drupal~behaviorAttach} attach
-   *   Attaches event listeners for off-canvas dialogs.
+   * @namespace
    */
   Drupal.offCanvas = {
 
@@ -61,8 +58,10 @@
         of: window,
       };
 
-      // Applies initial height to dialog based on window height.
-      // See http://api.jqueryui.com/dialog for all dialog options.
+      /**
+       * Applies initial height to dialog based on window height.
+       * @see http://api.jqueryui.com/dialog for all dialog options.
+       */
       settings.height = $(window).height();
     },
 
@@ -222,6 +221,14 @@
     },
   };
 
+  /**
+   * Attaches off-canvas dialog behaviors.
+   *
+   * @type {Drupal~behavior}
+   *
+   * @prop {Drupal~behaviorAttach} attach
+   *   Attaches event listeners for off-canvas dialogs.
+   */
   Drupal.behaviors.offCanvasEvents = {
     attach: () => {
       $(window).once('off-canvas').on({
