@@ -26,5 +26,8 @@ function config_test_rest_config_test_access(EntityInterface $entity, $operation
   // Add permission, so that EntityResourceTestBase's scenarios can test access
   // being denied. By default, all access is always allowed for the config_test
   // config entity.
-  return AccessResult::forbiddenIf(!$account->hasPermission('view config_test'))->cachePerPermissions();
+  if ($operation === 'view') {
+    return AccessResult::forbiddenIf(!$account->hasPermission('view config_test'))->cachePerPermissions();
+  }
+  return AccessResult::neutral();
 }

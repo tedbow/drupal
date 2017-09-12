@@ -82,7 +82,7 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
    *
    * @var string[]
    */
-  protected static $patchProtectedFieldNames;
+  protected static $patchProtectedFieldNames = [];
 
   /**
    * Optionally specify which field is the 'label' field. Some entities specify
@@ -694,9 +694,8 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
    * Tests a POST request for an entity, plus edge cases to ensure good DX.
    */
   public function testPost() {
-    // @todo Remove this in https://www.drupal.org/node/2300677.
-    if ($this->entity instanceof ConfigEntityInterface) {
-      $this->assertTrue(TRUE, 'POSTing config entities is not yet supported.');
+    if (!$this->entity->getEntityType()->get('supports_validation')) {
+      $this->assertTrue(TRUE, "This entity type doesn't support POSTing.");
       return;
     }
 
@@ -708,7 +707,14 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
     $parseable_valid_request_body   = $this->serializer->encode($this->getNormalizedPostEntity(), static::$format);
     $parseable_valid_request_body_2 = $this->serializer->encode($this->getNormalizedPostEntity(), static::$format);
     $parseable_invalid_request_body   = $this->serializer->encode($this->makeNormalizationInvalid($this->getNormalizedPostEntity()), static::$format);
-    $parseable_invalid_request_body_2 = $this->serializer->encode($this->getNormalizedPostEntity() + ['uuid' => [$this->randomMachineName(129)]], static::$format);
+    // The normalized structure is different for fieldable and non-fieldable
+    // entities.
+    if ($this->entity instanceof FieldableEntityInterface) {
+      $parseable_invalid_request_body_2 = $this->serializer->encode($this->getNormalizedPostEntity() + ['uuid' => [$this->randomMachineName(129)]], static::$format);
+    }
+    else {
+      $parseable_invalid_request_body_2 = $this->serializer->encode($this->getNormalizedPostEntity() + ['uuid' => $this->randomMachineName(129)], static::$format);
+    }
     $parseable_invalid_request_body_3 = $this->serializer->encode($this->getNormalizedPostEntity() + ['field_rest_test' => [['value' => $this->randomString()]]], static::$format);
 
     // The URL and Guzzle request options that will be used in this test. The
@@ -796,9 +802,14 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
 
     // DX: 422 when invalid entity: multiple values sent for single-value field.
     $response = $this->request('POST', $url, $request_options);
-    $label_field = $this->entity->getEntityType()->hasKey('label') ? $this->entity->getEntityType()->getKey('label') : static::$labelFieldName;
-    $label_field_capitalized = $this->entity->getFieldDefinition($label_field)->getLabel();
-    $this->assertResourceErrorResponse(422, "Unprocessable Entity: validation failed.\n$label_field: $label_field_capitalized: this field cannot hold more than 1 values.\n", $response);
+    if ($this->entity instanceof FieldableEntityInterface) {
+      $label_field = $this->entity->getEntityType()->hasKey('label') ? $this->entity->getEntityType()->getKey('label') : static::$labelFieldName;
+      $label_field_capitalized = $this->entity->getFieldDefinition($label_field)->getLabel();
+      $this->assertResourceErrorResponse(422, "Unprocessable Entity: validation failed.\n$label_field: $label_field_capitalized: this field cannot hold more than 1 values.\n", $response);
+    }
+    else {
+      $this->assertResourceErrorResponse(422, "Unprocessable Entity: validation failed.\nlabel: This value should be of the correct primitive type.\n", $response);
+    }
 
 
     $request_options[RequestOptions::BODY] = $parseable_invalid_request_body_2;
@@ -808,16 +819,25 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
     // @todo Fix this in https://www.drupal.org/node/2149851.
     if ($this->entity->getEntityType()->hasKey('uuid')) {
       $response = $this->request('POST', $url, $request_options);
-      $this->assertResourceErrorResponse(422, "Unprocessable Entity: validation failed.\nuuid.0.value: UUID: may not be longer than 128 characters.\n", $response);
+      if ($this->entity instanceof FieldableEntityInterface) {
+        // @see \Drupal\Core\Field\Plugin\Field\FieldType\StringItem::getConstraints
+        $this->assertResourceErrorResponse(422, "Unprocessable Entity: validation failed.\nuuid.0.value: UUID: may not be longer than 128 characters.\n", $response);
+      }
+      else {
+        // @see \Symfony\Component\Validator\Constraints\Uuid
+        $this->assertResourceErrorResponse(422, "Unprocessable Entity: validation failed.\nuuid: This is not a valid UUID.\n", $response);
+      }
     }
 
 
-    $request_options[RequestOptions::BODY] = $parseable_invalid_request_body_3;
+    if ($this->entity instanceof FieldableEntityInterface) {
+      $request_options[RequestOptions::BODY] = $parseable_invalid_request_body_3;
 
 
-    // DX: 403 when entity contains field without 'edit' access.
-    $response = $this->request('POST', $url, $request_options);
-    $this->assertResourceErrorResponse(403, "Access denied on creating field 'field_rest_test'.", $response);
+      // DX: 403 when entity contains field without 'edit' access.
+      $response = $this->request('POST', $url, $request_options);
+      $this->assertResourceErrorResponse(403, "Access denied on creating field 'field_rest_test'.", $response);
+    }
 
 
     $request_options[RequestOptions::BODY] = $parseable_valid_request_body;
@@ -864,7 +884,7 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
     foreach ($this->getNormalizedPostEntity() as $field_name => $field_normalization) {
       // Some top-level keys in the normalization may not be fields on the
       // entity (for example '_links' and '_embedded' in the HAL normalization).
-      if ($created_entity->hasField($field_name)) {
+      if ($created_entity instanceof FieldableEntityInterface && $created_entity->hasField($field_name)) {
         // Subset, not same, because we can e.g. send just the target_id for the
         // bundle in a POST request; the response will include more properties.
         $this->assertArraySubset(static::castToString($field_normalization), $created_entity->get($field_name)->getValue(), TRUE);
@@ -915,9 +935,8 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
    * Tests a PATCH request for an entity, plus edge cases to ensure good DX.
    */
   public function testPatch() {
-    // @todo Remove this in https://www.drupal.org/node/2300677.
-    if ($this->entity instanceof ConfigEntityInterface) {
-      $this->assertTrue(TRUE, 'PATCHing config entities is not yet supported.');
+    if (!$this->entity->getEntityType()->get('supports_validation')) {
+      $this->assertTrue(TRUE, "This entity type doesn't support PATCHing.");
       return;
     }
 
@@ -1028,28 +1047,31 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
 
 
     // DX: 422 when invalid entity: multiple values sent for single-value field.
-    $response = $this->request('PATCH', $url, $request_options);
-    $label_field = $this->entity->getEntityType()->hasKey('label') ? $this->entity->getEntityType()->getKey('label') : static::$labelFieldName;
-    $label_field_capitalized = $this->entity->getFieldDefinition($label_field)->getLabel();
-    $this->assertResourceErrorResponse(422, "Unprocessable Entity: validation failed.\n$label_field: $label_field_capitalized: this field cannot hold more than 1 values.\n", $response);
+    if ($this->entity instanceof FieldableEntityInterface) {
+      $response = $this->request('PATCH', $url, $request_options);
+      $label_field = $this->entity->getEntityType()->hasKey('label') ? $this->entity->getEntityType()->getKey('label') : static::$labelFieldName;
+      $label_field_capitalized = $this->entity->getFieldDefinition($label_field)->getLabel();
+      $this->assertResourceErrorResponse(422, "Unprocessable Entity: validation failed.\n$label_field: $label_field_capitalized: this field cannot hold more than 1 values.\n", $response);
+    }
 
 
     $request_options[RequestOptions::BODY] = $parseable_invalid_request_body_2;
 
 
     // DX: 403 when entity contains field without 'edit' access.
-    $response = $this->request('PATCH', $url, $request_options);
-    $this->assertResourceErrorResponse(403, "Access denied on updating field 'field_rest_test'.", $response);
+    if ($this->entity instanceof FieldableEntityInterface) {
+      $response = $this->request('PATCH', $url, $request_options);
+      $this->assertResourceErrorResponse(403, "Access denied on updating field 'field_rest_test'.", $response);
+
+      $request_options[RequestOptions::BODY] = $parseable_invalid_request_body_3;
 
 
-    $request_options[RequestOptions::BODY] = $parseable_invalid_request_body_3;
-
-
-    // DX: 403 when entity contains field without 'edit' nor 'view' access, even
-    // when the value for that field matches the current value. This is allowed
-    // in principle, but leads to information disclosure.
-    $response = $this->request('PATCH', $url, $request_options);
-    $this->assertResourceErrorResponse(403, "Access denied on updating field 'field_rest_test'.", $response);
+      // DX: 403 when entity contains field without 'edit' nor 'view' access, even
+      // when the value for that field matches the current value. This is allowed
+      // in principle, but leads to information disclosure.
+      $response = $this->request('PATCH', $url, $request_options);
+      $this->assertResourceErrorResponse(403, "Access denied on updating field 'field_rest_test'.", $response);
+    }
 
 
     // DX: 403 when sending PATCH request with updated read-only fields.
@@ -1097,25 +1119,27 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
     $response = $this->request('PATCH', $url, $request_options);
     $this->assertResourceResponse(200, FALSE, $response);
     $this->assertFalse($response->hasHeader('X-Drupal-Cache'));
-    // Assert that the entity was indeed updated, and that the response body
-    // contains the serialized updated entity.
-    $updated_entity = $this->entityStorage->loadUnchanged($this->entity->id());
-    $updated_entity_normalization = $this->serializer->normalize($updated_entity, static::$format, ['account' => $this->account]);
-    $this->assertSame($updated_entity_normalization, $this->serializer->decode((string) $response->getBody(), static::$format));
-    // Assert that the entity was indeed created using the PATCHed values.
-    foreach ($this->getNormalizedPatchEntity() as $field_name => $field_normalization) {
-      // Some top-level keys in the normalization may not be fields on the
-      // entity (for example '_links' and '_embedded' in the HAL normalization).
-      if ($updated_entity->hasField($field_name)) {
-        // Subset, not same, because we can e.g. send just the target_id for the
-        // bundle in a PATCH request; the response will include more properties.
-        $this->assertArraySubset(static::castToString($field_normalization), $updated_entity->get($field_name)->getValue(), TRUE);
+    if ($this->entity instanceof FieldableEntityInterface) {
+      // Assert that the entity was indeed updated, and that the response body
+      // contains the serialized updated entity.
+      $updated_entity = $this->entityStorage->loadUnchanged($this->entity->id());
+      $updated_entity_normalization = $this->serializer->normalize($updated_entity, static::$format, ['account' => $this->account]);
+      $this->assertSame($updated_entity_normalization, $this->serializer->decode((string) $response->getBody(), static::$format));
+      // Assert that the entity was indeed created using the PATCHed values.
+      foreach ($this->getNormalizedPatchEntity() as $field_name => $field_normalization) {
+        // Some top-level keys in the normalization may not be fields on the
+        // entity (for example '_links' and '_embedded' in the HAL normalization).
+        if ($updated_entity->hasField($field_name)) {
+          // Subset, not same, because we can e.g. send just the target_id for the
+          // bundle in a PATCH request; the response will include more properties.
+          $this->assertArraySubset(static::castToString($field_normalization), $updated_entity->get($field_name)->getValue(), TRUE);
+        }
       }
+      // Ensure that fields do not get deleted if they're not present in the PATCH
+      // request. Test this using the configurable field that we added, but which
+      // is not sent in the PATCH request.
+      $this->assertSame('All the faith he had had had had no effect on the outcome of his life.', $updated_entity->get('field_rest_test')->value);
     }
-    // Ensure that fields do not get deleted if they're not present in the PATCH
-    // request. Test this using the configurable field that we added, but which
-    // is not sent in the PATCH request.
-    $this->assertSame('All the faith he had had had had no effect on the outcome of his life.', $updated_entity->get('field_rest_test')->value);
 
 
     $this->config('rest.settings')->set('bc_entity_resource_permissions', TRUE)->save(TRUE);
@@ -1141,9 +1165,8 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
    * Tests a DELETE request for an entity, plus edge cases to ensure good DX.
    */
   public function testDelete() {
-    // @todo Remove this in https://www.drupal.org/node/2300677.
-    if ($this->entity instanceof ConfigEntityInterface) {
-      $this->assertTrue(TRUE, 'DELETEing config entities is not yet supported.');
+    if (!$this->entity->getEntityType()->get('supports_validation')) {
+      $this->assertTrue(TRUE, "This entity type doesn't support DELETEing.");
       return;
     }
 
@@ -1321,35 +1344,38 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
   protected static function getModifiedEntityForPatchTesting(EntityInterface $entity) {
     $modified_entity = clone $entity;
     $original_values = [];
-    foreach (static::$patchProtectedFieldNames as $field_name) {
-      $field = $modified_entity->get($field_name);
-      $original_values[$field_name] = $field->getValue();
-      switch ($field->getItemDefinition()->getClass()) {
-        case EntityReferenceItem::class:
-          // EntityReferenceItem::generateSampleValue() picks one of the last 50
-          // entities of the supported type & bundle. We don't care if the value
-          // is valid, we only care that it's different.
-          $field->setValue(['target_id' => 99999]);
-          break;
-        case BooleanItem::class:
-          // BooleanItem::generateSampleValue() picks either 0 or 1. So a 50%
-          // chance of not picking a different value.
-          $field->value = ((int) $field->value) === 1 ? '0' : '1';
-          break;
-        case PathItem::class:
-          // PathItem::generateSampleValue() doesn't set a PID, which causes
-          // PathItem::postSave() to fail. Keep the PID (and other properties),
-          // just modify the alias.
-          $value = $field->getValue();
-          $value['alias'] = str_replace(' ', '-', strtolower((new Random())->sentences(3)));
-          $field->setValue($value);
-          break;
-        default:
-          $original_field = clone $field;
-          while ($field->equals($original_field)) {
-            $field->generateSampleItems();
-          }
-          break;
+
+    if ($entity instanceof FieldableEntityInterface) {
+      foreach (static::$patchProtectedFieldNames as $field_name) {
+        $field = $modified_entity->get($field_name);
+        $original_values[$field_name] = $field->getValue();
+        switch ($field->getItemDefinition()->getClass()) {
+          case EntityReferenceItem::class:
+            // EntityReferenceItem::generateSampleValue() picks one of the last 50
+            // entities of the supported type & bundle. We don't care if the value
+            // is valid, we only care that it's different.
+            $field->setValue(['target_id' => 99999]);
+            break;
+          case BooleanItem::class:
+            // BooleanItem::generateSampleValue() picks either 0 or 1. So a 50%
+            // chance of not picking a different value.
+            $field->value = ((int) $field->value) === 1 ? '0' : '1';
+            break;
+          case PathItem::class:
+            // PathItem::generateSampleValue() doesn't set a PID, which causes
+            // PathItem::postSave() to fail. Keep the PID (and other properties),
+            // just modify the alias.
+            $value = $field->getValue();
+            $value['alias'] = str_replace(' ', '-', strtolower((new Random())->sentences(3)));
+            $field->setValue($value);
+            break;
+          default:
+            $original_field = clone $field;
+            while ($field->equals($original_field)) {
+              $field->generateSampleItems();
+            }
+            break;
+        }
       }
     }
 
@@ -1368,7 +1394,15 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
   protected function makeNormalizationInvalid(array $normalization) {
     // Add a second label to this entity to make it invalid.
     $label_field = $this->entity->getEntityType()->hasKey('label') ? $this->entity->getEntityType()->getKey('label') : static::$labelFieldName;
-    $normalization[$label_field][1]['value'] = 'Second Title';
+    if ($this->entity instanceof FieldableEntityInterface) {
+      $normalization[$label_field][1]['value'] = 'Second Title';
+    }
+    else {
+      $normalization[$label_field] = [
+        $normalization[$label_field],
+        'Second title',
+      ];
+    }
 
     return $normalization;
   }

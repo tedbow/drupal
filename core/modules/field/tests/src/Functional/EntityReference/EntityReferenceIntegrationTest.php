@@ -54,7 +54,7 @@ class EntityReferenceIntegrationTest extends BrowserTestBase {
     parent::setUp();
 
     // Create a test user.
-    $web_user = $this->drupalCreateUser(['administer entity_test content', 'administer entity_test fields', 'view test entity']);
+    $web_user = $this->drupalCreateUser(['administer entity_test content', 'administer entity_test fields', 'view test entity', 'view config_test', 'administer config_test']);
     $this->drupalLogin($web_user);
   }
 

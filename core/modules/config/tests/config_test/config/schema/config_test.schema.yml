@@ -24,6 +24,8 @@ config_test_dynamic:
     protected_property:
       type: string
       label: 'Protected property'
+      constraints:
+        ConfigTestProtectedProperty: {}
 
 config_test.dynamic.*:
   type: config_test_dynamic

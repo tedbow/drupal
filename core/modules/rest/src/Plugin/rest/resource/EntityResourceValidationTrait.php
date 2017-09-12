@@ -33,6 +33,19 @@ trait EntityResourceValidationTrait {
     // changes.
     $violations->filterByFieldAccess();
 
+    $this->processViolations($violations);
+  }
+
+  /**
+   * Processes violations and creates a helpful exception message.
+   *
+   * @param \Drupal\Core\Entity\EntityConstraintViolationListInterface $violations
+   *   The entity constraint violations to process.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException
+   *   Throws a HTTP exception when the validation fails.
+   */
+  protected function processViolations($violations) {
     if ($violations->count() > 0) {
       $message = "Unprocessable Entity: validation failed.\n";
       foreach ($violations as $violation) {

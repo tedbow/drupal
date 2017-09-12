@@ -1,0 +1,4 @@
+view config_test:
+  title: 'View ConfigTest entities'
+administer config_test:
+  title: 'Administer ConfigTest entities'

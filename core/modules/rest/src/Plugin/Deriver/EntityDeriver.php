@@ -2,8 +2,10 @@
 
 namespace Drupal\rest\Plugin\Deriver;
 
+use Drupal\Core\Config\Entity\ConfigEntityTypeInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
+use Drupal\rest\Plugin\rest\resource\ConfigEntityResource;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -86,6 +88,10 @@ class EntityDeriver implements ContainerDeriverInterface {
           else {
             $this->derivatives[$entity_type_id]['uri_paths'][$link_relation] = $default_uri;
           }
+        }
+
+        if ($entity_type instanceof ConfigEntityTypeInterface) {
+          $this->derivatives[$entity_type_id]['class'] = ConfigEntityResource::class;
         }
 
         $this->derivatives[$entity_type_id] += $base_plugin_definition;

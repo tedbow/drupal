@@ -22,6 +22,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
  *     },
  *     "access" = "Drupal\config_test\ConfigTestAccessControlHandler"
  *   },
+ *   supports_validation = TRUE,
  *   config_prefix = "dynamic",
  *   entity_keys = {
  *     "id" = "id",

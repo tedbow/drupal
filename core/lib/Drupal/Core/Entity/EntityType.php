@@ -278,6 +278,13 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   protected $additional = [];
 
   /**
+   * Entity type supports validation.
+   *
+   * @var bool
+   */
+  protected $supports_validation = FALSE;
+
+  /**
    * Constructs a new EntityType.
    *
    * @param array $definition

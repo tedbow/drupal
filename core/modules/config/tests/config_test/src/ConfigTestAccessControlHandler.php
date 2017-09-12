@@ -18,14 +18,17 @@ class ConfigTestAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   public function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    return AccessResult::allowed();
+    if ($operation === 'view') {
+      return AccessResult::allowedIfHasPermission($account, 'view config_test');
+    }
+    return AccessResult::allowedIfHasPermission($account, 'administer config_test');
   }
 
   /**
    * {@inheritdoc}
    */
   protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
-    return AccessResult::allowed();
+    return AccessResult::allowedIfHasPermission($account, 'administer config_test');
   }
 
 }

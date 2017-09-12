@@ -5,6 +5,7 @@ namespace Drupal\rest\Plugin\rest\resource;
 use Drupal\Component\Plugin\DependentPluginInterface;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Cache\CacheableResponseInterface;
+use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Config\Entity\ConfigEntityType;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
@@ -225,29 +226,36 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
       throw new AccessDeniedHttpException($entity_access->getReason() ?: $this->generateFallbackAccessDeniedMessage($entity, 'update'));
     }
 
-    // Overwrite the received fields.
-    foreach ($entity->_restSubmittedFields as $field_name) {
-      $field = $entity->get($field_name);
-      $original_field = $original_entity->get($field_name);
+    if ($entity instanceof FieldableEntityInterface) {
+      // Overwrite the received fields.
+      foreach ($entity->_restSubmittedFields as $field_name) {
+        $field = $entity->get($field_name);
+        $original_field = $original_entity->get($field_name);
 
-      // If the user has access to view the field, we need to check update
-      // access regardless of the field value to avoid information disclosure.
-      // (Otherwise the user may try PATCHing with value after value, until they
-      // send the current value for the field, and then they won't get a 403
-      // response anymore, which indicates that the value they sent in the PATCH
-      // request body matches the current value.)
-      if (!$original_field->access('view')) {
-        if (!$original_field->access('edit')) {
+        // If the user has access to view the field, we need to check update
+        // access regardless of the field value to avoid information disclosure.
+        // (Otherwise the user may try PATCHing with value after value, until
+        // they send the current value for the field, and then they won't get a
+        // 403 response anymore, which indicates that the value they sent in the
+        // PATCH request body matches the current value.)
+        if (!$original_field->access('view')) {
+          if (!$original_field->access('edit')) {
+            throw new AccessDeniedHttpException("Access denied on updating field '$field_name'.");
+          }
+        }
+        // Check access for all received fields, but only if they are being
+        // changed. The bundle of an entity, for example, must be provided for
+        // denormalization to succeed, but it may not be changed.
+        elseif (!$original_field->equals($field) && !$original_field->access('edit')) {
           throw new AccessDeniedHttpException("Access denied on updating field '$field_name'.");
         }
+        $original_entity->set($field_name, $field->getValue());
       }
-      // Check access for all received fields, but only if they are being
-      // changed. The bundle of an entity, for example, must be provided for
-      // denormalization to succeed, but it may not be changed.
-      elseif (!$original_field->equals($field) && !$original_field->access('edit')) {
-        throw new AccessDeniedHttpException("Access denied on updating field '$field_name'.");
+    }
+    elseif ($entity instanceof ConfigEntityInterface && $original_entity instanceof ConfigEntityInterface) {
+      foreach ($entity->_restSubmittedFields as $field_name) {
+        $original_entity->set($field_name, $entity->get($field_name));
       }
-      $original_entity->set($field_name, $field->getValue());
     }
 
     // Validate the received data before saving.
@@ -346,23 +354,12 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
    */
   public function availableMethods() {
     $methods = parent::availableMethods();
-    if ($this->isConfigEntityResource()) {
-      // Currently only GET is supported for Config Entities.
-      // @todo Remove when supported https://www.drupal.org/node/2300677
+    // Without validation, it's impossible to support creation or modification.
+    if (!$this->entityType->get('supports_validation')) {
       $unsupported_methods = ['POST', 'PUT', 'DELETE', 'PATCH'];
       $methods = array_diff($methods, $unsupported_methods);
     }
     return $methods;
-  }
-
-  /**
-   * Checks if this resource is for a Config Entity.
-   *
-   * @return bool
-   *   TRUE if the entity is a Config Entity, FALSE otherwise.
-   */
-  protected function isConfigEntityResource() {
-    return $this->entityType instanceof ConfigEntityType;
   }
 
   /**

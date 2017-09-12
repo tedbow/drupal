@@ -17,6 +17,11 @@ class ContentEntityType extends EntityType implements ContentEntityTypeInterface
   /**
    * {@inheritdoc}
    */
+  protected $supports_validation = TRUE;
+
+  /**
+   * {@inheritdoc}
+   */
   public function __construct($definition) {
     parent::__construct($definition);
     $this->handlers += [

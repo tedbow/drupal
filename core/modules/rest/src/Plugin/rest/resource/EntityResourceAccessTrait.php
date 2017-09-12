@@ -3,6 +3,7 @@
 namespace Drupal\rest\Plugin\rest\resource;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
@@ -22,6 +23,10 @@ trait EntityResourceAccessTrait {
    *   field.
    */
   protected function checkEditFieldAccess(EntityInterface $entity) {
+    if (!$entity instanceof FieldableEntityInterface) {
+      return;
+    }
+
     // Only check 'edit' permissions for fields that were actually submitted by
     // the user. Field access makes no difference between 'create' and 'update',
     // so the 'edit' operation is used here.

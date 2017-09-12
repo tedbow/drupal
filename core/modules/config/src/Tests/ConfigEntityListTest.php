@@ -32,6 +32,8 @@ class ConfigEntityListTest extends WebTestBase {
     // test.
     \Drupal::entityManager()->getStorage('config_test')->load('override')->delete();
     $this->drupalPlaceBlock('local_actions_block');
+
+    $this->drupalLogin($this->createUser(['view config_test', 'administer config_test']));
   }
 
   /**
@@ -152,7 +154,7 @@ class ConfigEntityListTest extends WebTestBase {
    */
   public function testListUI() {
     // Log in as an administrative user to access the full menu trail.
-    $this->drupalLogin($this->drupalCreateUser(['access administration pages', 'administer site configuration']));
+    $this->drupalLogin($this->drupalCreateUser(['access administration pages', 'administer site configuration', 'administer config_test']));
 
     // Get the list callback page.
     $this->drupalGet('admin/structure/config_test');
