@@ -265,15 +265,17 @@
     Drupal.ajax.bindAjaxLinks(data.$el[0]);
   });
 
-  // Manage Active editable class on opening and closing of the dialog.
   $(window).on({
     'dialog:beforecreate': (event, dialog, $element, settings) => {
       if (settings.hasOwnProperty('drupalTriggerElement')) {
+        // Save trigger element so it will be available for 'dialog:afterclose'
+        // event.
         drupalTriggerElement = settings.drupalTriggerElement;
       }
     },
     'dialog:afterclose': (event, dialog, $element) => {
       if (drupalTriggerElement) {
+        // Set focus to the contextual trigger button.
         $(drupalTriggerElement)
           .closest('[data-contextual-id]')
           .find('button')
