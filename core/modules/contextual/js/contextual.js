@@ -6,6 +6,7 @@
 **/
 
 (function ($, Drupal, drupalSettings, _, Backbone, JSON, storage) {
+  var drupalTriggerElement = void 0;
   var options = $.extend(drupalSettings.contextual, {
     strings: {
       open: Drupal.t('Open'),
@@ -147,5 +148,18 @@
 
   $(document).on('drupalContextualLinkAdded', function (event, data) {
     Drupal.ajax.bindAjaxLinks(data.$el[0]);
+  });
+
+  $(window).on({
+    'dialog:beforecreate': function dialogBeforecreate(event, dialog, $element, settings) {
+      if (settings.hasOwnProperty('drupalTriggerElement')) {
+        drupalTriggerElement = settings.drupalTriggerElement;
+      }
+    },
+    'dialog:afterclose': function dialogAfterclose(event, dialog, $element) {
+      if (drupalTriggerElement) {
+        $(drupalTriggerElement).closest('[data-contextual-id]').find('button').get(0).focus();
+      }
+    }
   });
 })(jQuery, Drupal, drupalSettings, _, Backbone, window.JSON, window.sessionStorage);

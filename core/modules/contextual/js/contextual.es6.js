@@ -4,6 +4,7 @@
  */
 
 (function ($, Drupal, drupalSettings, _, Backbone, JSON, storage) {
+  let drupalTriggerElement;
   const options = $.extend(drupalSettings.contextual,
     // Merge strings on top of drupalSettings so that they are not mutable.
     {
@@ -262,5 +263,23 @@
    */
   $(document).on('drupalContextualLinkAdded', (event, data) => {
     Drupal.ajax.bindAjaxLinks(data.$el[0]);
+  });
+
+  // Manage Active editable class on opening and closing of the dialog.
+  $(window).on({
+    'dialog:beforecreate': (event, dialog, $element, settings) => {
+      if (settings.hasOwnProperty('drupalTriggerElement')) {
+        drupalTriggerElement = settings.drupalTriggerElement;
+      }
+    },
+    'dialog:afterclose': (event, dialog, $element) => {
+      if (drupalTriggerElement) {
+        $(drupalTriggerElement)
+          .closest('[data-contextual-id]')
+          .find('button')
+          .get(0)
+          .focus();
+      }
+    },
   });
 }(jQuery, Drupal, drupalSettings, _, Backbone, window.JSON, window.sessionStorage));

@@ -132,6 +132,10 @@
       response.dialogOptions.buttons = Drupal.behaviors.dialog.prepareDialogButtons($dialog);
     }
 
+    if (ajax.hasOwnProperty('element')) {
+      response.dialogOptions.drupalTriggerElement = ajax.element;
+    }
+
     // Bind dialogButtonsChange.
     $dialog.on('dialogButtonsChange', () => {
       const buttons = Drupal.behaviors.dialog.prepareDialogButtons($dialog);

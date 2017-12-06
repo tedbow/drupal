@@ -80,6 +80,11 @@ class ContextualLinksTest extends JavascriptTestBase {
     // Check to make sure that page was not reloaded.
     $this->assertSession()->pageTextContains($current_page_string);
 
+    // Close the dialog.
+    $this->getSession()->getPage()->find('css', '.ui-dialog .ui-dialog-titlebar-close')->click();
+    // Confirm the contextual button has become the active element.
+    $this->assertJsCondition('document.activeElement === document.querySelector("#block-branding [data-contextual-id] button")');
+
     // Test clicking contextual link with toolbar.
     $this->container->get('module_installer')->install(['toolbar']);
     $this->grantPermissions(Role::load(Role::AUTHENTICATED_ID), ['access toolbar']);
