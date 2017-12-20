@@ -269,18 +269,17 @@
   $(window).on({
     'dialog:beforecreate': (event, dialog, $element, settings) => {
       if (settings.hasOwnProperty('drupalTriggerElement')) {
-        /**
-         * Save trigger element so it will be available for 'dialog:afterclose'
-         * event.
-         */
+        // Determine if the trigger element is a contextual link.
         if ($(settings.drupalTriggerElement).closest('[data-contextual-id]').find('button').length === 1) {
+          /**
+           * Save the contextual link button so it will be available for
+           * 'dialog:afterclose'.
+           */
           dialogLinkContextualButton = $(settings.drupalTriggerElement)
             .closest('[data-contextual-id]')
             .find('button')
             .get(0);
         }
-
-
       }
     },
     'dialog:afterclose': (event, dialog, $element) => {
