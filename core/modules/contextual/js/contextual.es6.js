@@ -4,7 +4,6 @@
  */
 
 (function ($, Drupal, drupalSettings, _, Backbone, JSON, storage) {
-  let drupalTriggerElement;
   const options = $.extend(drupalSettings.contextual,
     // Merge strings on top of drupalSettings so that they are not mutable.
     {
@@ -265,22 +264,29 @@
     Drupal.ajax.bindAjaxLinks(data.$el[0]);
   });
 
+  // The contextual button for the link that opened the dialog.
+  let dialogLinkContextualButton;
   $(window).on({
     'dialog:beforecreate': (event, dialog, $element, settings) => {
       if (settings.hasOwnProperty('drupalTriggerElement')) {
-        // Save trigger element so it will be available for 'dialog:afterclose'
-        // event.
-        drupalTriggerElement = settings.drupalTriggerElement;
+        /**
+         * Save trigger element so it will be available for 'dialog:afterclose'
+         * event.
+         */
+        if ($(settings.drupalTriggerElement).closest('[data-contextual-id]').find('button').length === 1) {
+          dialogLinkContextualButton = $(settings.drupalTriggerElement)
+            .closest('[data-contextual-id]')
+            .find('button')
+            .get(0);
+        }
+
+
       }
     },
     'dialog:afterclose': (event, dialog, $element) => {
-      if (drupalTriggerElement) {
+      if (dialogLinkContextualButton) {
         // Set focus to the contextual trigger button.
-        $(drupalTriggerElement)
-          .closest('[data-contextual-id]')
-          .find('button')
-          .get(0)
-          .focus();
+        $(dialogLinkContextualButton).focus();
       }
     },
   });
