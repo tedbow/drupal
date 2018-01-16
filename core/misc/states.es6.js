@@ -120,38 +120,30 @@
      *   dependee's compliance status.
      */
     initializeDependee(selector, dependeeStates) {
-      let state;
-      const self = this;
-
-      function stateEventHandler(e) {
-        self.update(e.data.selector, e.data.state, e.value);
-      }
-
       // Cache for the states of this dependee.
       this.values[selector] = {};
 
-      // eslint-disable-next-line no-restricted-syntax
-      for (const i in dependeeStates) {
-        if (dependeeStates.hasOwnProperty(i)) {
-          state = dependeeStates[i];
-          // Make sure we're not initializing this selector/state combination
-          // twice.
-          if ($.inArray(state, dependeeStates) === -1) {
-            continue;
-          }
-
-          state = states.State.sanitize(state);
-
-          // Initialize the value of this state.
-          this.values[selector][state.name] = null;
-
-          // Monitor state changes of the specified state for this dependee.
-          $(selector).on(`state:${state}`, { selector, state }, stateEventHandler);
-
-          // Make sure the event we just bound ourselves to is actually fired.
-          new states.Trigger({ selector, state });
+      Object.keys(dependeeStates).forEach((i) => {
+        let state = dependeeStates[i];
+        // Make sure we're not initializing this selector/state combination
+        // twice.
+        if ($.inArray(state, dependeeStates) === -1) {
+          return;
         }
-      }
+
+        state = states.State.sanitize(state);
+
+        // Initialize the value of this state.
+        this.values[selector][state.name] = null;
+
+        // Monitor state changes of the specified state for this dependee.
+        $(selector).on(`state:${state}`, { selector, state }, (e) => {
+          this.update(e.data.selector, e.data.state, e.value);
+        });
+
+        // Make sure the event we just bound ourselves to is actually fired.
+        new states.Trigger({ selector, state });
+      });
     },
 
     /**

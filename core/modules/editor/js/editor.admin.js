@@ -256,17 +256,11 @@
       }
 
       Drupal.filterConfiguration.update();
-
-      for (var filterID in Drupal.filterConfiguration.statuses) {
-        if (Drupal.filterConfiguration.statuses.hasOwnProperty(filterID)) {
-          var filterStatus = Drupal.filterConfiguration.statuses[filterID];
-          if (!filterStatusAllowsFeature(filterStatus, feature)) {
-            return false;
-          }
-        }
-      }
-
-      return true;
+      var disallowedFeature = Object.keys(Drupal.filterConfiguration.statuses).some(function (filterID) {
+        var filterStatus = Drupal.filterConfiguration.statuses[filterID];
+        return !filterStatusAllowsFeature(filterStatus, feature);
+      });
+      return !disallowedFeature;
     }
   };
 
