@@ -111,6 +111,8 @@
       }
     },
     verifyConstraints: function verifyConstraints(constraints, selector) {
+      var _this3 = this;
+
       var result = void 0;
       if ($.isArray(constraints)) {
         var hasXor = $.inArray('xor', constraints) === -1;
@@ -126,15 +128,9 @@
           }
         }
       } else if ($.isPlainObject(constraints)) {
-          for (var n in constraints) {
-            if (constraints.hasOwnProperty(n)) {
-              result = ternary(result, this.checkConstraints(constraints[n], selector, n));
-
-              if (result === false) {
-                return false;
-              }
-            }
-          }
+          result = Object.keys(constraints).map(function (constraint) {
+            return ternary(result, _this3.checkConstraints(constraints[constraint], selector, constraint));
+          })[0];
         }
       return result;
     },
@@ -183,7 +179,7 @@
 
   states.Trigger.prototype = {
     initialize: function initialize() {
-      var _this3 = this;
+      var _this4 = this;
 
       var trigger = states.Trigger.states[this.state];
 
@@ -191,7 +187,7 @@
         trigger.call(window, this.element);
       } else {
         Object.keys(trigger || {}).forEach(function (event) {
-          _this3.defaultTrigger(event, trigger[event]);
+          _this4.defaultTrigger(event, trigger[event]);
         });
       }
 

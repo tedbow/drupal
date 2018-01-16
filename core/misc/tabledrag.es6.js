@@ -260,17 +260,15 @@
     let columnIndex;
     Object.keys(this.tableSettings || {}).forEach((group) => {
       // Find the first field in this group.
-      // eslint-disable-next-line no-restricted-syntax
-      for (const d in this.tableSettings[group]) {
-        if (this.tableSettings[group].hasOwnProperty(d)) {
-          const field = $table.find(`.${this.tableSettings[group][d].target}`).eq(0);
-          if (field.length && this.tableSettings[group][d].hidden) {
-            hidden = this.tableSettings[group][d].hidden;
-            cell = field.closest('td');
-            break;
-          }
+      Object.keys(this.tableSettings[group]).some((tableSetting) => {
+        const field = $table.find(`.${this.tableSettings[group][tableSetting].target}`).eq(0);
+        if (field.length && this.tableSettings[group][tableSetting].hidden) {
+          hidden = this.tableSettings[group][tableSetting].hidden;
+          cell = field.closest('td');
+          return true;
         }
-      }
+        return false;
+      });
 
       // Mark the column containing this field so it can be hidden.
       if (hidden && cell[0]) {
@@ -412,23 +410,15 @@
   Drupal.tableDrag.prototype.rowSettings = function (group, row) {
     const field = $(row).find(`.${group}`);
     const tableSettingsGroup = this.tableSettings[group];
-    // eslint-disable-next-line no-restricted-syntax
-    for (const delta in tableSettingsGroup) {
-      if (tableSettingsGroup.hasOwnProperty(delta)) {
-        const targetClass = tableSettingsGroup[delta].target;
-        if (field.is(`.${targetClass}`)) {
-          // Return a copy of the row settings.
-          const rowSettings = {};
-          // eslint-disable-next-line no-restricted-syntax
-          for (const n in tableSettingsGroup[delta]) {
-            if (tableSettingsGroup[delta].hasOwnProperty(n)) {
-              rowSettings[n] = tableSettingsGroup[delta][n];
-            }
-          }
-          return rowSettings;
-        }
+    return Object.keys(tableSettingsGroup).map((delta) => {
+      if (field.is(`.${tableSettingsGroup[delta].target}`)) {
+        const rowSettings = {};
+        Object.keys(tableSettingsGroup[delta]).forEach((n) => {
+          rowSettings[n] = tableSettingsGroup[delta][n];
+        });
+        return rowSettings;
       }
-    }
+    })[0];
   };
 
   /**

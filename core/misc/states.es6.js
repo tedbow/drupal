@@ -252,19 +252,17 @@
       // Make sure we don't try to iterate over things other than objects. This
       // shouldn't normally occur, but in case the condition definition is
       // bogus, we don't want to end up with an infinite loop.
+
       else if ($.isPlainObject(constraints)) {
         // This constraint is an object (AND).
-        // eslint-disable-next-line no-restricted-syntax
-        for (const n in constraints) {
-          if (constraints.hasOwnProperty(n)) {
-            result = ternary(result, this.checkConstraints(constraints[n], selector, n));
-            // False and anything else will evaluate to false, so return when
-            // any false condition is found.
-            if (result === false) {
-              return false;
-            }
-          }
-        }
+        result = Object.keys(constraints).map(constraint => ternary(
+          result,
+          this.checkConstraints(
+            constraints[constraint],
+            selector,
+            constraint,
+          ),
+        ))[0];
       }
       return result;
     },

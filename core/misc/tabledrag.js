@@ -121,16 +121,15 @@
     var cell = void 0;
     var columnIndex = void 0;
     Object.keys(this.tableSettings || {}).forEach(function (group) {
-      for (var d in _this2.tableSettings[group]) {
-        if (_this2.tableSettings[group].hasOwnProperty(d)) {
-          var field = $table.find('.' + _this2.tableSettings[group][d].target).eq(0);
-          if (field.length && _this2.tableSettings[group][d].hidden) {
-            hidden = _this2.tableSettings[group][d].hidden;
-            cell = field.closest('td');
-            break;
-          }
+      Object.keys(_this2.tableSettings[group]).some(function (tableSetting) {
+        var field = $table.find('.' + _this2.tableSettings[group][tableSetting].target).eq(0);
+        if (field.length && _this2.tableSettings[group][tableSetting].hidden) {
+          hidden = _this2.tableSettings[group][tableSetting].hidden;
+          cell = field.closest('td');
+          return true;
         }
-      }
+        return false;
+      });
 
       if (hidden && cell[0]) {
         columnIndex = cell.parent().find('> td').index(cell.get(0)) + 1;
@@ -213,22 +212,15 @@
   Drupal.tableDrag.prototype.rowSettings = function (group, row) {
     var field = $(row).find('.' + group);
     var tableSettingsGroup = this.tableSettings[group];
-
-    for (var delta in tableSettingsGroup) {
-      if (tableSettingsGroup.hasOwnProperty(delta)) {
-        var targetClass = tableSettingsGroup[delta].target;
-        if (field.is('.' + targetClass)) {
-          var rowSettings = {};
-
-          for (var n in tableSettingsGroup[delta]) {
-            if (tableSettingsGroup[delta].hasOwnProperty(n)) {
-              rowSettings[n] = tableSettingsGroup[delta][n];
-            }
-          }
-          return rowSettings;
-        }
+    return Object.keys(tableSettingsGroup).map(function (delta) {
+      if (field.is('.' + tableSettingsGroup[delta].target)) {
+        var rowSettings = {};
+        Object.keys(tableSettingsGroup[delta]).forEach(function (n) {
+          rowSettings[n] = tableSettingsGroup[delta][n];
+        });
+        return rowSettings;
       }
-    }
+    })[0];
   };
 
   Drupal.tableDrag.prototype.makeDraggable = function (item) {

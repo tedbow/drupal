@@ -567,14 +567,10 @@
       // If any filter's current status forbids the editor feature, return
       // false.
       Drupal.filterConfiguration.update();
-      const disallowedFeature = Object.keys(Drupal.filterConfiguration.statuses)
-        // We use some to do an early return when filterStatusAllowsFeature
-        // returns false.
-        .some((filterID) => {
-          const filterStatus = Drupal.filterConfiguration.statuses[filterID];
-          return !filterStatusAllowsFeature(filterStatus, feature);
-        });
-      return !disallowedFeature;
+      return Object.keys(Drupal.filterConfiguration.statuses)
+        .every(filterID => (
+          filterStatusAllowsFeature(Drupal.filterConfiguration.statuses[filterID], feature)
+        ));
     },
   };
 
