@@ -11,7 +11,6 @@ use Drupal\settings_tray_test\Plugin\Block\SettingsTrayFormAnnotationNoneBlock;
 use Drupal\Tests\contextual\FunctionalJavascript\ContextualLinkClickTrait;
 use Drupal\Tests\system\FunctionalJavascript\OffCanvasTestBase;
 use Drupal\user\Entity\Role;
-use Drupal\user\RoleInterface;
 
 /**
  * Testing opening and saving block forms in the off-canvas dialog.
@@ -37,6 +36,7 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
     'toolbar',
     'contextual',
     'settings_tray',
+    'quickedit',
     'search',
     'block_content',
     'settings_tray_test',
@@ -62,6 +62,7 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
       'access contextual links',
       'access toolbar',
       'administer nodes',
+      'access in-place editing',
       'search content',
     ]);
     $this->drupalLogin($user);
@@ -293,8 +294,6 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
    * Tests QuickEdit links behavior.
    */
   public function testQuickEditLinks() {
-    $this->container->get('module_installer')->install(['quickedit']);
-    $this->grantPermissions(Role::load(RoleInterface::AUTHENTICATED_ID), ['access in-place editing']);
     $quick_edit_selector = '#quickedit-entity-toolbar';
     $node_selector = '[data-quickedit-entity-id="node/1"]';
     $body_selector = '[data-quickedit-field-id="node/1/body/en/full"]';
@@ -512,8 +511,6 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
    * "Quick edit settings" is settings_tray.module link.
    */
   public function testCustomBlockLinks() {
-    $this->container->get('module_installer')->install(['quickedit']);
-    $this->grantPermissions(Role::load(RoleInterface::AUTHENTICATED_ID), ['access in-place editing']);
     $this->drupalGet('user');
     $page = $this->getSession()->getPage();
     $links = $page->findAll('css', "#block-custom .contextual-links li a");
