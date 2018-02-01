@@ -68,14 +68,7 @@ function media_theme() {
       'render element' => 'elements',
     ],
     'media_reference_help' => [
-      'render element' => 'elements',
-      'variables' => [
-        'table' => NULL,
-        'label' => NULL,
-        'types' => NULL,
-        'media_add_page' => NULL,
-        'media_list' => NULL,
-      ],
+      'render element' => 'element',
       'base hook' => 'field_multiple_value_form',
     ],
   ];
@@ -193,15 +186,20 @@ function media_field_widget_multiple_entity_reference_autocomplete_form_alter(ar
   // field pointing to media.
   if (!empty($elements[0]['target_id']['#type']) && ($elements[0]['target_id']['#type'] === 'entity_autocomplete') && ($elements[0]['target_id']['#target_type'] === 'media')) {
     $elements['#theme'] = 'media_reference_help';
-    return;
+  }
+}
 
-    // Use the user-defined label for the field to indicate that the form allows
-    // reusing existing media.
-      $elements['#label'] = $elements['#title'];
-    if (!empty($elements[0]['target_id']['#selection_settings']['target_bundles'])) {
-      $elements['#types'] = implode(", ", $elements[0]['target_id']['#selection_settings']['target_bundles']);
-      $elements['#media_add_page'] = Url::fromRoute('entity.media.add_page')->toString();
-      $elements['#media_list'] = Url::fromRoute('entity.media.collection')->toString();
-    }
+/**
+ * Implements hook_preprocess_HOOK() for media reference widgets.
+ */
+function media_preprocess_media_reference_help(&$variables) {
+  $element = $variables['element'];
+  // Use the user-defined label for the field to indicate that the form allows
+  // reusing existing media.
+  $variables['label'] = $element['#title'];
+  if (!empty($element[0]['target_id']['#selection_settings']['target_bundles'])) {
+    $variables['types'] = implode(", ", $element[0]['target_id']['#selection_settings']['target_bundles']);
+    $variables['media_add_page'] = Url::fromRoute('entity.media.add_page')->toString();
+    $variables['media_list'] = Url::fromRoute('entity.media.collection')->toString();
   }
 }
