@@ -241,8 +241,20 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface 
           ],
         ];
       }
-    }
 
+      // Allow modules to alter the field multiple widget form element.
+      $context = [
+        'form' => $form,
+        'widget' => $this,
+        'items' => $items,
+        'delta' => $delta,
+        'default' => $this->isDefaultValueWidget($form_state),
+      ];
+      \Drupal::moduleHandler()->alter([
+         'field_widget_multiple_form',
+         'field_widget_multiple_' . $this->getPluginId() . '_form',
+      ], $elements, $form_state, $context);
+    }
     return $elements;
   }
 

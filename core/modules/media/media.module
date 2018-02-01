@@ -9,6 +9,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
@@ -65,6 +66,16 @@ function media_theme() {
   return [
     'media' => [
       'render element' => 'elements',
+    ],
+    'media_reference_help' => [
+      'render element' => 'elements',
+      'variables' => [
+        'table' => NULL,
+        'label' => NULL,
+        'types' => NULL,
+        'media_add_page' => NULL,
+        'media_list' => NULL,
+      ],
     ],
   ];
 }
@@ -170,5 +181,25 @@ function media_form_field_ui_field_storage_add_form_alter(&$form, FormStateInter
     ];
   }
   $form['add']['new_storage_type']['#weight'] = 0;
-  $form['add']['description_wrapper']['#weight'] = 1;
+  $form['add']['description_wrapper']['#weight'] = 1;}
+
+/**
+ * Implements hook_field_widget_multiple_WIDGET_TYPE_form_alter().
+ */
+function media_field_widget_multiple_entity_reference_autocomplete_form_alter(array &$elements, FormStateInterface $form_state, array $context) {
+  // Add a description to inform users where they can find and add new media.
+  // Only add the description on autocomplete widgets for entity reference
+  // field pointing to media.
+  if (!empty($elements[0]['target_id']['#type']) && ($elements[0]['target_id']['#type'] === 'entity_autocomplete') && ($elements[0]['target_id']['#target_type'] === 'media')) {
+    $elements['#theme'] = 'media_reference_help';
+
+    // Use the user-defined label for the field to indicate that the form allows
+    // reusing existing media.
+      $elements['#label'] = $elements['#title'];
+    if (!empty($elements[0]['target_id']['#selection_settings']['target_bundles'])) {
+      $elements['#types'] = implode(", ", $elements[0]['target_id']['#selection_settings']['target_bundles']);
+      $elements['#media_add_page'] = Url::fromRoute('entity.media.add_page')->toString();
+      $elements['#media_list'] = Url::fromRoute('entity.media.collection')->toString();
+    }
+  }
 }
