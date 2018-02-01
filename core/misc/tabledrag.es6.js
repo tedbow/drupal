@@ -869,11 +869,9 @@
       if ((y > (rowY - rowHeight)) && (y < (rowY + rowHeight))) {
         if (this.indentEnabled) {
           // Check that this row is not a child of the row being dragged.
-          // eslint-disable-next-line no-restricted-syntax
-          for (n in this.rowObject.group) {
-            if (this.rowObject.group[n] === row) {
-              return null;
-            }
+          if (Object.keys(this.rowObject.group)
+            .every(o => (this.rowObject.group[o] === row))) {
+            return null;
           }
         }
         // Do not allow a row to be swapped with itself.
