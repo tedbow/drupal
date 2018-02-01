@@ -7,55 +7,40 @@
  *
  * @see template_preprocess_field_multiple_value_form()
  */
-#}<fieldset>
-    <legend>{{ label }}</legend>
-    <h4>
-        {% trans %}
-            Create new {{ label|placeholder }}
-        {% endtrans %}
-    </h4>
+#}
+<fieldset>
+  <legend>{{ label }}</legend>
+  <h4>
     {% trans %}
-        Create your media on the <a href="{{ media_add_page }}" target="_blank">media add page</a> (opens a new window), then add it by name to the field below.
+      Create new {{ label|placeholder }}
     {% endtrans %}
-    <h4>
-        {% trans %}
-            Use existing {{ label|placeholder }}
-        {% endtrans %}
-    </h4>
-    {% if multiple %}
-    <div class="js-form-item form-item">
-        {{ table }}
-        {% else %}
-            {% for element in elements %}
-                {{ element }}
-            {% endfor %}
-        {% endif %}
-        <div{{ description.attributes.addClass('description') }} >
-            {% trans %}
-                Type part of the media name. See the <a href="{{ media_list }}" target="_blank">media list</a> (opens a new window) to help locate media. Allowed media types: {{ types|placeholder }}
-                {# fixme #}
-            {% endtrans %}
-            {% if description.content %}
-                {{ description.content }}
-            {% endif %}
-            {% if button %}
-                <div class="clearfix">{{ button }}</div>
-            {% endif %}
-        </div>
-</fieldset>
+  </h4>
+  {% trans %}
+    Create your media on the <a href="{{ media_add_page }}" target="_blank">media add page</a> (opens a new window), then add it by name to the field below.
+  {% endtrans %}
+  <h4>
+    {% trans %}
+      Use existing {{ label|placeholder }}
+    {% endtrans %}
+  </h4>
 {% if multiple %}
   <div class="js-form-item form-item">
-      {{ table }}
-      {% if description.content %}
-        <div{{ description.attributes.addClass('description') }} >{{ description.content }}</div>
-      {% endif %}
-      {% if button %}
-        <div class="clearfix">{{ button }}</div>
-      {% endif %}
-  </div>
+    {{ table }}
 {% else %}
-    {% for element in elements %}
-        {{ element }}
-    {% endfor %}
+  {% for element in elements %}
+    {{ element }}
+  {% endfor %}
 {% endif %}
-
+<div{{ description.attributes.addClass('description') }} >
+  {% trans %}
+  Type part of the media name. See the <a href="{{ media_list }}" target="_blank">media list</a> (opens a new window) to help locate media. Allowed media types: {{ types|placeholder }}
+{# fixme #}
+  {% endtrans %}
+  {% if description.content %}
+    {{ description.content }}
+  {% endif %}
+    {% if button %}
+      <div class="clearfix">{{ button }}</div>
+    {% endif %}
+  </div>
+</fieldset>
