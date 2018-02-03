@@ -90,6 +90,30 @@ class SelectProfileFormTest extends JavascriptTestBase {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  protected function initMink() {
+    // The temporary files directory doesn't exist yet, as install_base_system()
+    // has not run. We need to create the template cache directory recursively.
+    $path = $this->tempFilesDirectory . DIRECTORY_SEPARATOR . 'browsertestbase-templatecache';
+    if (!file_exists($path)) {
+      mkdir($path, 0777, TRUE);
+    }
+
+    parent::initMink();
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * BrowserTestBase::refreshVariables() tries to operate on persistent storage,
+   * which is only available after the installer completed.
+   */
+  protected function refreshVariables() {
+    // Intentionally empty as the site is not yet installed.
+  }
+
+  /**
    * Tests a warning message is displayed when the Umami profile is selected.
    */
   public function testUmamiProfileWarningMessage() {
