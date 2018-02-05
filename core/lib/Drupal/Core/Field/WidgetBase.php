@@ -249,7 +249,6 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface 
         'items' => $items,
         'delta' => $delta,
         'default' => $this->isDefaultValueWidget($form_state),
-        'cardinality' => $cardinality,
       ];
       \Drupal::moduleHandler()->alter([
          'field_widget_multiple_form',
@@ -344,7 +343,6 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface 
         'items' => $items,
         'delta' => $delta,
         'default' => $this->isDefaultValueWidget($form_state),
-        'cardinality' => $cardinality,
       ];
       \Drupal::moduleHandler()->alter(['field_widget_form', 'field_widget_' . $this->getPluginId() . '_form'], $element, $form_state, $context);
     }
