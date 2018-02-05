@@ -2,7 +2,12 @@
 
 namespace Drupal\Tests\media\Functional;
 
+use Behat\Mink\Element\NodeElement;
 use Drupal\media\Entity\Media;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Url;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * Ensures that media UI works correctly.
@@ -20,6 +25,13 @@ class MediaUiFunctionalTest extends MediaFunctionalTestBase {
     'block',
     'media_test_source',
   ];
+
+  /**
+   * The assertion session.
+   *
+   * @var \Behat\Mink\Session
+   */
+  protected $session;
 
   /**
    * {@inheritdoc}
@@ -190,6 +202,290 @@ class MediaUiFunctionalTest extends MediaFunctionalTestBase {
     $page->pressButton('Save and continue');
     $this->drupalGet('/admin/structure/types/manage/page/display');
     $assert_session->fieldValueEquals('fields[field_foo_field][type]', 'entity_reference_entity_view');
+  }
+
+  /**
+   * Data provider for testMediaReferenceWidget().
+   *
+   * @return array[]
+   *   Test data. See testMediaReferenceWidget() for the child array structure.
+   */
+  public function providerTestMediaReferenceWidget() {
+    return [
+      // Single-value fields with a single media type:
+      // - The user can create and list the media.
+      [1, [TRUE], TRUE],
+
+      // - The user can list but not create the media.
+      [1, [FALSE], TRUE],
+      // - The user can create but not list the media.
+      [1, [TRUE], FALSE],
+      // - The user can neither create nor list the media.
+      [1, [FALSE], FALSE],
+
+      // Single-value fields with two media types:
+      // - The user can create both types.
+      [1, [TRUE, TRUE], TRUE],
+      // - The user can create only one type.
+      [1, [TRUE, FALSE], TRUE],
+      // - The user cannot create either type.
+      [1, [FALSE, FALSE], TRUE],
+
+      // Multiple-value field with a cardinality of 3, with media the user can
+      // create and list.
+      [3, [TRUE], TRUE],
+
+      // Unlimited value field.
+      [FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED, [TRUE], TRUE],
+
+    ];
+  }
+
+  /**
+   * Test the default autocomplete widgets for media reference fields.
+   *
+   * @param int $cardinality
+   *   The field cardinality.
+   * @param bool[] $media_type_create_access
+   *   An array of booleans indicating whether to grant the test user create
+   *   access for each media type. A media type is created automatically for
+   *   each; for example, an array [TRUE, FALSE] would create two media types,
+   *   one that allows the user to create media and a second that does not.
+   * @param bool $list_access
+   *   Whether to grant the test user access to list media.
+   *
+   * @see media_field_widget_entity_reference_autocomplete_form_alter()
+   * @see media_field_widget_multiple_entity_reference_autocomplete_form_alter()
+   *
+   * @dataProvider providerTestMediaReferenceWidget
+   */
+  public function testMediaReferenceWidget($cardinality, array $media_type_create_access, $list_access) {
+    $this->session = $this->assertSession();
+
+    // Create two content types.
+    $non_media_content_type = $this->createContentType();
+    $content_type = $this->createContentType();
+
+    // Create some media types.
+    $media_types = [];
+    $permissions = [];
+    $any_create_access = FALSE;
+    foreach ($media_type_create_access as $id => $access) {
+      if ($access) {
+        $any_create_access = TRUE;
+        $permissions[] = "create media_type_$id media";
+      }
+      $media_type = $this->createMediaType(['bundle' => "media_type_$id"]);
+      $media_types["media_type_$id"] = "media_type_$id";
+    }
+    $type_list = 'Allowed media types: ' . implode(", ", array_keys($media_types));
+
+    // Create a user that can create content of the type, with other
+    // permissions as given by the data provider.
+    $permissions[] = "create {$content_type->id()} content";
+    if ($list_access) {
+      $permissions[] = "access media overview";
+    }
+    $test_user = $this->drupalCreateUser($permissions);
+
+    // Create a non-media entity reference.
+    $non_media_storage = FieldStorageConfig::create([
+      'field_name' => 'field_not_a_media_field',
+      'entity_type' => 'node',
+      'type' => 'entity_reference',
+      'cardinality' => FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED,
+      'settings' => [
+        'target_type' => 'node',
+      ],
+    ]);
+    $non_media_storage->save();
+    $non_media_field = FieldConfig::create([
+      'label' => 'No media here!',
+      'field_storage' => $non_media_storage,
+      'entity_type' => 'node',
+      'bundle' => $non_media_content_type->id(),
+      'settings' => [
+        'handler' => 'default',
+        'handler_settings' => [
+          'target_bundles' => [
+            $non_media_content_type->id() => $non_media_content_type->id(),
+          ],
+        ],
+      ],
+    ]);
+    $non_media_field->save();
+    entity_get_form_display('node', $non_media_content_type->id(), 'default')
+      ->setComponent('field_not_a_media_field', [
+        'type' => 'entity_reference_autocomplete',
+      ])
+      ->save();
+
+    // Create a media field.
+    $storage = FieldStorageConfig::create([
+      'field_name' => "field_media_reference",
+      'entity_type' => 'node',
+      'type' => 'entity_reference',
+      'cardinality' => $cardinality,
+      'settings' => [
+        'target_type' => 'media',
+      ],
+    ]);
+    $storage->save();
+    $field = FieldConfig::create([
+      'label' => "Media (cardinality $cardinality)",
+      'field_storage' => $storage,
+      'entity_type' => 'node',
+      'bundle' => $content_type->id(),
+      'settings' => [
+        'handler' => 'default',
+        'handler_settings' => [
+          'target_bundles' => $media_types,
+        ],
+      ],
+    ]);
+    $field->save();
+    entity_get_form_display('node', $content_type->id(), 'default')
+      ->setComponent('field_media_reference', [
+        'type' => 'entity_reference_autocomplete',
+      ])
+      ->save();
+
+    // Some of the expected texts.
+    $create_help = 'Create your media on the media add page (opens a new window), then add it by name to the field below.';
+    $list_text = 'See the media list (opens a new window) to help locate media.';
+    $use_help = 'Type part of the media name.';
+
+    // First check that none of the help texts are on the non-media content.
+    $this->drupalGet("/node/add/{$non_media_content_type->id()}");
+    $this->assertNoHelpTexts([
+      'Create new',
+      $create_help,
+      'Use existing',
+      $use_help,
+      $list_text,
+      'Allowed media types:',
+    ]);
+
+    // Now, check that the widget displays the expected help text under the
+    // given conditions for the test user.
+    $this->drupalLogin($test_user);
+    $this->drupalGet("/node/add/{$content_type->id()}");
+
+    // Specific expected help texts for the media field.
+    $create_header = "Create new {$field->getLabel()}";
+    $use_header = "Use existing {$field->getLabel()}";
+    $type_list = 'Allowed media types: ' . implode(", ", array_keys($media_types));
+
+    $fieldset_selector = '#edit-field-media-reference-wrapper fieldset';
+    $fieldset = $this->session->elementExists('css', $fieldset_selector);
+
+    $this->assertSame($field->getLabel(), $this->session->elementExists('css', 'legend', $fieldset)->getText());
+
+    // Assert text that should be displayed regardless of other access.
+    $this->assertHelpTexts([$use_header, $use_help, $type_list], $fieldset_selector);
+
+    // The entire section for creating new media should only be displayed if
+    // the user can create at least one media of the type.
+    if ($any_create_access) {
+      $this->assertHelpTexts([$create_header, $create_help], $fieldset_selector);
+      $this->assertHelpLink(
+        $fieldset,
+        'media add page',
+        [
+          'target' => '_blank',
+          'href' => Url::fromRoute('entity.media.add_page')->toString(),
+        ]
+      );
+    }
+    else {
+      $this->assertNoHelpTexts([$create_header, $create_help]);
+      $this->assertNoHelpLink($fieldset, 'media add page');
+    }
+
+    if ($list_access) {
+      $this->assertHelpTexts([$list_text], $fieldset_selector);
+      $this->assertHelpLink(
+        $fieldset,
+        'media list',
+        [
+          'target' => '_blank',
+          'href' => Url::fromRoute('entity.media.collection')->toString(),
+        ]
+      );
+    }
+    else {
+      $this->assertNoHelpTexts([$list_text]);
+      $this->assertNoHelpLink($fieldset, 'media list');
+    }
+  }
+
+  /**
+   * Asserts that the given texts are present exactly once.
+   *
+   * @param string[] $texts
+   *   A list of the help texts to check.
+   * @param string $selector
+   *   (optional) The selector to search.
+   */
+  public function assertHelpTexts(array $texts, $selector = '') {
+    foreach ($texts as $text) {
+      // We only want to escape single quotes, so use str_replace() rather than
+      // addslashes().
+      $text = str_replace("'", "\'", $text);
+      if ($selector) {
+        $this->session->elementsCount('css', $selector . ":contains('$text')", 1);
+      }
+      else {
+        $this->session->pageTextContains($text);
+      }
+    }
+  }
+
+  /**
+   * Asserts that none of the given texts are present.
+   *
+   * @param string[] $texts
+   *   A list of the help texts to check.
+   */
+  public function assertNoHelpTexts(array $texts) {
+    foreach ($texts as $text) {
+      $this->session->pageTextNotContains($text);
+    }
+  }
+
+  /**
+   * Asserts whether a given link is present.
+   *
+   * @param \Behat\Mink\Element\NodeElement $element
+   *   The element to search.
+   * @param string $text
+   *   The link text.
+   * @param string[] attributes
+   *   An associative array of any expected attributes, keyed by the
+   *   attribute name.
+   */
+  protected function assertHelpLink(NodeElement $element, $text, array $attributes = []) {
+    // Find all the links inside the element.
+    $link = $element->findLink($text);
+
+    $this->assertNotEmpty($link);
+    foreach ($attributes as $attribute => $value) {
+      $this->assertEquals($link->getAttribute($attribute), $value);
+    }
+  }
+
+  /**
+   * Asserts that a given link is not present.
+   *
+   * @param \Behat\Mink\Element\NodeElement $element
+   *   The element to search.
+   * @param string $text
+   *   The link text.
+   */
+  protected function assertNoHelpLink(NodeElement $element, $text) {
+    // Assert that the link and its text are not present anywhere on the page.
+    $this->session->elementNotExists('named', ['link', $text], $element);
+    $this->session->pageTextNotContains($text);
   }
 
   /**

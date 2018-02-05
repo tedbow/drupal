@@ -1,0 +1,57 @@
+{#
+/**
+ * @file
+ * Theme override for media reference fields.
+ *
+ * @see template_preprocess_field_multiple_value_form()
+ */
+#}
+<fieldset>
+  <legend>{{ label }}</legend>
+
+  {% if media_add_page %}
+    <h4>
+      {% trans %}
+        Create new {{ label|placeholder }}
+      {% endtrans %}
+    </h4>
+    {% trans %}
+      Create your media on the <a href="{{ media_add_page }}" target="_blank">media add page</a> (opens a new window), then add it by name to the field below.
+    {% endtrans %}
+  {% endif %}
+
+  {% if multiple %}
+    <div class="js-form-item form-item">
+      {{ table }}
+  {% else %}
+    {% for element in elements %}
+      {{ element }}
+    {% endfor %}
+  {% endif %}
+
+  <div{{ description.attributes.addClass('description') }} >
+    {% trans %}
+      Type part of the media name.
+    {% endtrans %}
+    {% if media_list %}
+      {% trans %}
+        See the <a href="{{ media_list }}" target="_blank">media list</a> (opens a new window) to help locate media.
+      {% endtrans %}
+    {% endif %}
+    {% trans %}
+      Allowed media types: {{ types|placeholder }}
+    {% endtrans %}
+    {% if multiple %}
+      {% if description.content %}
+        {{ description.content }}
+      {% endif %}
+      {% if button %}
+        <div class="clearfix">{{ button }}</div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  {% if multiple %}
+    </div>
+  {% endif %}
+</fieldset>

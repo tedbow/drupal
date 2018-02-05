@@ -183,6 +183,7 @@ function hook_field_widget_info_alter(array &$info) {
  * @see \Drupal\Core\Field\WidgetBaseInterface::form()
  * @see \Drupal\Core\Field\WidgetBase::formSingleElement()
  * @see hook_field_widget_WIDGET_TYPE_form_alter()
+ * @see hook_field_widget_multiple_form_alter()
  */
 function hook_field_widget_form_alter(&$element, \Drupal\Core\Form\FormStateInterface $form_state, $context) {
   // Add a css class to widget form elements for all fields of type mytype.
@@ -212,12 +213,84 @@ function hook_field_widget_form_alter(&$element, \Drupal\Core\Form\FormStateInte
  * @see \Drupal\Core\Field\WidgetBaseInterface::form()
  * @see \Drupal\Core\Field\WidgetBase::formSingleElement()
  * @see hook_field_widget_form_alter()
+ * @see hook_field_widget_multiple_WIDGET_TYPE_form_alter()
  */
 function hook_field_widget_WIDGET_TYPE_form_alter(&$element, \Drupal\Core\Form\FormStateInterface $form_state, $context) {
   // Code here will only act on widgets of type WIDGET_TYPE.  For example,
   // hook_field_widget_mymodule_autocomplete_form_alter() will only act on
   // widgets of type 'mymodule_autocomplete'.
   $element['#autocomplete_route_name'] = 'mymodule.autocomplete_route';
+}
+
+/**
+ * Alter forms for multivalue field widgets provided by other modules.
+ *
+ * To adjust the individual widgets for the values themselves, use
+ * hook_field_widget_form_alter() instead.
+ *
+ * @param array $elements
+ *   The field widget form elements as constructed by
+ *   \Drupal\Core\Field\WidgetBaseInterface::formMultipleElements().
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ * @param array $context
+ *   An associative array containing the following key-value pairs:
+ *   - form: The form structure to which widgets are being attached. This may be
+ *     a full form structure, or a sub-element of a larger form.
+ *   - widget: The widget plugin instance.
+ *   - items: The field values, as a
+ *     \Drupal\Core\Field\FieldItemListInterface object.
+ *   - delta: The order of this item in the array of subelements (0, 1, 2, etc).
+ *   - default: A boolean indicating whether the form is being shown as a dummy
+ *     form to set default values.
+ *
+ * @see \Drupal\Core\Field\WidgetBaseInterface::form()
+ * @see \Drupal\Core\Field\WidgetBase::formSingleElement()
+ * @see hook_field_widget_form_alter()
+ * @see hook_field_widget_multiple_WIDGET_TYPE_form_alter()
+ */
+function hook_field_widget_multiple_form_alter(array &$elements, \Drupal\Core\Form\FormStateInterface $form_state, array $context) {
+  // Add a css class to the overall element of any widget.
+  $elements['#attributes']['class'][] = 'myclass';
+}
+
+/**
+ * Alter multi-value widget forms for a widget provided by another module.
+ *
+ * Modules can implement hook_field_widget_multiple_WIDGET_TYPE_form_alter() to
+ * modify a specific widget form, rather than using
+ * hook_field_widget_form_alter() and checking the widget type.
+ *
+ * To modify the widget for individual items, use
+ * hook_field_widget_WIDGET_TYPE_form_alter() instead.
+ *
+ * @param array $elements
+ *   The field widget form elements as constructed by
+ *   \Drupal\Core\Field\WidgetBaseInterface::formMultipleElements().
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ * @param array $context
+ *   An associative array. See hook_field_widget_form_alter() for the structure
+ *   and content of the array.
+ *
+ * @see \Drupal\Core\Field\WidgetBaseInterface::form()
+ * @see \Drupal\Core\Field\WidgetBase::formSingleElement()
+ * @see hook_field_widget_multiple_form_alter()
+ */
+function hook_field_widget_multiple_WIDGET_TYPE_form_alter(array &$elements, \Drupal\Core\Form\FormStateInterface $form_state, array $context) {
+  // Alter the overall title for the multivalue widget (the table header,
+  // above the rows).
+  $elements['#title'] = t('Review your %title entries', ['%title' => $elements['#title']]);
+
+  if (!empty($elements['#description'])) {
+    // Add a paragraph to the description, above all the rows.
+    $elements['#description'] = [
+      '#markup' => $elements['#description'],
+    ];
+  }
+  else {
+    $elements['#description'] = t('These items might be out of date.');
+  }
 }
 
 /**
