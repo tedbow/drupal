@@ -14,6 +14,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\field\FieldConfigInterface;
+use Drupal\Component\Utility\NestedArray;
 
 /**
  * Implements hook_help().
@@ -179,27 +180,42 @@ function media_form_field_ui_field_storage_add_form_alter(&$form, FormStateInter
 }
 
 /**
- * Implements hook_field_widget_multiple_WIDGET_TYPE_form_alter().
+ * Implements hook_field_widget_WIDGET_TYPE_form_alter().
  */
-function media_field_widget_multiple_entity_reference_autocomplete_form_alter(array &$elements, FormStateInterface $form_state, array $context) {
+function media_field_widget_entity_reference_autocomplete_form_alter(array &$element, FormStateInterface $form_state, array $context) {
   // Add a description to inform users where they can find and add new media.
   // Only add the description on autocomplete widgets for entity reference
   // field pointing to media.
-  if (!empty($elements[0]['target_id']['#type']) && ($elements[0]['target_id']['#type'] === 'entity_autocomplete') && ($elements[0]['target_id']['#target_type'] === 'media')) {
-    $elements['#theme'] = 'media_reference_help';
-
-    // Customize the label for the field widget.
-    $label = $elements['#title'];
-    $elements['#original_label'] = $label;
-    $use_existing_label = t('Use existing %title', ['%title' => $label]);
-
-    if ($elements['#cardinality'] === 1) {
-      $elements[0]['target_id']['#title'] = $use_existing_label;
-    }
-    else {
-      $elements['#title'] = $use_existing_label;
-    }
+  if ($context['delta'] == 0 && !empty($element['target_id']['#type']) && ($element['target_id']['#type'] === 'entity_autocomplete') && ($element['target_id']['#target_type'] === 'media')) {
+    $element['#process'][] = '_media_process_entity_reference_autocomplete';
   }
+}
+
+/**
+ * Entity reference autocomplete process callback.
+ */
+function _media_process_entity_reference_autocomplete($element, FormStateInterface $form_state, array &$complete_form) {
+  $array_parents = $element['#array_parents'];
+  // Remove self.
+  array_pop($array_parents);
+  $elements_wrapper = NestedArray::getValue($complete_form, $array_parents);
+
+  $elements_wrapper['#theme'] = 'media_reference_help';
+
+  // Customize the label for the field widget.
+  $label = $elements_wrapper['#title'];
+  $elements_wrapper['#original_label'] = $label;
+  $use_existing_label = t('Use existing %title', ['%title' => $label]);
+
+  if ($elements_wrapper['#cardinality'] === 1) {
+    $element['target_id']['#title'] = $use_existing_label;
+  }
+  else {
+    $elements_wrapper['#title'] = $use_existing_label;
+  }
+
+  NestedArray::setValue($complete_form, $array_parents, $elements_wrapper);
+  return $element;
 }
 
 /**
