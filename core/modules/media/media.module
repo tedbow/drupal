@@ -212,19 +212,29 @@ function media_preprocess_media_reference_help(&$variables) {
   $variables['label'] = $element['#original_label'];
 
   if (!empty($element[0]['target_id']['#selection_settings']['target_bundles'])) {
-    $create_access = FALSE;
     $bundles = $element[0]['target_id']['#selection_settings']['target_bundles'];
     $variables['types'] = implode(", ", $bundles);
+    $create_bundles = [];
+    $access_handler = \Drupal::entityTypeManager()->getAccessControlHandler('media');
     foreach ($bundles as $bundle) {
-      if (\Drupal::entityTypeManager()->getAccessControlHandler('media')->createAccess($bundle)) {
-        $create_access = TRUE;
+      if ($access_handler->createAccess($bundle)) {
+        $create_bundles[] = $bundle;
+        if (count($create_bundles) > 1) {
+          // If the user has access to create more than 1 bundle then the
+          // individual media type form can not be used.
+          break;
+        }
       }
     }
-    if ($create_access === TRUE) {
+    if (count($create_bundles) === 1) {
+      $variables['media_add_page'] = Url::fromRoute('entity.media.add_form')->setRouteParameter('media_type', array_values($bundles)[0])->toString();
+    }
+    elseif (count($create_bundles) > 1) {
       $variables['media_add_page'] = Url::fromRoute('entity.media.add_page')->toString();
     }
-    if (\Drupal::currentUser()->hasPermission('access media overview')) {
-      $variables['media_list'] = Url::fromRoute('entity.media.collection')->toString();
+    $overview_url = Url::fromRoute('entity.media.collection');
+    if ($overview_url->access()) {
+      $variables['media_list'] = $overview_url->toString();
     }
   }
 }
