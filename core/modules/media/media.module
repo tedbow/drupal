@@ -186,13 +186,15 @@ function media_field_widget_entity_reference_autocomplete_form_alter(array &$ele
   // Add a description to inform users where they can find and add new media.
   // Only add the description on autocomplete widgets for entity reference
   // field pointing to media.
-  if ($context['delta'] == 0 && !empty($element['target_id']['#type']) && ($element['target_id']['#type'] === 'entity_autocomplete') && ($element['target_id']['#target_type'] === 'media')) {
+  if ($context['delta'] === 0 && !empty($element['target_id']['#type']) && ($element['target_id']['#type'] === 'entity_autocomplete') && ($element['target_id']['#target_type'] === 'media')) {
     $element['#process'][] = '_media_process_entity_reference_autocomplete';
   }
 }
 
 /**
  * Entity reference autocomplete process callback.
+ *
+ * @internal
  */
 function _media_process_entity_reference_autocomplete($element, FormStateInterface $form_state, array &$complete_form) {
   $array_parents = $element['#array_parents'];
@@ -213,7 +215,6 @@ function _media_process_entity_reference_autocomplete($element, FormStateInterfa
   else {
     $elements_wrapper['#title'] = $use_existing_label;
   }
-
   NestedArray::setValue($complete_form, $array_parents, $elements_wrapper);
   return $element;
 }
