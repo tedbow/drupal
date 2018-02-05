@@ -241,6 +241,19 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface 
           ],
         ];
       }
+
+      // Allow modules to alter the field multiple widget form element.
+      $context = [
+        'form' => $form,
+        'widget' => $this,
+        'items' => $items,
+        'default' => $this->isDefaultValueWidget($form_state),
+        'cardinality' => $cardinality,
+      ];
+      \Drupal::moduleHandler()->alter([
+        'field_widget_multiple_form',
+        'field_widget_multiple_' . $this->getPluginId() . '_form',
+      ], $elements, $form_state, $context);
     }
 
     return $elements;
@@ -311,12 +324,14 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface 
    * Generates the form element for a single copy of the widget.
    */
   protected function formSingleElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+    $cardinality = $this->fieldDefinition->getFieldStorageDefinition()->getCardinality();
     $element += [
       '#field_parents' => $form['#parents'],
       // Only the first widget should be required.
       '#required' => $delta == 0 && $this->fieldDefinition->isRequired(),
       '#delta' => $delta,
       '#weight' => $delta,
+      '#cardinality' => $cardinality,
     ];
 
     $element = $this->formElement($items, $delta, $element, $form, $form_state);
@@ -329,6 +344,7 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface 
         'items' => $items,
         'delta' => $delta,
         'default' => $this->isDefaultValueWidget($form_state),
+        'cardinality' => $cardinality,
       ];
       \Drupal::moduleHandler()->alter(['field_widget_form', 'field_widget_' . $this->getPluginId() . '_form'], $element, $form_state, $context);
     }
