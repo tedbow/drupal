@@ -214,30 +214,29 @@ class MediaUiFunctionalTest extends MediaFunctionalTestBase {
     return [
       // Single-value fields with a single media type:
       // - The user can create and list the media.
-      [1, [TRUE], TRUE],
+      'single_value:single_type:create_list' => [1, [TRUE], TRUE],
 
       // - The user can list but not create the media.
-      [1, [FALSE], TRUE],
+      'single_value:single_type:list' => [1, [FALSE], TRUE],
       // - The user can create but not list the media.
-      [1, [TRUE], FALSE],
+      'single_value:single_type:create' => [1, [TRUE], FALSE],
       // - The user can neither create nor list the media.
-      [1, [FALSE], FALSE],
+      'single_value:single_type' => [1, [FALSE], FALSE],
 
       // Single-value fields with two media types:
       // - The user can create both types.
-      [1, [TRUE, TRUE], TRUE],
+      'single_value:two_type:create2_list' => [1, [TRUE, TRUE], TRUE],
       // - The user can create only one type.
-      [1, [TRUE, FALSE], TRUE],
+      'single_value:two_type:create1_list' => [1, [TRUE, FALSE], TRUE],
       // - The user cannot create either type.
-      [1, [FALSE, FALSE], TRUE],
+      'single_value:two_type:list' => [1, [FALSE, FALSE], TRUE],
 
       // Multiple-value field with a cardinality of 3, with media the user can
       // create and list.
-      [3, [TRUE], TRUE],
+      'multi_value:single_type:create_list' => [3, [TRUE], TRUE],
 
       // Unlimited value field.
-      [FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED, [TRUE], TRUE],
-
+      'unlimited_value:single_type:create_list' => [FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED, [TRUE], TRUE],
     ];
   }
 
@@ -269,16 +268,15 @@ class MediaUiFunctionalTest extends MediaFunctionalTestBase {
     // Create some media types.
     $media_types = [];
     $permissions = [];
-    $any_create_access = FALSE;
+    $create_media_types = [];
     foreach ($media_type_create_access as $id => $access) {
       if ($access) {
-        $any_create_access = TRUE;
+        $create_media_types[] = "media_type_$id";
         $permissions[] = "create media_type_$id media";
       }
-      $media_type = $this->createMediaType(['bundle' => "media_type_$id"]);
+      $this->createMediaType(['bundle' => "media_type_$id"]);
       $media_types["media_type_$id"] = "media_type_$id";
     }
-    $type_list = 'Allowed media types: ' . implode(", ", array_keys($media_types));
 
     // Create a user that can create content of the type, with other
     // permissions as given by the data provider.
@@ -386,14 +384,20 @@ class MediaUiFunctionalTest extends MediaFunctionalTestBase {
 
     // The entire section for creating new media should only be displayed if
     // the user can create at least one media of the type.
-    if ($any_create_access) {
+    if ($create_media_types) {
+      if (count($create_media_types) === 1) {
+        $url = Url::fromRoute('entity.media.add_form')->setRouteParameter('media_type', $create_media_types[0]);
+      }
+      else {
+        $url = Url::fromRoute('entity.media.add_page');
+      }
       $this->assertHelpTexts([$create_header, $create_help], $fieldset_selector);
       $this->assertHelpLink(
         $fieldset,
         'media add page',
         [
           'target' => '_blank',
-          'href' => Url::fromRoute('entity.media.add_page')->toString(),
+          'href' => $url->toString(),
         ]
       );
     }

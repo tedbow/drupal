@@ -227,7 +227,7 @@ function media_preprocess_media_reference_help(&$variables) {
       }
     }
     if (count($create_bundles) === 1) {
-      $variables['media_add_page'] = Url::fromRoute('entity.media.add_form')->setRouteParameter('media_type', array_values($bundles)[0])->toString();
+      $variables['media_add_page'] = Url::fromRoute('entity.media.add_form')->setRouteParameter('media_type', $create_bundles[0])->toString();
     }
     elseif (count($create_bundles) > 1) {
       $variables['media_add_page'] = Url::fromRoute('entity.media.add_page')->toString();
