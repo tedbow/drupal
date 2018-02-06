@@ -1,0 +1,70 @@
+{#
+/**
+ * @file
+ * Theme override for media reference fields.
+ *
+ * @see template_preprocess_field_multiple_value_form()
+ * @see core/themes/classy/templates/form/fieldset.html.twig
+ */
+#}
+{%
+  set classes = [
+    'js-form-item',
+    'form-item',
+    'js-form-wrapper',
+    'form-wrapper',
+  ]
+%}
+<fieldset{{ attributes.addClass(classes) }}>
+  {%
+    set legend_span_classes = [
+      'fieldset-legend',
+      required ? 'js-form-required',
+      required ? 'form-required',
+    ]
+  %}
+  {#  Always wrap fieldset legends in a <span> for CSS positioning. #}
+  <legend{{ legend_attributes }}>
+    <span{{ legend_span_attributes.addClass(legend_span_classes) }}>{{ label }}</span>
+  </legend>
+
+  {% if media_add_help %}
+    <h4{{ header_attributes.addClass('label') }}>
+      {% trans %}
+        Create new media
+      {% endtrans %}
+    </h4>
+    <p>{{ media_add_help }}</p>
+  {% endif %}
+
+  {% if multiple %}
+    <div class="js-form-item form-item">
+      {{ table }}
+  {% else %}
+    {% for element in elements %}
+      {{ element }}
+    {% endfor %}
+  {% endif %}
+
+  <div{{ description.attributes.addClass('description') }} >
+    <p>
+      {{ media_list_help }}
+      {% if media_list_link %}
+        {{ media_list_link }}
+      {% endif %}
+      {{ types }}
+    </p>
+    {% if multiple %}
+      {% if description.content %}
+          {{ description.content }}
+    {% endif %}
+      {% if button %}
+        <div class="clearfix">{{ button }}</div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  {% if multiple %}
+    </div>
+  {% endif %}
+</fieldset>
