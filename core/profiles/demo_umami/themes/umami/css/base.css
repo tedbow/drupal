@@ -56,9 +56,9 @@ blockquote a:focus {
 
 button,
 .button,
-[type='button'],
-[type='reset'],
-[type='submit'] {
+input[type='button'],
+input[type='reset'],
+input[type='submit'] {
   background-color: #00836d;
   border: 3px solid #00836d;
   border-radius: 4px;

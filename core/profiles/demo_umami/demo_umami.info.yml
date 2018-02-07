@@ -39,6 +39,7 @@ dependencies:
   - tour
   - automated_cron
   - responsive_image
+  - settings_tray
 themes:
   - seven
   - umami
