@@ -187,8 +187,8 @@ class SaveUploadTest extends FileManagedTestBase {
    */
   public function testHandleDangerousFile() {
     $config = $this->config('system.file');
-    // Allow the .php extension and make sure it gets renamed to .txt for
-    // safety. Also check to make sure its MIME type was changed.
+    // Allow the .php extension and make sure it gets munged and given a .txt
+    // extension for safety. Also check to make sure its MIME type was changed.
     $edit = [
       'file_test_replace' => FILE_EXISTS_REPLACE,
       'files[file_test_upload]' => \Drupal::service('file_system')->realpath($this->phpfile->uri),
@@ -198,7 +198,7 @@ class SaveUploadTest extends FileManagedTestBase {
 
     $this->drupalPostForm('file-test/upload', $edit, t('Submit'));
     $this->assertResponse(200, 'Received a 200 response for posted test file.');
-    $message = t('For security reasons, your upload has been renamed to') . ' <em class="placeholder">' . $this->phpfile->filename . '.txt' . '</em>';
+    $message = t('For security reasons, your upload has been renamed to') . ' <em class="placeholder">' . $this->phpfile->filename . '_.txt' . '</em>';
     $this->assertRaw($message, 'Dangerous file was renamed.');
     $this->assertRaw(t('File MIME type is text/plain.'), "Dangerous file's MIME type was changed.");
     $this->assertRaw(t('You WIN!'), 'Found the success message.');
@@ -221,8 +221,39 @@ class SaveUploadTest extends FileManagedTestBase {
     // Check that the correct hooks were called.
     $this->assertFileHooksCalled(['validate', 'insert']);
 
-    // Turn off insecure uploads.
+    // Reset the hook counters.
+    file_test_reset();
+
+    // Even with insecure uploads allowed, the .php file should not be uploaded
+    // if it is not explicitly included in the list of allowed extensions.
+    $edit['extensions'] = 'foo';
+    $this->drupalPostForm('file-test/upload', $edit, t('Submit'));
+    $this->assertResponse(200, 'Received a 200 response for posted test file.');
+    $message = t('Only files with the following extensions are allowed:') . ' <em class="placeholder">' . $edit['extensions'] . '</em>';
+    $this->assertRaw($message, 'Cannot upload a disallowed extension');
+    $this->assertRaw(t('Epic upload FAIL!'), 'Found the failure message.');
+
+    // Check that the correct hooks were called.
+    $this->assertFileHooksCalled(array('validate'));
+
+    // Reset the hook counters.
+    file_test_reset();
+
+    // Turn off insecure uploads, then try the same thing as above (ensure that
+    // the .php file is still rejected since it's not in the list of allowed
+    // extensions).
     $config->set('allow_insecure_uploads', 0)->save();
+    $this->drupalPostForm('file-test/upload', $edit, t('Submit'));
+    $this->assertResponse(200, 'Received a 200 response for posted test file.');
+    $message = t('Only files with the following extensions are allowed:') . ' <em class="placeholder">' . $edit['extensions'] . '</em>';
+    $this->assertRaw($message, 'Cannot upload a disallowed extension');
+    $this->assertRaw(t('Epic upload FAIL!'), 'Found the failure message.');
+
+    // Check that the correct hooks were called.
+    $this->assertFileHooksCalled(array('validate'));
+
+    // Reset the hook counters.
+    file_test_reset();
   }
 
   /**
@@ -231,6 +262,7 @@ class SaveUploadTest extends FileManagedTestBase {
   public function testHandleFileMunge() {
     // Ensure insecure uploads are disabled for this test.
     $this->config('system.file')->set('allow_insecure_uploads', 0)->save();
+    $original_image_uri = $this->image->getFileUri();
     $this->image = file_move($this->image, $this->image->getFileUri() . '.foo.' . $this->imageExtension);
 
     // Reset the hook counters to get rid of the 'move' we just called.
@@ -255,10 +287,30 @@ class SaveUploadTest extends FileManagedTestBase {
     // Check that the correct hooks were called.
     $this->assertFileHooksCalled(['validate', 'insert']);
 
-    // Ensure we don't munge files if we're allowing any extension.
     // Reset the hook counters.
     file_test_reset();
 
+    // Ensure we don't munge the .foo extension if it is in the list of allowed
+    // extensions.
+    $extensions = 'foo ' . $this->imageExtension;
+    $edit = [
+      'files[file_test_upload]' => \Drupal::service('file_system')->realpath($this->image->getFileUri()),
+      'extensions' => $extensions,
+    ];
+
+    $this->drupalPostForm('file-test/upload', $edit, t('Submit'));
+    $this->assertResponse(200, 'Received a 200 response for posted test file.');
+    $this->assertNoRaw(t('For security reasons, your upload has been renamed'), 'Found no security message.');
+    $this->assertRaw(t('File name is @filename', ['@filename' => $this->image->getFilename()]), 'File was not munged when all extensions within it are allowed.');
+    $this->assertRaw(t('You WIN!'), 'Found the success message.');
+
+    // Check that the correct hooks were called.
+    $this->assertFileHooksCalled(['validate', 'insert']);
+
+    // Reset the hook counters.
+    file_test_reset();
+
+    // Ensure we don't munge files if we're allowing any extension.
     $edit = [
       'files[file_test_upload]' => \Drupal::service('file_system')->realpath($this->image->getFileUri()),
       'allow_all_extensions' => TRUE,
@@ -272,6 +324,38 @@ class SaveUploadTest extends FileManagedTestBase {
 
     // Check that the correct hooks were called.
     $this->assertFileHooksCalled(['validate', 'insert']);
+
+    // Reset the hook counters.
+    file_test_reset();
+
+    // Test that a dangerous extension such as .php is munged even if it is in
+    // the list of allowed extensions.
+    $this->image = file_move($this->image, $original_image_uri . '.php.' . $this->imageExtension);
+
+    // Reset the hook counters to get rid of the 'move' we just called.
+    file_test_reset();
+
+    $extensions = 'php ' . $this->imageExtension;
+    $edit = [
+      'files[file_test_upload]' => \Drupal::service('file_system')->realpath($this->image->getFileUri()),
+      'extensions' => $extensions,
+    ];
+
+    $munged_filename = $this->image->getFilename();
+    $munged_filename = substr($munged_filename, 0, strrpos($munged_filename, '.'));
+    $munged_filename .= '_.' . $this->imageExtension;
+
+    $this->drupalPostForm('file-test/upload', $edit, t('Submit'));
+    $this->assertResponse(200, 'Received a 200 response for posted test file.');
+    $this->assertRaw(t('For security reasons, your upload has been renamed'), 'Found security message.');
+    $this->assertRaw(t('File name is @filename', ['@filename' => $munged_filename]), 'File was successfully munged.');
+    $this->assertRaw(t('You WIN!'), 'Found the success message.');
+
+    // Check that the correct hooks were called.
+    $this->assertFileHooksCalled(['validate', 'insert']);
+
+    // Reset the hook counters.
+    file_test_reset();
   }
 
   /**

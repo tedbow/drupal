@@ -944,26 +944,36 @@ function file_save_upload($form_field_name, $validators = [], $destination = FAL
       $validators['file_validate_extensions'][0] = $extensions;
     }
 
+    // Rename potentially executable files, to help prevent exploits (i.e. will
+    // rename filename.php to filename.php.txt). This is intended as a last line
+    // of defense in case the site is configured to allow these files to be
+    // uploaded via the user interface. Bypass by setting the variable
+    // 'allow_insecure_uploads' to TRUE.
+    // Filenames are munged later, which will add an underscore to any unsafe
+    // extension (i.e. filename.php.txt to filename.php_.txt).
+    // @todo Make the list of unsafe extensions a constant.
+    if (!\Drupal::config('system.file')->get('allow_insecure_uploads')
+      && preg_match('/\.(' . str_replace(' ', '|', 'php pl py cgi asp js') . ')$/i', $file->getFilename(), $matches)
+      && (substr($file->getFilename(), -4) != '.txt')) {
+      // If the file will be rejected anyway due to a disallowed extension, it
+      // should not be renamed; rather, we'll let file_validate_extensions()
+      // reject it below.
+      if (empty($extensions) || in_array($matches[1], explode(' ', trim($extensions)))) {
+        $file->setMimeType('text/plain');
+        $file->setFileUri($file->getFileUri() . '.txt');
+        $file->setFilename($file->getFilename() . '.txt');
+        // The .txt extension may not be in the allowed list of extensions. We
+        // have to add it here or else the file upload will fail.
+        if (!empty($extensions)) {
+          $validators['file_validate_extensions'][0] .= ' txt';
+        }
+      }
+    }
+
     if (!empty($extensions)) {
       // Munge the filename to protect against possible malicious extension
       // hiding within an unknown file type (ie: filename.html.foo).
       $file->setFilename(file_munge_filename($file->getFilename(), $extensions));
-    }
-
-    // Rename potentially executable files, to help prevent exploits (i.e. will
-    // rename filename.php.foo and filename.php to filename.php.foo.txt and
-    // filename.php.txt, respectively). Don't rename if 'allow_insecure_uploads'
-    // evaluates to TRUE.
-    if (!\Drupal::config('system.file')->get('allow_insecure_uploads') && preg_match('/\.(php|pl|py|cgi|asp|js)(\.|$)/i', $file->getFilename()) && (substr($file->getFilename(), -4) != '.txt')) {
-      $file->setMimeType('text/plain');
-      // The destination filename will also later be used to create the URI.
-      $file->setFilename($file->getFilename() . '.txt');
-      // The .txt extension may not be in the allowed list of extensions. We have
-      // to add it here or else the file upload will fail.
-      if (!empty($extensions)) {
-        $validators['file_validate_extensions'][0] .= ' txt';
-        drupal_set_message(t('For security reasons, your upload has been renamed to %filename.', ['%filename' => $file->getFilename()]));
-      }
     }
 
     // If the destination is not provided, use the temporary directory.
