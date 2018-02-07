@@ -3,12 +3,12 @@
  * This is the base CSS file, for styling elements.
  */
 
-html {
+.dialog-off-canvas-main-canvas html {
   box-sizing: border-box;
 }
-*,
-*:before,
-*:after {
+.dialog-off-canvas-main-canvas *,
+.dialog-off-canvas-main-canvas *:before,
+.dialog-off-canvas-main-canvas *:after {
   box-sizing: inherit;
   margin-top: 0; /* This allows us to ensure that items side-by-side line up nicely. */
 }
@@ -54,7 +54,7 @@ blockquote a:focus {
   background-color: #fdfcf9;
 }
 
-button,
+button:not(.toolbar-item),
 .button,
 input[type='button'],
 input[type='reset'],
@@ -74,9 +74,9 @@ input[type='submit'] {
   font-weight: normal;
   transition: background-color 0.5s ease;
 }
-button:hover,
-button:active,
-button:focus,
+button:hover:not(.toolbar-item),
+button:active:not(.toolbar-item),
+button:focus:not(.toolbar-item),
 .button:hover,
 .button:active,
 .button:focus {
@@ -86,10 +86,10 @@ button:focus,
   text-decoration: none;
   transition: background-color 0.5s ease;
 }
-button[disabled]:hover,
-button[disabled]:active,
-button[disabled]:focus,
-button[disabled],
+button[disabled]:hover:not(.toolbar-item),
+button[disabled]:active:not(.toolbar-item),
+button[disabled]:focus:not(.toolbar-item),
+button[disabled]:not(.toolbar-item),
 .button[disabled]:hover,
 .button[disabled]:active,
 .button[disabled]:focus,
