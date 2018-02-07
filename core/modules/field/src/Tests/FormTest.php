@@ -655,9 +655,6 @@ class FormTest extends FieldTestBase {
    * Tests widget alter hooks for a given hook name.
    */
   protected function widgetAlterTest($hook) {
-    // Set a flag in state so that the hook implementations will run.
-    \Drupal::state()->set("field_test.$hook", TRUE);
-
     // Create a field with fixed cardinality, configure the form to use a
     // "multiple" widget.
     $field_storage = $this->fieldStorageMultiple;
@@ -665,6 +662,12 @@ class FormTest extends FieldTestBase {
     $this->field['field_name'] = $field_name;
     FieldStorageConfig::create($field_storage)->save();
     FieldConfig::create($this->field)->save();
+
+    // Set a flag in state so that the hook implementations will run.
+    \Drupal::state()->set("field_test.widget_alter_test", [
+      'hook' => $hook,
+      'field_name' => $field_name,
+    ]);
     entity_get_form_display($this->field['entity_type'], $this->field['bundle'], 'default')
       ->setComponent($field_name, [
         'type' => 'test_field_widget_multiple',
