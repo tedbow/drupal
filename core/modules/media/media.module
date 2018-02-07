@@ -198,7 +198,7 @@ function media_field_widget_multivalue_form_alter(array &$elements, FormStateInt
   }
   else {
     // @todo We can't yet properly alter non-autocomplete fields. Resolve this
-    //   in https://www.drupal.org/node/whatever and remove this condition.
+    //   in https://www.drupal.org/node/2943020 and remove this condition.
     return;
   }
   $elements['#media_help'] = [];
@@ -240,13 +240,13 @@ function media_field_widget_multivalue_form_alter(array &$elements, FormStateInt
   //   exists, but it does not exist in the case of a single widget that
   //   accepts multiple values. This is for some reason necessary to use
   //   our template for the entity_autocomplete_tags widget.
-  //   Research and resolve this in htttps://www.drupal.org/node/nid.
+  //   Research and resolve this in htttps://www.drupal.org/node/2943020.
   if (empty($elements['#cardinality_multiple'])) {
     $elements['#cardinality_multiple'] = NULL;
   }
 
   // Customize the label for the field widget.
-  // @todo Is there a better way to do this?
+  // @todo Research a better approach https://www.drupal.org/node/2943024.
   $use_existing_label = t('Use existing media');
   if (!empty($elements[0]['target_id']['#title'])) {
     $elements['#media_help']['#original_label'] = $elements[0]['target_id']['#title'];
