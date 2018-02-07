@@ -12,6 +12,13 @@
   const contextualItemsSelector = '[data-contextual-id] a, [data-contextual-id] button';
   const quickEditItemSelector = '[data-quickedit-entity-id]';
 
+
+  function isEditModeEnabled(element) {
+    if ($(element).closest('.contextual-links').length || $(element).closest('.contextual').length || $(element).closest('.quickedit-field-form').length) {
+      return true;
+    }
+    return false;
+  }
   /**
    * Prevent default click events except contextual links.
    *
@@ -22,7 +29,7 @@
    */
   function preventClick(event) {
     // Do not prevent contextual links.
-    if ($(event.target).closest('.contextual-links').length) {
+    if (isEditModeEnabled(event.target)) {
       return;
     }
     event.preventDefault();
@@ -87,12 +94,13 @@
          */
         $editables
           .not(contextualItemsSelector)
-          .on('click.settingstray', (e) => {
+          .on('click.settingstray', (event) => {
             // Contextual links are allowed to function in Edit mode.
-            if ($(e.target).closest('.contextual').length || !localStorage.getItem('Drupal.contextualToolbar.isViewing')) {
+            if (isEditModeEnabled(event.target) || !localStorage.getItem('Drupal.contextualToolbar.isViewing')) {
               return;
+
             }
-            $(e.currentTarget).find(blockConfigureSelector).trigger('click');
+            $(event.currentTarget).find(blockConfigureSelector).trigger('click');
             disableQuickEdit();
           });
         $(quickEditItemSelector)

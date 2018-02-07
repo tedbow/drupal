@@ -18,6 +18,7 @@
 .dialog-off-canvas-main-canvas.js-settings-tray-edit-mode input {
   pointer-events: none;
 }
-.dialog-off-canvas-main-canvas.js-settings-tray-edit-mode .contextual-links a {
+.dialog-off-canvas-main-canvas.js-settings-tray-edit-mode .contextual-links a,
+.dialog-off-canvas-main-canvas.js-settings-tray-edit-mode .quickedit-field-form input {
   pointer-events: inherit;
 }
