@@ -681,6 +681,7 @@ class FormTest extends FieldTestBase {
     \Drupal::state()->set("field_test.widget_alter_test", [
       'hook' => $hook,
       'field_name' => $field_name,
+      'widget' => $widget,
     ]);
     entity_get_form_display($this->field['entity_type'], $this->field['bundle'], 'default')
       ->setComponent($field_name, [
