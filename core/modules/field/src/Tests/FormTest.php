@@ -91,7 +91,7 @@ class FormTest extends FieldTestBase {
     ];
   }
 
-  public function xtestFieldFormSingle() {
+  public function testFieldFormSingle() {
     $field_storage = $this->fieldStorageSingle;
     $field_name = $field_storage['field_name'];
     $this->field['field_name'] = $field_name;
@@ -168,7 +168,7 @@ class FormTest extends FieldTestBase {
   /**
    * Tests field widget default values on entity forms.
    */
-  public function xtestFieldFormDefaultValue() {
+  public function testFieldFormDefaultValue() {
     $field_storage = $this->fieldStorageSingle;
     $field_name = $field_storage['field_name'];
     $this->field['field_name'] = $field_name;
@@ -197,7 +197,7 @@ class FormTest extends FieldTestBase {
     $this->assertTrue($entity->{$field_name}->isEmpty(), 'Field is now empty.');
   }
 
-  public function xtestFieldFormSingleRequired() {
+  public function testFieldFormSingleRequired() {
     $field_storage = $this->fieldStorageSingle;
     $field_name = $field_storage['field_name'];
     $this->field['field_name'] = $field_name;
@@ -234,7 +234,7 @@ class FormTest extends FieldTestBase {
     $this->assertRaw(t('@name field is required.', ['@name' => $this->field['label']]), 'Required field with no value fails validation');
   }
 
-  public function xtestFieldFormUnlimited() {
+  public function testFieldFormUnlimited() {
     $field_storage = $this->fieldStorageUnlimited;
     $field_name = $field_storage['field_name'];
     $this->field['field_name'] = $field_name;
@@ -320,7 +320,7 @@ class FormTest extends FieldTestBase {
   /**
    * Tests the position of the required label.
    */
-  public function xtestFieldFormUnlimitedRequired() {
+  public function testFieldFormUnlimitedRequired() {
     $field_name = $this->fieldStorageUnlimited['field_name'];
     $this->field['field_name'] = $field_name;
     $this->field['required'] = TRUE;
@@ -344,7 +344,7 @@ class FormTest extends FieldTestBase {
   /**
    * Tests widget handling of multiple required radios.
    */
-  public function xtestFieldFormMultivalueWithRequiredRadio() {
+  public function testFieldFormMultivalueWithRequiredRadio() {
     // Create a multivalue test field.
     $field_storage = $this->fieldStorageUnlimited;
     $field_name = $field_storage['field_name'];
@@ -395,7 +395,7 @@ class FormTest extends FieldTestBase {
   /**
    * Tests widgets handling multiple values.
    */
-  public function xtestFieldFormMultipleWidget() {
+  public function testFieldFormMultipleWidget() {
     // Create a field with fixed cardinality, configure the form to use a
     // "multiple" widget.
     $field_storage = $this->fieldStorageMultiple;
@@ -440,7 +440,7 @@ class FormTest extends FieldTestBase {
   /**
    * Tests fields with no 'edit' access.
    */
-  public function xtestFieldFormAccess() {
+  public function testFieldFormAccess() {
     $entity_type = 'entity_test_rev';
     // Create a "regular" field.
     $field_storage = $this->fieldStorageSingle;
@@ -532,7 +532,7 @@ class FormTest extends FieldTestBase {
   /**
    * Tests hiding a field in a form.
    */
-  public function xtestHiddenField() {
+  public function testHiddenField() {
     $entity_type = 'entity_test_rev';
     $field_storage = $this->fieldStorageSingle;
     $field_storage['entity_type'] = $entity_type;
@@ -604,7 +604,7 @@ class FormTest extends FieldTestBase {
   /**
    * Tests the form display of the label for multi-value fields.
    */
-  public function xtestLabelOnMultiValueFields() {
+  public function testLabelOnMultiValueFields() {
     $user = $this->drupalCreateUser(['administer entity_test content']);
     $this->drupalLogin($user);
 
