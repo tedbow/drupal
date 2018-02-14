@@ -217,15 +217,10 @@ class Link implements RenderableInterface {
    * @return $this
    */
   public function openInDialog($type = 'modal', $renderer = NULL, array $options = []) {
-    if (!in_array($type, ['dialog', 'modal'])) {
-      throw new \UnexpectedValueException("The dialog type must be either 'dialog' or 'modal'");
-    }
-    // @todo Do we actually need to check this?
+    assert(in_array($type, ['dialog', 'modal']), "Invalid dialog type: '$type'.  The dialog type must be either 'dialog' or 'modal'");
     $main_content_renders = \Drupal::getContainer()->getParameter('main_content_renderers');
     $renderer_key = "drupal_$type" . ($renderer ? ".$renderer" : '');
-    if (!isset($main_content_renders[$renderer_key])) {
-      throw new \UnexpectedValueException("The renderer '$renderer_key' is not available.");
-    }
+    assert(isset($main_content_renders[$renderer_key]), "The renderer '$renderer_key' is not available.");
     $this->dialogAttributes['data-dialog-type'] = $type;
     if ($renderer) {
       $this->dialogAttributes['data-dialog-renderer'] = $renderer;
