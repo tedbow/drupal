@@ -30,6 +30,49 @@ class Link implements RenderableInterface {
   protected $url;
 
   /**
+   * The link attributes.
+   *
+   * @var array
+   */
+  protected $attributes = [];
+
+  /**
+   * The link attributes that are needed for dialog use.
+   *
+   * @var array
+   */
+  protected $dialogAttributes;
+
+  /**
+   * Returns the link attributes.
+   *
+   * @return array
+   *   The link attributes.
+   */
+  public function getAttributes() {
+    // @todo Should we not merge dialogAttributes and attributes here?
+    //   Merging gives that attributes that will actually be used.
+    $attributes = $this->attributes;
+    if ($this->dialogAttributes) {
+      if (!isset($attributes['class']) || !in_array('use-ajax', $attributes['class'])) {
+        $attributes['class'][] = 'use-ajax';
+      }
+      $attributes = array_merge($attributes, $this->dialogAttributes);
+    }
+    return $attributes;
+  }
+
+  /**
+   * Sets the link attributes.
+   *
+   * @param array $attributes
+   *   The link attributes.
+   */
+  public function setAttributes(array $attributes) {
+    $this->attributes = $attributes;
+  }
+
+  /**
    * Constructs a new Link object.
    *
    * @param string $text
@@ -140,11 +183,56 @@ class Link implements RenderableInterface {
    * {@inheritdoc}
    */
   public function toRenderable() {
-    return [
+    $renderable = [
       '#type' => 'link',
       '#url' => $this->url,
       '#title' => $this->text,
+      '#attributes' => $this->getAttributes(),
     ];
+    if ($this->dialogAttributes) {
+      $renderable['#attached'] = [
+        'library' => [
+          'core/drupal.dialog.ajax',
+        ],
+      ];
+    }
+    return $renderable;
+  }
+
+  /**
+   * Changes the link to open in a dialog.
+   *
+   * @param string $type
+   *   The dialog type 'modal' or 'dialog', defaults to 'modal'.
+   * @param string $renderer
+   *   The dialog renderer. Core provides the 'off_canvas' renderer which uses
+   *   the off-canvas dialog. Other modules can provide dialog renderers by
+   *   defining a service that is tagged with the name
+   *   'render.main_content_renderer' and tagged with a format in the pattern of
+   *   'drupal_[dialogType].[dialogRenderer]'.
+   * @param array $options
+   *   The dialog options.
+   *
+   * @return $this
+   */
+  public function openInDailog($type = 'modal', $renderer = NULL, $options = []) {
+    if (!in_array($type, ['dialog', 'modal'])) {
+      throw new \UnexpectedValueException("The dialog type must be either 'dialog' or 'modal'");
+    }
+    // @todo Do we actually need to check this?
+    $main_content_renders = \Drupal::getContainer()->getParameter('main_content_renderers');
+    $renderer_key = "drupal_$type" . ($renderer ? ".$renderer" : '');
+    if (!isset($main_content_renders[$renderer_key])) {
+      throw new \UnexpectedValueException("The renderer '$renderer_key' is not available.");
+    }
+    $this->dialogAttributes['data-dialog-type'] = $type;
+    if ($renderer) {
+      $this->dialogAttributes['data-dialog-renderer'] = $renderer;
+    }
+    if ($options) {
+      $this->dialogAttributes['data-dialog-options'] = json_encode($options);
+    }
+    return $this;
   }
 
 }
