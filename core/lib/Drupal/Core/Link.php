@@ -176,6 +176,7 @@ class Link implements RenderableInterface {
    * @see \Drupal\Core\Link::toRenderable()
    */
   public function toString() {
+    // @todo Ensure this method takes into account attributes.
     return $this->getLinkGenerator()->generateFromLink($this);
   }
 
@@ -215,7 +216,7 @@ class Link implements RenderableInterface {
    *
    * @return $this
    */
-  public function openInDailog($type = 'modal', $renderer = NULL, $options = []) {
+  public function openInDialog($type = 'modal', $renderer = NULL, array $options = []) {
     if (!in_array($type, ['dialog', 'modal'])) {
       throw new \UnexpectedValueException("The dialog type must be either 'dialog' or 'modal'");
     }
