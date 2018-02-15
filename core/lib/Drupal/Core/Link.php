@@ -30,47 +30,11 @@ class Link implements RenderableInterface {
   protected $url;
 
   /**
-   * The link attributes.
-   *
-   * @var array
-   */
-  protected $attributes = [];
-
-  /**
    * The link attributes that are needed for dialog use.
    *
    * @var array
    */
   protected $dialogAttributes;
-
-  /**
-   * Returns the link attributes.
-   *
-   * @return array
-   *   The link attributes.
-   */
-  public function getAttributes() {
-    // @todo Should we not merge dialogAttributes and attributes here?
-    //   Merging gives that attributes that will actually be used.
-    $attributes = $this->attributes;
-    if ($this->dialogAttributes) {
-      if (!isset($attributes['class']) || !in_array('use-ajax', $attributes['class'])) {
-        $attributes['class'][] = 'use-ajax';
-      }
-      $attributes = array_merge($attributes, $this->dialogAttributes);
-    }
-    return $attributes;
-  }
-
-  /**
-   * Sets the link attributes.
-   *
-   * @param array $attributes
-   *   The link attributes.
-   */
-  public function setAttributes(array $attributes) {
-    $this->attributes = $attributes;
-  }
 
   /**
    * Constructs a new Link object.
@@ -176,7 +140,8 @@ class Link implements RenderableInterface {
    * @see \Drupal\Core\Link::toRenderable()
    */
   public function toString() {
-    // @todo Ensure this method takes into account attributes.
+    $this->setUrlDialogAttributes();
+    // @todo How do ensure library is attached for dialogs?s
     return $this->getLinkGenerator()->generateFromLink($this);
   }
 
@@ -184,11 +149,11 @@ class Link implements RenderableInterface {
    * {@inheritdoc}
    */
   public function toRenderable() {
+    $this->setUrlDialogAttributes();
     $renderable = [
       '#type' => 'link',
       '#url' => $this->url,
       '#title' => $this->text,
-      '#attributes' => $this->getAttributes(),
     ];
     if ($this->dialogAttributes) {
       $renderable['#attached'] = [
@@ -229,6 +194,16 @@ class Link implements RenderableInterface {
       $this->dialogAttributes['data-dialog-options'] = json_encode($options);
     }
     return $this;
+  }
+
+  protected function setUrlDialogAttributes() {
+    if ($this->dialogAttributes) {
+      $attributes = $this->url->getOption('attributes');
+      if (!$attributes || !isset($attributes['class']) || !in_array('use-ajax', $attributes['class'])) {
+        $attributes['class'][] = 'use-ajax';
+      }
+      $this->url->setOption('attributes', array_merge($attributes, $this->dialogAttributes));
+    }
   }
 
 }
