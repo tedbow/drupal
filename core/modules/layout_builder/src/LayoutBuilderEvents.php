@@ -5,7 +5,7 @@ namespace Drupal\layout_builder;
 /**
  * Defines events for the layout_builder module.
  *
- * @see \Drupal\layout_builder\Event\SectionComponentRenderEvent
+ * @see \Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent
  *
  * @internal
  *   Layout Builder is currently experimental and should only be leveraged by
@@ -19,7 +19,8 @@ final class LayoutBuilderEvents {
    *
    * This event allows modules to collaborate on creating the render array of
    * the SectionComponent object. The event listener method receives a
-   * \Drupal\layout_builder\Event\SectionComponentRenderEvent instance.
+   * \Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent
+   * instance.
    *
    * @Event
    *

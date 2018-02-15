@@ -59,7 +59,7 @@ class SectionComponentBuildRenderArrayEvent extends Event {
   protected $build = [];
 
   /**
-   * Creates a new SectionComponentRenderEvent object.
+   * Creates a new SectionComponentBuildRenderArrayEvent object.
    *
    * @param \Drupal\layout_builder\SectionComponent $component
    *   The section component whose render array is being built.

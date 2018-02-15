@@ -147,7 +147,7 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
     $block = $this->prophesize(BlockPluginInterface::class);
     $block->access($this->account->reveal(), TRUE)->shouldNotBeCalled();
     $block->getCacheContexts()->willReturn([]);
-    $block->getCacheTags()->willReturn([]);
+    $block->getCacheTags()->willReturn(['test']);
     $block->getCacheMaxAge()->willReturn(Cache::PERMANENT);
     $block->getConfiguration()->willReturn([]);
     $block->getPluginId()->willReturn('block_plugin_id');
@@ -178,7 +178,7 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
     $expected_cache = $expected_build + [
       '#cache' => [
         'contexts' => [],
-        'tags' => [],
+        'tags' => ['test'],
         'max-age' => 0,
       ],
     ];
@@ -204,7 +204,7 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
     $subscriber = new BlockComponentRenderArray($this->account->reveal());
 
     $expected_build = [];
-    $expected_cache = [
+      $expected_cache = [
       '#cache' => [
         'contexts' => [],
         'tags' => [],
