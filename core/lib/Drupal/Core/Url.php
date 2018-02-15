@@ -93,6 +93,13 @@ class Url {
   protected $internalPath;
 
   /**
+   * The link attributes that are needed for dialog use.
+   *
+   * @var array
+   */
+  protected $dialogAttributes;
+
+  /**
    * Constructs a new Url object.
    *
    * In most cases, use Url::fromRoute() or Url::fromUri() rather than
@@ -655,6 +662,7 @@ class Url {
    */
   public function setOptions($options) {
     $this->options = $options;
+    $this->setDialogAttributes();
     return $this;
   }
 
@@ -672,6 +680,9 @@ class Url {
    */
   public function setOption($name, $value) {
     $this->options[$name] = $value;
+    if ($name == 'attributes') {
+      $this->setDialogAttributes();
+    }
     return $this;
   }
 
@@ -885,6 +896,51 @@ class Url {
   public function setUnroutedUrlAssembler(UnroutedUrlAssemblerInterface $url_assembler) {
     $this->urlAssembler = $url_assembler;
     return $this;
+  }
+
+  /**
+   * Changes the link to open in a dialog.
+   *
+   * @param string $type
+   *   The dialog type 'modal' or 'dialog', defaults to 'modal'.
+   * @param string $renderer
+   *   The dialog renderer. Core provides the 'off_canvas' renderer which uses
+   *   the off-canvas dialog. Other modules can provide dialog renderers by
+   *   defining a service that is tagged with the name
+   *   'render.main_content_renderer' and tagged with a format in the pattern of
+   *   'drupal_[dialogType].[dialogRenderer]'.
+   * @param array $options
+   *   The dialog options.
+   *
+   * @return $this
+   */
+  public function openInDialog($type = 'modal', $renderer = NULL, array $options = []) {
+    assert(in_array($type, ['dialog', 'modal']), "Invalid dialog type: '$type'.  The dialog type must be either 'dialog' or 'modal'");
+    $main_content_renders = \Drupal::getContainer()->getParameter('main_content_renderers');
+    $renderer_key = "drupal_$type" . ($renderer ? ".$renderer" : '');
+    assert(isset($main_content_renders[$renderer_key]), "The renderer '$renderer_key' is not available.");
+    $this->dialogAttributes['data-dialog-type'] = $type;
+    if ($renderer) {
+      $this->dialogAttributes['data-dialog-renderer'] = $renderer;
+    }
+    if ($options) {
+      $this->dialogAttributes['data-dialog-options'] = json_encode($options);
+    }
+    $this->setDialogAttributes();
+    return $this;
+  }
+
+  /**
+   * Sets the URL attributes to use a dialog if needed.
+   */
+  protected function setDialogAttributes() {
+    if ($this->dialogAttributes) {
+      $attributes = $this->getOption('attributes');
+      if (!$attributes || !isset($attributes['class']) || !in_array('use-ajax', $attributes['class'])) {
+        $attributes['class'][] = 'use-ajax';
+      }
+      $this->options['attributes'] = array_merge($attributes, $this->dialogAttributes);
+    }
   }
 
 }

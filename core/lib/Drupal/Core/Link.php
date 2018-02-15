@@ -30,13 +30,6 @@ class Link implements RenderableInterface {
   protected $url;
 
   /**
-   * The link attributes that are needed for dialog use.
-   *
-   * @var array
-   */
-  protected $dialogAttributes;
-
-  /**
    * Constructs a new Link object.
    *
    * @param string $text
@@ -140,8 +133,6 @@ class Link implements RenderableInterface {
    * @see \Drupal\Core\Link::toRenderable()
    */
   public function toString() {
-    $this->setUrlDialogAttributes();
-    // @todo How do ensure library is attached for dialogs?s
     return $this->getLinkGenerator()->generateFromLink($this);
   }
 
@@ -149,64 +140,23 @@ class Link implements RenderableInterface {
    * {@inheritdoc}
    */
   public function toRenderable() {
-    $this->setUrlDialogAttributes();
-    $renderable = [
+    return [
       '#type' => 'link',
       '#url' => $this->url,
       '#title' => $this->text,
     ];
-    if ($this->dialogAttributes) {
-      $renderable['#attached'] = [
-        'library' => [
-          'core/drupal.dialog.ajax',
-        ],
-      ];
-    }
-    return $renderable;
   }
 
   /**
-   * Changes the link to open in a dialog.
+   * Helper function to access \Drupal\Core\Url::openInDialog().
    *
-   * @param string $type
-   *   The dialog type 'modal' or 'dialog', defaults to 'modal'.
-   * @param string $renderer
-   *   The dialog renderer. Core provides the 'off_canvas' renderer which uses
-   *   the off-canvas dialog. Other modules can provide dialog renderers by
-   *   defining a service that is tagged with the name
-   *   'render.main_content_renderer' and tagged with a format in the pattern of
-   *   'drupal_[dialogType].[dialogRenderer]'.
-   * @param array $options
-   *   The dialog options.
+   * @see \Drupal\Core\Url::openInDialog()
    *
    * @return $this
    */
   public function openInDialog($type = 'modal', $renderer = NULL, array $options = []) {
-    assert(in_array($type, ['dialog', 'modal']), "Invalid dialog type: '$type'.  The dialog type must be either 'dialog' or 'modal'");
-    $main_content_renders = \Drupal::getContainer()->getParameter('main_content_renderers');
-    $renderer_key = "drupal_$type" . ($renderer ? ".$renderer" : '');
-    assert(isset($main_content_renders[$renderer_key]), "The renderer '$renderer_key' is not available.");
-    $this->dialogAttributes['data-dialog-type'] = $type;
-    if ($renderer) {
-      $this->dialogAttributes['data-dialog-renderer'] = $renderer;
-    }
-    if ($options) {
-      $this->dialogAttributes['data-dialog-options'] = json_encode($options);
-    }
+    $this->getUrl()->openInDialog($type, $renderer, $options);
     return $this;
-  }
-
-  /**
-   * Sets the URL attributes to use a dialog if needed.
-   */
-  protected function setUrlDialogAttributes() {
-    if ($this->dialogAttributes) {
-      $attributes = $this->url->getOption('attributes');
-      if (!$attributes || !isset($attributes['class']) || !in_array('use-ajax', $attributes['class'])) {
-        $attributes['class'][] = 'use-ajax';
-      }
-      $this->url->setOption('attributes', array_merge($attributes, $this->dialogAttributes));
-    }
   }
 
 }
