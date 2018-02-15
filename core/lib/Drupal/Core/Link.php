@@ -196,6 +196,9 @@ class Link implements RenderableInterface {
     return $this;
   }
 
+  /**
+   * Sets the URL attributes to use a dialog if needed.
+   */
   protected function setUrlDialogAttributes() {
     if ($this->dialogAttributes) {
       $attributes = $this->url->getOption('attributes');
