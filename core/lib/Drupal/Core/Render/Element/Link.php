@@ -89,7 +89,7 @@ class Link extends RenderElement {
 
     if (!empty($element['#url']) && $element['#url'] instanceof CoreUrl) {
       $options = NestedArray::mergeDeep($element['#url']->getOptions(), $element['#options']);
-      if (!empty($options['attributes']['data-dialog-type'])) {
+      if (isset($options['attributes']['data-dialog-type']) && in_array($options['attributes']['data-dialog-type'],['modal', 'dialog'])) {
         if (empty($element['#attached']['library']) || !in_array('core/drupal.dialog.ajax', $element['#attached']['library'])) {
           $element['#attached']['library'][] = 'core/drupal.dialog.ajax';
         }
