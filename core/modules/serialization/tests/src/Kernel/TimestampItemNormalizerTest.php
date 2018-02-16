@@ -1,14 +1,14 @@
 <?php
 
-namespace Drupal\Tests\serialization\Unit\Normalizer;
+namespace Drupal\Tests\serialization\Kernel;
 
 use Drupal\Core\Field\Plugin\Field\FieldType\CreatedItem;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\Core\Field\Plugin\Field\FieldType\TimestampItem;
+use Drupal\entity_test\Entity\EntityTest;
+use Drupal\KernelTests\KernelTestBase;
 use Drupal\serialization\Normalizer\TimestampItemNormalizer;
-use Drupal\Tests\UnitTestCase;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
-use Symfony\Component\Serializer\Serializer;
 
 /**
  * Tests that entities can be serialized to supported core formats.
@@ -16,21 +16,19 @@ use Symfony\Component\Serializer\Serializer;
  * @group serialization
  * @coversDefaultClass \Drupal\serialization\Normalizer\TimestampItemNormalizer
  */
-class TimestampItemNormalizerTest extends UnitTestCase {
-
-  use InternalTypedDataTestTrait;
+class TimestampItemNormalizerTest extends KernelTestBase {
 
   /**
+   * {@inheritdoc}
+   */
+  public static $modules = ['serialization', 'system', 'field', 'entity_test', 'text', 'user'];
+
+  /**
+   * The normalizer under test.
+   *
    * @var \Drupal\serialization\Normalizer\TimestampItemNormalizer
    */
   protected $normalizer;
-
-  /**
-   * The test TimestampItem.
-   *
-   * @var \Drupal\Core\Field\Plugin\Field\FieldType\TimestampItem
-   */
-  protected $item;
 
   /**
    * {@inheritdoc}
@@ -39,14 +37,21 @@ class TimestampItemNormalizerTest extends UnitTestCase {
     parent::setUp();
 
     $this->normalizer = new TimestampItemNormalizer();
+    $this->normalizer->setSerializer(\Drupal::service('serializer'));
+
+    $this->installConfig(['field']);
+    $this->installEntitySchema('user');
+    $this->installEntitySchema('entity_test');
+    $this->installSchema('system', 'sequences');
   }
 
   /**
    * @covers ::supportsNormalization
    */
   public function testSupportsNormalization() {
-    $timestamp_item = $this->createTimestampItemProphecy();
-    $this->assertTrue($this->normalizer->supportsNormalization($timestamp_item->reveal()));
+    $entity = EntityTest::create(['name' => $this->randomMachineName()]);
+
+    $this->assertTrue($this->normalizer->supportsNormalization($entity->created->first()));
 
     $entity_ref_item = $this->prophesize(EntityReferenceItem::class);
     $this->assertFalse($this->normalizer->supportsNormalization($entity_ref_item->reveal()));
@@ -56,12 +61,12 @@ class TimestampItemNormalizerTest extends UnitTestCase {
    * @covers ::supportsDenormalization
    */
   public function testSupportsDenormalization() {
-    $timestamp_item = $this->createTimestampItemProphecy();
-    $this->assertTrue($this->normalizer->supportsDenormalization($timestamp_item->reveal(), TimestampItem::class));
+    $entity = EntityTest::create(['name' => $this->randomMachineName()]);
+    $this->assertTrue($this->normalizer->supportsDenormalization($entity->created->first(), TimestampItem::class));
 
     // CreatedItem extends regular TimestampItem.
     $timestamp_item = $this->prophesize(CreatedItem::class);
-    $this->assertTrue($this->normalizer->supportsDenormalization($timestamp_item->reveal(), TimestampItem::class));
+    $this->assertTrue($this->normalizer->supportsDenormalization($timestamp_item, TimestampItem::class));
 
     $entity_ref_item = $this->prophesize(EntityReferenceItem::class);
     $this->assertFalse($this->normalizer->supportsNormalization($entity_ref_item->reveal(), TimestampItem::class));
@@ -75,24 +80,12 @@ class TimestampItemNormalizerTest extends UnitTestCase {
   public function testNormalize() {
     $expected = ['value' => '2016-11-06T09:02:00+00:00', 'format' => \DateTime::RFC3339];
 
-    $timestamp_item = $this->createTimestampItemProphecy();
-    $timestamp_item->getIterator()
-      ->willReturn(new \ArrayIterator(['value' => 1478422920]));
+    $entity = EntityTest::create([
+      'name' => $this->randomMachineName(),
+      'created' => 1478422920,
+    ]);
 
-    $value_property = $this->getTypedDataProperty(FALSE);
-    $timestamp_item->getProperties(TRUE)
-      ->willReturn(['value' => $value_property])
-      ->shouldBeCalled();
-
-    $serializer_prophecy = $this->prophesize(Serializer::class);
-
-    $serializer_prophecy->normalize($value_property, NULL, [])
-      ->willReturn(1478422920)
-      ->shouldBeCalled();
-
-    $this->normalizer->setSerializer($serializer_prophecy->reveal());
-
-    $normalized = $this->normalizer->normalize($timestamp_item->reveal());
+    $normalized = $this->normalizer->normalize($entity->created->first());
     $this->assertSame($expected, $normalized);
   }
 
@@ -105,12 +98,12 @@ class TimestampItemNormalizerTest extends UnitTestCase {
   public function testDenormalizeValidFormats($value, $expected) {
     $normalized = ['value' => $value];
 
-    $timestamp_item = $this->createTimestampItemProphecy();
-    // The field item should be set with the expected timestamp.
-    $timestamp_item->setValue(['value' => $expected])
-      ->shouldBeCalled();
+    $entity = EntityTest::create([
+      'name' => $this->randomMachineName(),
+      'created' => $expected,
+    ]);
 
-    $context = ['target_instance' => $timestamp_item->reveal()];
+    $context = ['target_instance' => $entity->created->first()];
 
     $denormalized = $this->normalizer->denormalize($normalized, TimestampItem::class, NULL, $context);
     $this->assertTrue($denormalized instanceof TimestampItem);
@@ -146,23 +139,12 @@ class TimestampItemNormalizerTest extends UnitTestCase {
   public function testDenormalizeException() {
     $this->setExpectedException(UnexpectedValueException::class, 'The specified date "2016/11/06 09:02am GMT" is not in an accepted format: "U" (UNIX timestamp), "Y-m-d\TH:i:sO" (ISO 8601), "Y-m-d\TH:i:sP" (RFC 3339).');
 
-    $context = ['target_instance' => $this->createTimestampItemProphecy()->reveal()];
+    $entity = EntityTest::create(['name' => $this->randomMachineName()]);
+
+    $context = ['target_instance' => $entity->created->first()];
 
     $normalized = ['value' => '2016/11/06 09:02am GMT'];
     $this->normalizer->denormalize($normalized, TimestampItem::class, NULL, $context);
-  }
-
-  /**
-   * Creates a TimestampItem prophecy.
-   *
-   * @return \Prophecy\Prophecy\ObjectProphecy|\Drupal\Core\Field\Plugin\Field\FieldType\TimestampItem
-   */
-  protected function createTimestampItemProphecy() {
-    $timestamp_item = $this->prophesize(TimestampItem::class);
-    $timestamp_item->getParent()
-      ->willReturn(TRUE);
-
-    return $timestamp_item;
   }
 
 }

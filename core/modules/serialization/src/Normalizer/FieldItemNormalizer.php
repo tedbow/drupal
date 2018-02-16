@@ -11,6 +11,8 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
  */
 class FieldItemNormalizer extends ComplexDataNormalizer implements DenormalizerInterface {
 
+  use SerializedColumnNormalizerTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -30,6 +32,7 @@ class FieldItemNormalizer extends ComplexDataNormalizer implements DenormalizerI
 
     /** @var \Drupal\Core\Field\FieldItemInterface $field_item */
     $field_item = $context['target_instance'];
+    $this->checkForSerializedStrings($data, $class, $field_item);
 
     $field_item->setValue($this->constructValue($data, $context));
     return $field_item;

@@ -3,6 +3,7 @@
 namespace Drupal\Tests\hal\Kernel;
 
 use Drupal\Core\Url;
+use Drupal\entity_test\Entity\EntitySerializedField;
 use Drupal\field\Entity\FieldConfig;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 
@@ -137,6 +138,16 @@ class DenormalizeTest extends NormalizerTestBase {
     ];
     $entity = $this->serializer->denormalize($data, get_class($entity), $this->format, ['target_instance' => $entity]);
     $this->assertEqual($entity->field_test_text->count(), 0);
+  }
+
+  /**
+   * Tests normalizing/denormalizing serialized columns.
+   */
+  public function testDenormalizeSerializedItem() {
+    $entity = EntitySerializedField::create(['serialized' => 'boo']);
+    $normalized = $this->serializer->normalize($entity, $this->format);
+    $this->setExpectedException(\LogicException::class, 'The generic FieldItemNormalizer cannot denormalize string values for "value" properties of "serialized_item_test" fields (field item class: Drupal\entity_test\Plugin\Field\FieldType\SerializedItem).');
+    $this->serializer->denormalize($normalized, EntitySerializedField::class, $this->format);
   }
 
 }

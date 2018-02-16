@@ -4,12 +4,15 @@ namespace Drupal\hal\Normalizer;
 
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\TypedData\TypedDataInternalPropertiesHelper;
+use Drupal\serialization\Normalizer\SerializedColumnNormalizerTrait;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 
 /**
  * Converts the Drupal field item object structure to HAL array structure.
  */
 class FieldItemNormalizer extends NormalizerBase {
+
+  use SerializedColumnNormalizerTrait;
 
   /**
    * The interface or class that this Normalizer supports.
@@ -44,6 +47,7 @@ class FieldItemNormalizer extends NormalizerBase {
     }
 
     $field_item = $context['target_instance'];
+    $this->checkForSerializedStrings($data, $class, $field_item);
 
     // If this field is translatable, we need to create a translated instance.
     if (isset($data['lang'])) {
