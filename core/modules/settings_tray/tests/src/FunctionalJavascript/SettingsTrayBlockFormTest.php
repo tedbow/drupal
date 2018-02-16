@@ -49,7 +49,6 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
     'menu_link_content',
   ];
 
-
   /**
    * {@inheritdoc}
    */
@@ -295,6 +294,7 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
    */
   public function testQuickEditLinks() {
     $this->container->get('module_installer')->install(['quickedit']);
+    $this->container->get('module_installer')->uninstall(['settings_tray_test_css']);
     $this->grantPermissions(Role::load(RoleInterface::AUTHENTICATED_ID), ['access in-place editing']);
     $quick_edit_selector = '#quickedit-entity-toolbar';
     $node_selector = '[data-quickedit-entity-id="node/1"]';
@@ -307,6 +307,7 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
     $this->grantPermissions($auth_role, [
       'edit any page content',
       'access content',
+      'access user profiles',
     ]);
 
     $author = $this->createUser();
@@ -341,10 +342,10 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
         // In Edit mode clicking field should open QuickEdit toolbar.
         $page->find('css', $body_selector)->click();
         $this->assertElementVisibleAfterWait('css', $quick_edit_selector);
-        $page->find('css', "[data-quickedit-field-id=\"node/" . $node->id() . "/uid/en/full\"]")->click();
-        $page->findLink($this->loggedInUser->getAccountName())->click();
+        $this->getSession()->executeScript("jQuery('[data-quickedit-field-id=\"node/" . $node->id() . "/uid/en/full\"]').click()");
         $this->assertElementVisibleAfterWait('css', $user_input_selector);
-        // $user_input = $page->find('css', $user_input_selector);
+        $this->getSession()->executeScript("jQuery('$user_input_selector').click()");
+        $this->getSession()->evaluateScript("jQuery('$user_input_selector').is(':focus')");
 
         $this->disableEditMode();
         // Exiting Edit mode should close QuickEdit toolbar.
