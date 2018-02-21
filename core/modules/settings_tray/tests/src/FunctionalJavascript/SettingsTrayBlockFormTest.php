@@ -87,7 +87,7 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
     $this->drupalGet('user');
 
     $link = $page->find('css', "$block_selector .contextual-links li a");
-    $this->assertEquals('Quick edit', $link->getText(), "'Quick edit' is the first contextual link for the block.");
+    $this->assertEquals('Quick edit', $link->getHtml(), "'Quick edit' is the first contextual link for the block.");
     $this->assertContains("/admin/structure/block/manage/$block_id/settings-tray?destination=user/2", $link->getAttribute('href'));
 
     if (isset($toolbar_item)) {
@@ -158,8 +158,8 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
     $this->waitForOffCanvasToClose();
     $this->getSession()->wait(100);
     $this->assertEditModeDisabled();
-    $web_assert->elementTextContains('css', '#drupal-live-announce', 'Exited edit mode.');
-    $web_assert->elementTextNotContains('css', '.contextual-toolbar-tab button', 'Editing');
+    $this->assertNotEmpty($web_assert->waitForElement('css', '#drupal-live-announce:contains(Exited edit mode)'));
+    $this->waitForNoElement('.contextual-toolbar-tab button:contains(Editing)');
     $web_assert->elementAttributeNotContains('css', '.dialog-off-canvas-main-canvas', 'class', 'js-settings-tray-edit-mode');
   }
 
@@ -242,7 +242,6 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
    * Disables edit mode by pressing edit button in the toolbar.
    */
   protected function disableEditMode() {
-    $this->assertSession()->assertWaitOnAjaxRequest();
     $this->pressToolbarEditButton();
     $this->assertEditModeDisabled();
   }
@@ -347,7 +346,10 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
         $page->find('css', $body_selector)->click();
         $this->assertElementVisibleAfterWait('css', $quick_edit_selector);
 
-        $this->disableEditMode();
+        $this->pressToolbarEditButton();
+        // @todo manually testing you have mouse over body and then away to get rid of contextual link?
+        $this->getSession()->getDriver()->mouseOver($page->find('css', $body_selector)->getXpath());
+        $this->assertEditModeDisabled();
         // Exiting Edit mode should close QuickEdit toolbar.
         $web_assert->elementNotExists('css', $quick_edit_selector);
         // When not in Edit mode QuickEdit toolbar should not open.
@@ -437,10 +439,13 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
    */
   protected function assertEditModeDisabled() {
     $web_assert = $this->assertSession();
+    // Move the mouse over the toolbar button so that isn't over a contextual
+    // links area which cause the contextual link to be shown.
+    $this->getSession()->getDriver()->mouseOver($this->getSession()->getPage()->find('css', static::TOOLBAR_EDIT_LINK_SELECTOR)->getXpath());
     // Contextual triggers should be hidden.
     $web_assert->elementExists('css', '.contextual .trigger.visually-hidden');
     // No contextual triggers should be not hidden.
-    $web_assert->elementNotExists('css', '.contextual .trigger:not(.visually-hidden)');
+    $this->waitForNoElement('.contextual .trigger:not(.visually-hidden)');
     // The toolbar edit button should read "Edit".
     $web_assert->elementContains('css', static::TOOLBAR_EDIT_LINK_SELECTOR, 'Edit');
     // The main canvas element should NOT have the "js-settings-tray-edit-mode"
@@ -529,7 +534,8 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
     $link_labels = [];
     /** @var \Behat\Mink\Element\NodeElement $link */
     foreach ($links as $link) {
-      $link_labels[$link->getAttribute('href')] = $link->getText();
+      // @todo now we have to call getHtml() to get link text b/c getText() returns an empty string?
+      $link_labels[$link->getAttribute('href')] = $link->getHtml();
     }
     $href = array_search('Quick edit', $link_labels);
     $this->assertEquals('', $href);

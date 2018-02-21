@@ -56,7 +56,7 @@ class OffCanvasTest extends OffCanvasTestBase {
         if ($link_index == '2') {
           // Check no title behavior.
           $web_assert->elementExists('css', '.ui-dialog-empty-title');
-          $this->assertEquals("\xc2\xa0", $header_text);
+          $this->assertEquals(" ", $header_text);
 
           $style = $page->find('css', '.ui-dialog-off-canvas')->getAttribute('style');
           $this->assertTrue(strstr($style, 'width: 555px;') !== FALSE, 'Dialog width respected.');

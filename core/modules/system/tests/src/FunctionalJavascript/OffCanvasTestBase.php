@@ -2,12 +2,18 @@
 
 namespace Drupal\Tests\system\FunctionalJavascript;
 
+use Drupal\FunctionalJavascriptTests\DrupalSelenium2Driver;
 use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
 
 /**
  * Base class contains common test functionality for the Off-canvas dialog.
  */
 abstract class OffCanvasTestBase extends JavascriptTestBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $minkDefaultDriverClass = DrupalSelenium2Driver::class;
 
   /**
    * {@inheritdoc}
@@ -66,7 +72,6 @@ abstract class OffCanvasTestBase extends JavascriptTestBase {
     // Wait just slightly longer than the off-canvas dialog CSS animation.
     // @see core/misc/dialog/off-canvas.motion.css
     $this->getSession()->wait(800);
-    $web_assert->assertWaitOnAjaxRequest();
     $this->assertElementVisibleAfterWait('css', '#drupal-off-canvas');
   }
 
@@ -98,9 +103,23 @@ abstract class OffCanvasTestBase extends JavascriptTestBase {
    *
    * @todo Remove in https://www.drupal.org/node/2892440.
    */
-  protected function waitForNoElement($selector, $timeout = 10000) {
-    $condition = "(typeof jQuery !== 'undefined' && jQuery('$selector').length === 0)";
-    $this->assertJsCondition($condition, $timeout);
+  public function waitForNoElement($selector, $timeout = 10000) {
+
+    $start = microtime(true);
+    $end = $start + ($timeout/1000);
+    $page = $this->getSession()->getPage();
+
+    do {
+      $result = $page->find('css', $selector);
+
+      if (empty($result)) {
+        return;
+      }
+
+      usleep(100000);
+    } while (microtime(true) < $end);
+
+    $this->assertEmpty($result, 'Element was not on the page after wait.');
   }
 
   /**
