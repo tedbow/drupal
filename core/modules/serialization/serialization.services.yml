@@ -71,6 +71,24 @@ services:
     class: Drupal\serialization\Normalizer\TypedDataNormalizer
     tags:
       - { name: normalizer }
+  serializer.normalizer.map:
+    class: Drupal\serialization\Normalizer\MapNormalizer
+    tags:
+    # This normalizer must be higher than serializer.normalizer.complex_data so
+    # that serializer.normalizer.complex_data is not used for Map objects that
+    # do not provide property definitions. While giving this normalizer a
+    # priority of 1 would work when considering only core's normalizers it would
+    # not allow for any other custom normalizers to be given priority between
+    # serializer.normalizer.complex_data and this normalizer. Giving this
+    # normalizer an especially high priority allows normalizers with a range of
+    # priorities for other classes that do not provide property definitions.
+    # Giving this normalizer an especially high priority will NOT cause it to
+    # be used for most classes that extend Map, such any class that extends
+    # \Drupal\Core\Field\FieldItemBase, because those objects will have
+    # property definitions.
+    #
+    # @see \Drupal\serialization\Normalizer\MapNormalizer::supportsNormalization
+      - { name: normalizer, priority: 20}
   serializer.encoder.json:
     class: Drupal\serialization\Encoder\JsonEncoder
     tags:
