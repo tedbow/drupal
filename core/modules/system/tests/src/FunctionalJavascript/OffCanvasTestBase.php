@@ -105,8 +105,8 @@ abstract class OffCanvasTestBase extends JavascriptTestBase {
    */
   public function waitForNoElement($selector, $timeout = 10000) {
 
-    $start = microtime(true);
-    $end = $start + ($timeout/1000);
+    $start = microtime(TRUE);
+    $end = $start + ($timeout / 1000);
     $page = $this->getSession()->getPage();
 
     do {
@@ -117,7 +117,7 @@ abstract class OffCanvasTestBase extends JavascriptTestBase {
       }
 
       usleep(100000);
-    } while (microtime(true) < $end);
+    } while (microtime(TRUE) < $end);
 
     $this->assertEmpty($result, 'Element was not on the page after wait.');
   }
