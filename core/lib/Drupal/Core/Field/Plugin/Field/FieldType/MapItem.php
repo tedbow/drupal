@@ -4,6 +4,7 @@ namespace Drupal\Core\Field\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\FieldItemBase;
+use Drupal\Core\TypedData\MapDataDefinition;
 
 /**
  * Defines the 'map' entity field type.
@@ -22,8 +23,12 @@ class MapItem extends FieldItemBase {
    * {@inheritdoc}
    */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    // The properties are dynamic and can not be defined statically.
-    return [];
+    return [
+      // All map fields store their data in a single 'value' property, but this
+      // itself expands to an arbitrary map.
+      // @see \Drupal\Core\TypedData\Plugin\DataType\Map
+      'value' => MapDataDefinition::create()->setLabel(t('Serialized array of values')),
+    ];
   }
 
   /**

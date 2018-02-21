@@ -44,9 +44,7 @@ class EntityTestMapItemNormalizerTest extends EntityTestResourceTestBase {
     // normalization because setExposed(TRUE) was not called for this property.
     // @see \Drupal\entity_test\Plugin\Field\FieldType\ExposedPropertyTestFieldItem::propertyDefinitions
     $expected['field_map'] = [
-      [
-        'value' => static::$mapValue,
-      ],
+      static::$mapValue
     ];
     return $expected;
   }
@@ -59,7 +57,7 @@ class EntityTestMapItemNormalizerTest extends EntityTestResourceTestBase {
       FieldStorageConfig::create([
         'entity_type' => 'entity_test',
         'field_name' => 'field_map',
-        'type' => 'map_test',
+        'type' => 'map',
         'cardinality' => 1,
         'translatable' => FALSE,
       ])->save();
@@ -85,9 +83,7 @@ class EntityTestMapItemNormalizerTest extends EntityTestResourceTestBase {
   protected function getNormalizedPostEntity() {
     return parent::getNormalizedPostEntity() + [
       'field_map' => [
-        [
-          'value' => static::$mapValue,
-        ],
+        static::$mapValue,
       ],
     ];
   }

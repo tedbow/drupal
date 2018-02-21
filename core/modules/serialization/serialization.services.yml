@@ -52,6 +52,12 @@ services:
       # Priority must be higher than serialization.normalizer.field but less
       # than hal field normalizer.
       - { name: normalizer, priority: 9 }
+  serializer.normalizer.map_item:
+    class: Drupal\serialization\Normalizer\MapItemNormalizer
+    tags:
+      # Priority must be higher than serializer.normalizer.field_item and lower
+      # than hal normalizers.
+      - { name: normalizer, priority: 8 }
   serializer.normalizer.timestamp_item:
     class: Drupal\serialization\Normalizer\TimestampItemNormalizer
     tags:
@@ -71,8 +77,8 @@ services:
     class: Drupal\serialization\Normalizer\TypedDataNormalizer
     tags:
       - { name: normalizer }
-  serializer.normalizer.map:
-    class: Drupal\serialization\Normalizer\MapNormalizer
+  serializer.normalizer.map.propertyless:
+    class: Drupal\serialization\Normalizer\PropertylessMapNormalizer
     tags:
     # This normalizer must be higher than serializer.normalizer.complex_data so
     # that serializer.normalizer.complex_data is not used for Map objects that

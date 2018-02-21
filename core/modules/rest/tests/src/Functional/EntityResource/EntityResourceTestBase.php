@@ -914,8 +914,7 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
         if ($created_entity->hasField($field_name)) {
           // Subset, not same, because we can e.g. send just the target_id for the
           // bundle in a POST request; the response will include more properties.
-          $this->assertArraySubset(static::castToString($field_normalization), $created_entity->get($field_name)
-            ->getValue(), TRUE);
+          $this->assertArraySubset(static::castToString($field_normalization), $created_entity_normalization[$field_name], TRUE);
         }
       }
     }
@@ -1175,7 +1174,7 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
       if ($updated_entity->hasField($field_name)) {
         // Subset, not same, because we can e.g. send just the target_id for the
         // bundle in a PATCH request; the response will include more properties.
-        $this->assertArraySubset(static::castToString($field_normalization), $updated_entity->get($field_name)->getValue(), TRUE);
+        $this->assertArraySubset(static::castToString($field_normalization), $updated_entity_normalization[$field_name], TRUE);
       }
     }
     // Ensure that fields do not get deleted if they're not present in the PATCH
