@@ -352,8 +352,9 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
         $this->assertElementVisibleAfterWait('css', $quick_edit_selector);
         $this->getSession()->executeScript("jQuery('[data-quickedit-field-id=\"node/" . $node->id() . "/uid/en/full\"]').click()");
         $this->assertElementVisibleAfterWait('css', $user_input_selector);
-        $this->getSession()->executeScript("jQuery('$user_input_selector').click()");
-        $this->getSession()->evaluateScript("jQuery('$user_input_selector').is(':focus')");
+        $page->find('css', $user_input_selector)->click();
+        //$this->getSession()->executeScript("jQuery('$user_input_selector').click()");
+        $this->assertJsCondition("jQuery('$user_input_selector').is(':focus')");
 
         $this->pressToolbarEditButton();
         // @todo manually testing you have mouse over body and then away to get rid of contextual link?
