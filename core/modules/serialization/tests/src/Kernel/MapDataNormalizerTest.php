@@ -120,9 +120,9 @@ class MapDataNormalizerTest extends KernelTestBase {
       ->setPropertyDefinition('key2', DataDefinition::create('string'))
       ->setPropertyDefinition('key3', DataDefinition::create('integer'))
       ->setPropertyDefinition('key4', MapDataDefinition::create()
-        ->setPropertyDefinition(0, DataDefinition::create('boolean'))
-        ->setPropertyDefinition(1, DataDefinition::create('string'))
-        ->setPropertyDefinition('key7', DataDefinition::create('string'))
+      ->setPropertyDefinition(0, DataDefinition::create('boolean'))
+      ->setPropertyDefinition(1, DataDefinition::create('string'))
+      ->setPropertyDefinition('key7', DataDefinition::create('string'))
     );
 
     $typed_data = $this->typedDataManager->create(

@@ -4,6 +4,7 @@ namespace Drupal\entity_test\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Field\Plugin\Field\FieldType\MapItem;
 use Drupal\Core\TypedData\MapDataDefinition;
 
 /**
@@ -15,7 +16,7 @@ use Drupal\Core\TypedData\MapDataDefinition;
  *   description = @Translation("Another dummy field type."),
  * )
  */
-class MapItem extends FieldItemBase {
+class MapTestItem extends MapItem {
 
   /**
    * {@inheritdoc}
@@ -23,22 +24,6 @@ class MapItem extends FieldItemBase {
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
     return [
       'value' => MapDataDefinition::create()->setLabel(t('Freeform')),
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
-    return [
-      'columns' => [
-        'value' => [
-          'description' => 'Serialized array of stuff.',
-          'type' => 'blob',
-          'size' => 'big',
-          'serialize' => TRUE,
-        ],
-      ],
     ];
   }
 
