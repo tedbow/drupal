@@ -941,3 +941,13 @@ drupal.dialog.off_canvas:
     - core/drupal.announce
     - core/drupal.dialog
     - core/drupal.dialog.ajax
+
+drupal.timeago:
+  version: VERSION
+  js:
+    misc/timeago.js:
+      defer: true
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/jquery.once

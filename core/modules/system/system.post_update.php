@@ -8,6 +8,7 @@
 use Drupal\Core\Entity\Display\EntityDisplayInterface;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
+use Drupal\Core\Field\Plugin\Field\FieldFormatter\TimestampFormatter;
 
 /**
  * Re-save all configuration entities to recalculate dependencies.
@@ -127,6 +128,29 @@ function system_post_update_change_delete_action_plugins() {
     if (isset($old_new_action_id_map[$action->getPlugin()->getPluginId()])) {
       $action->setPlugin($old_new_action_id_map[$action->getPlugin()->getPluginId()]);
       $action->save();
+    }
+  }
+}
+
+/**
+ * Update timestamp formatter settings.
+ */
+function system_post_update_timestamp_formatter() {
+  /** @var \Drupal\Core\Entity\Display\EntityViewDisplayInterface $entity_view_display */
+  foreach (EntityViewDisplay::loadMultiple() as $entity_view_display) {
+    $changed = FALSE;
+    foreach ($entity_view_display->getComponents() as $name => $component) {
+      if ($formatter_plugin = $entity_view_display->getRenderer($name)) {
+        // Check also potential plugins extending TimestampFormatter.
+        if (get_class($formatter_plugin) === TimestampFormatter::class || is_subclass_of($formatter_plugin, TimestampFormatter::class)) {
+          $component['settings'] = $formatter_plugin->getSettings();
+          $entity_view_display->setComponent($name, $component);
+          $changed = TRUE;
+        }
+      }
+    }
+    if ($changed) {
+      $entity_view_display->save();
     }
   }
 }

@@ -331,6 +331,35 @@ field.formatter.settings.timestamp:
     timezone:
       type: string
       label: 'Time zone'
+    tooltip:
+      type: mapping
+      label: Tooltip
+      mapping:
+        date_format:
+          type: string
+          label: 'Tooltip date format'
+        custom_date_format:
+          type: string
+          label: 'Tooltip custom date format'
+    timeago:
+      type: mapping
+      label: 'Options to show as timeago'
+      mapping:
+        enabled:
+          type: boolean
+          label: 'Show as time ago'
+        future_format:
+          type: string
+          label: 'Future format'
+        past_format:
+          type: string
+          label: 'Past format'
+        granularity:
+          type: integer
+          label: 'Granularity'
+        refresh:
+          type: integer
+          label: 'Refresh interval in seconds'
 
 field.formatter.settings.timestamp_ago:
   type: mapping
