@@ -353,7 +353,6 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
         $this->getSession()->executeScript("jQuery('[data-quickedit-field-id=\"node/" . $node->id() . "/uid/en/full\"]').click()");
         $this->assertElementVisibleAfterWait('css', $user_input_selector);
         $page->find('css', $user_input_selector)->click();
-        //$this->getSession()->executeScript("jQuery('$user_input_selector').click()");
         $this->assertJsCondition("jQuery('$user_input_selector').is(':focus')");
 
         $this->pressToolbarEditButton();
