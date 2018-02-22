@@ -352,6 +352,7 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
         $this->assertElementVisibleAfterWait('css', $quick_edit_selector);
         $this->getSession()->executeScript("jQuery('[data-quickedit-field-id=\"node/" . $node->id() . "/uid/en/full\"]').click()");
         $this->assertElementVisibleAfterWait('css', $user_input_selector);
+        $this->getSession()->wait('600');
         $page->find('css', $user_input_selector)->click();
         $this->assertJsCondition("jQuery('$user_input_selector').is(':focus')");
 
@@ -373,7 +374,7 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
 
         $this->openBlockForm($block_selector);
         // QuickEdit toolbar should be closed when opening Off-canvas dialog.
-        $web_assert->elementNotExists('css', $quick_edit_selector);
+        $this->waitForNoElement($quick_edit_selector);
       }
       // Check using contextual links to invoke QuickEdit and open the tray.
       $this->drupalGet('node/' . $node->id());
