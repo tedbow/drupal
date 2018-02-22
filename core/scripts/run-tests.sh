@@ -145,12 +145,6 @@ if (!Composer::upgradePHPUnitCheck($phpunit_version)) {
 }
 
 $test_list = simpletest_script_get_test_list();
-$the_only_test = 'Drupal\Tests\settings_tray\FunctionalJavascript\SettingsTrayBlockFormTest';
-if (in_array($the_only_test, $test_list)) {
- $test_list = array_fill(0, 5, $the_only_test);
-} else {
-  $test_list = [];
-}
 
 // Try to allocate unlimited time to run the tests.
 drupal_set_time_limit(0);
