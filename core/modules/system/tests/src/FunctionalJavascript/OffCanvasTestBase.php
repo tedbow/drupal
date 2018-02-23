@@ -41,7 +41,7 @@ abstract class OffCanvasTestBase extends JavascriptTestBase {
    * @todo Move this function to https://www.drupal.org/node/2821724.
    */
   protected function assertAllContextualLinksLoaded() {
-    $this->waitForNoElement('[data-contextual-id]:empty');
+    $this->assertSession()->assertNoElementAfterWait('css', '[data-contextual-id]:empty');
   }
 
   /**
@@ -74,7 +74,7 @@ abstract class OffCanvasTestBase extends JavascriptTestBase {
    * Waits for off-canvas dialog to close.
    */
   protected function waitForOffCanvasToClose() {
-    $this->waitForNoElement('#drupal-off-canvas');
+    $this->assertSession()->assertNoElementAfterWait('css','#drupal-off-canvas');
   }
 
   /**
@@ -86,21 +86,6 @@ abstract class OffCanvasTestBase extends JavascriptTestBase {
     $off_canvas_dialog = $this->getSession()->getPage()->find('css', '.ui-dialog[aria-describedby="drupal-off-canvas"]');
     $this->assertEquals(FALSE, empty($off_canvas_dialog), 'The off-canvas dialog was found.');
     return $off_canvas_dialog;
-  }
-
-  /**
-   * Waits for an element to be removed from the page.
-   *
-   * @param string $selector
-   *   CSS selector.
-   * @param int $timeout
-   *   (optional) Timeout in milliseconds, defaults to 10000.
-   *
-   * @todo Remove in https://www.drupal.org/node/2892440.
-   */
-  protected function waitForNoElement($selector, $timeout = 10000) {
-    $condition = "(typeof jQuery !== 'undefined' && jQuery('$selector').length === 0)";
-    $this->assertJsCondition($condition, $timeout);
   }
 
   /**

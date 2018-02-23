@@ -96,14 +96,14 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
       if ($element = $page->find('css', "#toolbar-administration a.is-active")) {
         // If a tray was open from page load close it.
         $element->click();
-        $this->waitForNoElement("#toolbar-administration a.is-active");
+        $web_assert->assertNoElementAfterWait('css', "#toolbar-administration a.is-active");
       }
       $page->find('css', $toolbar_item)->click();
       $this->assertElementVisibleAfterWait('css', "{$toolbar_item}.is-active");
     }
     $this->enableEditMode();
     if (isset($toolbar_item)) {
-      $this->waitForNoElement("{$toolbar_item}.is-active");
+      $web_assert->assertNoElementAfterWait('css',"{$toolbar_item}.is-active");
     }
     $this->openBlockForm($block_selector);
     switch ($block_plugin) {
