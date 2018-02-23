@@ -158,7 +158,7 @@ class SettingsTrayBlockFormTest extends OffCanvasTestBase {
     $this->waitForOffCanvasToClose();
     $this->getSession()->wait(100);
     $this->assertEditModeDisabled();
-    $web_assert->elementTextContains('css', '#drupal-live-announce', 'Exited edit mode.');
+    $web_assert->waitForElement('css', '#drupal-live-announce:contains(Exited edit mode)');
     $web_assert->elementTextNotContains('css', '.contextual-toolbar-tab button', 'Editing');
     $web_assert->elementAttributeNotContains('css', '.dialog-off-canvas-main-canvas', 'class', 'js-settings-tray-edit-mode');
   }

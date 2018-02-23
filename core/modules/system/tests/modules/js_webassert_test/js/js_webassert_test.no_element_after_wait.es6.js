@@ -18,6 +18,13 @@
           $('#edit-test-assert-no-element-after-wait-pass').remove();
         }, 500);
       });
+
+      $('#edit-test-assert-no-element-after-wait-fail').on('click', (e) => {
+        e.preventDefault();
+        setTimeout(() => {
+          $('#edit-test-assert-no-element-after-wait-fail').remove();
+        }, 2000);
+      });
     },
   };
 })(jQuery, Drupal);

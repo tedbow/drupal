@@ -29,6 +29,17 @@ class JSWebAssertTest extends JavascriptTestBase {
     $assert_session = $this->assertSession();
     $page = $session->getPage();
 
+    $assert_session->elementExists('css', '[data-drupal-selector="edit-test-assert-no-element-after-wait-pass"]');
+    $page->findButton('Test assertNoElementAfterWait: pass')->press();
+    $assert_session->assertNoElementAfterWait('css', '[data-drupal-selector="edit-test-assert-no-element-after-wait-pass"]',1000);
+
+    $assert_session->elementExists('css', '[data-drupal-selector="edit-test-assert-no-element-after-wait-fail"]');
+    $page->findButton('Test assertNoElementAfterWait: fail')->press();
+    $this->setExpectedException('\Behat\Mink\Exception\ElementHtmlException', 'Element exists on page after too short wait.');
+    $assert_session->assertNoElementAfterWait('css', '[data-drupal-selector="edit-test-assert-no-element-after-wait-fail"]', 500, 'Element exists on page after too short wait.');
+
+    $assert_session->assertNoElementAfterWait('css', '[data-drupal-selector="edit-test-assert-no-element-after-wait-fail"]', 2500, 'Element remove after another wait.ss');
+
     $test_button = $page->findButton('Add button');
     $test_link = $page->findButton('Add link');
     $test_field = $page->findButton('Add field');
@@ -84,11 +95,6 @@ class JSWebAssertTest extends JavascriptTestBase {
     $this->assertNotEmpty($result);
     $this->assertTrue($result instanceof NodeElement);
     $this->assertEquals(TRUE, $result->isVisible());
-
-    $assert_session->elementExists('css', '[data-drupal-selector="edit-test-assert-no-element-after-wait-pass"]');
-    $page->findButton('Test assertNoElementAfterWait: pass')->press();
-    $assert_session->assertNoElementAfterWait('css', '[data-drupal-selector="edit-test-assert-no-element-after-wait-pass"]');
-
   }
 
 }
