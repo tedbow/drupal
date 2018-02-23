@@ -84,6 +84,11 @@ class JSWebAssertTest extends JavascriptTestBase {
     $this->assertNotEmpty($result);
     $this->assertTrue($result instanceof NodeElement);
     $this->assertEquals(TRUE, $result->isVisible());
+
+    $assert_session->elementExists('css', '[data-drupal-selector="edit-test-assert-no-element-after-wait-pass"]');
+    $page->findButton('Test assertNoElementAfterWait: pass')->press();
+    $assert_session->assertNoElementAfterWait('css', '[data-drupal-selector="edit-test-assert-no-element-after-wait-pass"]');
+
   }
 
 }

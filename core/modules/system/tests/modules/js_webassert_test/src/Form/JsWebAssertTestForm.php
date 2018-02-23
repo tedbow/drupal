@@ -113,6 +113,20 @@ class JsWebAssertTestForm extends FormBase {
         'wrapper' => 'js_webassert_test_form_wrapper',
       ],
     ];
+
+    // Button to test the assertNoElementAfterWait() assertion, will pass.
+    $form['test_assert_no_element_after_wait_pass'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Test assertNoElementAfterWait: pass'),
+      '#button_type' => 'primary',
+      '#attached' => ['library' => 'js_webassert_test/no_element_after_wait'],
+    ];
+
+    $form['select_to_remove'] = [
+      '#title' => $this->t('These are your options.'),
+      '#type' => 'select',
+      '#options' => ['Do' , 'Do not'],
+    ];
     return $form;
   }
 
