@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\layout_builder\Controller;
+namespace Drupal\Core\Ajax;
 
 use Drupal\Core\EventSubscriber\MainContentViewSubscriber;
 

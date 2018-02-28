@@ -5,7 +5,7 @@ namespace Drupal\layout_builder\Form;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\layout_builder\Controller\AjaxHelperTrait;
+use Drupal\Core\Ajax\AjaxHelperTrait;
 
 /**
  * Provides a helper to for submitting an AJAX form.
