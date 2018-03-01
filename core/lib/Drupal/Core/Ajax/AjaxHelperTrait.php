@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\layout_builder\Controller;
+namespace Drupal\Core\Ajax;
 
 use Drupal\Core\EventSubscriber\MainContentViewSubscriber;
 
@@ -8,8 +8,6 @@ use Drupal\Core\EventSubscriber\MainContentViewSubscriber;
  * Provides a helper to determine if the current request is via AJAX.
  *
  * @internal
- *
- * @todo Move to \Drupal\Core in https://www.drupal.org/node/2896535.
  */
 trait AjaxHelperTrait {
 

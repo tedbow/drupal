@@ -5,6 +5,7 @@ namespace Drupal\settings_tray\Block;
 use Drupal\block\BlockForm;
 use Drupal\block\BlockInterface;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Ajax\AjaxFormHelperTrait;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
@@ -22,6 +23,8 @@ use Drupal\Core\Url;
  * @internal
  */
 class BlockEntitySettingTrayForm extends BlockForm {
+
+  use AjaxFormHelperTrait;
 
   /**
    * Provides a title callback to get the block's admin label.
@@ -122,12 +125,12 @@ class BlockEntitySettingTrayForm extends BlockForm {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
     $form['actions']['submit']['#ajax'] = [
-      'callback' => '::submitFormDialog',
+      'callback' => '::ajaxSubmit',
     ];
     $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
 
-    // static::submitFormDialog() requires data-drupal-selector to be the same
-    // between the various Ajax requests. A bug in
+    // static::ajaxSubmit() requires data-drupal-selector to be the same between
+    // the various Ajax requests. A bug in
     // \Drupal\Core\Form\FormBuilder prevents that from happening unless
     // $form['#id'] is also the same. Normally, #id is set to a unique HTML ID
     // via Html::getUniqueId(), but here we bypass that in order to work around
@@ -141,38 +144,17 @@ class BlockEntitySettingTrayForm extends BlockForm {
   }
 
   /**
-   * Submit form dialog #ajax callback.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   *
-   * @return \Drupal\Core\Ajax\AjaxResponse
-   *   An AJAX response that display validation error messages or redirects
-   *   to a URL
-   *
-   * @todo Repalce this callback with generic trait in
-   *   https://www.drupal.org/node/2896535.
+   * {@inheritdoc}
    */
-  public function submitFormDialog(array &$form, FormStateInterface $form_state) {
-    $response = new AjaxResponse();
-    if ($form_state->hasAnyErrors()) {
-      $form['status_messages'] = [
-        '#type' => 'status_messages',
-        '#weight' => -1000,
-      ];
-      $command = new ReplaceCommand('[data-drupal-selector="' . $form['#attributes']['data-drupal-selector'] . '"]', $form);
+  protected function successfulAjaxSubmit(array $form, FormStateInterface $form_state) {
+    if ($redirect_url = $this->getRedirectUrl()) {
+      $command = new RedirectCommand($redirect_url->setAbsolute()->toString());
     }
     else {
-      if ($redirect_url = $this->getRedirectUrl()) {
-        $command = new RedirectCommand($redirect_url->setAbsolute()->toString());
-      }
-      else {
-        // Settings Tray always provides a destination.
-        throw new \Exception("No destination provided by Settings Tray form");
-      }
+      // Settings Tray always provides a destination.
+      throw new \Exception("No destination provided by Settings Tray form");
     }
+    $response = new AjaxResponse();
     return $response->addCommand($command);
   }
 
