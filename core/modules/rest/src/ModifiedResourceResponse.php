@@ -3,6 +3,7 @@
 namespace Drupal\rest;
 
 use Drupal\Core\Response\ResourceResponseInterface;
+use Drupal\Core\Response\ResourceResponseTrait;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

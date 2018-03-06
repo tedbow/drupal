@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\rest;
+namespace Drupal\Core\Response;
 
 trait ResourceResponseTrait {
 
