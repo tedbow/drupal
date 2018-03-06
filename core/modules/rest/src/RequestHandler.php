@@ -8,7 +8,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\rest\Plugin\ResourceInterface;
+use Drupal\Core\Plugin\ResourceInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -20,7 +20,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * Acts as intermediate request forwarder for resource plugins.
  *
- * @see \Drupal\rest\EventSubscriber\ResourceResponseSubscriber
+ * @see \Drupal\Core\EventSubscriber\ResourceResponseSubscriber
  */
 class RequestHandler implements ContainerInjectionInterface {
 
@@ -71,7 +71,7 @@ class RequestHandler implements ContainerInjectionInterface {
    * @param \Drupal\rest\RestResourceConfigInterface $_rest_resource_config
    *   REST resource config entity ID.
    *
-   * @return \Drupal\rest\ResourceResponseInterface|\Symfony\Component\HttpFoundation\Response
+   * @return \Drupal\Core\Response\ResourceResponseInterface|\Symfony\Component\HttpFoundation\Response
    *   The REST resource response.
    */
   public function handle(RouteMatchInterface $route_match, Request $request, RestResourceConfigInterface $_rest_resource_config) {
@@ -122,7 +122,7 @@ class RequestHandler implements ContainerInjectionInterface {
    *   The route match.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The HTTP request object.
-   * @param \Drupal\rest\Plugin\ResourceInterface $resource
+   * @param \Drupal\Core\Plugin\ResourceInterface $resource
    *   The REST resource plugin.
    *
    * @return array|null
@@ -181,10 +181,10 @@ class RequestHandler implements ContainerInjectionInterface {
    *   The route match.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The HTTP request object.
-   * @param \Drupal\rest\Plugin\ResourceInterface $resource
+   * @param \Drupal\Core\Plugin\ResourceInterface $resource
    *   The REST resource plugin.
    *
-   * @return \Symfony\Component\HttpFoundation\Response|\Drupal\rest\ResourceResponseInterface
+   * @return \Symfony\Component\HttpFoundation\Response|\Drupal\Core\Response\ResourceResponseInterface
    *   The REST resource response.
    */
   protected function delegateToRestResourcePlugin(RouteMatchInterface $route_match, Request $request, ResourceInterface $resource) {

@@ -2,7 +2,7 @@
 
 namespace Drupal\rest_test\Plugin\rest\resource;
 
-use Drupal\rest\Plugin\ResourceBase;
+use Drupal\Core\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 
 /**

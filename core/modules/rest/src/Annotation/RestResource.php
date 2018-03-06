@@ -12,8 +12,8 @@ use Drupal\Component\Annotation\Plugin;
  * For a working example, see \Drupal\dblog\Plugin\rest\resource\DBLogResource
  *
  * @see \Drupal\rest\Plugin\Type\ResourcePluginManager
- * @see \Drupal\rest\Plugin\ResourceBase
- * @see \Drupal\rest\Plugin\ResourceInterface
+ * @see \Drupal\Core\Plugin\ResourceBase
+ * @see \Drupal\Core\Plugin\ResourceInterface
  * @see plugin_api
  *
  * @ingroup third_party

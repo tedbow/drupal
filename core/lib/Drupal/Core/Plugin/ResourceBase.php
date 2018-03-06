@@ -1,9 +1,10 @@
 <?php
 
-namespace Drupal\rest\Plugin;
+namespace Drupal\Core\Plugin;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginBase;
+use Drupal\Core\Plugin\ResourceInterface;
 use Drupal\Core\Routing\BcRoute;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -20,7 +21,7 @@ use Symfony\Component\Routing\RouteCollection;
  *
  * @see \Drupal\rest\Annotation\RestResource
  * @see \Drupal\rest\Plugin\Type\ResourcePluginManager
- * @see \Drupal\rest\Plugin\ResourceInterface
+ * @see \Drupal\Core\Plugin\ResourceInterface
  * @see plugin_api
  *
  * @ingroup third_party
@@ -42,7 +43,7 @@ abstract class ResourceBase extends PluginBase implements ContainerFactoryPlugin
   protected $logger;
 
   /**
-   * Constructs a Drupal\rest\Plugin\ResourceBase object.
+   * Constructs a Drupal\Core\Plugin\ResourceBase object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.

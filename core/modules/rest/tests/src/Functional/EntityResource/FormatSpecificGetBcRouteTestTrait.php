@@ -32,7 +32,7 @@ trait FormatSpecificGetBcRouteTestTrait {
   /**
    * @group legacy
    *
-   * @see \Drupal\rest\Plugin\ResourceBase::routes
+   * @see \Drupal\Core\Plugin\ResourceBase::routes
    */
   public function testNoFormatSpecificGetBcRouteForOtherFormats() {
     $this->setExpectedException(RouteNotFoundException::class);

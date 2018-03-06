@@ -4,6 +4,7 @@ namespace Drupal\rest;
 
 use Drupal\Core\Cache\CacheableResponseInterface;
 use Drupal\Core\Cache\CacheableResponseTrait;
+use Drupal\Core\Response\ResourceResponseInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

@@ -16,7 +16,7 @@ interface CacheableNormalizerInterface extends NormalizerInterface {
    *
    * @see \Symfony\Component\Serializer\Normalizer\NormalizerInterface::normalize()
    * @see \Symfony\Component\Serializer\SerializerInterface::serialize()
-   * @see \Drupal\rest\EventSubscriber\ResourceResponseSubscriber::renderResponseBody()
+   * @see \Drupal\Core\EventSubscriber\ResourceResponseSubscriber::renderResponseBody()
    */
   const SERIALIZATION_CONTEXT_CACHEABILITY = 'cacheability';
 

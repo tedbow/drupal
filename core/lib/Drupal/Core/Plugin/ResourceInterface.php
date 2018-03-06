@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\rest\Plugin;
+namespace Drupal\Core\Plugin;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
 
@@ -9,7 +9,7 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
  *
  * @see \Drupal\rest\Annotation\RestResource
  * @see \Drupal\rest\Plugin\Type\ResourcePluginManager
- * @see \Drupal\rest\Plugin\ResourceBase
+ * @see \Drupal\Core\Plugin\ResourceBase
  * @see plugin_api
  *
  * @ingroup third_party

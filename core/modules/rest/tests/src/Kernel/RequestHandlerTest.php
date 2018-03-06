@@ -6,7 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Routing\RouteMatch;
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\rest\Plugin\ResourceBase;
+use Drupal\Core\Plugin\ResourceBase;
 use Drupal\rest\RequestHandler;
 use Drupal\rest\ResourceResponse;
 use Drupal\rest\RestResourceConfigInterface;

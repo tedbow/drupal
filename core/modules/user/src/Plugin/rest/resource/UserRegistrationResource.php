@@ -5,7 +5,7 @@ namespace Drupal\user\Plugin\rest\resource;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\rest\ModifiedResourceResponse;
-use Drupal\rest\Plugin\ResourceBase;
+use Drupal\Core\Plugin\ResourceBase;
 use Drupal\rest\Plugin\rest\resource\EntityResourceAccessTrait;
 use Drupal\rest\Plugin\rest\resource\EntityResourceValidationTrait;
 use Drupal\user\UserInterface;

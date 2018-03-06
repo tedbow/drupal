@@ -8,10 +8,10 @@ use Drupal\Core\Render\RenderContext;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatch;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\rest\EventSubscriber\ResourceResponseSubscriber;
+use Drupal\Core\EventSubscriber\ResourceResponseSubscriber;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\ResourceResponse;
-use Drupal\rest\ResourceResponseInterface;
+use Drupal\Core\Response\ResourceResponseInterface;
 use Drupal\serialization\Encoder\JsonEncoder;
 use Drupal\serialization\Encoder\XmlEncoder;
 use Drupal\Tests\UnitTestCase;
@@ -24,7 +24,7 @@ use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
- * @coversDefaultClass \Drupal\rest\EventSubscriber\ResourceResponseSubscriber
+ * @coversDefaultClass \Drupal\Core\EventSubscriber\ResourceResponseSubscriber
  * @group rest
  */
 class ResourceResponseSubscriberTest extends UnitTestCase {
@@ -382,7 +382,7 @@ class ResourceResponseSubscriberTest extends UnitTestCase {
   }
 
   /**
-   * @return \Drupal\rest\EventSubscriber\ResourceResponseSubscriber
+   * @return \Drupal\Core\EventSubscriber\ResourceResponseSubscriber
    */
   protected function getFunctioningResourceResponseSubscriber(RouteMatchInterface $route_match) {
     // Create a dummy of the renderer service.

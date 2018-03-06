@@ -141,8 +141,8 @@
  * @section sec_plugins Defining new REST plugins
  * The REST framework in the REST module has support built in for entities, but
  * it is also an extensible plugin-based system. REST plugins implement
- * interface \Drupal\rest\Plugin\ResourceInterface, and generally extend base
- * class \Drupal\rest\Plugin\ResourceBase. They are annotated with
+ * interface \Drupal\Core\Plugin\ResourceInterface, and generally extend base
+ * class \Drupal\Core\Plugin\ResourceBase. They are annotated with
  * \Drupal\rest\Annotation\RestResource annotation, and must be in plugin
  * namespace subdirectory Plugin\rest\resource. For more information on how to
  * create plugins, see the @link plugin_api Plugin API topic. @endlink

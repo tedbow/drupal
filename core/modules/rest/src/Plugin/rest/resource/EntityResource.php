@@ -13,7 +13,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Http\Exception\CacheableAccessDeniedHttpException;
-use Drupal\rest\Plugin\ResourceBase;
+use Drupal\Core\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
