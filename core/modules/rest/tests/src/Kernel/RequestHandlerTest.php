@@ -8,7 +8,7 @@ use Drupal\Core\Routing\RouteMatch;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Core\Plugin\ResourceBase;
 use Drupal\rest\RequestHandler;
-use Drupal\rest\ResourceResponse;
+use Drupal\Core\Response\ResourceResponse;
 use Drupal\rest\RestResourceConfigInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;

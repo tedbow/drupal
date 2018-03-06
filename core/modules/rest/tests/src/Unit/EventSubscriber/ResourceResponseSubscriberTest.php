@@ -10,7 +10,7 @@ use Drupal\Core\Routing\RouteMatch;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\EventSubscriber\ResourceResponseSubscriber;
 use Drupal\rest\ModifiedResourceResponse;
-use Drupal\rest\ResourceResponse;
+use Drupal\Core\Response\ResourceResponse;
 use Drupal\Core\Response\ResourceResponseInterface;
 use Drupal\serialization\Encoder\JsonEncoder;
 use Drupal\serialization\Encoder\XmlEncoder;
@@ -53,7 +53,7 @@ class ResourceResponseSubscriberTest extends UnitTestCase {
 
   public function providerTestSerialization() {
     return [
-      // The default data for \Drupal\rest\ResourceResponse.
+      // The default data for \Drupal\Core\Response\ResourceResponse.
       'default' => [NULL, ''],
       'empty string' => [''],
       'simple string' => ['string'],

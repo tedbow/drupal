@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
  * Used when resources are modified by a request: responses to unsafe requests
  * (POST/PATCH/DELETE) can never be cached.
  *
- * @see \Drupal\rest\ResourceResponse
+ * @see \Drupal\Core\Response\ResourceResponse
  */
 class ModifiedResourceResponse extends Response implements ResourceResponseInterface {
 

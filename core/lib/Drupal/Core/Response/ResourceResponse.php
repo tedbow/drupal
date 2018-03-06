@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\rest;
+namespace Drupal\Core\Response;
 
 use Drupal\Core\Cache\CacheableResponseInterface;
 use Drupal\Core\Cache\CacheableResponseTrait;
