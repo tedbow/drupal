@@ -51,6 +51,7 @@ class OverriddenConfigurationTest extends SettingsTrayTestBase {
   public function testOverriddenConfigurationRemoved() {
     $web_assert = $this->assertSession();
     $page = $this->getSession()->getPage();
+    $this->grantPermissions(Role::load(Role::AUTHENTICATED_ID), ['administer site configuration', 'administer menu']);
 
     // Confirm the branding block does include 'site_information' section when
     // the site name is not overridden.
@@ -169,7 +170,7 @@ class OverriddenConfigurationTest extends SettingsTrayTestBase {
     $contextual_links = $page->findAll('css', "$block_selector .contextual-links li a");
     $this->assertNotEmpty($contextual_links);
     foreach ($contextual_links as $link) {
-      $this->assertNotContains("/admin/structure/block/manage/$block_id/settings-tray", $link->getAttribute('href'));
+      $this->assertNotContains("/admin/structure/block/manage/$block_id/off-canvas", $link->getAttribute('href'));
     }
     // Confirm the block is not marked as Settings Tray editable.
     $this->assertFalse($page->find('css', $block_selector)
