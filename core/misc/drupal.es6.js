@@ -239,10 +239,9 @@ window.Drupal = { behaviors: {}, locale: {} };
   Drupal.checkPlain = function (str) {
     str = str.toString()
       .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
     return str;
   };
 
