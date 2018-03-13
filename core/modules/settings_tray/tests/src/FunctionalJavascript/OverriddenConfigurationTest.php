@@ -4,6 +4,7 @@ namespace Drupal\Tests\settings_tray\FunctionalJavascript;
 
 use Drupal\block\Entity\Block;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
+use Drupal\user\Entity\Role;
 
 /**
  * Tests handling of configuration overrides.
