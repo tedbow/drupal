@@ -7,12 +7,13 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Controller\TitleResolverInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Default main content renderer for dialog requests.
  */
-class DialogRenderer implements MainContentRendererInterface {
+class DialogRenderer implements LinkableMainContentRendererInterface {
 
   /**
    * The title resolver.
@@ -87,6 +88,17 @@ class DialogRenderer implements MainContentRendererInterface {
       $target = '#' . Html::getUniqueId("drupal-dialog-$route_name");
     }
     return $target;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function openUrlInRenderer(Url $url, $options = []) {
+    $options = $url->getOptions();
+    $options['attributes']['class'][] = 'use-ajax';
+    $options['attributes']['data-dialog-type'] = 'dialog';
+    $options['attributes']['data-dialog-options'] = json_encode($options);
+    $url->setOptions($options);
   }
 
 }

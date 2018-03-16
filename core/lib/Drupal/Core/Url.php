@@ -5,6 +5,7 @@ namespace Drupal\Core;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+use Drupal\Core\Render\MainContent\LinkableMainContentRendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\UrlGeneratorInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -884,6 +885,29 @@ class Url {
    */
   public function setUnroutedUrlAssembler(UnroutedUrlAssemblerInterface $url_assembler) {
     $this->urlAssembler = $url_assembler;
+    return $this;
+  }
+
+  /**
+   * Changes the link to open in renderer.
+   *
+   * @param string $renderer
+   *   The main content renderer to use for the URL.
+   * @param array $options
+   *   Options to be passed to the renderer.
+   *
+   * @return $this
+   */
+  public function openInRenderer($renderer, array $options = []) {
+    $main_content_renders = \Drupal::getContainer()->getParameter('main_content_renderers');
+    $renderer_key = "drupal_$renderer";
+    if (!isset($main_content_renders[$renderer_key])) {
+      return $this;
+    }
+    $renderer = \Drupal::service($main_content_renders[$renderer_key]);
+    if ($renderer instanceof LinkableMainContentRendererInterface) {
+      $renderer->openUrlInRenderer($this, $options);
+    }
     return $this;
   }
 
