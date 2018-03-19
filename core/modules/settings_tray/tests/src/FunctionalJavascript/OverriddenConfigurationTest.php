@@ -24,12 +24,12 @@ class OverriddenConfigurationTest extends SettingsTrayTestBase {
     'toolbar',
     'contextual',
     'settings_tray',
-    // Add test module to override CSS pointer-events properties because they
-    // cause test failures.
-    'settings_tray_test_css',
     'settings_tray_override_test',
     'menu_ui',
     'menu_link_content',
+    // Add test module to override CSS pointer-events properties because they
+    // cause test failures.
+    'settings_tray_test_css',
   ];
 
   /**

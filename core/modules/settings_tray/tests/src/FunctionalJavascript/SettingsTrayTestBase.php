@@ -44,7 +44,6 @@ class SettingsTrayTestBase extends OffCanvasTestBase {
     $this->assertOffCanvasBlockFormIsValid();
   }
 
-
   /**
    * Enables edit mode by pressing edit button in the toolbar.
    */
@@ -89,7 +88,6 @@ class SettingsTrayTestBase extends OffCanvasTestBase {
     $web_assert->elementNotExists('css', '.dialog-off-canvas-main-canvas.js-settings-tray-edit-mode');
   }
 
-
   /**
    * Assert that edit mode has been properly enabled.
    */
@@ -131,8 +129,8 @@ class SettingsTrayTestBase extends OffCanvasTestBase {
    * {@inheritdoc}
    */
   protected function getTestThemes() {
-    // Remove 'seven' theme. Setting Tray "Edit Mode" will not work with 'seven'
-    // because it removes all contextual links the off-canvas dialog should.
+    // Remove 'seven' theme. Settings Tray "Edit Mode" will not work with
+    // 'seven' because it removes all contextual links.
     return array_filter(parent::getTestThemes(), function ($theme) {
       return $theme !== 'seven';
     });

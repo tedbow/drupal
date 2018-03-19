@@ -25,10 +25,10 @@ class SettingsTrayBlockFormTest extends SettingsTrayTestBase {
     'contextual',
     'settings_tray',
     'search',
+    'settings_tray_test',
     // Add test module to override CSS pointer-events properties because they
     // cause test failures.
     'settings_tray_test_css',
-    'settings_tray_test',
   ];
 
   /**
