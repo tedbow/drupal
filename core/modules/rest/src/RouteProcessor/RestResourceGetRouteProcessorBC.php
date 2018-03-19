@@ -48,7 +48,7 @@ class RestResourceGetRouteProcessorBC implements OutboundRouteProcessorInterface
     // of a single route. To minimize the surface of this BC layer, this uses
     // route definitions that are as empty as possible, plus an outbound route
     // processor.
-    // @see \Drupal\rest\Plugin\ResourceBase::routes()
+    // @see \Drupal\Core\Plugin\ResourceBase::routes()
     if ($route_name_parts[0] === 'rest' && $route_name_parts[count($route_name_parts) - 2] === 'GET' && in_array($route_name_parts[count($route_name_parts) - 1], $this->serializerFormats, TRUE)) {
       array_pop($route_name_parts);
       $redirected_route_name = implode('.', $route_name_parts);

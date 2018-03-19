@@ -22,7 +22,7 @@ services:
 
   # Event subscribers.
   rest.resource_response.subscriber:
-    class: Drupal\rest\EventSubscriber\ResourceResponseSubscriber
+    class: Drupal\Core\EventSubscriber\ResourceResponseSubscriber
     tags:
       - { name: event_subscriber }
     arguments: ['@serializer', '@renderer', '@current_route_match']

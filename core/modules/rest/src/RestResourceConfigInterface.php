@@ -23,7 +23,7 @@ interface RestResourceConfigInterface extends ConfigEntityInterface, EntityWithP
   /**
    * Retrieves the REST resource plugin.
    *
-   * @return \Drupal\rest\Plugin\ResourceInterface
+   * @return \Drupal\Core\Plugin\ResourceInterface
    *   The resource plugin
    */
   public function getResourcePlugin();

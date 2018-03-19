@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\rest;
+namespace Drupal\Core\Response;
 
 /**
  * Defines a common interface for resource responses.

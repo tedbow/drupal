@@ -17,7 +17,7 @@ use Drupal\Core\Url;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\path\Plugin\Field\FieldType\PathItem;
-use Drupal\rest\ResourceResponseInterface;
+use Drupal\Core\Response\ResourceResponseInterface;
 use Drupal\Tests\rest\Functional\ResourceTestBase;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
@@ -492,7 +492,7 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
     // Assert that Dynamic Page Cache did not store a ResourceResponse object,
     // which needs serialization after every cache hit. Instead, it should
     // contain a flattened response. Otherwise performance suffers.
-    // @see \Drupal\rest\EventSubscriber\ResourceResponseSubscriber::flattenResponse()
+    // @see \Drupal\Core\EventSubscriber\ResourceResponseSubscriber::flattenResponse()
     $cache_items = $this->container->get('database')
       ->query("SELECT cid, data FROM {cache_dynamic_page_cache} WHERE cid LIKE :pattern", [
         ':pattern' => '%[route]=rest.%',

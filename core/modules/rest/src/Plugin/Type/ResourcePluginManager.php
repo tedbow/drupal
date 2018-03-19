@@ -10,8 +10,8 @@ use Drupal\Core\Plugin\DefaultPluginManager;
  * Manages discovery and instantiation of resource plugins.
  *
  * @see \Drupal\rest\Annotation\RestResource
- * @see \Drupal\rest\Plugin\ResourceBase
- * @see \Drupal\rest\Plugin\ResourceInterface
+ * @see \Drupal\Core\Plugin\ResourceBase
+ * @see \Drupal\Core\Plugin\ResourceInterface
  * @see plugin_api
  */
 class ResourcePluginManager extends DefaultPluginManager {
@@ -28,7 +28,7 @@ class ResourcePluginManager extends DefaultPluginManager {
    *   The module handler to invoke the alter hook with.
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
-    parent::__construct('Plugin/rest/resource', $namespaces, $module_handler, 'Drupal\rest\Plugin\ResourceInterface', 'Drupal\rest\Annotation\RestResource');
+    parent::__construct('Plugin/rest/resource', $namespaces, $module_handler, 'Drupal\Core\Plugin\ResourceInterface', 'Drupal\rest\Annotation\RestResource');
 
     $this->setCacheBackend($cache_backend, 'rest_plugins');
     $this->alterInfo('rest_resource');

@@ -1,9 +1,11 @@
 <?php
 
-namespace Drupal\rest;
+namespace Drupal\Core\Response;
 
 use Drupal\Core\Cache\CacheableResponseInterface;
 use Drupal\Core\Cache\CacheableResponseTrait;
+use Drupal\Core\Response\ResourceResponseInterface;
+use Drupal\Core\Response\ResourceResponseTrait;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

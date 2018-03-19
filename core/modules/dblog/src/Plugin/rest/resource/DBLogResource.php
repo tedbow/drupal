@@ -2,8 +2,8 @@
 
 namespace Drupal\dblog\Plugin\rest\resource;
 
-use Drupal\rest\Plugin\ResourceBase;
-use Drupal\rest\ResourceResponse;
+use Drupal\Core\Plugin\ResourceBase;
+use Drupal\Core\Response\ResourceResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -28,7 +28,7 @@ class DBLogResource extends ResourceBase {
    * @param int $id
    *   The ID of the watchdog log entry.
    *
-   * @return \Drupal\rest\ResourceResponse
+   * @return \Drupal\Core\Response\ResourceResponse
    *   The response containing the log entry.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
