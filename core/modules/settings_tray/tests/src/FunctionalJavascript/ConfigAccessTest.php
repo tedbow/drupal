@@ -16,17 +16,8 @@ class ConfigAccessTest extends SettingsTrayTestBase {
    * {@inheritdoc}
    */
   public static $modules = [
-    'block',
-    'system',
-    'breakpoint',
-    'toolbar',
-    'contextual',
     'menu_link_content',
     'menu_ui',
-    'settings_tray',
-    // Add test module to override CSS pointer-events properties because they
-    // cause test failures.
-    'settings_tray_test_css',
   ];
 
   /**

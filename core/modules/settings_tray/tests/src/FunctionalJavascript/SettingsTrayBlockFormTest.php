@@ -18,17 +18,8 @@ class SettingsTrayBlockFormTest extends SettingsTrayTestBase {
    */
   public static $modules = [
     'node',
-    'block',
-    'system',
-    'breakpoint',
-    'toolbar',
-    'contextual',
-    'settings_tray',
     'search',
     'settings_tray_test',
-    // Add test module to override CSS pointer-events properties because they
-    // cause test failures.
-    'settings_tray_test_css',
   ];
 
   /**

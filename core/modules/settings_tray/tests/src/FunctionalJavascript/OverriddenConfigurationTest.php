@@ -17,19 +17,9 @@ class OverriddenConfigurationTest extends SettingsTrayTestBase {
    * {@inheritdoc}
    */
   public static $modules = [
-    'node',
-    'block',
-    'system',
-    'breakpoint',
-    'toolbar',
-    'contextual',
-    'settings_tray',
     'settings_tray_override_test',
     'menu_ui',
     'menu_link_content',
-    // Add test module to override CSS pointer-events properties because they
-    // cause test failures.
-    'settings_tray_test_css',
   ];
 
   /**

@@ -13,6 +13,16 @@ class SettingsTrayTestBase extends OffCanvasTestBase {
 
   use ContextualLinkClickTrait;
 
+  /**
+   * {@inheritdoc}
+   */
+  public static $modules = [
+    'settings_tray',
+    // Add test module to override CSS pointer-events properties because they
+    // cause test failures.
+    'settings_tray_test_css',
+  ];
+
   const TOOLBAR_EDIT_LINK_SELECTOR = '#toolbar-bar div.contextual-toolbar-tab button';
 
   const LABEL_INPUT_SELECTOR = 'input[data-drupal-selector="edit-settings-label"]';
