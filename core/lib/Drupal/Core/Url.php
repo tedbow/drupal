@@ -894,20 +894,15 @@ class Url {
    *   The path to set as the destination. If none is provide then set to the
    *   current path.
    */
-  public function setDestination($path = NULL) {
-    if (!isset($path)) {
-      $destination = \Drupal::destination()->getAsArray();
-    }
-    else {
-      $destination = ['destination' => $path];
-    }
-    if ($query = $this->getOption('query')) {
-      $query = array_merge($query, $destination);
-    }
-    else {
-      $query = $destination;
-    }
-    $this->setOption('query', $query);
+  public function setDestination($path) {
+    $this->mergeOptions(['query' => ['destination' => $path]]);
+  }
+
+  /**
+   * Sets the destination of the link to the current path or destination.
+   */
+  public function setDestinationToCurrent() {
+    $this->setDestination(\Drupal::destination()->get());
   }
 
 }
