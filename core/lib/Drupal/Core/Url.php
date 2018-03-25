@@ -891,8 +891,7 @@ class Url {
    * Sets the destination of the link.
    *
    * @param string $path
-   *   The path to set as the destination. If none is provide then set to the
-   *   current path.
+   *   The path to set as the destination.
    */
   public function setDestination($path) {
     $this->mergeOptions(['query' => ['destination' => $path]]);
