@@ -141,7 +141,12 @@ class FieldBlock extends BlockBase implements ContextAwarePluginInterface, Conta
   public function build() {
     $display_settings = $this->getConfiguration()['formatter'];
     $entity = $this->getEntity();
-    $build = $entity->get($this->fieldName)->view($display_settings);
+    try {
+      $build = $entity->get($this->fieldName)->view($display_settings);
+    }
+    catch (\Exception $e) {
+      $build = [];
+    }
     if (!empty($entity->in_preview) && !Element::getVisibleChildren($build)) {
       $build['content']['#markup'] = new TranslatableMarkup('Placeholder for the "@field" field', ['@field' => $this->getFieldDefinition()->getLabel()]);
     }
