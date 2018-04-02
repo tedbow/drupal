@@ -3,7 +3,7 @@ module_installer_config_test.type.*:
   label: 'Test entity type'
   mapping:
     id:
-      type: string
+      type: machine_name
     name:
       type: label
       label: 'Name'

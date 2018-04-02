@@ -5,7 +5,7 @@ rdf.mapping.*.*:
   label: 'RDF mapping'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     targetEntityType:
       type: string

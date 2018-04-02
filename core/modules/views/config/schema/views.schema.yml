@@ -70,7 +70,7 @@ views.view.*:
   label: 'View'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     label:
       type: label
@@ -101,7 +101,7 @@ views.view.*:
         label: 'Display settings'
         mapping:
           id:
-            type: string
+            type: machine_name
             label: 'Machine name'
           display_title:
             type: text

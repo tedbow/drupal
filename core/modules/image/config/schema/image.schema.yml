@@ -15,7 +15,7 @@ image.style.*:
         type: mapping
         mapping:
           id:
-            type: string
+            type: machine_name
           data:
             type: image.effect.[%parent.id]
           weight:

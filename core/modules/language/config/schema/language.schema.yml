@@ -89,7 +89,7 @@ language.entity.*:
   label: 'Language'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     label:
       type: label
@@ -109,7 +109,7 @@ language.content_settings.*.*:
   label: 'Content Language Settings'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     target_entity_type_id:
       type: string

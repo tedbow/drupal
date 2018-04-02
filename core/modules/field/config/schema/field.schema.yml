@@ -13,7 +13,7 @@ field.storage.*.*:
   label: 'Field'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     field_name:
       type: string

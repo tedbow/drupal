@@ -5,7 +5,7 @@ core.entity_view_mode.*.*:
   label: 'Entity view mode settings'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     label:
       type: label
@@ -22,7 +22,7 @@ core.entity_form_mode.*.*:
   label: 'Entity form mode settings'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     label:
       type: label
@@ -40,7 +40,7 @@ core.entity_view_display.*.*.*:
   label: 'Entity display'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     targetEntityType:
       type: string
@@ -98,7 +98,7 @@ core.entity_form_display.*.*.*:
   label: 'Entity form display'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     targetEntityType:
       type: string

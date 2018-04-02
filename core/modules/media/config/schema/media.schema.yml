@@ -11,7 +11,7 @@ media.type.*:
   label: 'Media type'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'Machine name'
     label:
       type: label

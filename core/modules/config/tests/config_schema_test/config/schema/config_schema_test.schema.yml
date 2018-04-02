@@ -283,7 +283,7 @@ wrapping.test.other_double_brackets.*:
   type: test.double_brackets.[id]
   mapping:
     id:
-      type: string
+      type: machine_name
     foo:
       type: string
     bar:

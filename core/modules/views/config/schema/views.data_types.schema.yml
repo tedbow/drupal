@@ -300,7 +300,7 @@ views_handler:
   type: mapping
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'A unique ID per handler type'
     table:
       type: string

@@ -5,7 +5,7 @@ block_content.type.*:
   label: 'Custom block type settings'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     label:
       type: label

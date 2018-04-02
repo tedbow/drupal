@@ -22,7 +22,7 @@ entity_test.entity_test_bundle.*:
       type: label
       label: 'Label'
     id:
-      type: string
+      type: machine_name
       label: 'Machine-readable name'
     description:
       type: text

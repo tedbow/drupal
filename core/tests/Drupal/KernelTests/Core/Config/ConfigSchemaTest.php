@@ -183,7 +183,7 @@ class ConfigSchemaTest extends KernelTestBase {
     $expected['mapping']['label']['label'] = 'Label';
     $expected['mapping']['effects']['type'] = 'sequence';
     $expected['mapping']['effects']['sequence']['type'] = 'mapping';
-    $expected['mapping']['effects']['sequence']['mapping']['id']['type'] = 'string';
+    $expected['mapping']['effects']['sequence']['mapping']['id']['type'] = 'machine_name';
     $expected['mapping']['effects']['sequence']['mapping']['data']['type'] = 'image.effect.[%parent.id]';
     $expected['mapping']['effects']['sequence']['mapping']['weight']['type'] = 'integer';
     $expected['mapping']['effects']['sequence']['mapping']['uuid']['type'] = 'uuid';

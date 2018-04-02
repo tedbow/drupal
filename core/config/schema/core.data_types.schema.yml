@@ -82,6 +82,13 @@ uuid:
   constraints:
     Uuid: {}
 
+machine_name:
+  type: string
+  label: 'Machine name'
+  constraints:
+    MachineName:
+      replacePattern: '[^a-z0-9_]+'
+
 # PHP Date format string that is translatable.
 date_format:
   type: string
@@ -132,7 +139,7 @@ filter:
   label: 'Filter'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     provider:
       type: string
@@ -295,7 +302,7 @@ block_settings:
   label: 'Block settings'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     label:
       type: label
@@ -326,7 +333,7 @@ condition.plugin:
   label: 'Condition'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     negate:
       type: boolean
@@ -344,7 +351,7 @@ display_variant.plugin:
   label: 'Display variant'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     label:
       type: label
@@ -373,7 +380,7 @@ field_config_base:
   type: config_entity
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     field_name:
       type: string
@@ -420,7 +427,7 @@ core.date_format.*:
   label: 'Date format'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     label:
       type: label

@@ -9,7 +9,7 @@ field_layout.third_party_settings:
   label: 'Per-view-mode field layout settings'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'Layout ID'
     settings:
       type: layout_plugin.settings.[%parent.id]

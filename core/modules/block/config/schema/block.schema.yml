@@ -5,7 +5,7 @@ block.block.*:
   label: 'Block'
   mapping:
     id:
-      type: string
+      type: machine_name
       label: 'ID'
     theme:
       type: string
