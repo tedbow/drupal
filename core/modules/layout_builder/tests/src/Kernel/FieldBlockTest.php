@@ -19,6 +19,7 @@ use Prophecy\Promise\PromiseInterface;
 use Prophecy\Promise\ReturnPromise;
 use Prophecy\Promise\ThrowPromise;
 use Prophecy\Prophecy\ProphecyInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * @coversDefaultClass \Drupal\layout_builder\Plugin\Block\FieldBlock
@@ -34,12 +35,20 @@ class FieldBlockTest extends EntityKernelTestBase {
   protected $entityFieldManager;
 
   /**
+   * The logger.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected $logger;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
     parent::setUp();
 
     $this->entityFieldManager = $this->prophesize(EntityFieldManagerInterface::class);
+    $this->logger = $this->prophesize(LoggerInterface::class);
   }
 
   /**
@@ -210,7 +219,8 @@ class FieldBlockTest extends EntityKernelTestBase {
       $plugin_definition,
       $this->entityFieldManager->reveal(),
       $formatter_manager->reveal(),
-      $module_handler->reveal()
+      $module_handler->reveal(),
+      $this->logger->reveal()
     );
     $block->setContextValue('entity', $entity_prophecy->reveal());
     return $block;
@@ -220,7 +230,7 @@ class FieldBlockTest extends EntityKernelTestBase {
    * @covers ::build
    * @dataProvider providerTestBuild
    */
-  public function testBuild(PromiseInterface $promise, $in_preview, $expected_markup) {
+  public function testBuild(PromiseInterface $promise, $in_preview, $expected_markup, $log_message = '', $log_arguments = []) {
     $entity = $this->prophesize(FieldableEntityInterface::class);
     $field = $this->prophesize(FieldItemListInterface::class);
     $entity->get('the_field_name')->willReturn($field->reveal());
@@ -230,6 +240,13 @@ class FieldBlockTest extends EntityKernelTestBase {
     $field_definition = $this->prophesize(FieldDefinitionInterface::class);
     $field_definition->getLabel()->willReturn('The Field Label');
     $this->entityFieldManager->getFieldDefinitions('entity_test', 'entity_test')->willReturn(['the_field_name' => $field_definition]);
+
+    if ($log_message) {
+      $this->logger->warning($log_message, $log_arguments)->shouldBeCalled();
+    }
+    else {
+      $this->logger->warning(Argument::cetera())->shouldNotBeCalled();
+    }
 
     $block = $this->getTestBlock($entity);
     $expected = [
@@ -273,14 +290,18 @@ class FieldBlockTest extends EntityKernelTestBase {
       'Placeholder for the "The Field Label" field',
     ];
     $data['exception, no preview'] = [
-      new ThrowPromise(new \Exception()),
+      new ThrowPromise(new \Exception('The exception message')),
       FALSE,
       '',
+      'The field "%field" failed to render with the error of "%error".',
+      ['%field' => 'the_field_name', '%error' => 'The exception message'],
     ];
     $data['exception, preview'] = [
-      new ThrowPromise(new \Exception()),
+      new ThrowPromise(new \Exception('The exception message')),
       TRUE,
       'Placeholder for the "The Field Label" field',
+      'The field "%field" failed to render with the error of "%error".',
+      ['%field' => 'the_field_name', '%error' => 'The exception message'],
     ];
     return $data;
   }
