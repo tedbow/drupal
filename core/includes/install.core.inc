@@ -89,13 +89,10 @@ const INSTALL_TASK_RUN_IF_NOT_COMPLETED = 3;
  *   page request (optimized for the command line) and not send any output
  *   intended for the web browser. See install_state_defaults() for a list of
  *   elements that are allowed to appear in this array.
- * @param callable $callback
- *   (optional) A callback to allow command line processes to update a progress
- *   bar. The callback is passed the $install_state variable.
  *
  * @see install_state_defaults()
  */
-function install_drupal($class_loader, $settings = [], callable $callback = NULL) {
+function install_drupal($class_loader, $settings = []) {
   // Support the old way of calling this function with just a settings array.
   // @todo Remove this when Drush is updated in the Drupal testing
   //   infrastructure in https://www.drupal.org/node/2389243
@@ -117,7 +114,7 @@ function install_drupal($class_loader, $settings = [], callable $callback = NULL
     install_begin_request($class_loader, $install_state);
     // Based on the installation state, run the remaining tasks for this page
     // request, and collect any output.
-    $output = install_run_tasks($install_state, $callback);
+    $output = install_run_tasks($install_state);
   }
   catch (InstallerException $e) {
     // In the non-interactive installer, exceptions are always thrown directly.
@@ -288,8 +285,6 @@ function install_state_defaults() {
  * @param $install_state
  *   An array of information about the current installation state. This is
  *   modified with information gleaned from the beginning of the page request.
- *
- * @see install_drupal()
  */
 function install_begin_request($class_loader, &$install_state) {
   $request = Request::createFromGlobals();
@@ -329,7 +324,7 @@ function install_begin_request($class_loader, &$install_state) {
     date_default_timezone_set('Australia/Sydney');
   }
 
-  $site_path = empty($install_state['site_path']) ? DrupalKernel::findSitePath($request, FALSE) : $install_state['site_path'];
+  $site_path = DrupalKernel::findSitePath($request, FALSE);
   Settings::initialize(dirname(dirname(__DIR__)), $site_path, $class_loader);
 
   // Ensure that procedural dependencies are loaded as early as possible,
@@ -540,14 +535,11 @@ function install_begin_request($class_loader, &$install_state) {
  * @param $install_state
  *   An array of information about the current installation state. This is
  *   passed along to each task, so it can be modified if necessary.
- * @param callable $callback
- *   (optional) A callback to allow command line processes to update a progress
- *   bar. The callback is passed the $install_state variable.
  *
  * @return
  *   HTML output from the last completed task.
  */
-function install_run_tasks(&$install_state, callable $callback = NULL) {
+function install_run_tasks(&$install_state) {
   do {
     // Obtain a list of tasks to perform. The list of tasks itself can be
     // dynamic (e.g., some might be defined by the installation profile,
@@ -578,9 +570,6 @@ function install_run_tasks(&$install_state, callable $callback = NULL) {
       if ($task['run'] == INSTALL_TASK_RUN_IF_NOT_COMPLETED || $install_state['installation_finished']) {
         \Drupal::state()->set('install_task', $install_state['installation_finished'] ? 'done' : $task_name);
       }
-    }
-    if ($callback) {
-      $callback($install_state);
     }
     // Stop when there are no tasks left. In the case of an interactive
     // installation, also stop if we have some output to send to the browser,
@@ -1443,7 +1432,7 @@ function install_check_localization_server($uri) {
  *
  * @param string $version
  *   Version info string (e.g., 8.0.0, 8.1.0, 8.0.0-dev, 8.0.0-unstable1,
- *   8.0.0-alpha2, 8.0.0-beta3, and 8.0.0-rc4).
+ *   8.0.0-alpha2, 8.0.0-beta3, 8.6.x, and 8.0.0-rc4).
  *
  * @return array
  *   Associative array of version info:
@@ -1461,7 +1450,7 @@ function _install_get_version_info($version) {
       \.          # .
       (?P<minor>[0-9]+)    # Minor release number.
       \.          # .
-      (?P<patch>[0-9x]+)    # Patch release number.
+      (?P<patch>[0-9x]+)   # Patch release number.
     )             #
     (             #
       -           # - separator for "extra" version information.
@@ -1733,6 +1722,9 @@ function _install_prepare_import($langcodes, $server_pattern) {
           ];
           \Drupal::service('locale.project')->set($data['name'], $data);
           module_load_include('compare.inc', 'locale');
+          // Reset project information static cache so that it uses the data
+          // set above.
+          locale_translation_clear_cache_projects();
           locale_translation_check_projects_local(['drupal'], [$langcode]);
         }
       }
@@ -1869,6 +1861,8 @@ function install_check_translations($langcode, $server_pattern) {
   }
 
   $version = \Drupal::VERSION;
+  // For dev releases, remove the '-dev' part and trust the translation server
+  // to fall back to the latest stable release for that branch.
   // @see locale_translation_build_projects()
   if (preg_match("/^(\d+\.\d+\.).*-dev$/", $version, $matches)) {
     // Example match: 8.0.0-dev => 8.0.x (Drupal core)
