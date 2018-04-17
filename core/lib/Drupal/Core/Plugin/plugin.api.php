@@ -11,7 +11,12 @@
  */
 
 /**
- * Alter the filtering of plugin definitions for a specific type.
+ * Alter the filtering of plugin definitions for a specific plugin type.
+ *
+ * TYPE (e.g. "block", "layout") limits hook scope to a plugin type.
+ * For example, HOOK_plugin_filter_block_alter() would be invoked
+ * by a hook listener which specifies the 'block' plugin list,
+ * e.g., BlockLibraryController or ChooseBlockController.
  *
  * @param \Drupal\Component\Plugin\Definition\PluginDefinitionInterface[]|array[] $definitions
  *   The array of plugin definitions.
@@ -38,6 +43,14 @@ function hook_plugin_filter_TYPE_alter(array &$definitions, array $extra, $consu
 
 /**
  * Alter the filtering of plugin definitions for a specific type and consumer.
+ *
+ * TYPE (e.g. "block", "layout") limits hook scope to a plugin type.
+ * CONSUMER (e.g., "block_ui", "layout_builder") limits hook scope to one or
+ * more listeners, typically provided the same module. For example,
+ * HOOK_plugin_filter_layout__layout_builder_alter() would affect
+ * Layout Builder's listeners for the 'layout' plugin type (see
+ * ChooseSectionController), while HOOK_plugin_filter_block__block_ui_alter()
+ * would affect the Block UI's listeners for the 'block' plugin type.
  *
  * @param \Drupal\Component\Plugin\Definition\PluginDefinitionInterface[]|array[] $definitions
  *   The array of plugin definitions.
