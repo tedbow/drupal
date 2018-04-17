@@ -4,6 +4,9 @@ namespace Drupal\Core\Plugin\Context;
 
 /**
  * Provides a trait for plugin managers that support context-aware plugins.
+ *
+ * @deprecated in Drupal 8.6.0 and will be removed before Drupal 9.0.0.
+ *   Instead use \Drupal\Core\Plugin\PluginDefinitionFiltererInterface.
  */
 trait ContextAwarePluginManagerTrait {
 

@@ -21,7 +21,8 @@ interface ContextAwarePluginManagerInterface extends PluginManagerInterface {
    * @return array
    *   An array of plugin definitions.
    *
-   * @deprecated Use \Drupal\Core\Plugin\DiscoveryFilterer instead.
+   * @deprecated in Drupal 8.6.0 and will be removed before Drupal 9.0.0.
+   *   Instead use \Drupal\Core\Plugin\PluginDefinitionFiltererInterface.
    */
   public function getDefinitionsForContexts(array $contexts = []);
 

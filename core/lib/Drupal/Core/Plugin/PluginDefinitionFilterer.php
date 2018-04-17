@@ -10,13 +10,13 @@ use Drupal\Core\Theme\ThemeManagerInterface;
 /**
  * Provides methods to retrieve filtered plugin definitions.
  *
- * This allows modules to alter plugin definitions, which is useful for tasks
- * like hiding definitions from user interfaces based on available contexts.
+ * This allows modules and themes to filter plugin definitions, which is useful
+ * for tasks like hiding definitions from user interfaces.
  *
  * @see hook_plugin_filter_TYPE_alter()
  * @see hook_plugin_filter_TYPE__CONSUMER_alter()
  */
-class DiscoveryFilterer {
+class PluginDefinitionFilterer implements PluginDefinitionFiltererInterface {
 
   /**
    * The module handler.
@@ -40,7 +40,7 @@ class DiscoveryFilterer {
   protected $contextHandler;
 
   /**
-   * Constructs a new PluginDefinitionRepository.
+   * Constructs a new PluginDefinitionFilterer.
    *
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
@@ -56,26 +56,11 @@ class DiscoveryFilterer {
   }
 
   /**
-   * Gets the plugin definitions for a given type and sorts and filters them.
-   *
-   * @param string $type
-   *   A string identifying the plugin type.
-   * @param string $consumer
-   *   A string identifying the consumer of these plugin definitions.
-   * @param \Drupal\Component\Plugin\Discovery\DiscoveryInterface $discovery
-   *   The plugin discovery, usually the plugin manager.
-   * @param \Drupal\Component\Plugin\Context\ContextInterface[] $contexts
-   *   (optional) An array of contexts.
-   * @param mixed[] $extra
-   *   (optional) An associative array containing additional information
-   *   provided by the code requesting the filtered definitions.
-   *
-   * @return \Drupal\Component\Plugin\Definition\PluginDefinitionInterface[]|array[]
-   *   An array of plugin definitions that are sorted and filtered.
+   * {@inheritdoc}
    */
-  public function get($type, $consumer, DiscoveryInterface $discovery, array $contexts = [], array $extra = []) {
+  public function get($type, $consumer, DiscoveryInterface $discovery, $contexts = NULL, array $extra = []) {
     $definitions = $discovery->getDefinitions();
-    if ($contexts) {
+    if (!is_null($contexts)) {
       $definitions = $this->contextHandler->filterPluginDefinitionsByContexts($contexts, $definitions);
     }
 
