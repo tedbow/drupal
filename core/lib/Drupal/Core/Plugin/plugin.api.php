@@ -13,35 +13,41 @@
 /**
  * Alter the filtering of plugin definitions for a specific type.
  *
- * @param Callable[] $filters
- *   An array of callables to filter the definitions.
- * @param mixed[] $context
+ * @param \Drupal\Component\Plugin\Definition\PluginDefinitionInterface[]|array[] $definitions
+ *   The array of plugin definitions.
+ * @param mixed[] $extra
  *   An associative array containing additional information provided by the code
- *   requesting the filtered definitins.
+ *   requesting the filtered definitions.
+ * @param string $consumer
+ *   A string identifying the consumer of these plugin definitions.
  */
-function hook_plugin_filter_TYPE_alter(array &$filters, array $context) {
-  $filters[] = function ($definitions) {
-    // Explicitly remove the "Help" blocks from the list.
+function hook_plugin_filter_TYPE_alter(array &$definitions, array $extra, $consumer) {
+  // Remove the "Help" block from the Block UI list.
+  if ($consumer == 'block_ui') {
     unset($definitions['help_block']);
-    return $definitions;
-  };
+  }
+
+  // If the theme is specified, remove the branding block from the Bartik theme.
+  if (isset($extra['theme']) && $extra['theme'] === 'bartik') {
+    unset($definitions['system_branding_block']);
+  }
+
+  // Remove the "Main page content" block from everywhere.
+  unset($definitions['system_main_block']);
 }
 
 /**
  * Alter the filtering of plugin definitions for a specific type and consumer.
  *
- * @param Callable[] $filters
- *   An array of callables to filter the definitions.
- * @param mixed[] $context
+ * @param \Drupal\Component\Plugin\Definition\PluginDefinitionInterface[]|array[] $definitions
+ *   The array of plugin definitions.
+ * @param mixed[] $extra
  *   An associative array containing additional information provided by the code
- *   requesting the filtered definitins.
+ *   requesting the filtered definitions.
  */
-function hook_plugin_filter_TYPE__CONSUMER_alter(array &$filters, array $context) {
-  $filters[] = function ($definitions) {
-    // Explicitly remove the "Help" blocks from the list.
-    unset($definitions['help_block']);
-    return $definitions;
-  };
+function hook_plugin_filter_TYPE__CONSUMER_alter(array &$definitions, array $extra) {
+  // Explicitly remove the "Help" block for this consumer.
+  unset($definitions['help_block']);
 }
 
 /**
