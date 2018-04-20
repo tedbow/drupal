@@ -6,7 +6,6 @@ use Drupal\Component\Plugin\FallbackPluginManagerInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\CategorizingPluginManagerTrait;
-use Drupal\Core\Plugin\Context\ContextAwarePluginManagerTrait;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Plugin\FilteredPluginManagerTrait;
 
@@ -22,7 +21,6 @@ class BlockManager extends DefaultPluginManager implements BlockManagerInterface
   use CategorizingPluginManagerTrait {
     getSortedDefinitions as traitGetSortedDefinitions;
   }
-  use ContextAwarePluginManagerTrait;
   use FilteredPluginManagerTrait;
 
   /**

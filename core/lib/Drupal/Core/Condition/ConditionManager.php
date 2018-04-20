@@ -8,7 +8,6 @@ use Drupal\Core\Executable\ExecutableManagerInterface;
 use Drupal\Core\Executable\ExecutableInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\CategorizingPluginManagerTrait;
-use Drupal\Core\Plugin\Context\ContextAwarePluginManagerTrait;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Plugin\FilteredPluginManagerInterface;
 use Drupal\Core\Plugin\FilteredPluginManagerTrait;
@@ -25,7 +24,6 @@ use Drupal\Core\Plugin\FilteredPluginManagerTrait;
 class ConditionManager extends DefaultPluginManager implements ExecutableManagerInterface, CategorizingPluginManagerInterface, FilteredPluginManagerInterface {
 
   use CategorizingPluginManagerTrait;
-  use ContextAwarePluginManagerTrait;
   use FilteredPluginManagerTrait;
 
   /**

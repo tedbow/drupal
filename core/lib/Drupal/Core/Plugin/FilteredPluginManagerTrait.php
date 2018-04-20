@@ -2,18 +2,24 @@
 
 namespace Drupal\Core\Plugin;
 
+use Drupal\Core\Plugin\Context\ContextAwarePluginManagerTrait;
+
 /**
  * Provides a trait for plugin managers that allow filtering plugin definitions.
  */
 trait FilteredPluginManagerTrait {
 
+  use ContextAwarePluginManagerTrait;
+
   /**
    * Implements \Drupal\Core\Plugin\FilteredPluginManagerInterface::getFilteredDefinitions().
    */
   public function getFilteredDefinitions($consumer, $contexts = NULL, array $extra = []) {
-    $definitions = $this->getDefinitions();
     if (!is_null($contexts)) {
-      $definitions = $this->contextHandler()->filterPluginDefinitionsByContexts($contexts, $definitions);
+      $this->getDefinitionsForContexts($contexts);
+    }
+    else {
+      $definitions = $this->getDefinitions();
     }
 
     $type = $this->getType();
@@ -37,16 +43,6 @@ trait FilteredPluginManagerTrait {
   abstract protected function getType();
 
   /**
-   * Wraps the context handler.
-   *
-   * @return \Drupal\Core\Plugin\Context\ContextHandlerInterface
-   *   The context handler.
-   */
-  protected function contextHandler() {
-    return \Drupal::service('context.handler');
-  }
-
-  /**
    * Wraps the module handler.
    *
    * @return \Drupal\Core\Extension\ModuleHandlerInterface
@@ -65,10 +61,5 @@ trait FilteredPluginManagerTrait {
   protected function themeManager() {
     return \Drupal::service('theme.manager');
   }
-
-  /**
-   * See \Drupal\Component\Plugin\Discovery\DiscoveryInterface::getDefinitions().
-   */
-  abstract public function getDefinitions();
 
 }
