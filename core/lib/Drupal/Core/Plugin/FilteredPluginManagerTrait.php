@@ -16,7 +16,7 @@ trait FilteredPluginManagerTrait {
    */
   public function getFilteredDefinitions($consumer, $contexts = NULL, array $extra = []) {
     if (!is_null($contexts)) {
-      $this->getDefinitionsForContexts($contexts);
+      $definitions = $this->getDefinitionsForContexts($contexts);
     }
     else {
       $definitions = $this->getDefinitions();
