@@ -5,7 +5,6 @@ namespace Drupal\layout_builder\Controller;
 use Drupal\Core\Ajax\AjaxHelperTrait;
 use Drupal\Core\Block\BlockManagerInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\Plugin\PluginDefinitionFiltererInterface;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -29,23 +28,13 @@ class ChooseBlockController implements ContainerInjectionInterface {
   protected $blockManager;
 
   /**
-   * The plugin definition filterer.
-   *
-   * @var \Drupal\Core\Plugin\PluginDefinitionFiltererInterface
-   */
-  protected $definitionFilterer;
-
-  /**
    * ChooseBlockController constructor.
    *
    * @param \Drupal\Core\Block\BlockManagerInterface $block_manager
    *   The block manager.
-   * @param \Drupal\Core\Plugin\PluginDefinitionFiltererInterface $definition_filterer
-   *   The plugin definition filterer.
    */
-  public function __construct(BlockManagerInterface $block_manager, PluginDefinitionFiltererInterface $definition_filterer) {
+  public function __construct(BlockManagerInterface $block_manager) {
     $this->blockManager = $block_manager;
-    $this->definitionFilterer = $definition_filterer;
   }
 
   /**
@@ -53,8 +42,7 @@ class ChooseBlockController implements ContainerInjectionInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('plugin.manager.block'),
-      $container->get('plugin.definition_filterer')
+      $container->get('plugin.manager.block')
     );
   }
 
@@ -75,12 +63,11 @@ class ChooseBlockController implements ContainerInjectionInterface {
     $build['#type'] = 'container';
     $build['#attributes']['class'][] = 'block-categories';
 
-    $definitions = $this->definitionFilterer->get('block', 'layout_builder', $this->blockManager, $this->getAvailableContexts($section_storage), [
+    $definitions = $this->blockManager->getFilteredDefinitions('layout_builder', $this->getAvailableContexts($section_storage), [
       'section_storage' => $section_storage,
       'region' => $region,
     ]);
-    $definitions = $this->blockManager->getGroupedDefinitions($definitions);
-    foreach ($definitions as $category => $blocks) {
+    foreach ($this->blockManager->getGroupedDefinitions($definitions) as $category => $blocks) {
       $build[$category]['#type'] = 'details';
       $build[$category]['#open'] = TRUE;
       $build[$category]['#title'] = $category;

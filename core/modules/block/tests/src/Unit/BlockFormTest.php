@@ -5,7 +5,6 @@ namespace Drupal\Tests\block\Unit;
 use Drupal\block\BlockForm;
 use Drupal\block\Entity\Block;
 use Drupal\Core\Block\BlockBase;
-use Drupal\Core\Plugin\PluginDefinitionFiltererInterface;
 use Drupal\Core\Plugin\PluginFormFactoryInterface;
 use Drupal\Tests\UnitTestCase;
 
@@ -137,9 +136,7 @@ class BlockFormTest extends UnitTestCase {
       ->method('getQuery')
       ->will($this->returnValue($query));
 
-    $definition_filterer = $this->prophesize(PluginDefinitionFiltererInterface::class);
-
-    $block_form_controller = new BlockForm($this->entityManager, $this->conditionManager, $this->contextRepository, $this->language, $this->themeHandler, $this->pluginFormFactory->reveal(), $definition_filterer->reveal());
+    $block_form_controller = new BlockForm($this->entityManager, $this->conditionManager, $this->contextRepository, $this->language, $this->themeHandler, $this->pluginFormFactory->reveal());
 
     // Ensure that the block with just one other instance gets the next available
     // name suggestion.

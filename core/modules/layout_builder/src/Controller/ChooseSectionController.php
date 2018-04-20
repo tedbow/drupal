@@ -5,7 +5,6 @@ namespace Drupal\layout_builder\Controller;
 use Drupal\Core\Ajax\AjaxHelperTrait;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Layout\LayoutPluginManagerInterface;
-use Drupal\Core\Plugin\PluginDefinitionFiltererInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
@@ -30,23 +29,13 @@ class ChooseSectionController implements ContainerInjectionInterface {
   protected $layoutManager;
 
   /**
-   * The plugin definition filterer.
-   *
-   * @var \Drupal\Core\Plugin\PluginDefinitionFiltererInterface
-   */
-  protected $definitionFilterer;
-
-  /**
    * ChooseSectionController constructor.
    *
    * @param \Drupal\Core\Layout\LayoutPluginManagerInterface $layout_manager
    *   The layout manager.
-   * @param \Drupal\Core\Plugin\PluginDefinitionFiltererInterface $definition_filterer
-   *   The plugin definition filterer.
    */
-  public function __construct(LayoutPluginManagerInterface $layout_manager, PluginDefinitionFiltererInterface $definition_filterer) {
+  public function __construct(LayoutPluginManagerInterface $layout_manager) {
     $this->layoutManager = $layout_manager;
-    $this->definitionFilterer = $definition_filterer;
   }
 
   /**
@@ -54,8 +43,7 @@ class ChooseSectionController implements ContainerInjectionInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('plugin.manager.core.layout'),
-      $container->get('plugin.definition_filterer')
+      $container->get('plugin.manager.core.layout')
     );
   }
 
@@ -74,7 +62,7 @@ class ChooseSectionController implements ContainerInjectionInterface {
     $output['#title'] = $this->t('Choose a layout');
 
     $items = [];
-    $definitions = $this->definitionFilterer->get('layout', 'layout_builder', $this->layoutManager, [], ['section_storage' => $section_storage]);
+    $definitions = $this->layoutManager->getFilteredDefinitions('layout_builder', [], ['section_storage' => $section_storage]);
     foreach ($definitions as $plugin_id => $definition) {
       $layout = $this->layoutManager->createInstance($plugin_id);
       $item = [
