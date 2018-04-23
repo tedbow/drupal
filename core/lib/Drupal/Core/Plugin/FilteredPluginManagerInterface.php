@@ -12,6 +12,10 @@ interface FilteredPluginManagerInterface extends PluginManagerInterface {
   /**
    * Gets the plugin definitions for a given type and consumer and filters them.
    *
+   * This allows modules and themes to alter plugin definitions at runtime,
+   * which is useful for tasks like hiding specific plugins from a particular
+   * user interface.
+   *
    * @param string $consumer
    *   A string identifying the consumer of these plugin definitions.
    * @param \Drupal\Component\Plugin\Context\ContextInterface[]|null $contexts
@@ -23,6 +27,9 @@ interface FilteredPluginManagerInterface extends PluginManagerInterface {
    *
    * @return \Drupal\Component\Plugin\Definition\PluginDefinitionInterface[]|array[]
    *   An array of plugin definitions that are filtered.
+   *
+   * @see hook_plugin_filter_TYPE_alter()
+   * @see hook_plugin_filter_TYPE__CONSUMER_alter()
    */
   public function getFilteredDefinitions($consumer, $contexts = NULL, array $extra = []);
 
