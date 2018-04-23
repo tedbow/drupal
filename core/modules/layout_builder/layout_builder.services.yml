@@ -36,6 +36,11 @@ services:
     arguments: ['@current_user']
     tags:
       - { name: event_subscriber }
+  layout_builder.page_title_subscriber:
+    class: Drupal\layout_builder\EventSubscriber\PageTitleSubscriber
+    arguments: ['@current_route_match']
+    tags:
+      - { name: event_subscriber }
   logger.channel.layout_builder:
     parent: logger.channel_base
     arguments: ['layout_builder']

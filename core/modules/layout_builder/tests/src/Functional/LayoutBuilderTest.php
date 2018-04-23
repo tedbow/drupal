@@ -319,4 +319,41 @@ class LayoutBuilderTest extends BrowserTestBase {
     $this->clickLink('Cancel Layout');
   }
 
+  /**
+   * Tests that a placeholder is shown for the Page Title Block.
+   */
+  public function testPageTitleBlock() {
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+
+    $this->drupalLogin($this->drupalCreateUser([
+      'configure any layout',
+      'administer node display',
+      'administer node fields',
+    ]));
+
+    $field_ui_prefix = 'admin/structure/types/manage/bundle_with_section_field';
+    // Allow overrides for the layout.
+    $this->drupalPostForm("$field_ui_prefix/display/default", ['layout[allow_custom]' => TRUE], 'Save');
+
+    // Customize the default view mode.
+    $this->drupalGet("$field_ui_prefix/display-layout/default");
+
+    // In Layout Builder Page Title Block shows placeholder.
+    $this->clickLink('Add Block');
+    $this->clickLink('Page title');
+    $page->pressButton('Add Block');
+    $assert_session->pageTextContains('Placeholder for the "Page title" block');
+    $this->clickLink('Save Layout');
+
+    // When viewing the node, the Page Title is shown.
+    $this->drupalGet('node/1');
+    // Check for the Page Title text within the page block element.
+    $assert_session->elementExists('css', '.block-page-title-block');
+
+    // In node/layout, Page Title Block shows placeholder.
+    $this->drupalGet('node/1/layout');
+    $assert_session->pageTextContains('Placeholder for the "Page title" block');
+  }
+
 }
