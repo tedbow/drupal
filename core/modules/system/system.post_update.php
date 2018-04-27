@@ -153,8 +153,8 @@ function system_post_update_extra_fields(&$sandbox = NULL) {
     $display_context = $display instanceof EntityViewDisplayInterface ? 'display' : 'form';
     $extra_fields = $entity_field_manager->getExtraFields($display->getTargetEntityTypeId(), $display->getTargetBundle());
 
-    // If any extra fields have are used as a component, resave the display with
-    // the updated component information.
+    // If any extra fields are used as a component, resave the display with the
+    // updated component information.
     $needs_save = FALSE;
     if (!empty($extra_fields[$display_context])) {
       foreach ($extra_fields[$display_context] as $name => $extra_field) {
