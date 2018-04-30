@@ -2,7 +2,6 @@
 
 namespace Drupal\layout_builder\Plugin\Block;
 
-use Drupal\block_content\Entity\BlockContent;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
