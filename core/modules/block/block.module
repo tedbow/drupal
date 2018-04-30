@@ -280,3 +280,25 @@ function block_configurable_language_delete(ConfigurableLanguageInterface $langu
     }
   }
 }
+
+/**
+ * Implements hook_plugin_filter_TYPE__CONSUMER_alter().
+ */
+function block_plugin_filter_block__block_ui_alter(array &$definitions, array $extra) {
+  foreach ($definitions as $id => $definition) {
+    // Filter out definitions that are not intended to be placed by the UI.
+    if (!empty($definition['_block_ui_hidden'])) {
+      unset($definitions[$id]);
+    }
+    // Filter out any definition with required contexts.
+    elseif (!empty($definition['context'])) {
+      /** @var \Drupal\Core\Plugin\Context\ContextDefinitionInterface $context */
+      foreach ($definition['context'] as $context) {
+        if ($context->isRequired()) {
+          unset($definitions[$id]);
+          break;
+        }
+      }
+    }
+  }
+}
