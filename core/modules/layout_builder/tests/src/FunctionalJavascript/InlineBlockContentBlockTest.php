@@ -76,6 +76,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     // Add a basic block with the body field set.
     $page->clickLink('Add Block');
     $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->elementTextContains('css', '.block-categories details', 'Create new block');
     $this->clickLink('Basic block');
     $assert_session->assertWaitOnAjaxRequest();
     $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
