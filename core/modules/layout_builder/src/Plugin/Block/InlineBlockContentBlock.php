@@ -16,7 +16,7 @@ use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Defines an inline custom block type.
+ * Defines an inline custom block plugin type.
  *
  * @Block(
  *  id = "inline_block_content",
@@ -33,13 +33,6 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
-
-  /**
-   * The Drupal account to use for checking for access to block.
-   *
-   * @var \Drupal\Core\Session\AccountInterface.
-   */
-  protected $account;
 
   /**
    * The block content entity.
@@ -66,16 +59,13 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    *   The plugin implementation definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The account for which view access should be checked.
    * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
    *   The entity display repository.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, AccountInterface $account, EntityDisplayRepositoryInterface $entity_display_repository) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
-    $this->account = $account;
     $this->entityDisplayRepository = $entity_display_repository;
   }
 
@@ -88,7 +78,6 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
       $plugin_id,
       $plugin_definition,
       $container->get('entity_type.manager'),
-      $container->get('current_user'),
       $container->get('entity_display.repository')
     );
   }
@@ -136,12 +125,13 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    *
    * @param array $element
    *   The containing element.
-   * @param FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
+   *
    * @return array
    *   The containing element, with the Custom Block form inserted.
    */
-  public static function processBlockForm($element, FormStateInterface $form_state) {
+  public static function processBlockForm(array $element, FormStateInterface $form_state) {
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = $element['#block'];
     $form_display = EntityFormDisplay::collectRenderDisplay($block, 'edit');
