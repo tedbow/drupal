@@ -20,7 +20,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @Block(
  *  id = "inline_block_content",
  *  admin_label = @Translation("Inline custom block"),
- *  category = @Translation("Inline custom blocks"),
+ *  category = @Translation("Create new block"),
  *  deriver = "Drupal\layout_builder\Plugin\Derivative\BlockContentDeriver"
  * )
  */

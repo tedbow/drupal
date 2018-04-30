@@ -67,7 +67,14 @@ class ChooseBlockController implements ContainerInjectionInterface {
       'section_storage' => $section_storage,
       'region' => $region,
     ]);
-    foreach ($this->blockManager->getGroupedDefinitions($definitions) as $category => $blocks) {
+    $grouped_definitions = $this->blockManager->getGroupedDefinitions($definitions);
+    // Move 'Create new block' category to the top.
+    if (isset($grouped_definitions['Create new block'])) {
+      $new_block_definition = $grouped_definitions['Create new block'];
+      $grouped_definitions['Create new block'];
+      $grouped_definitions = array_merge(['Create new block' => $new_block_definition], $grouped_definitions);
+    }
+    foreach ($grouped_definitions as $category => $blocks) {
       $build[$category]['#type'] = 'details';
       $build[$category]['#open'] = TRUE;
       $build[$category]['#title'] = $category;
