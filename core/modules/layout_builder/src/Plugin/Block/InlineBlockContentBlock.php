@@ -87,7 +87,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    */
   public function defaultConfiguration() {
     return [
-      'view_mode' => 'full',
+      'view_mode' => 'default',
       'serialized_block' => NULL,
     ];
   }
