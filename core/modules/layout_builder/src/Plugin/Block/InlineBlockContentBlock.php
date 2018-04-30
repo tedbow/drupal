@@ -203,7 +203,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
         $this->blockContent = unserialize($this->configuration['serialized_block']);
       }
       else {
-        $this->blockContent = BlockContent::create([
+        $this->blockContent = $this->entityTypeManager->getStorage('block_content')->create([
           'type' => $this->getDerivativeId(),
         ]);
       }
