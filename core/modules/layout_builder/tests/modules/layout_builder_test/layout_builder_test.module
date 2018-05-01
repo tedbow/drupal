@@ -27,3 +27,14 @@ function layout_builder_test_plugin_filter_block__layout_builder_alter(array &$d
     }
   }
 }
+
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function layout_builder_test_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'plugin_filter_block_alter') {
+    // Remove Layout Builder's implementation to allow placing in tests.
+    unset($implementations['layout_builder']);
+  }
+}
