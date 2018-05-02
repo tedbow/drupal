@@ -49,6 +49,16 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
       ],
     ]);
 
+    $this->createNode([
+      'type' => 'bundle_with_section_field',
+      'title' => 'The node2 title',
+      'body' => [
+        [
+          'value' => 'The node2 body',
+        ],
+      ],
+    ]);
+
     $bundle = BlockContentType::create([
       'id' => 'basic',
       'label' => 'Basic block',
@@ -91,6 +101,8 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
 
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The DEFAULT block body');
+    $this->drupalGet('node/2');
+    $assert_session->pageTextContains('The DEFAULT block body');
 
     // Enable overrides.
     $this->drupalPostForm("$field_ui_prefix/display/default", ['layout[allow_custom]' => TRUE], 'Save');
@@ -108,6 +120,11 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->clickLink('Save Layout');
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body');
+    $assert_session->pageTextNotContains('The DEFAULT block body');
+    $this->drupalGet('node/2');
+    // Node 2 should use default layout.
+    $assert_session->pageTextContains('The DEFAULT block body');
+    $assert_session->pageTextNotContains('The NEW block body');
 
     // Add a basic block with the body field set.
     $this->drupalGet('node/1/layout');
@@ -124,6 +141,11 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body!');
     $assert_session->pageTextContains('The 2nd block body');
+    $this->drupalGet('node/2');
+    // Node 2 should use default layout.
+    $assert_session->pageTextContains('The DEFAULT block body');
+    $assert_session->pageTextNotContains('The NEW block body');
+    $assert_session->pageTextNotContains('The 2nd block body');
 
     // Confirm the block can be edited.
     $this->drupalGet('node/1/layout');
@@ -141,6 +163,17 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body!');
     $assert_session->pageTextContains('The 2nd NEW block body!');
+    $this->drupalGet('node/2');
+    // Node 2 should use default layout.
+    $assert_session->pageTextContains('The DEFAULT block body');
+    $assert_session->pageTextNotContains('The NEW block body!');
+    $assert_session->pageTextNotContains('The 2nd NEW block body!');
+
+    // The default layout inline block should be changed.
+    $this->drupalGet("$field_ui_prefix/display-layout/default");
+    $assert_session->pageTextContains('The DEFAULT block body');
+    // Confirm default layout still only has 1 inline block.
+    $assert_session->elementsCount('css', '.block-inline-block-contentbasic', 1);
   }
 
 }
