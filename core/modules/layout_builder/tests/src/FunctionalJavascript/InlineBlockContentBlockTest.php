@@ -91,6 +91,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
     $this->clickLink('Basic block');
     $assert_session->assertWaitOnAjaxRequest();
+    $page->findField('Title')->setValue('Block title');
     $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
     $textarea->setValue('The DEFAULT block body');
     $page->pressButton('Add Block');
@@ -113,11 +114,13 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->clickContextualLink('.block-inline-block-contentbasic', 'Configure');
     $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
     $this->assertNotEmpty($textarea);
+    $page->findField('Title')->setValue('Block title');
     $this->assertSame('The DEFAULT block body', $textarea->getValue());
     $textarea->setValue('The NEW block body!');
     $page->pressButton('Update');
     $assert_session->assertWaitOnAjaxRequest();
     $this->clickLink('Save Layout');
+    $assert_session->pageTextContains('The layout override has been saved.');
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body');
     $assert_session->pageTextNotContains('The DEFAULT block body');
@@ -138,6 +141,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $page->pressButton('Add Block');
     $assert_session->assertWaitOnAjaxRequest();
     $this->clickLink('Save Layout');
+    $assert_session->pageTextContains('The layout override has been saved.');
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body!');
     $assert_session->pageTextContains('The 2nd block body');
@@ -160,6 +164,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $page->pressButton('Update');
     $assert_session->assertWaitOnAjaxRequest();
     $this->clickLink('Save Layout');
+    $assert_session->pageTextContains('The layout override has been saved.');
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body!');
     $assert_session->pageTextContains('The 2nd NEW block body!');
