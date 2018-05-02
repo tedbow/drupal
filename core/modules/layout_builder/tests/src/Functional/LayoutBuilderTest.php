@@ -363,7 +363,6 @@ class LayoutBuilderTest extends BrowserTestBase {
     $this->drupalLogin($this->drupalCreateUser([
       'configure any layout',
       'administer node display',
-      'administer node fields',
     ]));
 
     $field_ui_prefix = 'admin/structure/types/manage/bundle_with_section_field';
@@ -387,6 +386,7 @@ class LayoutBuilderTest extends BrowserTestBase {
     $this->drupalGet('node/1');
     // Node can be loaded after deleting the View.
     $assert_session->pageTextContains(Node::load(1)->getTitle());
+    $assert_session->pageTextNotContains('Test Block View');
   }
 
 }
