@@ -49,6 +49,28 @@ interface BlockContentInterface extends ContentEntityInterface, EntityChangedInt
   public function setRevisionLog($revision_log);
 
   /**
+   * Determine if the block is re-usable or not.
+   *
+   * @return bool
+   *   Returns TRUE if re-usable and FALSE otherwise.
+   */
+  public function isReusable();
+
+  /**
+   * Sets the block to be re-usable.
+   *
+   * @return $this
+   */
+  public function setReusable();
+
+  /**
+   * Sets the block not to be re-usable.
+   *
+   * @return $this
+   */
+  public function setNotReusable();
+
+  /**
    * Sets the theme value.
    *
    * When creating a new block content block from the block library, the user is
