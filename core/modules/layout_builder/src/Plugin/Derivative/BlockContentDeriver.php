@@ -42,15 +42,14 @@ class BlockContentDeriver extends DeriverBase implements ContainerDeriverInterfa
    * {@inheritdoc}
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
-    if (!$this->entityTypeManager->hasDefinition('block_content_type')) {
-      return [];
-    }
-    $block_content_types = $this->entityTypeManager->getStorage('block_content_type')->loadMultiple();
-    $this->derivatives = [];
-    foreach ($block_content_types as $id => $type) {
-      $this->derivatives[$id] = $base_plugin_definition;
-      $this->derivatives[$id]['admin_label'] = $type->label();
-      $derivative['config_dependencies'][$type->getConfigDependencyKey()][] = $type->getConfigDependencyName();
+    if ($this->entityTypeManager->hasDefinition('block_content_type')) {
+      $block_content_types = $this->entityTypeManager->getStorage('block_content_type')->loadMultiple();
+      $this->derivatives = [];
+      foreach ($block_content_types as $id => $type) {
+        $this->derivatives[$id] = $base_plugin_definition;
+        $this->derivatives[$id]['admin_label'] = $type->label();
+        $derivative['config_dependencies'][$type->getConfigDependencyKey()][] = $type->getConfigDependencyName();
+      }
     }
     return parent::getDerivativeDefinitions($base_plugin_definition);
   }
