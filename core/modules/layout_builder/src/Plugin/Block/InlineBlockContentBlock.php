@@ -222,4 +222,16 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     return $this->blockContent;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildConfigurationForm($form, $form_state);
+    if ($this->getEntity()->isNew()) {
+      // If the Content Block is new then don't provide a default label.
+      unset($form['label']['#default_value']);
+    }
+    return $form;
+  }
+
 }
