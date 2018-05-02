@@ -2,6 +2,7 @@
 
 namespace Drupal\layout_builder\Plugin\Block;
 
+use Drupal\block_content\BlockContentInterface;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
@@ -101,7 +102,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     // be successfully propagated to field widgets.
     $form['block_form'] = [
       '#type' => 'container',
-      '#process' => [[self::class, 'processBlockForm']],
+      '#process' => [[static::class, 'processBlockForm']],
       '#block' => $block,
     ];
 
@@ -111,9 +112,9 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
       '#type' => 'select',
       '#options' => $options,
       '#title' => $this->t('View mode'),
-      '#description' => $this->t('Output the block in this view mode.'),
+      '#description' => $this->t('The view mode in which to render the block.'),
       '#default_value' => $this->configuration['view_mode'],
-      '#access' => (count($options) > 1),
+      '#access' => count($options) > 1,
     ];
     $form['title']['#description'] = $this->t('The title of the block as shown to the user.');
     return $form;
@@ -133,8 +134,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   public static function processBlockForm(array $element, FormStateInterface $form_state) {
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = $element['#block'];
-    $form_display = EntityFormDisplay::collectRenderDisplay($block, 'edit');
-    $form_display->buildForm($block, $element, $form_state);
+    EntityFormDisplay::collectRenderDisplay($block, 'edit')->buildForm($block, $element, $form_state);
     $element['revision_log']['#access'] = FALSE;
     $element['info']['#access'] = FALSE;
     return $element;
@@ -165,8 +165,11 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     $block_form = NestedArray::getValue($form, $form_state->getTemporaryValue('block_form_parents'));
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = $block_form['#block'];
+    if (!$block instanceof BlockContentInterface) {
+      throw new \UnexpectedValueException("Invalid value, expected \Drupal\block_content\BlockContentInterface.");
+    }
     $form_display = EntityFormDisplay::collectRenderDisplay($block, 'edit');
-    $complete_form_state = ($form_state instanceof SubformStateInterface) ? $form_state->getCompleteFormState() : $form_state;
+    $complete_form_state = $form_state instanceof SubformStateInterface ? $form_state->getCompleteFormState() : $form_state;
     $form_display->extractFormValues($block, $block_form, $complete_form_state);
     $block->setInfo($this->configuration['label']);
     $this->configuration['serialized_block'] = serialize($block);
@@ -176,8 +179,8 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    * {@inheritdoc}
    */
   protected function blockAccess(AccountInterface $account) {
-    if ($this->getEntity()) {
-      return $this->getEntity()->access('view', $account, TRUE);
+    if ($entity = $this->getEntity(FALSE)) {
+      return $entity->access('view', $account, TRUE);
     }
     return AccessResult::forbidden();
   }
@@ -191,20 +194,29 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   }
 
   /**
-   * Loads the block content entity of the block.
+   * Loads or creates the block content entity of the block.
    *
-   * @return \Drupal\block_content\BlockContentInterface
-   *   The block content entity.
+   * @param bool $create_new
+   *   Whether to create a new entity if one doesn't exist.
+   *
+   * @return \Drupal\block_content\BlockContentInterface|null
+   *   The block content entity or NULL if none exists and $create_new is FALSE.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function getEntity() {
+  protected function getEntity($create_new = TRUE) {
     if (!isset($this->blockContent)) {
       if (!empty($this->configuration['serialized_block'])) {
         $this->blockContent = unserialize($this->configuration['serialized_block']);
       }
-      else {
+      elseif ($create_new) {
         $this->blockContent = $this->entityTypeManager->getStorage('block_content')->create([
           'type' => $this->getDerivativeId(),
         ]);
+      }
+      else {
+        return NULL;
       }
     }
     return $this->blockContent;
