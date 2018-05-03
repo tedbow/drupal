@@ -27,10 +27,15 @@ trait AjaxFormHelperTrait {
    */
   public function ajaxSubmit(array &$form, FormStateInterface $form_state) {
     if ($form_state->hasAnyErrors()) {
-      $form['status_messages'] = [
-        '#type' => 'status_messages',
-        '#weight' => -1000,
-      ];
+      $form = array_merge(
+        [
+          'status_messages' => [
+            '#type' => 'status_messages',
+            '#weight' => -1000,
+          ],
+        ],
+        $form
+      );
       $response = new AjaxResponse();
       $response->addCommand(new ReplaceCommand('[data-drupal-selector="' . $form['#attributes']['data-drupal-selector'] . '"]', $form));
     }

@@ -2,6 +2,7 @@
 
 namespace Drupal\layout_builder\Form;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Ajax\AjaxFormHelperTrait;
 use Drupal\Core\Block\BlockManagerInterface;
@@ -176,6 +177,16 @@ abstract class ConfigureBlockFormBase extends FormBase {
     ];
     if ($this->isAjax()) {
       $form['actions']['submit']['#ajax']['callback'] = '::ajaxSubmit';
+      // static::ajaxSubmit() requires data-drupal-selector to be the same
+      // between the various Ajax requests. A bug in
+      // \Drupal\Core\Form\FormBuilder prevents that from happening unless
+      // $form['#id'] is also the same. Normally, #id is set to a unique HTML ID
+      // via Html::getUniqueId(), but here we bypass that in order to work
+      // around the data-drupal-selector bug. This is okay so long as we assume
+      // that this form only ever occurs once on a page.
+      // @todo Remove this workaround once https://www.drupal.org/node/2897377
+      // is fixed.
+      $form['#id'] = Html::getId($form_state->getBuildInfo()['form_id']);
     }
 
     return $form;
