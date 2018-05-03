@@ -86,10 +86,13 @@ function layout_builder_field_config_delete(FieldConfigInterface $field_config) 
  * Implements hook_plugin_filter_TYPE_alter().
  */
 function layout_builder_plugin_filter_block_alter(array &$definitions, array $extra, $consumer) {
-  // @todo Currently do not expose inline blocks to any UI until UX created.
-  foreach (array_keys($definitions) as $key) {
-    if ($definitions[$key]['id'] === 'inline_block_content') {
-      unset($definitions[$key]);
+  if ($consumer !== 'layout_builder' || !isset($extra['list']) || $extra['list'] !== 'inline_blocks') {
+    // @todo Currently do not expose inline blocks to any UI except Layout
+    // Builder's inline block list.
+    foreach (array_keys($definitions) as $key) {
+      if ($definitions[$key]['id'] === 'inline_block_content') {
+        unset($definitions[$key]);
+      }
     }
   }
 }
