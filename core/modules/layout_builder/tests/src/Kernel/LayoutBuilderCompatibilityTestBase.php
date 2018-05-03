@@ -86,13 +86,18 @@ abstract class LayoutBuilderCompatibilityTestBase extends EntityKernelTestBase {
   /**
    * Installs the Layout Builder.
    *
-   * Also configures and reloads the entity display, and reloads the entity.
+   * Also configures and reloads the entity display.
    */
   protected function installLayoutBuilder() {
     $this->container->get('module_installer')->install(['layout_builder']);
     $this->refreshServices();
-
     $this->display = $this->reloadEntity($this->display);
+  }
+
+  /**
+   * Enables overrides for the display and reloads the entity.
+   */
+  protected function enableOverrides() {
     $this->display->setOverridable()->save();
     $this->entity = $this->reloadEntity($this->entity);
   }

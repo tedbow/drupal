@@ -32,4 +32,22 @@ interface DefaultsSectionStorageInterface extends SectionStorageInterface, Third
    */
   public function setOverridable($overridable = TRUE);
 
+  /**
+   * Determines if Layout Builder is enabled for the defaults.
+   *
+   * @return bool
+   *   TRUE if Layout Builder is enabled, FALSE otherwise.
+   */
+  public function isEnabled();
+
+  /**
+   * Enables the Layout Builder for the defaults.
+   *
+   * @param bool $enabled
+   *   TRUE if Layout Builder should be enabled, FALSE otherwise.
+   *
+   * @return $this
+   */
+  public function setEnabled($enabled = TRUE);
+
 }

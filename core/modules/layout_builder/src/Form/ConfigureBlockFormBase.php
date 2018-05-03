@@ -213,10 +213,25 @@ abstract class ConfigureBlockFormBase extends FormBase {
     $configuration = $this->block->getConfiguration();
 
     $section = $this->sectionStorage->getSection($this->delta);
-    $section->getComponent($this->uuid)->setConfiguration($configuration);
+    $component = $section->getComponent($this->uuid);
+    $this->updateComponent($component, $configuration);
 
     $this->layoutTempstoreRepository->set($this->sectionStorage);
     $form_state->setRedirectUrl($this->sectionStorage->getLayoutBuilderUrl());
+  }
+
+  /**
+   * Updates the component with the given configuration.
+   *
+   * This allows subclasses to perform their own operations.
+   *
+   * @param \Drupal\layout_builder\SectionComponent $component
+   *   The section component.
+   * @param array $configuration
+   *   The new configuration for the component.
+   */
+  protected function updateComponent(SectionComponent $component, array $configuration) {
+    $component->setConfiguration($configuration);
   }
 
   /**

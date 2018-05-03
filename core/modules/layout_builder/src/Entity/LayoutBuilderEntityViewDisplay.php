@@ -10,6 +10,7 @@ use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\layout_builder\LegacyDefaultsSectionListInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorage\SectionStorageTrait;
@@ -22,7 +23,7 @@ use Drupal\layout_builder\SectionStorage\SectionStorageTrait;
  *   experimental modules and development releases of contributed modules.
  *   See https://www.drupal.org/core/experimental for more information.
  */
-class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements LayoutEntityDisplayInterface {
+class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements LayoutEntityDisplayInterface, LegacyDefaultsSectionListInterface {
 
   use SectionStorageTrait;
 
@@ -37,7 +38,34 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    * {@inheritdoc}
    */
   public function setOverridable($overridable = TRUE) {
+    if ($overridable) {
+      $this->setEnabled();
+    }
     $this->setThirdPartySetting('layout_builder', 'allow_custom', $overridable);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isEnabled() {
+    return $this->getThirdPartySetting('layout_builder', 'enable_defaults');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setEnabled($enabled = TRUE, $force_sync = FALSE) {
+    if ($enabled && !$this->isEnabled() && ($force_sync || !$this->hasSection(0))) {
+      // Sort the components by weight.
+      $components = $this->getComponents();
+      uasort($components, 'Drupal\Component\Utility\SortArray::sortByWeightElement');
+      foreach ($components as $name => $component) {
+        $this->setComponent($name, $component);
+      }
+    }
+
+    $this->setThirdPartySetting('layout_builder', 'enable_defaults', $enabled);
     return $this;
   }
 
@@ -136,6 +164,9 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    */
   public function buildMultiple(array $entities) {
     $build_list = parent::buildMultiple($entities);
+    if (!$this->isEnabled()) {
+      return $build_list;
+    }
 
     foreach ($entities as $id => $entity) {
       $sections = $this->getRuntimeSections($entity);
@@ -244,6 +275,14 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   /**
    * {@inheritdoc}
    */
+  public function setLegacyComponent($name, array $options) {
+    parent::setComponent($name, $options);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function setComponent($name, array $options = []) {
     parent::setComponent($name, $options);
 
@@ -265,12 +304,36 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
       $configuration['formatter'] = array_intersect_key($options, $keys);
       $configuration['context_mapping']['entity'] = 'layout_builder.entity';
 
-      $section = $this->getDefaultSection();
-      $region = isset($options['region']) ? $options['region'] : $section->getDefaultRegion();
-      $new_component = (new SectionComponent(\Drupal::service('uuid')->generate(), $region, $configuration));
-      $section->appendComponent($new_component);
+      if ($existing_component = $this->findComponentByName($name)) {
+        $existing_component->setConfiguration($configuration);
+      }
+      else {
+        $section = $this->getDefaultSection();
+        $region = isset($options['region']) ? $options['region'] : $section->getDefaultRegion();
+        $new_component = (new SectionComponent(\Drupal::service('uuid')->generate(), $region, $configuration, ['field_name' => $name]));
+        $section->appendComponent($new_component);
+      }
     }
     return $this;
+  }
+
+  /**
+   * Locates a section component object by name.
+   *
+   * @param string $name
+   *   The name of the component.
+   *
+   * @return \Drupal\layout_builder\SectionComponent|null
+   *   The corresponding component object, or NULL if none could be found.
+   */
+  protected function findComponentByName($name) {
+    foreach ($this->getSections() as $delta => $section) {
+      foreach ($section->getComponents() as $uuid => $component) {
+        if ($name === $component->get('field_name')) {
+          return $component;
+        }
+      }
+    }
   }
 
   /**

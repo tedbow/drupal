@@ -46,17 +46,21 @@ class LayoutBuilderEntityViewDisplayForm extends EntityViewDisplayEditForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
-    // Hide the table of fields.
-    $form['fields']['#access'] = FALSE;
-    $form['#fields'] = [];
-    $form['#extra'] = [];
+    if ($this->entity->isEnabled()) {
+      // Hide the table of fields.
+      $form['fields']['#access'] = FALSE;
+      $form['#fields'] = [];
+      $form['#extra'] = [];
+    }
 
+    $is_enabled = $this->entity->isEnabled();
     $form['manage_layout'] = [
       '#type' => 'link',
       '#title' => $this->t('Manage layout'),
       '#weight' => -10,
       '#attributes' => ['class' => ['button']],
       '#url' => $this->sectionStorage->getLayoutBuilderUrl(),
+      '#access' => (bool) $is_enabled,
     ];
 
     // @todo Expand to work for all view modes in
@@ -70,15 +74,31 @@ class LayoutBuilderEntityViewDisplayForm extends EntityViewDisplayEditForm {
       ];
 
       $entity_type = $this->entityTypeManager->getDefinition($this->entity->getTargetEntityTypeId());
+      $form['layout']['enable_defaults'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Use Layout Builder'),
+        '#default_value' => is_bool($is_enabled) ? $is_enabled : TRUE,
+      ];
       $form['layout']['allow_custom'] = [
         '#type' => 'checkbox',
         '#title' => $this->t('Allow each @entity to have its layout customized.', [
           '@entity' => $entity_type->getSingularLabel(),
         ]),
         '#default_value' => $this->entity->isOverridable(),
+        '#disabled' => !$is_enabled,
+        '#states' => [
+          'disabled' => [
+            ':input[name="layout[enable_defaults]"]' => ['checked' => FALSE],
+          ],
+          'invisible' => [
+            ':input[name="layout[enable_defaults]"]' => ['checked' => FALSE],
+          ],
+        ],
       ];
       // Prevent turning off overrides while any exist.
       if ($this->hasOverrides($this->entity)) {
+        $form['layout']['enable_defaults']['#disabled'] = TRUE;
+        $form['layout']['enable_defaults']['#description'] = $this->t('You must revert all customized layouts of this display before you can disable this option.');
         $form['layout']['allow_custom']['#disabled'] = TRUE;
         $form['layout']['allow_custom']['#description'] = $this->t('You must revert all customized layouts of this display before you can disable this option.');
       }
@@ -116,22 +136,34 @@ class LayoutBuilderEntityViewDisplayForm extends EntityViewDisplayEditForm {
    * Entity builder for layout options on the entity view display form.
    */
   public function entityFormEntityBuild($entity_type_id, LayoutEntityDisplayInterface $display, &$form, FormStateInterface &$form_state) {
-    $new_value = (bool) $form_state->getValue(['layout', 'allow_custom'], FALSE);
-    $display->setOverridable($new_value);
+    $enable_defaults = (bool) $form_state->getValue(['layout', 'enable_defaults'], FALSE);
+    $display->setEnabled($enable_defaults);
+
+    if (!$enable_defaults) {
+      $overridable = FALSE;
+    }
+    else {
+      $overridable = (bool) $form_state->getValue(['layout', 'allow_custom'], FALSE);
+    }
+    $display->setOverridable($overridable);
   }
 
   /**
    * {@inheritdoc}
    */
   protected function buildFieldRow(FieldDefinitionInterface $field_definition, array $form, FormStateInterface $form_state) {
-    // Intentionally empty.
+    if (!$this->entity->isEnabled()) {
+      return parent::buildFieldRow($field_definition, $form, $form_state);
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   protected function buildExtraFieldRow($field_id, $extra_field) {
-    // Intentionally empty.
+    if (!$this->entity->isEnabled()) {
+      return parent::buildExtraFieldRow($field_id, $extra_field);
+    }
   }
 
 }

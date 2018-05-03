@@ -21,13 +21,10 @@ function layout_builder_install() {
     if (isset($field_layout['id'])) {
       $field_layout += ['settings' => []];
       $display->appendSection(new Section($field_layout['id'], $field_layout['settings']));
+      $display->setEnabled(TRUE, TRUE);
     }
-
-    // Sort the components by weight.
-    $components = $display->get('content');
-    uasort($components, 'Drupal\Component\Utility\SortArray::sortByWeightElement');
-    foreach ($components as $name => $component) {
-      $display->setComponent($name, $component);
+    else {
+      $display->setEnabled(FALSE);
     }
     $display->save();
   }

@@ -16,6 +16,7 @@ use Drupal\field_ui\FieldUI;
 use Drupal\layout_builder\DefaultsSectionStorageInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderSampleEntityGenerator;
 use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
+use Drupal\layout_builder\LegacyDefaultsSectionListInterface;
 use Drupal\layout_builder\SectionListInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
@@ -32,7 +33,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   experimental modules and development releases of contributed modules.
  *   See https://www.drupal.org/core/experimental for more information.
  */
-class DefaultsSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, DefaultsSectionStorageInterface {
+class DefaultsSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, DefaultsSectionStorageInterface, LegacyDefaultsSectionListInterface {
 
   /**
    * The entity type manager.
@@ -296,6 +297,21 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
+  public function isEnabled() {
+    return $this->getDisplay()->isEnabled();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setEnabled($enabled = TRUE) {
+    $this->getDisplay()->setEnabled($enabled);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function setThirdPartySetting($module, $key, $value) {
     $this->getDisplay()->setThirdPartySetting($module, $key, $value);
     return $this;
@@ -328,6 +344,17 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
    */
   public function getThirdPartyProviders() {
     return $this->getDisplay()->getThirdPartyProviders();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setLegacyComponent($name, array $options) {
+    $display = $this->getDisplay();
+    if ($display instanceof LegacyDefaultsSectionListInterface) {
+      $display->setLegacyComponent($name, $options);
+    }
+    return $this;
   }
 
 }

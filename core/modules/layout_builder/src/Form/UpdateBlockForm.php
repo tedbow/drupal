@@ -3,6 +3,8 @@
 namespace Drupal\layout_builder\Form;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\layout_builder\LegacyDefaultsSectionListInterface;
+use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorageInterface;
 
 /**
@@ -48,6 +50,20 @@ class UpdateBlockForm extends ConfigureBlockFormBase {
    */
   protected function submitLabel() {
     return $this->t('Update');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function updateComponent(SectionComponent $component, array $configuration) {
+    parent::updateComponent($component, $configuration);
+
+    // If this section storage represents the defaults and the component being
+    // updated corresponds to a field within the Field UI, update it to match
+    // the new values.
+    if ($this->sectionStorage instanceof LegacyDefaultsSectionListInterface && $field_name = $component->get('field_name')) {
+      $this->sectionStorage->setLegacyComponent($field_name, $configuration['formatter']);
+    }
   }
 
 }
