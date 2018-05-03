@@ -21,7 +21,6 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
   public static $modules = [
     'layout_builder',
     'layout_test',
-    'layout_builder_test',
     'block',
     'block_content',
     'node',
@@ -88,8 +87,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     // Add a basic block with the body field set.
     $page->clickLink('Add Block');
     $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
-    $this->clickLink('Basic block');
+    $this->clickLink('Add new Block');
     $assert_session->assertWaitOnAjaxRequest();
     $page->findField('Title')->setValue('Block title');
     $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
@@ -133,8 +131,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->drupalGet('node/1/layout');
     $page->clickLink('Add Block');
     $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
-    $this->clickLink('Basic block');
+    $this->clickLink('Add new Block');
     $assert_session->assertWaitOnAjaxRequest();
     $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
     $textarea->setValue('The 2nd block body');
