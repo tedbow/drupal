@@ -49,6 +49,13 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   protected $entityDisplayRepository;
 
   /**
+   * Whether a new serialized block is being created.
+   *
+   * @var bool
+   */
+  protected $isNew = TRUE;
+
+  /**
    * Constructs a new InlineBlockContentBlock.
    *
    * @param array $configuration
@@ -67,6 +74,9 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
 
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
+    if (!empty($this->configuration['serialized_block'])) {
+      $this->isNew = FALSE;
+    }
   }
 
   /**
@@ -196,27 +206,21 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   /**
    * Loads or creates the block content entity of the block.
    *
-   * @param bool $create_new
-   *   Whether to create a new entity if one doesn't exist.
-   *
    * @return \Drupal\block_content\BlockContentInterface|null
    *   The block content entity or NULL if none exists and $create_new is FALSE.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function getEntity($create_new = TRUE) {
+  protected function getEntity() {
     if (!isset($this->blockContent)) {
       if (!empty($this->configuration['serialized_block'])) {
         $this->blockContent = unserialize($this->configuration['serialized_block']);
       }
-      elseif ($create_new) {
+      else {
         $this->blockContent = $this->entityTypeManager->getStorage('block_content')->create([
           'type' => $this->getDerivativeId(),
         ]);
-      }
-      else {
-        return NULL;
       }
     }
     return $this->blockContent;
@@ -227,7 +231,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
-    if (!$this->getEntity(FALSE)) {
+    if ($this->isNew) {
       // If the Content Block is new then don't provide a default label.
       unset($form['label']['#default_value']);
     }

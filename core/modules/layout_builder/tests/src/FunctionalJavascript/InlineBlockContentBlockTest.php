@@ -91,6 +91,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
     $this->clickLink('Basic block');
     $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->fieldValueEquals('Title', '');
     $page->findField('Title')->setValue('Block title');
     $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
     $textarea->setValue('The DEFAULT block body');
@@ -136,6 +137,8 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
     $this->clickLink('Basic block');
     $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->fieldValueEquals('Title', '');
+    $page->findField('Title')->setValue('2nd Block title');
     $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
     $textarea->setValue('The 2nd block body');
     $page->pressButton('Add Block');
