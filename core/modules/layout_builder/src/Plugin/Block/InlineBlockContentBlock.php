@@ -218,6 +218,9 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    *
    * @return \Drupal\block_content\BlockContentInterface
    *   The block content entity.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function getEntity() {
     if (!isset($this->blockContent)) {
@@ -226,7 +229,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
         $this->blockContent = $entity;
       }
       else {
-        $this->blockContent = BlockContent::create([
+        $this->blockContent = $this->entityTypeManager->getStorage('block_content')->create([
           'type' => $this->getDerivativeId(),
           'reusable' => FALSE,
         ]);
