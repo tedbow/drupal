@@ -133,9 +133,9 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
       '#type' => 'select',
       '#options' => $options,
       '#title' => $this->t('View mode'),
-      '#description' => $this->t('Output the block in this view mode.'),
+      '#description' => $this->t('The view mode in which to render the block.'),
       '#default_value' => $this->configuration['view_mode'],
-      '#access' => (count($options) > 1),
+      '#access' => count($options) > 1,
     ];
     $form['title']['#description'] = $this->t('The title of the block as shown to the user.');
     return $form;
@@ -154,8 +154,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   public static function processBlockForm($element, FormStateInterface $form_state) {
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = $element['#block'];
-    $form_display = EntityFormDisplay::collectRenderDisplay($block, 'edit');
-    $form_display->buildForm($block, $element, $form_state);
+    EntityFormDisplay::collectRenderDisplay($block, 'edit')->buildForm($block, $element, $form_state);
     $element['revision_log']['#access'] = FALSE;
     $element['info']['#access'] = FALSE;
     return $element;
@@ -169,7 +168,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = $block_form['#block'];
     $form_display = EntityFormDisplay::collectRenderDisplay($block, 'edit');
-    $complete_form_state = ($form_state instanceof SubformStateInterface) ? $form_state->getCompleteFormState() : $form_state;
+    $complete_form_state = $form_state instanceof SubformStateInterface ? $form_state->getCompleteFormState() : $form_state;
     $form_display->extractFormValues($block, $block_form, $complete_form_state);
     $form_display->validateFormValues($block, $block_form, $complete_form_state);
     // @todo Remove when https://www.drupal.org/project/drupal/issues/2948549 is closed.
@@ -214,7 +213,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   }
 
   /**
-   * Loads the block content entity of the block.
+   * Loads or creates the block content entity of the block.
    *
    * @return \Drupal\block_content\BlockContentInterface
    *   The block content entity.
