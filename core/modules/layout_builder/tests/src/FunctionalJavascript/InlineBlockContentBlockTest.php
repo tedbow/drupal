@@ -4,6 +4,7 @@ namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
+use Drupal\Tests\contextual\FunctionalJavascript\ContextualLinkClickTrait;
 
 /**
  * Tests that the inline block feature works correctly.
@@ -12,12 +13,15 @@ use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
  */
 class InlineBlockContentBlockTest extends JavascriptTestBase {
 
+  use ContextualLinkClickTrait;
+
   /**
    * {@inheritdoc}
    */
   public static $modules = [
     'layout_builder',
     'layout_test',
+    'layout_builder_test',
     'block',
     'block_content',
     'node',
@@ -45,6 +49,16 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
       ],
     ]);
 
+    $this->createNode([
+      'type' => 'bundle_with_section_field',
+      'title' => 'The node2 title',
+      'body' => [
+        [
+          'value' => 'The node2 body',
+        ],
+      ],
+    ]);
+
     $bundle = BlockContentType::create([
       'id' => 'basic',
       'label' => 'Basic block',
@@ -68,38 +82,106 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     ]));
 
     $field_ui_prefix = 'admin/structure/types/manage/bundle_with_section_field';
+    $this->drupalGet($field_ui_prefix . '/display/default');
+    $this->clickLink('Manage layout');
+    $assert_session->addressEquals("$field_ui_prefix/display-layout/default");
+    // Add a basic block with the body field set.
+    $page->clickLink('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
+    $this->clickLink('Basic block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->fieldValueEquals('Title', '');
+    $page->findField('Title')->setValue('Block title');
+    $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
+    $textarea->setValue('The DEFAULT block body');
+    $page->pressButton('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->elementTextContains('css', '.block-inline-block-contentbasic', 'The DEFAULT block body');
+
+    $this->clickLink('Save Layout');
+
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The DEFAULT block body');
+    $this->drupalGet('node/2');
+    $assert_session->pageTextContains('The DEFAULT block body');
 
     // Enable overrides.
     $this->drupalPostForm("$field_ui_prefix/display/default", ['layout[allow_custom]' => TRUE], 'Save');
     $this->drupalGet('node/1/layout');
 
-    // Add a basic block with the body field set.
-    $page->clickLink('Add Block');
-    $assert_session->assertWaitOnAjaxRequest();
-    $this->clickLink('Basic block');
-    $assert_session->assertWaitOnAjaxRequest();
-    $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
-    $textarea->setValue('The block body');
-    $page->pressButton('Add Block');
-    $assert_session->assertWaitOnAjaxRequest();
-    $this->clickLink('Save Layout');
-    $this->drupalGet('node/1');
-    $assert_session->pageTextContains('The block body');
-
     // Confirm the block can be edited.
     $this->drupalGet('node/1/layout');
-    // Click the "Configure" contextual link.
-    $this->getSession()->executeScript('jQuery(".block-inline-block-contentbasic .contextual button").click()');
-    $assert_session->elementExists('css', '.block-inline-block-contentbasic .contextual .layout-builder-block-update a')->click();
-    $assert_session->assertWaitOnAjaxRequest();
-    $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
-    $this->assertSame('The block body', $textarea->getValue());
-    $textarea->setValue('The new block body!');
+    $this->clickContextualLink('.block-inline-block-contentbasic', 'Configure');
+    $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
+    $this->assertNotEmpty($textarea);
+    $page->findField('Title')->setValue('Block title');
+    $this->assertSame('The DEFAULT block body', $textarea->getValue());
+    $textarea->setValue('The NEW block body!');
     $page->pressButton('Update');
     $assert_session->assertWaitOnAjaxRequest();
     $this->clickLink('Save Layout');
+    $assert_session->pageTextContains('The layout override has been saved.');
     $this->drupalGet('node/1');
-    $assert_session->pageTextContains('The new block body!');
+    $assert_session->pageTextContains('The NEW block body');
+    $assert_session->pageTextNotContains('The DEFAULT block body');
+    $this->drupalGet('node/2');
+    // Node 2 should use default layout.
+    $assert_session->pageTextContains('The DEFAULT block body');
+    $assert_session->pageTextNotContains('The NEW block body');
+
+    // Add a basic block with the body field set.
+    $this->drupalGet('node/1/layout');
+    $page->clickLink('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
+    $this->clickLink('Basic block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->fieldValueEquals('Title', '');
+    $page->findField('Title')->setValue('2nd Block title');
+    $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
+    $textarea->setValue('The 2nd block body');
+    $page->pressButton('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $this->clickLink('Save Layout');
+    $assert_session->pageTextContains('The layout override has been saved.');
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The NEW block body!');
+    $assert_session->pageTextContains('The 2nd block body');
+    $this->drupalGet('node/2');
+    // Node 2 should use default layout.
+    $assert_session->pageTextContains('The DEFAULT block body');
+    $assert_session->pageTextNotContains('The NEW block body');
+    $assert_session->pageTextNotContains('The 2nd block body');
+
+    // Confirm the block can be edited.
+    $this->drupalGet('node/1/layout');
+    /* @var \Behat\Mink\Element\NodeElement $inline_block_2 */
+    $inline_block_2 = $page->findAll('css', '.block-inline-block-contentbasic')[1];
+    $uuid = $inline_block_2->getAttribute('data-layout-block-uuid');
+    $this->clickContextualLink(".block-inline-block-contentbasic[data-layout-block-uuid=\"$uuid\"]", 'Configure');
+    $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
+    $this->assertNotEmpty($textarea);
+    $this->assertSame('The 2nd block body', $textarea->getValue());
+    $textarea->setValue('The 2nd NEW block body!');
+    $page->pressButton('Update');
+    $assert_session->assertWaitOnAjaxRequest();
+    $this->clickLink('Save Layout');
+    $assert_session->pageTextContains('The layout override has been saved.');
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The NEW block body!');
+    $assert_session->pageTextContains('The 2nd NEW block body!');
+    $this->drupalGet('node/2');
+    // Node 2 should use default layout.
+    $assert_session->pageTextContains('The DEFAULT block body');
+    $assert_session->pageTextNotContains('The NEW block body!');
+    $assert_session->pageTextNotContains('The 2nd NEW block body!');
+
+    // The default layout inline block should be changed.
+    $this->drupalGet("$field_ui_prefix/display-layout/default");
+    $assert_session->pageTextContains('The DEFAULT block body');
+    // Confirm default layout still only has 1 inline block.
+    $assert_session->elementsCount('css', '.block-inline-block-contentbasic', 1);
   }
 
 }
