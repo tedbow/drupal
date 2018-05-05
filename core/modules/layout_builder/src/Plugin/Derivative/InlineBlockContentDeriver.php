@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Retrieves block plugin definitions for all custom block types.
  */
-class BlockContentDeriver extends DeriverBase implements ContainerDeriverInterface {
+class InlineBlockContentDeriver extends DeriverBase implements ContainerDeriverInterface {
 
   /**
    * The entity type manager service.
