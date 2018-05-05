@@ -123,7 +123,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     // be successfully propagated to field widgets.
     $form['block_form'] = [
       '#type' => 'container',
-      '#process' => [[self::class, 'processBlockForm']],
+      '#process' => [[static::class, 'processBlockForm']],
       '#block' => $block,
     ];
 
