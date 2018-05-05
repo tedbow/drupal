@@ -190,6 +190,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     $complete_form_state = ($form_state instanceof SubformStateInterface) ? $form_state->getCompleteFormState() : $form_state;
     $form_display->extractFormValues($block, $block_form, $complete_form_state);
     $block->setInfo($this->configuration['label']);
+    $block->setNewRevision(TRUE);
     $block->save();
     $this->configuration['block_revision_id'] = $block->getRevisionId();
   }
