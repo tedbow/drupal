@@ -22,7 +22,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  id = "inline_block_content",
  *  admin_label = @Translation("Inline custom block"),
  *  category = @Translation("Inline custom blocks"),
- *  deriver = "Drupal\layout_builder\Plugin\Derivative\BlockContentDeriver"
+ *  deriver = "Drupal\layout_builder\Plugin\Derivative\InlineBlockContentDeriver"
  * )
  */
 class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface {
@@ -56,6 +56,13 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   protected $entityDisplayRepository;
 
   /**
+   * Whether a new serialized block is being created.
+   *
+   * @var bool
+   */
+  protected $isNew = TRUE;
+
+  /**
    * Constructs a new InlineBlockContentBlock.
    *
    * @param array $configuration
@@ -77,6 +84,9 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     $this->entityTypeManager = $entity_type_manager;
     $this->account = $account;
     $this->entityDisplayRepository = $entity_display_repository;
+    if (!empty($this->configuration['block_revision_id'])) {
+      $this->isNew = FALSE;
+    }
   }
 
   /**
@@ -223,5 +233,20 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     }
     return $this->blockContent;
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildConfigurationForm($form, $form_state);
+    if ($this->isNew) {
+      // If the Content Block is new then don't provide a default label.
+      // @todo Blocks may be serialized before the layout is saved so we
+      // can't check $this->getEntity()->isNew().
+      unset($form['label']['#default_value']);
+    }
+    return $form;
+  }
+
 
 }
