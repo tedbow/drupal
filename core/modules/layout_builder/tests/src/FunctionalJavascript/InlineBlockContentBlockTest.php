@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
+use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
 use Drupal\Tests\contextual\FunctionalJavascript\ContextualLinkClickTrait;
@@ -182,6 +183,48 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $assert_session->pageTextContains('The DEFAULT block body');
     // Confirm default layout still only has 1 inline block.
     $assert_session->elementsCount('css', '.block-inline-block-contentbasic', 1);
+  }
+
+  /**
+   * Tests adding a new inline content block and then not saving the layout.
+   */
+  public function testNoLayoutSave() {
+
+    $this->drupalLogin($this->drupalCreateUser([
+      'access contextual links',
+      'configure any layout',
+      'administer node display',
+    ]));
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    $this->assertEmpty(BlockContent::loadMultiple(), 'No content blocks exist');
+    $field_ui_prefix = 'admin/structure/types/manage/bundle_with_section_field';
+    // Enable overrides.
+    $this->drupalPostForm("$field_ui_prefix/display/default", ['layout[allow_custom]' => TRUE], 'Save');
+
+    foreach (['Cancel Layout', 'Revert to defaults'] as $undo_link) {
+      $this->drupalGet('node/1/layout');
+
+      $page->clickLink('Add Block');
+      $assert_session->assertWaitOnAjaxRequest();
+      $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
+      $this->clickLink('Basic block');
+      $assert_session->assertWaitOnAjaxRequest();
+      $assert_session->fieldValueEquals('Title', '');
+      $page->findField('Title')->setValue('Block title');
+      $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
+      $textarea->setValue('The block body');
+      $page->pressButton('Add Block');
+      $assert_session->assertWaitOnAjaxRequest();
+      $assert_session->pageTextContains('The block body');
+      $this->clickLink($undo_link);
+      if ($undo_link === 'Revert to defaults') {
+        $page->pressButton('Revert');
+      }
+      $this->drupalGet('node/1');
+      $assert_session->pageTextNotContains('The block body');
+      $this->assertEmpty(BlockContent::loadMultiple(), 'No content blocks were created when layout is canceled.');
+    }
   }
 
 }
