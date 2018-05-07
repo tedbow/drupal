@@ -110,6 +110,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     return [
       'view_mode' => 'full',
       'block_revision_id' => NULL,
+      'block_serialized' => NULL,
     ];
   }
 
@@ -189,9 +190,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     $complete_form_state = ($form_state instanceof SubformStateInterface) ? $form_state->getCompleteFormState() : $form_state;
     $form_display->extractFormValues($block, $block_form, $complete_form_state);
     $block->setInfo($this->configuration['label']);
-    $block->setNewRevision(TRUE);
-    $block->save();
-    $this->configuration['block_revision_id'] = $block->getRevisionId();
+    $this->configuration['block_serialized'] = serialize($block);
   }
 
   /**
@@ -223,7 +222,10 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    */
   protected function getEntity() {
     if (!isset($this->blockContent)) {
-      if (!empty($this->configuration['block_revision_id'])) {
+      if (!empty($this->configuration['block_serialized'])) {
+        $this->blockContent = unserialize($this->configuration['block_serialized']);
+      }
+      elseif (!empty($this->configuration['block_revision_id'])) {
         $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($this->configuration['block_revision_id']);
         $this->blockContent = $entity;
       }
