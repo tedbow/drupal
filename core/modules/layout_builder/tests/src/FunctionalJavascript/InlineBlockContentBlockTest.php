@@ -63,6 +63,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $bundle = BlockContentType::create([
       'id' => 'basic',
       'label' => 'Basic block',
+      'revision' => 1,
     ]);
     $bundle->save();
     block_content_add_body_field($bundle->id());
@@ -190,7 +191,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
    *
    * @dataProvider layoutNoSaveProvider
    */
-  public function testNoLayoutSave($no_save_link_text, $confirm_button_text) {
+  public function testNoLayoutSave($operation, $no_save_link_text, $confirm_button_text) {
 
     $this->drupalLogin($this->drupalCreateUser([
       'access contextual links',
@@ -225,6 +226,84 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->drupalGet('node/1');
     $this->assertEmpty(BlockContent::loadMultiple(), 'No content blocks were created when layout is canceled.');
     $assert_session->pageTextNotContains('The block body');
+
+    $this->drupalGet('node/1/layout');
+
+    $page->clickLink('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
+    $this->clickLink('Basic block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->fieldValueEquals('Title', '');
+    $page->findField('Title')->setValue('Block title');
+    $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
+    $textarea->setValue('The block body');
+    $page->pressButton('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->pageTextContains('The block body');
+
+    $this->clickLink('Save Layout');
+    $assert_session->pageTextContains('The layout override has been saved.');
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The block body');
+    $blocks = BlockContent::loadMultiple();
+    $this->assertEquals(count($blocks), 1);
+    /* @var \Drupal\block_content\Entity\BlockContent $block */
+    $block = array_pop($blocks);
+    $revision_id = $block->getRevisionId();
+
+    // Confirm the block can be edited.
+    $this->drupalGet('node/1/layout');
+    $this->clickContextualLink('.block-inline-block-contentbasic', 'Configure');
+    $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
+    $this->assertNotEmpty($textarea);
+    $page->findField('Title')->setValue('Block title updated');
+    $this->assertSame('The block body', $textarea->getValue());
+    $textarea->setValue('The block updated body');
+    $page->pressButton('Update');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->pageTextContains('The block updated body');
+
+    $this->clickLink($no_save_link_text);
+    if ($confirm_button_text) {
+      $page->pressButton($confirm_button_text);
+    }
+    $this->drupalGet('node/1');
+
+    file_put_contents('/Users/ted.bowman/Sites/www/ss.html', $page->getOuterHtml());
+    $blocks = BlockContent::loadMultiple();
+    // When reverting or canceling the update block should not be on the page.
+    $assert_session->pageTextNotContains('The block updated body');
+    if ($operation === 'cancel') {
+      // When canceling the original block body should appear.
+      $assert_session->pageTextContains('The block body');
+
+      $this->assertEquals(count($blocks), 1);
+      $block = array_pop($blocks);
+      $this->assertEquals($block->getRevisionId(), $revision_id);
+      $this->assertEquals($block->get('body')->getValue()[0]['value'], 'The block body');
+    }
+    else {
+      // When reverting the original block body does not appear on the page.
+      $assert_session->pageTextNotContains('The block body');
+      // When reverting to defaults any inline blocks used only in the
+      // override should be deleted.
+      // @todo Add test coverage for an inline block used in a default layout
+      // and an override. When reverting to defaults if the block is also in the
+      // default don't delete the content block.
+      // Also if the content block was first created in the default then also
+      // used different override then the content block may be used any other
+      // override for this bundle.
+      // So the only way to be sure the content block isn't referenced in any
+      // other override for this bundle you would have to check every other
+      // entity for this bundle.
+      // It may be better when creating an override to duplicate any content
+      // blocks. Then we could safely delete any content block in an override.
+      $this->assertEmpty($blocks);
+    }
+
+
+
   }
 
   /**
@@ -233,10 +312,12 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
   public function layoutNoSaveProvider() {
     return [
       'cancel' => [
+        'cancel',
         'Cancel Layout',
         NULL,
       ],
       'revert' => [
+        'revert',
         'Revert to defaults',
         'Revert',
       ],
