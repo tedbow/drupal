@@ -243,4 +243,80 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function testInlineBlocksRevisioning() {
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+
+    $this->drupalLogin($this->drupalCreateUser([
+      'access contextual links',
+      'configure any layout',
+      'administer node display',
+      'administer node fields',
+      'administer nodes',
+      'bypass node access',
+    ]));
+
+    // Enable override.
+    $field_ui_prefix = 'admin/structure/types/manage/bundle_with_section_field';
+    $this->drupalPostForm("$field_ui_prefix/display/default", ['layout[allow_custom]' => TRUE], 'Save');
+    $this->drupalGet('node/1/layout');
+
+    // Add a inline block.
+    $page->clickLink('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
+    $this->clickLink('Basic block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->fieldValueEquals('Title', '');
+    $page->findField('Title')->setValue('Block title');
+    $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
+    $textarea->setValue('The DEFAULT block body');
+    $page->pressButton('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->elementTextContains('css', '.block-inline-block-contentbasic', 'The DEFAULT block body');
+
+    $this->clickLink('Save Layout');
+    $assert_session->pageTextContains('The layout override has been saved.');
+    $this->drupalGet('node/1');
+
+    $assert_session->pageTextContains('The DEFAULT block body');
+
+    // Create a new revision.
+    $this->drupalGet('node/1/edit');
+    $page->pressButton('Save');
+
+    $this->drupalGet('node/1');
+
+    $assert_session->linkExists('Revisions');
+
+    // Update the block.
+    $this->drupalGet('node/1/layout');
+    $this->clickContextualLink('.block-inline-block-contentbasic', 'Configure');
+    $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
+    $this->assertNotEmpty($textarea);
+    $page->findField('Title')->setValue('Block title');
+    $this->assertSame('The DEFAULT block body', $textarea->getValue());
+    $textarea->setValue('The NEW block body!');
+    $page->pressButton('Update');
+    $assert_session->assertWaitOnAjaxRequest();
+    $this->clickLink('Save Layout');
+    $assert_session->pageTextContains('The layout override has been saved.');
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The NEW block body');
+    $assert_session->pageTextNotContains('The DEFAULT block body');
+
+    // Revert to first revision.
+    $revision_url = 'node/1/revisions/1/revert';
+    $this->drupalGet($revision_url);
+    $assert_session->elementExists('css', '.form-submit');
+    $this->click('.form-submit');
+
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The DEFAULT block body');
+    $assert_session->pageTextNotContains('The NEW block body');
+  }
+
 }
