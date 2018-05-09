@@ -14,6 +14,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
+use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionListInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
@@ -230,7 +231,34 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    * {@inheritdoc}
    */
   public function save() {
+    $this->saveInlineBlocks();
     return $this->getEntity()->save();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function duplicateDefaultsInlineCustomBlocks($sections) {
+    /** @var Section $section */
+    foreach ($sections as $section) {
+      $components = $section->getComponents();
+
+      foreach ($components as $component) {
+        $plugin = $component->getPlugin();
+        if ($plugin->getBaseId() === 'inline_block_content') {
+          $configuration = $component->getConfiguration();
+          if (!empty($configuration['block_revision_id'])) {
+            $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
+            $duplicated_entity = $entity->createDuplicate();
+            $configuration['block_revision_id'] = NULL;
+            $configuration['block_serialized'] = serialize($duplicated_entity);
+            $component->setConfiguration($configuration);
+          }
+        }
+      }
+    }
+
+    return $sections;
   }
 
 }

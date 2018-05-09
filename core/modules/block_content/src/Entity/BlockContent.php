@@ -200,6 +200,11 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
       ->setTranslatable(TRUE)
       ->setRevisionable(TRUE);
 
+    $fields['reusable'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Re-usable'))
+      ->setDescription(t('Determine if the block should be re-usable or not.'))
+      ->setDefaultValue(TRUE);
+
     return $fields;
   }
 
@@ -279,6 +284,29 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    */
   public function setRevisionLogMessage($revision_log_message) {
     $this->set('revision_log', $revision_log_message);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isReusable() {
+    return (bool) $this->get('reusable')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setReusable() {
+    $this->set('reusable', TRUE);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setNotReusable() {
+    $this->set('reusable', FALSE);
     return $this;
   }
 
