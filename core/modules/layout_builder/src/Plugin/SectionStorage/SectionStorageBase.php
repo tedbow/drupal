@@ -103,4 +103,30 @@ abstract class SectionStorageBase extends PluginBase implements SectionStorageIn
     return $this;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function saveInlineBlocks() {
+    $sections = $this->getSections();
+
+    foreach ($sections as $section) {
+      $components = $section->getComponents();
+
+      foreach ($components as $component) {
+        $plugin = $component->getPlugin();
+        if ($plugin->getBaseId() === 'inline_block_content') {
+          $configuration = $component->getConfiguration();
+          if (!empty($configuration['block_serialized'])) {
+            $block = unserialize($configuration['block_serialized']);
+            $block->setNewRevision(TRUE);
+            $block->save();
+            $configuration['block_serialized'] = NULL;
+            $configuration['block_revision_id'] = $block->getRevisionId();
+            $component->setConfiguration($configuration);
+          }
+        }
+      }
+    }
+  }
+
 }

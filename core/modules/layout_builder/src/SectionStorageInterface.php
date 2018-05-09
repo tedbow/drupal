@@ -138,4 +138,11 @@ interface SectionStorageInterface extends SectionListInterface, PluginInspection
    */
   public function save();
 
+  /**
+   * Saves inline blocks.
+   *
+   * @return void
+   */
+  public function saveInlineBlocks();
+
 }
