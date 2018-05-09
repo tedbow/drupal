@@ -2,6 +2,7 @@
 
 namespace Drupal\layout_builder\Controller;
 
+use Drupal\block_content\Entity\BlockContent;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
@@ -121,6 +122,11 @@ class LayoutBuilderController implements ContainerInjectionInterface {
       // default.
       if ($section_storage instanceof OverridesSectionStorageInterface) {
         $sections = $section_storage->getDefaultSectionStorage()->getSections();
+
+        // Create a duplicate of each default inline custom block.
+        if ($sections) {
+          $sections = $section_storage->duplicateDefaultsInlineCustomBlocks($sections);
+        }
       }
 
       // For an empty layout, begin with a single section of one column.

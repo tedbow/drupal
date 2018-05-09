@@ -197,7 +197,7 @@ class SectionComponent {
    * @return mixed[]
    *   The component plugin configuration.
    */
-  protected function getConfiguration() {
+  public function getConfiguration() {
     return $this->configuration;
   }
 
