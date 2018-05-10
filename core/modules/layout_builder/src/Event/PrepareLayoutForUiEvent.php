@@ -14,20 +14,12 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class PrepareLayoutForUiEvent extends Event {
 
-
   /**
    * The original sections.
    *
    * @var \Drupal\layout_builder\Section[]
    */
-  protected $originalSections;
-
-  /**
-   * The section storage.
-   *
-   * @var \Drupal\layout_builder\SectionStorageInterface
-   */
-  protected $sectionStorage;
+  protected $sections;
 
   /**
    * Whether the Layout is rebuilding.
@@ -39,13 +31,11 @@ class PrepareLayoutForUiEvent extends Event {
   /**
    * PrepareLayoutForUiEvent constructor.
    *
-   * @param \Drupal\layout_builder\Section[] $originalSections
-   * @param \Drupal\layout_builder\SectionStorageInterface $sectionStorage
+   * @param \Drupal\layout_builder\Section[] $sections
    * @param bool $isRebuilding
    */
-  public function __construct(array $originalSections, SectionStorageInterface $sectionStorage, $isRebuilding) {
-    $this->originalSections = $originalSections;
-    $this->sectionStorage = $sectionStorage;
+  public function __construct(array $sections, $isRebuilding) {
+    $this->sections = $sections;
     $this->isRebuilding = $isRebuilding;
   }
 
@@ -60,23 +50,13 @@ class PrepareLayoutForUiEvent extends Event {
   }
 
   /**
-   * Gets the section storage.
-   *
-   * @return \Drupal\layout_builder\SectionStorageInterface
-   *   The section storage.
-   */
-  public function getSectionStorage() {
-    return $this->sectionStorage;
-  }
-
-  /**
    * Gets the original sections.
    *
    * @return \Drupal\layout_builder\Section[]
    *   The original sections.
    */
-  public function getOriginalSections() {
-    return $this->originalSections;
+  public function getSections() {
+    return $this->sections;
   }
 
 }
