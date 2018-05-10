@@ -237,7 +237,8 @@ abstract class ConfigureBlockFormBase extends FormBase {
    */
   protected function getPluginForm(BlockPluginInterface $block) {
     if ($block instanceof PluginWithFormsInterface) {
-      return $this->pluginFormFactory->createInstance($block, 'configure');
+      // If this plugin has a layout builder specific form use it.
+      return $this->pluginFormFactory->createInstance($block, 'layout_builder', 'configure');
     }
     return $block;
   }
