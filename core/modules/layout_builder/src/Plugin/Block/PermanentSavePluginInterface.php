@@ -15,4 +15,5 @@ interface PermanentSavePluginInterface {
    * Saves the plugin permanently.
    */
   public function savePermanently();
+
 }
