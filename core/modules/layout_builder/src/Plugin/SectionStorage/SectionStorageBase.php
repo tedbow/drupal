@@ -127,4 +127,11 @@ abstract class SectionStorageBase extends PluginBase implements SectionStorageIn
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function save() {
+    $this->permanentlySaveComponents();
+  }
+
 }
