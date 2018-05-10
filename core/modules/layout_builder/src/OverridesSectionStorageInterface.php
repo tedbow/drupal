@@ -23,20 +23,4 @@ interface OverridesSectionStorageInterface extends SectionStorageInterface {
    */
   public function getDefaultSectionStorage();
 
-  /**
-   * Duplicate defaults inline custom blocks.
-   *
-   * @param \Drupal\layout_builder\Section[]
-   *   A sequentially and numerically keyed array of section objects.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   *   Thrown if the entity type doesn't exist.
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   *   Thrown if the storage handler couldn't be loaded.
-   *
-   * @return \Drupal\layout_builder\Section[]
-   *   A sequentially and numerically keyed array of section objects.
-   */
-  public function duplicateDefaultsInlineCustomBlocks($sections);
-
 }

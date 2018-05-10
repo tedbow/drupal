@@ -235,32 +235,4 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     return $this->getEntity()->save();
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function duplicateDefaultsInlineCustomBlocks($sections) {
-    /** @var \Drupal\layout_builder\Section $section */
-    foreach ($sections as $section) {
-      $components = $section->getComponents();
-
-      foreach ($components as $component) {
-        $plugin = $component->getPlugin();
-        if ($plugin instanceof DerivativeInspectionInterface) {
-          if ($plugin->getBaseId() === 'inline_block_content') {
-            $configuration = $component->getConfiguration();
-            if (!empty($configuration['block_revision_id'])) {
-              $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
-              $duplicated_entity = $entity->createDuplicate();
-              $configuration['block_revision_id'] = NULL;
-              $configuration['block_serialized'] = serialize($duplicated_entity);
-              $component->setConfiguration($configuration);
-            }
-          }
-        }
-      }
-    }
-
-    return $sections;
-  }
-
 }
