@@ -6,7 +6,6 @@ use Drupal\Component\Plugin\DerivativeInspectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\layout_builder\Event\PrepareLayoutForUiEvent;
 use Drupal\layout_builder\LayoutBuilderEvents;
-use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -50,9 +49,8 @@ class PrepareLayoutForUiSubscriber implements EventSubscriberInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function onPrepareLayout(PrepareLayoutForUiEvent $event) {
-    $section_storage = $event->getSectionStorage();
-    if (!$event->isRebuilding() && count($event->getOriginalSections()) === 0 && $section_storage instanceof OverridesSectionStorageInterface) {
-      foreach ($section_storage->getSections() as $section) {
+    if (!$event->isRebuilding()) {
+      foreach ($event->getSections() as $section) {
         $components = $section->getComponents();
         foreach ($components as $component) {
           $plugin = $component->getPlugin();
