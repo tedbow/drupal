@@ -2,7 +2,9 @@
 
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
+use Drupal\Component\Plugin\ConfigurablePluginInterface;
 use Drupal\Core\Plugin\PluginBase;
+use Drupal\layout_builder\Plugin\Block\PermanentSavePluginInterface;
 use Drupal\layout_builder\Routing\LayoutBuilderRoutesTrait;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionListInterface;
@@ -106,7 +108,7 @@ abstract class SectionStorageBase extends PluginBase implements SectionStorageIn
   /**
    * {@inheritdoc}
    */
-  public function saveInlineBlocks() {
+  public function permanentlySaveComponents() {
     $sections = $this->getSections();
 
     foreach ($sections as $section) {
@@ -114,15 +116,11 @@ abstract class SectionStorageBase extends PluginBase implements SectionStorageIn
 
       foreach ($components as $component) {
         $plugin = $component->getPlugin();
-        if ($plugin->getBaseId() === 'inline_block_content') {
-          $configuration = $component->getConfiguration();
-          if (!empty($configuration['block_serialized'])) {
-            $block = unserialize($configuration['block_serialized']);
-            $block->setNewRevision(TRUE);
-            $block->save();
-            $configuration['block_serialized'] = NULL;
-            $configuration['block_revision_id'] = $block->getRevisionId();
-            $component->setConfiguration($configuration);
+        if ($plugin instanceof PermanentSavePluginInterface) {
+          $plugin->savePermanently();
+          if ($plugin instanceof ConfigurablePluginInterface) {
+            // The plugin configuration may have changed during the save.
+            $component->setConfiguration($plugin->getConfiguration());
           }
         }
       }
