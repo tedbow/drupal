@@ -12,6 +12,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Plugin\PluginWithFormsInterface;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -22,7 +23,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  id = "inline_block_content",
  *  admin_label = @Translation("Inline custom block"),
  *  category = @Translation("Inline custom blocks"),
- *  deriver = "Drupal\layout_builder\Plugin\Derivative\InlineBlockContentDeriver"
+ *  deriver = "Drupal\layout_builder\Plugin\Derivative\InlineBlockContentDeriver",
+ *  forms = {
+ *     "configure" = "Drupal\layout_builder\Form\InlineBlockDefaultForm",
+ *     "layout_builder" = "Drupal\layout_builder\Form\InlineBlockLayoutBuilderForm",
+ *   },
  * )
  */
 class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface {
@@ -190,7 +195,6 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     $complete_form_state = ($form_state instanceof SubformStateInterface) ? $form_state->getCompleteFormState() : $form_state;
     $form_display->extractFormValues($block, $block_form, $complete_form_state);
     $block->setInfo($this->configuration['label']);
-    $this->configuration['block_serialized'] = serialize($block);
   }
 
   /**
