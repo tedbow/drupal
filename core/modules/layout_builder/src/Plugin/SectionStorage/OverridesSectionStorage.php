@@ -231,7 +231,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    * {@inheritdoc}
    */
   public function save() {
-    $this->saveInlineBlocks();
+    $this->permanentlySaveComponents();
     return $this->getEntity()->save();
   }
 

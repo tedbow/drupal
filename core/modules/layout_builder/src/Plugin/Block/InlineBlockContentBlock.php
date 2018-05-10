@@ -30,7 +30,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   },
  * )
  */
-class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface, PermanentSavePluginInterface {
 
   /**
    * The entity type manager service.
@@ -89,7 +89,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     $this->entityTypeManager = $entity_type_manager;
     $this->account = $account;
     $this->entityDisplayRepository = $entity_display_repository;
-    if (!empty($this->configuration['block_revision_id'])) {
+    if (!empty($this->configuration['block_revision_id']) || !empty($this->configuration['block_serialized'])) {
       $this->isNew = FALSE;
     }
   }
@@ -195,6 +195,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     $complete_form_state = ($form_state instanceof SubformStateInterface) ? $form_state->getCompleteFormState() : $form_state;
     $form_display->extractFormValues($block, $block_form, $complete_form_state);
     $block->setInfo($this->configuration['label']);
+    $this->configuration['block_serialized'] = serialize($block);
   }
 
   /**
@@ -257,5 +258,18 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     return $form;
   }
 
+  /**
+   * Saves the plugin permanently.
+   */
+  public function savePermanently() {
+    if (isset($this->configuration['block_serialized'])) {
+      $block = unserialize($this->configuration['block_serialized']);
+      $block->setNewRevision(TRUE);
+      $block->save();
+      $this->setConfigurationValue('block_serialized', NULL);
+      $this->configuration['block_serialized'] = NULL;
+      $this->configuration['block_revision_id'] = $block->getRevisionId();
+    }
+  }
 
 }

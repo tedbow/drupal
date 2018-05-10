@@ -275,7 +275,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
    * {@inheritdoc}
    */
   public function save() {
-    $this->saveInlineBlocks();
+    $this->permanentlySaveComponents();
     return $this->getDisplay()->save();
   }
 
