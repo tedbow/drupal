@@ -38,7 +38,7 @@
         var action = $target.attr('data-action');
 
         if (action === 'add') {
-          messageIndexes[area][type].push(message.add('Msg-' + type, {type: type}));
+          messageIndexes[area][type].push(message.add(`This is a message of the type, <strong>${type}</strong>. You be the the judge of its importance. 😜`, {type: type}));
         }
         else if (action === 'remove') {
           message.remove(messageIndexes[area][type].pop());
@@ -50,7 +50,7 @@
         // Add several of different types to make sure message type doesn't
         // cause issues in the API.
         for (var i = 0; i < types.length * 2; i++) {
-          messageIndexes.multiple.push(defaultMessageArea.add('Msg-' + i, {type: types[i % types.length]}));
+          messageIndexes.multiple.push(defaultMessageArea.add(`This is message number ${i} of the type, ${types[i % types.length]}. You be the the judge of its importance. 😜`, {type: types[i % types.length]}));
         }
       });
 

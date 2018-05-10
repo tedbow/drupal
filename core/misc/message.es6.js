@@ -259,17 +259,13 @@
     messageText.setAttribute('class', 'visually-hidden');
 
     messageWraper.setAttribute('class', `messages messages--${options.type}`);
-    messageWraper.setAttribute('role', 'status');
+    messageWraper.setAttribute('role', options.type === 'error' ? 'alert' : 'status');
     messageWraper.setAttribute('data-drupal-message-id', options.id);
     messageWraper.setAttribute('data-drupal-message-type', options.type);
 
     messageWraper.setAttribute('aria-label', messagesTypes[options.type]);
     messageText.innerHTML = messagesTypes[options.type];
 
-    // Alerts have a different HTML structure.
-    if (options.type === 'error') {
-      messageText.setAttribute('role', 'alert');
-    }
     messageWraper.innerHTML = ` ${text}`;
     messageWraper.insertAdjacentElement('afterbegin', messageText);
 
