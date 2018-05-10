@@ -137,6 +137,8 @@ class LayoutBuilderController implements ContainerInjectionInterface {
       // default.
       if ($section_storage instanceof OverridesSectionStorageInterface) {
         $sections = $section_storage->getDefaultSectionStorage()->getSections();
+        $event = new PrepareLayoutForUiEvent($sections, $is_rebuilding);
+        $this->eventDispatcher->dispatch(LayoutBuilderEvents::PREPARE_SECTIONS_FOR_UI, $event);
       }
 
       // For an empty layout, begin with a single section of one column.
@@ -144,13 +146,14 @@ class LayoutBuilderController implements ContainerInjectionInterface {
         $sections[] = new Section('layout_onecol');
       }
 
+
+
       foreach ($sections as $section) {
         $section_storage->appendSection($section);
       }
 
-      $event = new PrepareLayoutForUiEvent($original_sections, $section_storage, $is_rebuilding);
-      $this->eventDispatcher->dispatch(LayoutBuilderEvents::PREPARE_SECTIONS_FOR_UI, $event);
-      $this->layoutTempstoreRepository->set($event->getSectionStorage());
+
+      $this->layoutTempstoreRepository->set($section_storage);
     }
 
   }
