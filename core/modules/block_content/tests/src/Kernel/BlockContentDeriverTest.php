@@ -30,14 +30,14 @@ class BlockContentDeriverTest extends KernelTestBase {
   }
 
   /**
-   * Tests that re-usable blocks only are derived.
+   * Tests that reusable blocks only are derived.
    */
   public function testThatReusableBlocksOnlyAreDerived() {
     // Create a block content type.
     $block_content_type = BlockContentType::create([
       'id' => 'spiffy',
       'label' => 'Mucho spiffy',
-      'description' => "Provides a block type that increases your site's spiffiness by upto 11%",
+      'description' => "Provides a block type that increases your site's spiffiness by up to 11%",
     ]);
     $block_content_type->save();
     // And a block content entity.
@@ -55,7 +55,7 @@ class BlockContentDeriverTest extends KernelTestBase {
     $this->assertTrue($block_manager->hasDefinition($plugin_id));
 
     // Set the block not to be reusable.
-    $block_content->setNotReusable();
+    $block_content->setReusable(FALSE);
     $block_content->save();
 
     $this->assertFalse($block_manager->hasDefinition($plugin_id));

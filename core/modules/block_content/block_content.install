@@ -144,8 +144,8 @@ function block_content_update_8400() {
  */
 function block_content_update_8600() {
   $reusable = BaseFieldDefinition::create('boolean')
-    ->setLabel(t('Re-usable'))
-    ->setDescription(t('Determine if the block should be re-usable or not.'))
+    ->setLabel(t('Reusable'))
+    ->setDescription(t('Determine if the block should be reusable or not.'))
     ->setDefaultValue(TRUE);
 
   $reusable->setInitialValue(TRUE);

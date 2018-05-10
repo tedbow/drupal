@@ -2,6 +2,7 @@
 
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
+use Drupal\Component\Plugin\DerivativeInspectionInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -14,7 +15,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
-use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionListInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
@@ -231,7 +231,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    * {@inheritdoc}
    */
   public function save() {
-    $this->permanentlySaveComponents();
+    parent::save();
     return $this->getEntity()->save();
   }
 
@@ -239,20 +239,22 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    * {@inheritdoc}
    */
   public function duplicateDefaultsInlineCustomBlocks($sections) {
-    /** @var Section $section */
+    /** @var \Drupal\layout_builder\Section $section */
     foreach ($sections as $section) {
       $components = $section->getComponents();
 
       foreach ($components as $component) {
         $plugin = $component->getPlugin();
-        if ($plugin->getBaseId() === 'inline_block_content') {
-          $configuration = $component->getConfiguration();
-          if (!empty($configuration['block_revision_id'])) {
-            $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
-            $duplicated_entity = $entity->createDuplicate();
-            $configuration['block_revision_id'] = NULL;
-            $configuration['block_serialized'] = serialize($duplicated_entity);
-            $component->setConfiguration($configuration);
+        if ($plugin instanceof DerivativeInspectionInterface) {
+          if ($plugin->getBaseId() === 'inline_block_content') {
+            $configuration = $component->getConfiguration();
+            if (!empty($configuration['block_revision_id'])) {
+              $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
+              $duplicated_entity = $entity->createDuplicate();
+              $configuration['block_revision_id'] = NULL;
+              $configuration['block_serialized'] = serialize($duplicated_entity);
+              $component->setConfiguration($configuration);
+            }
           }
         }
       }

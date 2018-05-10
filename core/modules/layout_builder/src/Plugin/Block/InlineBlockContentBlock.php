@@ -2,7 +2,6 @@
 
 namespace Drupal\layout_builder\Plugin\Block;
 
-use Drupal\block_content\Entity\BlockContent;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
@@ -12,7 +11,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Plugin\PluginWithFormsInterface;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -42,7 +40,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   /**
    * The Drupal account to use for checking for access to block.
    *
-   * @var \Drupal\Core\Session\AccountInterface.
+   * @var \Drupal\Core\Session\AccountInterface
    */
   protected $account;
 
@@ -152,12 +150,13 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    *
    * @param array $element
    *   The containing element.
-   * @param FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
+   *
    * @return array
    *   The containing element, with the Custom Block form inserted.
    */
-  public static function processBlockForm($element, FormStateInterface $form_state) {
+  public static function processBlockForm(array $element, FormStateInterface $form_state) {
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = $element['#block'];
     EntityFormDisplay::collectRenderDisplay($block, 'edit')->buildForm($block, $element, $form_state);
