@@ -55,6 +55,13 @@ interface EntityUsageInterface {
   public function remove($used_entity_type_id, $used_entity_id, $user_entity_type_id, $user_entity_id, $count = 1);
 
   /**
+   * Remove all uses by a user entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   */
+  public function removeByUser(EntityInterface $entity);
+
+  /**
    * Determines where a entity is used.
    *
    * @param \Drupal\file\FileInterface $file
@@ -75,6 +82,7 @@ interface EntityUsageInterface {
    * @return mixed
    *   ?? ids or entities
    */
-  public function getEntitiesWithNoUses($entity_type_id);
+  public function getEntitiesWithNoUses($entity_type_id = NULL);
+
 
 }
