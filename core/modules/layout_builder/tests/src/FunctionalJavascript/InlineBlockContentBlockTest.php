@@ -5,6 +5,7 @@ namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
+use Drupal\node\Entity\Node;
 use Drupal\Tests\contextual\FunctionalJavascript\ContextualLinkClickTrait;
 
 /**
@@ -101,7 +102,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $assert_session->assertWaitOnAjaxRequest();
     $assert_session->elementTextContains('css', '.block-inline-block-contentbasic', 'The DEFAULT block body');
 
-    $this->clickLink('Save Layout');
+    $this->assertSaveLayout();
 
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The DEFAULT block body');
@@ -122,8 +123,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $textarea->setValue('The NEW block body!');
     $page->pressButton('Update');
     $assert_session->assertWaitOnAjaxRequest();
-    $this->clickLink('Save Layout');
-    $assert_session->pageTextContains('The layout override has been saved.');
+    $this->assertSaveLayout();
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body');
     $assert_session->pageTextNotContains('The DEFAULT block body');
@@ -145,8 +145,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $textarea->setValue('The 2nd block body');
     $page->pressButton('Add Block');
     $assert_session->assertWaitOnAjaxRequest();
-    $this->clickLink('Save Layout');
-    $assert_session->pageTextContains('The layout override has been saved.');
+    $this->assertSaveLayout();
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body!');
     $assert_session->pageTextContains('The 2nd block body');
@@ -168,8 +167,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $textarea->setValue('The 2nd NEW block body!');
     $page->pressButton('Update');
     $assert_session->assertWaitOnAjaxRequest();
-    $this->clickLink('Save Layout');
-    $assert_session->pageTextContains('The layout override has been saved.');
+    $this->assertSaveLayout();
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body!');
     $assert_session->pageTextContains('The 2nd NEW block body!');
@@ -242,8 +240,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $assert_session->assertWaitOnAjaxRequest();
     $assert_session->pageTextContains('The block body');
 
-    $this->clickLink('Save Layout');
-    $assert_session->pageTextContains('The layout override has been saved.');
+    $this->assertSaveLayout();
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The block body');
     $blocks = BlockContent::loadMultiple();
@@ -300,9 +297,6 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
       // blocks. Then we could safely delete any content block in an override.
       $this->assertEmpty($blocks);
     }
-
-
-
   }
 
   /**
@@ -358,8 +352,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $assert_session->assertWaitOnAjaxRequest();
     $assert_session->elementTextContains('css', '.block-inline-block-contentbasic', 'The DEFAULT block body');
 
-    $this->clickLink('Save Layout');
-    $assert_session->pageTextContains('The layout override has been saved.');
+    $this->assertSaveLayout();
     $this->drupalGet('node/1');
 
     $assert_session->pageTextContains('The DEFAULT block body');
@@ -382,8 +375,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $textarea->setValue('The NEW block body!');
     $page->pressButton('Update');
     $assert_session->assertWaitOnAjaxRequest();
-    $this->clickLink('Save Layout');
-    $assert_session->pageTextContains('The layout override has been saved.');
+    $this->assertSaveLayout();
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body');
     $assert_session->pageTextNotContains('The DEFAULT block body');
@@ -396,6 +388,167 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The DEFAULT block body');
     $assert_session->pageTextNotContains('The NEW block body');
+  }
+
+  /**
+   * Tests that inline content blocks deleted correctly.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   * @throws \Behat\Mink\Exception\ExpectationException
+   * @throws \Behat\Mink\Exception\ResponseTextException
+   */
+  public function testDeletion() {
+    $this->drupalLogin($this->drupalCreateUser([
+      'access contextual links',
+      'configure any layout',
+      'administer node display',
+      'administer node fields',
+    ]));
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+
+    // Add a block to default layout.
+    $field_ui_prefix = 'admin/structure/types/manage/bundle_with_section_field';
+    $this->drupalGet($field_ui_prefix . '/display/default');
+    $this->clickLink('Manage layout');
+    $assert_session->addressEquals("$field_ui_prefix/display-layout/default");
+    $this->addInlineBlockToLayout('Block title', 'The DEFAULT block body');
+    $this->assertSaveLayout();
+
+    $this->assertCount(1, BlockContent::loadMultiple());
+    $default_block_id = $this->getLatestBlockConentId();
+
+    // Ensure the block shows up on node pages.
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The DEFAULT block body');
+    $this->drupalGet('node/2');
+    $assert_session->pageTextContains('The DEFAULT block body');
+
+    // Enable overrides.
+    $this->drupalPostForm("$field_ui_prefix/display/default", ['layout[allow_custom]' => TRUE], 'Save');
+
+    // Ensure we have 2 copies of the block in node overrides.
+    $this->drupalGet('node/1/layout');
+    $this->assertSaveLayout();
+    $node_1_block_id = $this->getLatestBlockConentId();
+
+    $this->drupalGet('node/2/layout');
+    $this->assertSaveLayout();
+    $node_2_block_id = $this->getLatestBlockConentId();
+    $this->assertCount(3, BlockContent::loadMultiple());
+
+    $this->drupalGet($field_ui_prefix . '/display/default');
+    $this->clickLink('Manage layout');
+    $assert_session->addressEquals("$field_ui_prefix/display-layout/default");
+
+    // Remove block from default.
+    $this->removeInlineBlockFromLayout();
+    $this->assertSaveLayout();
+    // Ensure the block in the default was deleted.
+    $this->assertEmpty(BlockContent::load($default_block_id));
+    // Ensure other blocks still exist.
+    $this->assertCount(2, BlockContent::loadMultiple());
+
+    // Remove block from override.
+    $this->drupalGet('node/1/layout');
+    $assert_session->pageTextContains('The DEFAULT block body');
+    $this->removeInlineBlockFromLayout();
+    $this->assertSaveLayout();
+    // Ensure content block is not deleted because it is needed in revision.
+    $this->assertNotEmpty(BlockContent::load($node_1_block_id));
+    $this->assertCount(2, BlockContent::loadMultiple());
+
+    // Ensure content block is deleted when node is deleted.
+    Node::load(1)->delete();
+    $this->assertEmpty(BlockContent::load($node_1_block_id));
+    $this->assertCount(1, BlockContent::loadMultiple());
+
+    // Add another block to the default.
+    $this->drupalGet($field_ui_prefix . '/display/default');
+    $this->clickLink('Manage layout');
+    $assert_session->addressEquals("$field_ui_prefix/display-layout/default");
+    $this->addInlineBlockToLayout('Title 2', 'Body 2');
+    $this->assertSaveLayout();
+    $default_block2_id = $this->getLatestBlockConentId();
+    $this->assertCount(2, BlockContent::loadMultiple());
+
+    // Delete the other node so bundle can be deleted.
+    Node::load(2)->delete();
+    // Ensure content block was deleted.
+    $this->assertEmpty(BlockContent::load($node_2_block_id));
+    $this->assertCount(1, BlockContent::loadMultiple());
+
+    // Delete the bundle which has the default layout.
+    $this->drupalGet('admin/structure/types/manage/bundle_with_section_fields/delete');
+    $page->pressButton('Delete');
+
+    // Ensure the content block in default is deleted when bundle is deleted.
+    $this->assertEmpty(BlockContent::load($default_block2_id));
+    $this->assertCount(0, BlockContent::loadMultiple());
+  }
+
+  /**
+   * Gets the latest content block id.
+   */
+  protected function getLatestBlockConentId() {
+    $block_ids  = \Drupal::entityQuery('block_content')->sort('id','DESC')->range(0,1)->execute();
+    $block_id = array_pop($block_ids);
+    $this->assertNotEmpty(BlockContent::load($block_id));
+    return $block_id;
+  }
+
+  /**
+   * Saves a layout and asserts the message is correct.
+   *
+   * @throws \Behat\Mink\Exception\ExpectationException
+   * @throws \Behat\Mink\Exception\ResponseTextException
+   */
+  protected function assertSaveLayout() {
+    $assert_session = $this->assertSession();
+    $assert_session->linkExists('Save Layout');
+    $this->clickLink('Save Layout');
+    if (stristr($this->getUrl(), 'admin/structure') === FALSE) {
+      $assert_session->pageTextContains('The layout override has been saved.');
+    }
+    else {
+      $assert_session->pageTextContains('The layout has been saved.');
+    }
+  }
+
+  /**
+   * Removes an inline block from the layout but does not save the layout.
+   */
+  protected function removeInlineBlockFromLayout() {
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    $block_content = $page->find('css', '.block-inline-block-contentbasic')->getText();
+    $this->assertNotEmpty($block_content);
+    $assert_session->pageTextContains($block_content);
+    $this->clickContextualLink('.block-inline-block-contentbasic', 'Remove block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $page->find('css', '#drupal-off-canvas')->pressButton('Remove');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->pageTextNotContains($block_content);
+  }
+
+  /**
+   * Adds an inline block to the layout.
+   */
+  protected function addInlineBlockToLayout($title, $body) {
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    $page->clickLink('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
+    $this->clickLink('Basic block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->fieldValueEquals('Title', '');
+    $page->findField('Title')->setValue($title);
+    $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
+    $textarea->setValue($body);
+    $page->pressButton('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->elementTextContains('css', '.block-inline-block-contentbasic', $body);
   }
 
 }
