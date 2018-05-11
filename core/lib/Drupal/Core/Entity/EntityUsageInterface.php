@@ -8,6 +8,8 @@ interface EntityUsageInterface {
 
 
   /**
+   * Adds usage by entities.
+   *
    * @param \Drupal\Core\Entity\EntityInterface $used_entity
    * @param \Drupal\Core\Entity\EntityInterface $user_entity
    * @param int $count
@@ -16,6 +18,8 @@ interface EntityUsageInterface {
 
 
   /**
+   * Adds usage by ids.
+   *
    * @param $used_entity_type_id
    * @param $used_entity_id
    * @param $user_entity_type_id
@@ -25,6 +29,8 @@ interface EntityUsageInterface {
   public function add($used_entity_type_id, $used_entity_id, $user_entity_type_id, $user_entity_id, $count = 1);
 
   /**
+   * Removes usage by entity.
+   *
    * @param \Drupal\Core\Entity\EntityInterface $used_entity
    * @param \Drupal\Core\Entity\EntityInterface $user_entity
    * @param int $count
@@ -35,6 +41,8 @@ interface EntityUsageInterface {
   public function removeByEntity(EntityInterface $used_entity, EntityInterface $user_entity, $count = 1);
 
   /**
+   * Removes usage by ids.
+   *
    * @param $used_entity_type_id
    * @param $used_entity_id
    * @param $user_entity_type_id
