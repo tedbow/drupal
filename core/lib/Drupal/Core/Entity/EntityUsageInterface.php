@@ -57,4 +57,16 @@ interface EntityUsageInterface {
    */
   public function listUsage(EntityInterface $file);
 
+  /**
+   * Gets all entities have been tracked but currently have no uses.
+   *
+   * This can be used by modules to determine which entities should be deleted.
+   *
+   * @param string $entity_type_id
+   *
+   * @return mixed
+   *   ?? ids or entities
+   */
+  public function getEntitiesWithNoUses($entity_type_id);
+
 }
