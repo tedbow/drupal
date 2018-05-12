@@ -1,8 +1,10 @@
 <?php
 
 
-namespace Drupal\Core\Entity;
+namespace Drupal\layout_builder;
 
+
+use Drupal\Core\Entity\EntityInterface;
 
 interface EntityUsageInterface {
 
@@ -38,7 +40,7 @@ interface EntityUsageInterface {
    * @return int
    *   The new total uses for the entity.
    */
-  public function removeByEntity(EntityInterface $used_entity, EntityInterface $user_entity, $count = 1);
+  public function removeByEntities(EntityInterface $used_entity, EntityInterface $user_entity, $count = 1);
 
   /**
    * Removes usage by ids.
@@ -77,7 +79,8 @@ interface EntityUsageInterface {
    *
    * This can be used by modules to determine which entities should be deleted.
    *
-   * @param string $entity_type_id
+   * @param (optional) string $entity_type_id
+   *
    *
    * @return mixed
    *   ?? ids or entities

@@ -44,3 +44,8 @@ services:
   logger.channel.layout_builder:
     parent: logger.channel_base
     arguments: ['layout_builder']
+  entity.usage:
+    class: Drupal\layout_builder\DatabaseBackendEntityUsage
+    arguments: ['@database', 'entity_usage']
+    tags:
+      - { name: backend_overridable }
