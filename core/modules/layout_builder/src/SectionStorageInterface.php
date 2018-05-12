@@ -138,9 +138,4 @@ interface SectionStorageInterface extends SectionListInterface, PluginInspection
    */
   public function save();
 
-  /**
-   * Saves components that have permanent changes.
-   */
-  public function permanentlySaveComponents();
-
 }

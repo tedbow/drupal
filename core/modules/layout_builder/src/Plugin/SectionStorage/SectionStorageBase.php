@@ -2,9 +2,7 @@
 
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
-use Drupal\Component\Plugin\ConfigurablePluginInterface;
 use Drupal\Core\Plugin\PluginBase;
-use Drupal\layout_builder\Plugin\Block\PermanentSavePluginInterface;
 use Drupal\layout_builder\Routing\LayoutBuilderRoutesTrait;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionListInterface;
@@ -103,35 +101,6 @@ abstract class SectionStorageBase extends PluginBase implements SectionStorageIn
   public function removeSection($delta) {
     $this->getSectionList()->removeSection($delta);
     return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function permanentlySaveComponents() {
-    $sections = $this->getSections();
-
-    foreach ($sections as $section) {
-      $components = $section->getComponents();
-
-      foreach ($components as $component) {
-        $plugin = $component->getPlugin();
-        if ($plugin instanceof PermanentSavePluginInterface) {
-          $plugin->savePermanently();
-          if ($plugin instanceof ConfigurablePluginInterface) {
-            // The plugin configuration may have changed during the save.
-            $component->setConfiguration($plugin->getConfiguration());
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function save() {
-    $this->permanentlySaveComponents();
   }
 
 }

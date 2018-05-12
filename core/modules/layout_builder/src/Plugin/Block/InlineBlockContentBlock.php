@@ -28,7 +28,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   },
  * )
  */
-class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface, PermanentSavePluginInterface {
+class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
    * The entity type manager service.
