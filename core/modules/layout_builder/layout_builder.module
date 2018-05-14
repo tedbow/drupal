@@ -17,6 +17,7 @@ use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplayStorage;
 use Drupal\layout_builder\Form\LayoutBuilderEntityViewDisplayForm;
 use Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock;
+use Drupal\block_content\Entity\BlockContent;
 
 /**
  * Implements hook_help().
@@ -105,39 +106,146 @@ function layout_builder_entity_presave(EntityInterface $entity) {
       $entity->set('settings', $plugin->getConfiguration());
     }
   }
-  if ($entity->getEntityTypeId() === 'entity_view_display' && $entity instanceof LayoutBuilderEntityViewDisplay) {
-    $sections = $entity->getSections();
-  }
-  elseif ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
-    /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $sections_field */
-    $sections_field = $entity->get('layout_builder__layout');
-    $sections = $sections_field->getSections();
-
-    if (!$entity->isNew() && isset($entity->original)) {
-      /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $original_sections_field */
-      $original_sections_field = $entity->original->get('layout_builder__layout');
-      // @todo Is there a better way to tell if Layout Override is new?
-      // what if is overridden and all sections removed.
-      $duplicate_blocks = $original_sections_field->isEmpty();
+  if ($sections = _layout_builder_get_entity_sections($entity)) {
+    $inline_block_components = _layout_builder_get_inline_block_components($sections);
+    if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
+      if (!$entity->isNew() && isset($entity->original)) {
+        /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $original_sections_field */
+        $original_sections_field = $entity->original->get('layout_builder__layout');
+        if ($original_sections_field->isEmpty()) {
+          // @todo Is there a better way to tell if Layout Override is new?
+          // what if is overridden and all sections removed.
+          $duplicate_blocks = TRUE;
+        }
+        elseif (!$entity instanceof RevisionableInterface || !$entity->isNewRevision()) {
+          // If the entity is not revisionable or if this is not a new revision
+          // then we can remove any 'content_block' entities that were removed.
+          $original_sections = $original_sections_field->getSections();
+          $original_ids = _layout_builder_get_content_block_ids($original_sections);
+          $ids = _layout_builder_get_content_block_ids($sections);
+          if ($unused_ids = array_diff($original_ids, $ids)) {
+            /** @var \Drupal\layout_builder\EntityUsageInterface $entity_usage */
+            $entity_usage = \Drupal::service('entity.usage');
+            foreach ($unused_ids as $unused_id) {
+              $entity_usage->remove('content_block', $unused_id, $entity->getEntityTypeId(), $entity->id());
+            }
+          }
+        }
+      }
     }
-  }
-  if ($sections) {
     $new_revision = FALSE;
     if ($entity instanceof RevisionableInterface) {
       // If the parent entity will have a new revision create a new revision of
       // of the block.
       $new_revision = $entity->isNewRevision();
     }
-    foreach ($sections as $section) {
-      $components = $section->getComponents();
 
-      foreach ($components as $component) {
-        $plugin = $component->getPlugin();
-        if ($plugin instanceof InlineBlockContentBlock) {
-          $plugin->saveBlockContent($new_revision, $duplicate_blocks, $entity);
-          $component->setConfiguration($plugin->getConfiguration());
+    foreach ($inline_block_components as $component) {
+      /** @var \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin */
+      $plugin = $component->getPlugin();
+      $plugin->saveBlockContent($new_revision, $duplicate_blocks, $entity);
+      $component->setConfiguration($plugin->getConfiguration());
+    }
+  }
+}
+
+/**
+ * @param \Drupal\layout_builder\Section[] $sections
+ */
+function _layout_builder_get_content_block_ids(array $sections) {
+  $block_ids = [];
+  $components = _layout_builder_get_inline_block_components($sections);
+  foreach ($components as $component) {
+    /** @var \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin */
+    $plugin = $component->getPlugin();
+    $configuration = $plugin->getConfiguration();
+    if (!empty($configuration['block_revision_id'])) {
+      if ($block = \Drupal::entityTypeManager()->getStorage('content_block')->loadRevision($configuration['block_revision_id'])) {
+        $block_ids[] = $block->id();
+      }
+    }
+  }
+  return $block_ids;
+}
+
+/**
+ * @param \Drupal\layout_builder\Section[] $sections
+ *
+ * @return \Drupal\layout_builder\SectionComponent[]
+ */
+function _layout_builder_get_inline_block_components(array  $sections) {
+  $components = [];
+  foreach ($sections as $section) {
+    $components = $section->getComponents();
+
+    foreach ($components as $component) {
+      $plugin = $component->getPlugin();
+      if ($plugin instanceof InlineBlockContentBlock) {
+        $components[] = $component;
+      }
+    }
+  }
+  return $components;
+}
+
+/**
+ * Gets the sections for an entity if any.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity.
+ *
+ * @return array|\Drupal\layout_builder\Section[]|null
+ *   The entity layout sections if available.
+ *
+ * @internal
+ */
+function _layout_builder_get_entity_sections(EntityInterface $entity) {
+  if ($entity->getEntityTypeId() === 'entity_view_display' && $entity instanceof LayoutBuilderEntityViewDisplay) {
+    return $entity->getSections();
+  }
+  elseif ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
+    /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $sections_field */
+    $sections_field = $entity->get('layout_builder__layout');
+    return $sections_field->getSections();
+  }
+  return NULL;
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function layout_builder_entity_delete(EntityInterface $entity) {
+  if ($entity instanceof BlockInterface) {
+    $plugin = $entity->getPlugin();
+    if ($plugin instanceof InlineBlockContentBlock) {
+      $configuration = $plugin->getConfiguration();
+      if (!empty($configuration['block_revision_id'])) {
+        /** @var \Drupal\block_content\BlockContentInterface $block_content */
+        if ($block_content = \Drupal::entityTypeManager()->getStorage('block_content')->loadRevision($configuration['block_revision_id'])) {
+          $block_content->delete();
+          /** @var \Drupal\layout_builder\EntityUsageInterface $entity_usage */
+          $entity_usage = \Drupal::service('entity.usage');
+          $entity_usage->removeByUser('block_content', $entity, FALSE);
         }
       }
     }
   }
+  if (($entity->getEntityTypeId() === 'entity_view_display' && $entity instanceof LayoutBuilderEntityViewDisplay) ||
+       ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout'))) {
+    /** @var \Drupal\layout_builder\EntityUsageInterface $entity_usage */
+    $entity_usage = \Drupal::service('entity.usage');
+    $entity_usage->removeByUser('block_content', $entity);
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function layout_builder_cron() {
+  /** @var \Drupal\layout_builder\EntityUsageInterface $entity_usage */
+  $entity_usage = \Drupal::service('entity.usage');
+  foreach ($entity_usage->getEntitiesWithNoUses('block_content')  as $entity_id) {
+    BlockContent::load($entity_id)->delete();
+  }
+
 }

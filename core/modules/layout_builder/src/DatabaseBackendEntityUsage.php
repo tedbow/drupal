@@ -95,12 +95,25 @@ class DatabaseBackendEntityUsage implements EntityUsageInterface {
   }
 
   /**
-   * Remove all uses by a user entity.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * [@inheritdoc}
    */
-  public function removeByUser(EntityInterface $entity) {
-    // TODO: Implement removeByUser() method.
+  public function removeByUser($used_entity_type_id, EntityInterface $entity, $retain_usage_record = TRUE) {
+    if ($retain_usage_record) {
+      $this->connection->update($this->tableName)
+        ->condition('entity_type', $used_entity_type_id)
+        ->condition('type', $entity->getEntityTypeId())
+        ->condition('id', $entity->id())
+        ->fields(['count' => 0])
+        ->execute();
+    }
+    else {
+      $this->connection->delete($this->tableName)
+        ->condition('entity_type', $used_entity_type_id)
+        ->condition('type', $entity->getEntityTypeId())
+        ->condition('type', $entity->getEntityTypeId())
+        ->condition('id', $entity->id())
+        ->execute();
+    }
   }
 
   /**
@@ -117,17 +130,24 @@ class DatabaseBackendEntityUsage implements EntityUsageInterface {
   }
 
   /**
-   * Gets all entities have been tracked but currently have no uses.
-   *
-   * This can be used by modules to determine which entities should be deleted.
-   *
-   * @param (optional) string $entity_type_id
-   *
-   *
-   * @return mixed
-   *   ?? ids or entities
+   * {@inheritdoc}
    */
-  public function getEntitiesWithNoUses($entity_type_id = NULL) {
-    // TODO: Implement getEntitiesWithNoUses() method.
+  public function getEntitiesWithNoUses($entity_type_id, $limit = 100) {
+    // @todo Implement $limit logic.
+    $query = $this->connection->select($this->tableName);
+    $query->fields($this->tableName, ['entity_id']);
+    $query->condition('entity_type', $entity_type_id)
+      ->condition('count', 0);
+    $entity_ids = $query->execute()->fetchCol();
+
+    // @todo Use ::notExists() to do this subquery.
+    $sub_query = $this->connection->select($this->tableName);
+    $sub_query->condition('entity_type', $entity_type_id)
+      ->condition('count', 0, '>')
+      ->condition('entity_id', $entity_ids, 'IN');
+    $sub_query->fields($this->tableName, ['entity_id']);
+    $used_entity_ids = $sub_query->execute()->fetchCol();
+    return array_diff($entity_ids, $used_entity_ids);
   }
+
 }

@@ -59,9 +59,13 @@ interface EntityUsageInterface {
   /**
    * Remove all uses by a user entity.
    *
+   * @param $used_entity_type_id
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param bool $retain_usage_record
+   *
+   * @return
    */
-  public function removeByUser(EntityInterface $entity);
+  public function removeByUser($used_entity_type_id, EntityInterface $entity, $retain_usage_record = TRUE);
 
   /**
    * Determines where a entity is used.
@@ -79,13 +83,14 @@ interface EntityUsageInterface {
    *
    * This can be used by modules to determine which entities should be deleted.
    *
-   * @param (optional) string $entity_type_id
+   * @param string $entity_type_id
+   *   The entity type to query.
+   * @param int $limit
+   *   The maximum number of entities to fetch.
    *
-   *
-   * @return mixed
-   *   ?? ids or entities
+   * @return int[]
+   *   The entities.
    */
-  public function getEntitiesWithNoUses($entity_type_id = NULL);
-
+  public function getEntitiesWithNoUses($entity_type_id, $limit = 100);
 
 }

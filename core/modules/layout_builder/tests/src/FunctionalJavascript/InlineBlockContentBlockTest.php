@@ -398,6 +398,8 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
    * @throws \Behat\Mink\Exception\ResponseTextException
    */
   public function testDeletion() {
+    /** @var \Drupal\Core\Cron $cron */
+    $cron = \Drupal::service('cron');
     $this->drupalLogin($this->drupalCreateUser([
       'access contextual links',
       'configure any layout',
@@ -444,6 +446,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     // Remove block from default.
     $this->removeInlineBlockFromLayout();
     $this->assertSaveLayout();
+    $cron->run();
     // Ensure the block in the default was deleted.
     $this->assertEmpty(BlockContent::load($default_block_id));
     // Ensure other blocks still exist.
@@ -454,12 +457,14 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $assert_session->pageTextContains('The DEFAULT block body');
     $this->removeInlineBlockFromLayout();
     $this->assertSaveLayout();
+    $cron->run();
     // Ensure content block is not deleted because it is needed in revision.
     $this->assertNotEmpty(BlockContent::load($node_1_block_id));
     $this->assertCount(2, BlockContent::loadMultiple());
 
     // Ensure content block is deleted when node is deleted.
     Node::load(1)->delete();
+    $cron->run();
     $this->assertEmpty(BlockContent::load($node_1_block_id));
     $this->assertCount(1, BlockContent::loadMultiple());
 
@@ -469,11 +474,13 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $assert_session->addressEquals("$field_ui_prefix/display-layout/default");
     $this->addInlineBlockToLayout('Title 2', 'Body 2');
     $this->assertSaveLayout();
+    $cron->run();
     $default_block2_id = $this->getLatestBlockConentId();
     $this->assertCount(2, BlockContent::loadMultiple());
 
     // Delete the other node so bundle can be deleted.
     Node::load(2)->delete();
+    $cron->run();
     // Ensure content block was deleted.
     $this->assertEmpty(BlockContent::load($node_2_block_id));
     $this->assertCount(1, BlockContent::loadMultiple());
@@ -481,6 +488,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     // Delete the bundle which has the default layout.
     $this->drupalGet('admin/structure/types/manage/bundle_with_section_fields/delete');
     $page->pressButton('Delete');
+    $cron->run();
 
     // Ensure the content block in default is deleted when bundle is deleted.
     $this->assertEmpty(BlockContent::load($default_block2_id));
