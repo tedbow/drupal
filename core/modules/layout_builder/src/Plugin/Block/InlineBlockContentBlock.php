@@ -24,10 +24,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  admin_label = @Translation("Inline custom block"),
  *  category = @Translation("Inline custom blocks"),
  *  deriver = "Drupal\layout_builder\Plugin\Derivative\InlineBlockContentDeriver",
- *  forms = {
- *     "configure" = "Drupal\layout_builder\Form\InlineBlockDefaultForm",
- *     "layout_builder" = "Drupal\layout_builder\Form\InlineBlockLayoutBuilderForm",
- *   },
  * )
  */
 class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface {

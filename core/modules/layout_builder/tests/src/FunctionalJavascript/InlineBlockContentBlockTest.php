@@ -40,7 +40,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     //   https://www.drupal.org/project/drupal/issues/2917777.
     $this->drupalPlaceBlock('local_tasks_block');
 
-    $this->createContentType(['type' => 'bundle_with_section_field']);
+    $this->createContentType(['type' => 'bundle_with_section_field', 'new_revision' => TRUE]);
     $this->createNode([
       'type' => 'bundle_with_section_field',
       'title' => 'The node title',

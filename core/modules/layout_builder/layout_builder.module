@@ -5,6 +5,7 @@
  * Provides hook implementations for Layout Builder.
  */
 
+use Drupal\block\BlockInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\RevisionableInterface;
@@ -96,6 +97,14 @@ function layout_builder_entity_presave(EntityInterface $entity) {
 
   /** @var \Drupal\layout_builder\Section[] $sections */
   $sections = NULL;
+
+  if ($entity instanceof BlockInterface) {
+    $plugin = $entity->getPlugin();
+    if ($plugin instanceof InlineBlockContentBlock) {
+      $plugin->saveBlockContent(FALSE, FALSE, $entity);
+      $entity->set('settings', $plugin->getConfiguration());
+    }
+  }
   if ($entity->getEntityTypeId() === 'entity_view_display' && $entity instanceof LayoutBuilderEntityViewDisplay) {
     $sections = $entity->getSections();
   }
