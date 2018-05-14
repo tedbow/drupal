@@ -2,7 +2,6 @@
 
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
-use Drupal\Component\Plugin\DerivativeInspectionInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
