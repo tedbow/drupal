@@ -7,6 +7,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformStateInterface;
@@ -275,11 +276,14 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    * @param bool $duplicate_block
    *   Whether to duplicate the "block_content" entity.
    *
+   * @param \Drupal\Core\Entity\EntityInterface|null $parent_entity
+   *   The parent entity if any that is using this plugin.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function saveBlockContent($new_revision = FALSE, $duplicate_block = FALSE) {
+  public function saveBlockContent($new_revision = FALSE, $duplicate_block = FALSE, EntityInterface $parent_entity = NULL) {
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = NULL;
     if ($duplicate_block && !empty($this->configuration['block_revision_id']) && empty($this->configuration['block_serialized'])) {
@@ -293,12 +297,16 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
       }
     }
     if ($block) {
+      $new_usage = $block->isNew();
       if ($new_revision) {
         $block->setNewRevision();
       }
       $block->save();
       $this->configuration['block_revision_id'] = $block->getRevisionId();
       $this->configuration['block_serialized'] = NULL;
+      if ($new_usage && $parent_entity) {
+        $this->entityUsage->addByEntities($block, $parent_entity);
+      }
     }
   }
 

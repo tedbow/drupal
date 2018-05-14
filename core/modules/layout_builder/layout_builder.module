@@ -118,7 +118,6 @@ function layout_builder_entity_presave(EntityInterface $entity) {
       // If the parent entity will have a new revision create a new revision of
       // of the block.
       $new_revision = $entity->isNewRevision();
-      $new_revision = TRUE;
     }
     foreach ($sections as $section) {
       $components = $section->getComponents();
@@ -126,7 +125,7 @@ function layout_builder_entity_presave(EntityInterface $entity) {
       foreach ($components as $component) {
         $plugin = $component->getPlugin();
         if ($plugin instanceof InlineBlockContentBlock) {
-          $plugin->saveBlockContent($new_revision, $duplicate_blocks);
+          $plugin->saveBlockContent($new_revision, $duplicate_blocks, $entity);
           $component->setConfiguration($plugin->getConfiguration());
         }
       }
