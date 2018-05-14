@@ -12,6 +12,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\layout_builder\EntityUsageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -66,6 +67,13 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   protected $isNew = TRUE;
 
   /**
+   * The entity usage tracker service.
+   *
+   * @var \Drupal\layout_builder\EntityUsageInterface
+   */
+  protected $entityUsage;
+
+  /**
    * Constructs a new InlineBlockContentBlock.
    *
    * @param array $configuration
@@ -81,12 +89,13 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
    *   The entity display repository.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, AccountInterface $account, EntityDisplayRepositoryInterface $entity_display_repository) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, AccountInterface $account, EntityDisplayRepositoryInterface $entity_display_repository, EntityUsageInterface $entity_usage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
     $this->account = $account;
     $this->entityDisplayRepository = $entity_display_repository;
+    $this->entityUsage = $entity_usage;
     if (!empty($this->configuration['block_revision_id']) || !empty($this->configuration['block_serialized'])) {
       $this->isNew = FALSE;
     }
@@ -102,7 +111,8 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
       $plugin_definition,
       $container->get('entity_type.manager'),
       $container->get('current_user'),
-      $container->get('entity_display.repository')
+      $container->get('entity_display.repository'),
+      $container->get('entity.usage')
     );
   }
 
