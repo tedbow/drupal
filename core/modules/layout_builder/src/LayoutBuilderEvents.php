@@ -31,11 +31,4 @@ final class LayoutBuilderEvents {
    */
   const SECTION_COMPONENT_BUILD_RENDER_ARRAY = 'section_component.build.render_array';
 
-  /**
-   * Name of the event fired when preparing sections for the UI.
-   *
-   * @Event
-   */
-  const PREPARE_SECTIONS_FOR_UI = 'sections.prepare.ui';
-
 }

@@ -14,7 +14,7 @@ class InlineBlockDefaultForm extends InlineBlockPluginFormBase {
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     parent::submitConfigurationForm($form, $form_state);
-    $this->plugin->savePermanently();
+    $this->plugin->saveBlockContent();
   }
 
 }

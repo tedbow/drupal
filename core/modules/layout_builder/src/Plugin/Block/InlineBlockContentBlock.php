@@ -258,16 +258,37 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   }
 
   /**
-   * Saves the plugin permanently.
+   * Saves the "block_content" entity for this plugin.
+   *
+   * @param bool $new_revision
+   *   Whether to create new revision.
+   * @param bool $duplicate_block
+   *   Whether to duplicate the "block_content" entity.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function savePermanently() {
-    if (isset($this->configuration['block_serialized'])) {
+  public function saveBlockContent($new_revision = FALSE, $duplicate_block = FALSE) {
+    /** @var \Drupal\block_content\BlockContentInterface $block */
+    $block = NULL;
+    if ($duplicate_block && !empty($this->configuration['block_revision_id']) && empty($this->configuration['block_serialized'])) {
+      $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($this->configuration['block_revision_id']);
+      $block = $entity->createDuplicate();
+    }
+    elseif (isset($this->configuration['block_serialized'])) {
       $block = unserialize($this->configuration['block_serialized']);
-      $block->setNewRevision(TRUE);
+      if (!empty($this->configuration['block_revision_id']) && $duplicate_block) {
+        $block = $block->createDuplicate();
+      }
+    }
+    if ($block) {
+      if ($new_revision) {
+        $block->setNewRevision();
+      }
       $block->save();
-      $this->setConfigurationValue('block_serialized', NULL);
-      $this->configuration['block_serialized'] = NULL;
       $this->configuration['block_revision_id'] = $block->getRevisionId();
+      $this->configuration['block_serialized'] = NULL;
     }
   }
 

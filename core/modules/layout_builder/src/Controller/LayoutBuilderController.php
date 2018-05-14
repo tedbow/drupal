@@ -2,21 +2,17 @@
 
 namespace Drupal\layout_builder\Controller;
 
-use Drupal\block_content\Entity\BlockContent;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
-use Drupal\layout_builder\Event\PrepareLayoutForUiEvent;
-use Drupal\layout_builder\LayoutBuilderEvents;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
@@ -44,26 +40,16 @@ class LayoutBuilderController implements ContainerInjectionInterface {
   protected $messenger;
 
   /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
-
-  /**
    * LayoutBuilderController constructor.
    *
    * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layout_tempstore_repository
    *   The layout tempstore repository.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
-   *   The event dispatcher service.
    */
-  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger, EventDispatcherInterface $event_dispatcher) {
+  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger) {
     $this->layoutTempstoreRepository = $layout_tempstore_repository;
     $this->messenger = $messenger;
-    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
@@ -72,8 +58,7 @@ class LayoutBuilderController implements ContainerInjectionInterface {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('layout_builder.tempstore_repository'),
-      $container->get('messenger'),
-      $container->get('event_dispatcher')
+      $container->get('messenger')
     );
   }
 
@@ -129,7 +114,6 @@ class LayoutBuilderController implements ContainerInjectionInterface {
    *   Indicates if the layout is rebuilding.
    */
   protected function prepareLayout(SectionStorageInterface $section_storage, $is_rebuilding) {
-    $original_sections = $section_storage->getSections();
     // Only add sections if the layout is new and empty.
     if (!$is_rebuilding && $section_storage->count() === 0) {
       $sections = [];
@@ -137,8 +121,6 @@ class LayoutBuilderController implements ContainerInjectionInterface {
       // default.
       if ($section_storage instanceof OverridesSectionStorageInterface) {
         $sections = $section_storage->getDefaultSectionStorage()->getSections();
-        $event = new PrepareLayoutForUiEvent($sections, $is_rebuilding);
-        $this->eventDispatcher->dispatch(LayoutBuilderEvents::PREPARE_SECTIONS_FOR_UI, $event);
       }
 
       // For an empty layout, begin with a single section of one column.
@@ -146,16 +128,11 @@ class LayoutBuilderController implements ContainerInjectionInterface {
         $sections[] = new Section('layout_onecol');
       }
 
-
-
       foreach ($sections as $section) {
         $section_storage->appendSection($section);
       }
-
-
       $this->layoutTempstoreRepository->set($section_storage);
     }
-
   }
 
   /**

@@ -7,6 +7,7 @@
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
@@ -87,24 +88,45 @@ function layout_builder_field_config_delete(FieldConfigInterface $field_config) 
 
 /**
  * Implements hook_entity_presave().
+ *
+ * @todo Move to "block_content" module before Layout Builder is stable.
  */
 function layout_builder_entity_presave(EntityInterface $entity) {
+  $duplicate_blocks = FALSE;
+
   /** @var \Drupal\layout_builder\Section[] $sections */
   $sections = NULL;
   if ($entity->getEntityTypeId() === 'entity_view_display' && $entity instanceof LayoutBuilderEntityViewDisplay) {
     $sections = $entity->getSections();
   }
   elseif ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
-    $sections = $entity->get('layout_builder__layout')->getSections();
+    /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $sections_field */
+    $sections_field = $entity->get('layout_builder__layout');
+    $sections = $sections_field->getSections();
+
+    if (!$entity->isNew() && isset($entity->original)) {
+      /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $original_sections_field */
+      $original_sections_field = $entity->original->get('layout_builder__layout');
+      // @todo Is there a better way to tell if Layout Override is new?
+      // what if is overridden and all sections removed.
+      $duplicate_blocks = $original_sections_field->isEmpty();
+    }
   }
   if ($sections) {
+    $new_revision = FALSE;
+    if ($entity instanceof RevisionableInterface) {
+      // If the parent entity will have a new revision create a new revision of
+      // of the block.
+      $new_revision = $entity->isNewRevision();
+      $new_revision = TRUE;
+    }
     foreach ($sections as $section) {
       $components = $section->getComponents();
 
       foreach ($components as $component) {
         $plugin = $component->getPlugin();
         if ($plugin instanceof InlineBlockContentBlock) {
-          $plugin->savePermanently();
+          $plugin->saveBlockContent($new_revision, $duplicate_blocks);
           $component->setConfiguration($plugin->getConfiguration());
         }
       }
