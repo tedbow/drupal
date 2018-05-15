@@ -159,7 +159,7 @@ class InlineBlockContentUsage {
       if ($entity instanceof RevisionableInterface) {
         // If the parent entity will have a new revision create a new revision
         // of the block.
-        // Currently revisions are actually created.
+        // Currently revisions are not actually created.
         // @see https://www.drupal.org/node/2937199
         $new_revision = $entity->isNewRevision();
       }
