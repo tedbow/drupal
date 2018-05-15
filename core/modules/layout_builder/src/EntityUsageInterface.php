@@ -6,6 +6,16 @@ namespace Drupal\layout_builder;
 
 use Drupal\Core\Entity\EntityInterface;
 
+/**
+ * Entity usage interface.
+ *
+ * Be default usage records are still kept when they have a count of "0". This
+ * allows finding entities that were used but are not longer being used as
+ * opposed to entities that never were tracked.
+ *
+ * Modules using this service are responsible for deleting the entities with "0"
+ * used count.
+ */
 interface EntityUsageInterface {
 
 
@@ -92,5 +102,23 @@ interface EntityUsageInterface {
    *   The entities.
    */
   public function getEntitiesWithNoUses($entity_type_id, $limit = 100);
+
+  /**
+   * Delete all usage for an entity.
+   *
+   * @param string $entity_type_id
+   *   The entity type id.
+   * @param string $entity_id
+   *   The entity id.
+   */
+  public function delete($entity_type_id, $entity_id);
+
+  /**
+   * Delete all usage records by entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   */
+  public function deleteByEntity(EntityInterface $entity);
 
 }

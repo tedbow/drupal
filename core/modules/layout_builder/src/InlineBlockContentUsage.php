@@ -258,12 +258,10 @@ class InlineBlockContentUsage {
   public function removeAllUnused() {
     $entity_ids = $this->entityUsage->getEntitiesWithNoUses('block_content');
     foreach ($entity_ids as $entity_id) {
-      if ($block = $this->entityTypeManager->getStorage('block_content')
-        ->load($entity_id)) {
+      if ($block = $this->entityTypeManager->getStorage('block_content')->load($entity_id)) {
         $block->delete();
-        // @todo Add delete. should remove/delete be different.
-        // $this->entityUsage->delete();
       }
+      $this->entityUsage->delete('block_content', $entity_id);
     }
   }
 

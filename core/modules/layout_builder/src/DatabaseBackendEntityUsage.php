@@ -164,4 +164,21 @@ class DatabaseBackendEntityUsage implements EntityUsageInterface {
     return array_diff($entity_ids, $used_entity_ids);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function delete($entity_type_id, $entity_id) {
+    $this->connection->delete($this->tableName)
+      ->condition('entity_type', $entity_type_id)
+      ->condition('entity_id', $entity_id)
+      ->execute();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deleteByEntity(EntityInterface $entity) {
+    $this->delete($entity->getEntityTypeId(), $entity->id());
+  }
+
 }
