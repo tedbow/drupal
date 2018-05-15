@@ -38,3 +38,64 @@ function layout_builder_install() {
   // prepare for future changes.
   Cache::invalidateTags(['rendered']);
 }
+
+/**
+ * Implements hook_schema().
+ */
+function layout_builder_schema() {
+  $schema['entity_usage'] = [
+    'description' => 'Track where a entity is used.',
+    'fields' => [
+      'entity_id' => [
+        'description' => 'Entity ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+        'entity_type' => [
+        'description' => 'The name of the object type in which the file is used.',
+        'type' => 'varchar_ascii',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+/*      'module' => [
+        'description' => 'The name of the module that is using the entity.',
+        'type' => 'varchar_ascii',
+        'length' => DRUPAL_EXTENSION_NAME_MAX_LENGTH,
+        'not null' => TRUE,
+        'default' => '',
+      ],*/
+      // @todo will the user always be an entity. File usage uses object
+      'type' => [
+        'description' => 'The name of the object type in which the entity is used.',
+        'type' => 'varchar_ascii',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'id' => [
+        'description' => 'The primary key of the entity using the file.',
+        'type' => 'varchar_ascii',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'count' => [
+        'description' => 'The number of times this file is used by this object.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['entity_id', 'entity_type', 'id'],
+    'indexes' => [
+      'type_id' => ['type', 'id'],
+      'entity_id_count' => ['entity_id', 'count'],
+      /*'entity_ids_module' => ['entity_id', 'module'],*/
+    ],
+  ];
+  return $schema;
+}
+
