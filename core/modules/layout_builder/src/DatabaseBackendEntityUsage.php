@@ -18,6 +18,11 @@ class DatabaseBackendEntityUsage implements EntityUsageInterface {
   protected $tableName;
 
   /**
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $connection;
+
+  /**
    * Construct the DatabaseFileUsageBackend.
    *
    * @param \Drupal\Core\Database\Connection $connection
@@ -75,7 +80,7 @@ class DatabaseBackendEntityUsage implements EntityUsageInterface {
    *   The new total uses for the entity.
    */
   public function removeByEntities(EntityInterface $used_entity, EntityInterface $user_entity, $count = 1) {
-    // TODO: Implement removeByEntities() method.
+    $this->remove($used_entity->getEntityTypeId(), $used_entity->id(), $user_entity->getEntityTypeId(), $user_entity->id());
   }
 
   /**
@@ -90,8 +95,18 @@ class DatabaseBackendEntityUsage implements EntityUsageInterface {
    * @return int
    *   The new total uses for the entity.
    */
-  public function remove($used_entity_type_id, $used_entity_id, $user_entity_type_id, $user_entity_id, $count = 1) {
-    // TODO: Implement remove() method.
+  public function remove($used_entity_type_id, $used_entity_id, $user_entity_type_id = NULL, $user_entity_id = NULL, $count = 1) {
+    // Delete rows that have a exact or less value to prevent empty rows.
+    $query = $this->connection->update($this->tableName)
+      ->condition('entity_type', $used_entity_type_id)
+      ->condition('entity_id', $used_entity_id);
+    if ($user_entity_type_id && $user_entity_id) {
+      $query->condition('type', $user_entity_type_id)
+        ->condition('id', $user_entity_id);
+    }
+    $query->condition('count', 0, '>');
+    $query->expression('count', 'count - :count', [':count' => $count]);
+    $result = $query->execute();
   }
 
   /**
@@ -109,7 +124,6 @@ class DatabaseBackendEntityUsage implements EntityUsageInterface {
     else {
       $this->connection->delete($this->tableName)
         ->condition('entity_type', $used_entity_type_id)
-        ->condition('type', $entity->getEntityTypeId())
         ->condition('type', $entity->getEntityTypeId())
         ->condition('id', $entity->id())
         ->execute();
