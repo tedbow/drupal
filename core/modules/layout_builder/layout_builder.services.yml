@@ -44,3 +44,6 @@ services:
     arguments: ['@database', 'entity_usage']
     tags:
       - { name: backend_overridable }
+  inline_block_content.usage:
+    class: Drupal\layout_builder\InlineBlockContentUsage
+    arguments: ['@entity.usage', '@entity_type.manager']
