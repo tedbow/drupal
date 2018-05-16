@@ -145,6 +145,11 @@ if (!Composer::upgradePHPUnitCheck($phpunit_version)) {
 }
 
 $test_list = simpletest_script_get_test_list();
+if (in_array('Drupal\Tests\outside_in\FunctionalJavascript\OutsideInBlockFormTest', $test_list)) {
+  $test_list = array_fill(0, 10, 'Drupal\Tests\outside_in\FunctionalJavascript\OutsideInBlockFormTest');
+} else {
+  $test_list = [];
+}
 
 // Try to allocate unlimited time to run the tests.
 drupal_set_time_limit(0);
