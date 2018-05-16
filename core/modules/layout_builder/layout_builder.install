@@ -52,7 +52,7 @@ function layout_builder_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ],
-        'entity_type' => [
+      'entity_type' => [
         'description' => 'The name of the object type in which the file is used.',
         'type' => 'varchar_ascii',
         'length' => 64,
@@ -67,14 +67,14 @@ function layout_builder_schema() {
         'default' => '',
       ],*/
       // @todo will the user always be an entity. File usage uses object
-      'type' => [
+      'parent_type' => [
         'description' => 'The name of the object type in which the entity is used.',
         'type' => 'varchar_ascii',
         'length' => 64,
         'not null' => TRUE,
         'default' => '',
       ],
-      'id' => [
+      'parent_id' => [
         'description' => 'The primary key of the entity using the file.',
         'type' => 'varchar_ascii',
         'length' => 64,
@@ -82,16 +82,16 @@ function layout_builder_schema() {
         'default' => 0,
       ],
       'count' => [
-        'description' => 'The number of times this file is used by this object.',
+        'description' => 'The number of times this entity is used by this parent.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ],
     ],
-    'primary key' => ['entity_id', 'entity_type', 'id'],
+    'primary key' => ['entity_id', 'entity_type', 'parent_id'],
     'indexes' => [
-      'type_id' => ['type', 'id'],
+      'type_id' => ['parent_type', 'parent_id'],
       'entity_id_count' => ['entity_id', 'count'],
       /*'entity_ids_module' => ['entity_id', 'module'],*/
     ],
