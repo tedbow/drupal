@@ -1,14 +1,14 @@
 <?php
 
-
 namespace Drupal\layout_builder;
-
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityInterface;
 
-class DatabaseBackendEntityUsage implements EntityUsageInterface {
-
+/**
+ * Entity usage service using the database backend.
+ */
+class DatabaseBackendEntityUsage extends EntityUsageBase {
 
   /**
    * The name of the SQL table used to store file usage information.
@@ -18,6 +18,8 @@ class DatabaseBackendEntityUsage implements EntityUsageInterface {
   protected $tableName;
 
   /**
+   * The database connection.
+   *
    * @var \Drupal\Core\Database\Connection
    */
   protected $connection;
@@ -29,40 +31,23 @@ class DatabaseBackendEntityUsage implements EntityUsageInterface {
    *   The database connection which will be used to store the entity usage
    *   information.
    * @param string $table
-   *   (optional) The table to store entitys usage info. Defaults to 'v'.
+   *   (optional) The table to store usage info. Defaults to 'entity_usage'.
    */
   public function __construct(Connection $connection, $table = 'entity_usage') {
     $this->connection = $connection;
-
     $this->tableName = $table;
   }
-  /**
-   * Adds usage by entities.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $used_entity
-   * @param \Drupal\Core\Entity\EntityInterface $user_entity
-   * @param int $count
-   */
-  public function addByEntities(EntityInterface $used_entity, EntityInterface $user_entity, $count = 1) {
-    $this->add($used_entity->getEntityTypeId(), $used_entity->id(), $user_entity->getEntityTypeId(), $user_entity->id());
-  }
 
   /**
-   * Adds usage by ids.
-   *
-   * @param $used_entity_type_id
-   * @param $used_entity_id
-   * @param $user_entity_type_id
-   * @param $user_entity_id
-   * @param int $count
+   * {@inheritdoc}
    */
-  public function add($used_entity_type_id, $used_entity_id, $user_entity_type_id, $user_entity_id, $count = 1) {
+  public function add($child_entity_type_id, $child_entity_id, $parent_type, $parent_id, $count = 1) {
     $this->connection->merge($this->tableName)
       ->keys([
-        'entity_type' => $used_entity_type_id,
-        'entity_id' => $used_entity_id,
-        'type' => $user_entity_type_id,
-        'id' => $user_entity_id,
+        'entity_type' => $child_entity_type_id,
+        'entity_id' => $child_entity_id,
+        'parent_type' => $parent_type,
+        'parent_id' => $parent_id,
       ])
       ->fields(['count' => $count])
       ->expression('count', 'count + :count', [':count' => $count])
@@ -70,115 +55,114 @@ class DatabaseBackendEntityUsage implements EntityUsageInterface {
   }
 
   /**
-   * Removes usage by entity.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $used_entity
-   * @param \Drupal\Core\Entity\EntityInterface $user_entity
-   * @param int $count
-   *
-   * @return int
-   *   The new total uses for the entity.
+   * {@inheritdoc}
    */
-  public function removeByEntities(EntityInterface $used_entity, EntityInterface $user_entity, $count = 1) {
-    $this->remove($used_entity->getEntityTypeId(), $used_entity->id(), $user_entity->getEntityTypeId(), $user_entity->id());
-  }
-
-  /**
-   * Removes usage by ids.
-   *
-   * @param $used_entity_type_id
-   * @param $used_entity_id
-   * @param $user_entity_type_id
-   * @param $user_entity_id
-   * @param int $count
-   *
-   * @return int
-   *   The new total uses for the entity.
-   */
-  public function remove($used_entity_type_id, $used_entity_id, $user_entity_type_id = NULL, $user_entity_id = NULL, $count = 1) {
-    // Delete rows that have a exact or less value to prevent empty rows.
+  public function remove($child_entity_type_id, $child_entity_id, $parent_type, $parent_id, $count = 1) {
+    // Delete rows that have uses.
     $query = $this->connection->update($this->tableName)
-      ->condition('entity_type', $used_entity_type_id)
-      ->condition('entity_id', $used_entity_id);
-    if ($user_entity_type_id && $user_entity_id) {
-      $query->condition('type', $user_entity_type_id)
-        ->condition('id', $user_entity_id);
-    }
-    $query->condition('count', 0, '>');
+      ->condition('entity_type', $child_entity_type_id)
+      ->condition('entity_id', $child_entity_id)
+      ->condition('parent_type', $parent_type)
+      ->condition('parent_id', $parent_id);
+    $query->condition('count', $count, '>=');
     $query->expression('count', 'count - :count', [':count' => $count]);
-    $result = $query->execute();
+    if ($result = $query->execute()) {
+      /** @var \Drupal\Core\Database\Query\SelectInterface $query */
+      $query = $this->connection->select($this->tableName, 't')
+        ->condition('entity_type', $child_entity_type_id)
+        ->condition('entity_id', $child_entity_id)
+        ->condition('parent_type', $parent_type)
+        ->condition('parent_id', $parent_id);
+      return $query->fields('t', ['count'])->execute()->fetchField();
+    }
+    else {
+      // If not rows were found where the count is greater than or equal $count
+      // then set any rows less then to 0.
+      $query = $this->connection->update($this->tableName)
+        ->condition('entity_type', $child_entity_type_id)
+        ->condition('entity_id', $child_entity_id)
+        ->condition('parent_type', $parent_type)
+        ->condition('parent_id', $parent_id);
+      $query->condition('count', $count, '<');
+      $query->fields(['count' => 0]);
+      $query->execute();
+      return 0;
+    }
   }
 
   /**
-   * [@inheritdoc}
+   * {@inheritdoc}
    */
-  public function removeByUser($used_entity_type_id, EntityInterface $entity, $retain_usage_record = TRUE) {
+  public function removeByParentEntity($child_entity_type_id, EntityInterface $parent_entity, $retain_usage_record = TRUE) {
     if ($retain_usage_record) {
       $this->connection->update($this->tableName)
-        ->condition('entity_type', $used_entity_type_id)
-        ->condition('type', $entity->getEntityTypeId())
-        ->condition('id', $entity->id())
+        ->condition('entity_type', $child_entity_type_id)
+        ->condition('parent_type', $parent_entity->getEntityTypeId())
+        ->condition('parent_id', $parent_entity->id())
         ->fields(['count' => 0])
         ->execute();
     }
     else {
       $this->connection->delete($this->tableName)
-        ->condition('entity_type', $used_entity_type_id)
-        ->condition('type', $entity->getEntityTypeId())
-        ->condition('id', $entity->id())
+        ->condition('entity_type', $child_entity_type_id)
+        ->condition('parent_type', $parent_entity->getEntityTypeId())
+        ->condition('parent_id', $parent_entity->id())
         ->execute();
     }
   }
 
   /**
-   * Determines where a entity is used.
-   *
-   * @param \Drupal\file\FileInterface $file
-   *   A file entity.
-   *
-   * @return array
-   *   TBD
+   * {@inheritdoc}
    */
-  public function listUsage(EntityInterface $file) {
-    // TODO: Implement listUsage() method.
+  public function listUsage(EntityInterface $child_entity) {
+    /** @var \Drupal\Core\Database\Query\SelectInterface $query */
+    $query = $this->connection->select($this->tableName, 'u')
+      ->condition('entity_type', $child_entity->getEntityTypeId())
+      ->condition('entity_id', (string) $child_entity->id());
+    $query->fields('u');
+    $result = $query->execute();
+    $usages = [];
+    foreach ($result as $usage) {
+      $usages[$usage->parent_type][$usage->parent_id] = $usage->count;
+    }
+    return $usages;
+
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getEntitiesWithNoUses($entity_type_id, $limit = 100) {
+  public function getEntitiesWithNoUses($child_entity_type_id, $limit = 100) {
     // @todo Implement $limit logic.
     $query = $this->connection->select($this->tableName);
     $query->fields($this->tableName, ['entity_id']);
-    $query->condition('entity_type', $entity_type_id)
+    $query->condition('entity_type', $child_entity_type_id)
       ->condition('count', 0);
     $entity_ids = $query->execute()->fetchCol();
 
-    // @todo Use ::notExists() to do this subquery.
-    $sub_query = $this->connection->select($this->tableName);
-    $sub_query->condition('entity_type', $entity_type_id)
-      ->condition('count', 0, '>')
-      ->condition('entity_id', $entity_ids, 'IN');
-    $sub_query->fields($this->tableName, ['entity_id']);
-    $used_entity_ids = $sub_query->execute()->fetchCol();
-    return array_diff($entity_ids, $used_entity_ids);
+    if ($entity_ids) {
+      // @todo Use ::notExists() to do this sub query.
+      $sub_query = $this->connection->select($this->tableName);
+      $sub_query->condition('entity_type', $child_entity_type_id)
+        ->condition('count', 0, '>')
+        ->condition('entity_id', $entity_ids, 'IN');
+      $sub_query->fields($this->tableName, ['entity_id']);
+      $used_entity_ids = $sub_query->execute()->fetchCol();
+      $unused_entity_ids = array_diff($entity_ids, $used_entity_ids);
+      return array_values($unused_entity_ids);
+    }
+    return [];
+
   }
 
   /**
    * {@inheritdoc}
    */
-  public function delete($entity_type_id, $entity_id) {
+  public function delete($child_entity_type_id, $child_entity_id) {
     $this->connection->delete($this->tableName)
-      ->condition('entity_type', $entity_type_id)
-      ->condition('entity_id', $entity_id)
+      ->condition('entity_type', $child_entity_type_id)
+      ->condition('entity_id', $child_entity_id)
       ->execute();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function deleteByEntity(EntityInterface $entity) {
-    $this->delete($entity->getEntityTypeId(), $entity->id());
   }
 
 }

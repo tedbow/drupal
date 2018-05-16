@@ -8,6 +8,8 @@ use Drupal\entity_test\Entity\EntityTest;
 /**
  * Tests entity usage.
  *
+ * @coversDefaultClass \Drupal\layout_builder\DatabaseBackendEntityUsage
+ *
  * @group layout_builder
  */
 class EntityUsageTest extends EntityKernelTestBase {
@@ -20,16 +22,28 @@ class EntityUsageTest extends EntityKernelTestBase {
   public static $modules = ['layout_builder'];
 
   /**
+   * The parent entity.
+   *
    * @var \Drupal\entity_test\Entity\EntityTest
    */
   protected $parentEntity;
 
   /**
+   * The child entity 1.
+   *
    * @var \Drupal\entity_test\Entity\EntityTest
    */
   protected $childEntity;
 
   /**
+   * The child entity 2.
+   *
+   * @var \Drupal\entity_test\Entity\EntityTest
+   */
+  protected $childEntity2;
+  /**
+   * The entity usage service.
+   *
    * @var \Drupal\layout_builder\DatabaseBackendEntityUsage
    */
   protected $entityUsage;
@@ -55,47 +69,99 @@ class EntityUsageTest extends EntityKernelTestBase {
 
     // Create a child entity.
     $this->childEntity = EntityTest::create([
-      'name' => 'Parent entity',
+      'name' => 'Child entity 1',
     ]);
     $this->childEntity->save();
+
+    // Create a child entity.
+    $this->childEntity2 = EntityTest::create([
+      'name' => 'Child entity 2',
+    ]);
+    $this->childEntity2->save();
+
 
     $this->entityUsage = $this->container->get('entity.usage');
     $this->connection = $this->container->get('database');
   }
 
   /**
-   * Tests \Drupal\layout_builder\DatabaseBackendEntityUsage::add();
+   * @covers ::add
    */
   public function testAddUsage() {
-    $this->entityUsage->add($this->childEntity->getEntityTypeId(), $this->childEntity->id(), $this->parentEntity->getEntityTypeId(), $this->parentEntity->id());
-    $this->entityUsage->add($this->childEntity->getEntityTypeId(), $this->childEntity->id(), 'bar', 'foo');
-    $this->entityUsage->add($this->childEntity->getEntityTypeId(), $this->childEntity->id(), 'bar', 'foo');
+    $this->addInitialUses();
 
-    $results = $this->connection->select('entity_usage', 'eu')
-      ->fields('eu')
-      ->condition('eu.entity_id', $this->childEntity->id())
-      ->execute()
-      ->fetchAll();
+    $expected_uses = [
+      $this->parentEntity->getEntityTypeId() => [
+        $this->parentEntity->id() => 3,
+      ],
+      'A_PARENT_TYPE' => [
+        'A_PARENT_ID' => 2,
+      ],
+    ];
+    $this->assertEquals($expected_uses, $this->entityUsage->listUsage($this->childEntity));
 
-    $this->assertEquals(1, $results[0]->count);
-    $this->assertEquals(2, $results[1]->count);
+    $this->entityUsage->add($this->childEntity->getEntityTypeId(), $this->childEntity->id(), 'A_PARENT_TYPE', 'A_PARENT_ID', 2);
+
+    $expected_uses['A_PARENT_TYPE']['A_PARENT_ID'] = 4;
+    $this->assertEquals($expected_uses, $this->entityUsage->listUsage($this->childEntity));
   }
 
   /**
-   * Tests \Drupal\layout_builder\DatabaseBackendEntityUsage::remove();
+   * @covers ::remove
    */
   public function testRemoveUsage() {
-    $this->entityUsage->add($this->childEntity->getEntityTypeId(), $this->childEntity->id(), $this->parentEntity->getEntityTypeId(), $this->parentEntity->id(), 2);
-    $count = $this->entityUsage->remove($this->childEntity->getEntityTypeId(), $this->childEntity->id(), NULL, NULL, 1);
+    $this->addInitialUses();
+    $count = $this->entityUsage->remove($this->childEntity->getEntityTypeId(), $this->childEntity->id(), $this->parentEntity->getEntityTypeId(), $this->parentEntity->id(), 1);
 
-    $result = $this->connection->select('entity_usage', 'eu')
-      ->fields('eu')
-      ->condition('eu.entity_id', $this->childEntity->id())
-      ->execute()
-      ->fetch();
+    $this->assertEquals(2, $count);
 
-    $this->assertEquals(1, $result->count);
-    // This fails currently because DatabaseBackendEntityUsage does not return the count.
-    //$this->assertEquals($result->count, $count);
+    $expected_uses = [
+      $this->parentEntity->getEntityTypeId() => [
+        $this->parentEntity->id() => 2,
+      ],
+      'A_PARENT_TYPE' => [
+        'A_PARENT_ID' => 2,
+      ],
+    ];
+    $this->assertEquals($expected_uses, $this->entityUsage->listUsage($this->childEntity));
+
+    // Confirm the usage count is never less than 0.
+    $count = $this->entityUsage->remove($this->childEntity->getEntityTypeId(), $this->childEntity->id(), 'A_PARENT_TYPE', 'A_PARENT_ID', 314);
+    $this->assertEquals(0, $count);
+    $expected_uses['A_PARENT_TYPE']['A_PARENT_ID'] = 0;
+    $this->assertEquals($expected_uses, $this->entityUsage->listUsage($this->childEntity));
   }
+
+  /**
+   * @covers ::getEntitiesWithNoUses
+   */
+  public function testGetEntitiesWithNoUses() {
+    $this->addInitialUses();
+    $this->entityUsage->add($this->childEntity2->getEntityTypeId(), $this->childEntity2->id(), $this->parentEntity->getEntityTypeId(), $this->parentEntity->id(), 2);
+
+    $this->assertEmpty($this->entityUsage->getEntitiesWithNoUses('entity_test'));
+
+    $this->entityUsage->remove($this->childEntity2->getEntityTypeId(), $this->childEntity2->id(), $this->parentEntity->getEntityTypeId(), $this->parentEntity->id(), 1);
+    $this->assertEmpty($this->entityUsage->getEntitiesWithNoUses('entity_test'));
+
+    $this->entityUsage->remove($this->childEntity2->getEntityTypeId(), $this->childEntity2->id(), $this->parentEntity->getEntityTypeId(), $this->parentEntity->id(), 1);
+    $this->assertEquals([$this->childEntity2->id()], $this->entityUsage->getEntitiesWithNoUses('entity_test'));
+
+    $this->entityUsage->remove($this->childEntity->getEntityTypeId(), $this->childEntity->id(), $this->parentEntity->getEntityTypeId(), $this->parentEntity->id(), 3);
+    $this->assertEquals([$this->childEntity2->id()], $this->entityUsage->getEntitiesWithNoUses('entity_test'));
+
+    $this->assertEquals(0, $this->entityUsage->remove($this->childEntity->getEntityTypeId(), $this->childEntity->id(), 'A_PARENT_TYPE', 'A_PARENT_ID', 2));
+    $this->assertEquals([$this->childEntity2->id(), $this->childEntity->id()], $this->entityUsage->getEntitiesWithNoUses('entity_test'));
+
+  }
+
+  /**
+   * Adds initial usage.
+   */
+  protected function addInitialUses() {
+    $this->entityUsage->add($this->childEntity->getEntityTypeId(), $this->childEntity->id(), $this->parentEntity->getEntityTypeId(), $this->parentEntity->id(), 3);
+    $this->entityUsage->add($this->childEntity->getEntityTypeId(), $this->childEntity->id(), 'A_PARENT_TYPE', 'A_PARENT_ID');
+    $this->entityUsage->add($this->childEntity->getEntityTypeId(), $this->childEntity->id(), 'A_PARENT_TYPE', 'A_PARENT_ID');
+  }
+
 }

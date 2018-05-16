@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Drupal\layout_builder;
-
 
 use Drupal\Core\Entity\EntityInterface;
 
@@ -18,107 +16,124 @@ use Drupal\Core\Entity\EntityInterface;
  */
 interface EntityUsageInterface {
 
-
   /**
    * Adds usage by entities.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $used_entity
-   * @param \Drupal\Core\Entity\EntityInterface $user_entity
+   * @param \Drupal\Core\Entity\EntityInterface $child_entity
+   *   The child entity.
+   * @param \Drupal\Core\Entity\EntityInterface $parent_entity
+   *   The parent entity.
    * @param int $count
+   *   The count to add.
    */
-  public function addByEntities(EntityInterface $used_entity, EntityInterface $user_entity, $count = 1);
-
+  public function addByEntities(EntityInterface $child_entity, EntityInterface $parent_entity, $count = 1);
 
   /**
-   * Adds usage by ids.
+   * Adds usage by IDs.
    *
-   * @param $used_entity_type_id
-   * @param $used_entity_id
-   * @param $user_entity_type_id
-   * @param $user_entity_id
+   * @param string $child_entity_type_id
+   *   The child entity type ID.
+   * @param string $child_entity_id
+   *   The child entity ID.
+   * @param string $parent_type
+   *   The parent type.
+   * @param string $parent_id
+   *   The parent ID.
    * @param int $count
+   *   The count to add.
    */
-  public function add($used_entity_type_id, $used_entity_id, $user_entity_type_id, $user_entity_id, $count = 1);
+  public function add($child_entity_type_id, $child_entity_id, $parent_type, $parent_id, $count = 1);
 
   /**
    * Removes usage by entity.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $used_entity
-   * @param \Drupal\Core\Entity\EntityInterface $user_entity
+   * @param \Drupal\Core\Entity\EntityInterface $child_entity
+   *   The child entity.
+   * @param \Drupal\Core\Entity\EntityInterface $parent_entity
+   *   The parent entity.
    * @param int $count
+   *   The count to remove.
    *
    * @return int
    *   The new total uses for the entity.
    */
-  public function removeByEntities(EntityInterface $used_entity, EntityInterface $user_entity, $count = 1);
+  public function removeByEntities(EntityInterface $child_entity, EntityInterface $parent_entity, $count = 1);
 
   /**
-   * Removes usage by ids.
+   * Removes usage by IDs.
    *
-   * @param $used_entity_type_id
-   * @param $used_entity_id
-   * @param $user_entity_type_id
-   * @param $user_entity_id
+   * @param string $child_entity_type_id
+   *   The child entity type ID.
+   * @param string $child_entity_id
+   *   The child entity ID.
+   * @param string $parent_type
+   *   The parent type.
+   * @param string $parent_id
+   *   The parent ID.
    * @param int $count
+   *   The count to remove.
    *
    * @return int
    *   The new total uses for the entity.
    */
-  public function remove($used_entity_type_id, $used_entity_id, $user_entity_type_id, $user_entity_id, $count = 1);
+  public function remove($child_entity_type_id, $child_entity_id, $parent_type, $parent_id, $count = 1);
 
   /**
-   * Remove all uses by a user entity.
+   * Remove all uses by a parent entity.
    *
-   * @param $used_entity_type_id
-   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param string $child_entity_type_id
+   *   The child entity type ID.
+   * @param \Drupal\Core\Entity\EntityInterface $parent_entity
+   *   The parent entity.
    * @param bool $retain_usage_record
-   *
-   * @return
+   *   Whether to retain the usage record with count set zero.
    */
-  public function removeByUser($used_entity_type_id, EntityInterface $entity, $retain_usage_record = TRUE);
+  public function removeByParentEntity($child_entity_type_id, EntityInterface $parent_entity, $retain_usage_record = TRUE);
 
   /**
    * Determines where a entity is used.
    *
-   * @param \Drupal\file\FileInterface $file
-   *   A file entity.
+   * @param \Drupal\Core\Entity\EntityInterface $child_entity
+   *   A child  entity.
    *
    * @return array
-   *   TBD
+   *   A nested array with usage data. The first level is keyed by parent type,
+   *   the second by parent ID. The value of
+   *   the second level contains the usage count.
    */
-  public function listUsage(EntityInterface $file);
+  public function listUsage(EntityInterface $child_entity);
 
   /**
    * Gets all entities have been tracked but currently have no uses.
    *
    * This can be used by modules to determine which entities should be deleted.
    *
-   * @param string $entity_type_id
+   * @param string $child_entity_type_id
    *   The entity type to query.
    * @param int $limit
    *   The maximum number of entities to fetch.
    *
    * @return int[]
-   *   The entities.
+   *   The entity IDs.
    */
-  public function getEntitiesWithNoUses($entity_type_id, $limit = 100);
+  public function getEntitiesWithNoUses($child_entity_type_id, $limit = 100);
 
   /**
    * Delete all usage for an entity.
    *
-   * @param string $entity_type_id
-   *   The entity type id.
-   * @param string $entity_id
-   *   The entity id.
+   * @param string $child_entity_type_id
+   *   The entity type ID.
+   * @param string $child_entity_id
+   *   The entity ID.
    */
-  public function delete($entity_type_id, $entity_id);
+  public function delete($child_entity_type_id, $child_entity_id);
 
   /**
    * Delete all usage records by entity.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param \Drupal\Core\Entity\EntityInterface $child_entity
    *   The entity.
    */
-  public function deleteByEntity(EntityInterface $entity);
+  public function deleteByChildEntity(EntityInterface $child_entity);
 
 }
