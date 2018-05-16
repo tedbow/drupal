@@ -66,16 +66,8 @@ class DatabaseBackendEntityUsage extends EntityUsageBase {
       ->condition('parent_id', $parent_id);
     $query->condition('count', $count, '>=');
     $query->expression('count', 'count - :count', [':count' => $count]);
-    if ($result = $query->execute()) {
-      /** @var \Drupal\Core\Database\Query\SelectInterface $query */
-      $query = $this->connection->select($this->tableName, 't')
-        ->condition('entity_type', $child_entity_type_id)
-        ->condition('entity_id', $child_entity_id)
-        ->condition('parent_type', $parent_type)
-        ->condition('parent_id', $parent_id);
-      return $query->fields('t', ['count'])->execute()->fetchField();
-    }
-    else {
+    $result = $query->execute();
+    if (empty($result)) {
       // If not rows were found where the count is greater than or equal $count
       // then set any rows less then to 0.
       $query = $this->connection->update($this->tableName)
@@ -86,8 +78,13 @@ class DatabaseBackendEntityUsage extends EntityUsageBase {
       $query->condition('count', $count, '<');
       $query->fields(['count' => 0]);
       $query->execute();
-      return 0;
     }
+    /** @var \Drupal\Core\Database\Query\SelectInterface $query */
+    $query = $this->connection->select($this->tableName, 't')
+      ->condition('entity_type', $child_entity_type_id)
+      ->condition('entity_id', $child_entity_id);
+    $query->addExpression('sum(t.count)', 'c');
+    return $query->execute()->fetchField();
   }
 
   /**
@@ -149,7 +146,7 @@ class DatabaseBackendEntityUsage extends EntityUsageBase {
       $sub_query->fields($this->tableName, ['entity_id']);
       $used_entity_ids = $sub_query->execute()->fetchCol();
       $unused_entity_ids = array_diff($entity_ids, $used_entity_ids);
-      return array_values($unused_entity_ids);
+      return array_values(array_unique($unused_entity_ids));
     }
     return [];
 
