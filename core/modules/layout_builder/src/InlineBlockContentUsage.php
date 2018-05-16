@@ -90,7 +90,7 @@ class InlineBlockContentUsage {
       return;
     }
     if ($this->isLayoutCompatibleEntity($entity)) {
-      $this->entityUsage->removeByUser('block_content', $entity);
+      $this->entityUsage->removeByParentEntity('block_content', $entity);
     }
   }
 
@@ -219,7 +219,7 @@ class InlineBlockContentUsage {
       /** @var \Drupal\block_content\BlockContentInterface $block_content */
       if ($block_content = \Drupal::entityTypeManager()->getStorage('block_content')->loadRevision($configuration['block_revision_id'])) {
         $block_content->delete();
-        $this->entityUsage->removeByUser('block_content', $block_entity, FALSE);
+        $this->entityUsage->removeByParentEntity('block_content', $block_entity, FALSE);
       }
     }
   }
