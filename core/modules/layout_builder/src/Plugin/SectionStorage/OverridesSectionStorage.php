@@ -17,6 +17,7 @@ use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\SectionListInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Validator\ConstraintViolationInterface;
 
 /**
  * Defines the 'overrides' section storage type.
@@ -230,6 +231,13 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    * {@inheritdoc}
    */
   public function save() {
+    $violations = $this->getEntity()->validate();
+    foreach ($violations as $violation) {
+      if ($violation instanceof ConstraintViolationInterface) {
+        drupal_set_message($violation->getMessage());
+      }
+
+    }
     return $this->getEntity()->save();
   }
 
