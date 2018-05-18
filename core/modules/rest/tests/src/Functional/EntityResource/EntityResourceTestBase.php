@@ -12,6 +12,7 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityNullStorage;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\BooleanItem;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\Core\Url;
@@ -926,10 +927,7 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
         // Some top-level keys in the normalization may not be fields on the
         // entity (for example '_links' and '_embedded' in the HAL normalization).
         if ($created_entity->hasField($field_name)) {
-          // Subset, not same, because we can e.g. send just the target_id for the
-          // bundle in a POST request; the response will include more properties.
-          $this->assertArraySubset(static::castToString($field_normalization), $created_entity->get($field_name)
-            ->getValue(), TRUE);
+          $this->assertFieldNormalizationIsStored($field_name, $field_normalization, $created_entity);
         }
       }
     }
@@ -1187,9 +1185,7 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
       // Some top-level keys in the normalization may not be fields on the
       // entity (for example '_links' and '_embedded' in the HAL normalization).
       if ($updated_entity->hasField($field_name)) {
-        // Subset, not same, because we can e.g. send just the target_id for the
-        // bundle in a PATCH request; the response will include more properties.
-        $this->assertArraySubset(static::castToString($field_normalization), $updated_entity->get($field_name)->getValue(), TRUE);
+        $this->assertFieldNormalizationIsStored($field_name, $field_normalization, $updated_entity);
       }
     }
     // Ensure that fields do not get deleted if they're not present in the PATCH
@@ -1230,6 +1226,55 @@ abstract class EntityResourceTestBase extends ResourceTestBase {
     $response = $this->request('PATCH', $url, $request_options);
     $this->assertResourceResponse(200, FALSE, $response);
     $this->assertFalse($response->hasHeader('X-Drupal-Cache'));
+  }
+
+  /**
+   * Gets all the read-only computed property names for the given field.
+   *
+   * @param \Drupal\Core\Field\FieldItemListInterface $field
+   *   A field.
+   *
+   * @return string[]
+   *   The names of the properties of the field that are read-only and computed.
+   */
+  protected static function getReadOnlyComputedPropertyNames(FieldItemListInterface $field) {
+    $read_only_computed_property_names = [];
+
+    /* @var \Drupal\Core\TypedData\DataDefinitionInterface[] $property_definitions */
+    $property_definitions = $field->getItemDefinition()->getPropertyDefinitions();
+    foreach ($property_definitions as $property_name => $property_definition) {
+      if ($property_definition->isReadOnly() && $property_definition->isComputed()) {
+        $read_only_computed_property_names[] = $property_name;
+      }
+    }
+
+    return $read_only_computed_property_names;
+  }
+
+  /**
+   * Asserts that the given field normalization values are stored.
+   *
+   * A field normalization sent in a PATCH or POST request may include read-only
+   * computed properties that are never stored. When asserting all sent values
+   * are stored, these should be ignored.
+   *
+   * @param $field_name
+   *   The name of the field we're asserting. (To look up in the saved entity.)
+   * @param array $field_normalization
+   *   The normalization of the field that was sent in a PATCH or POST request.
+   * @param \Drupal\Core\Entity\EntityInterface $saved_entity
+   *   A saved entity loaded from its storage.
+   */
+  protected function assertFieldNormalizationIsStored($field_name, array $field_normalization, EntityInterface $saved_entity) {
+    $all_property_names = array_keys($saved_entity->get($field_name)->getItemDefinition()->getPropertyDefinitions());
+    $read_only_computed_property_names = static::getReadOnlyComputedPropertyNames($saved_entity->get($field_name));
+    $storable_property_names = array_diff($all_property_names, $read_only_computed_property_names);
+
+    $storable_field_normalization = array_map(function (array $properties) use ($storable_property_names) {
+      return array_intersect_key($properties, array_combine($storable_property_names, $storable_property_names));
+    }, $field_normalization);
+
+    $this->assertSame(static::castToString($storable_field_normalization), $saved_entity->get($field_name)->getValue());
   }
 
   /**

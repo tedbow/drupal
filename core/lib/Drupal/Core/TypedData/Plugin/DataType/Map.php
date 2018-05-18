@@ -79,6 +79,10 @@ class Map extends TypedData implements \IteratorAggregate, ComplexDataInterface 
 
     // Update any existing property objects.
     foreach ($this->properties as $name => $property) {
+      $data_definition = $property->getDataDefinition();
+      if ($data_definition->isReadOnly() && $data_definition->isComputed()) {
+        continue;
+      }
       $value = isset($values[$name]) ? $values[$name] : NULL;
       $property->setValue($value, FALSE);
       // Remove the value from $this->values to ensure it does not contain any

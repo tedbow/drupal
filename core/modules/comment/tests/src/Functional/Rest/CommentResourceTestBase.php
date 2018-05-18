@@ -238,6 +238,7 @@ abstract class CommentResourceTestBase extends EntityResourceTestBase {
         [
           'value' => 'Llamas are awesome.',
           'format' => 'plain_text',
+          'processed' => '<p>Llamas are <script>alert("evil")</script> awesome.</p>',
         ],
       ],
     ];
