@@ -1,8 +1,8 @@
 module.exports = {
-  '@tags': ['core'],
+  '@tags': ['corex'],
   before(browser) {
     browser
-      .installDrupal()
+      .installDrupal({})
       .moduleInstall(['test_page_test']);
   },
   after(browser) {

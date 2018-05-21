@@ -15,12 +15,12 @@ exports.command = function moduleInstall(modules = [], callback) {
   const self = this;
 
   try {
-    const installedModules = execSync(
+    execSync(
       commandAsWebserver(
         `php ./scripts/test-site.php modules-install --modules ${modules.join(' ')}`,
       ),
     );
-    this.installedModules = installedModules;
+    // this.installedModules = installedModules;
   }
   catch (error) {
     this.assert.fail(error);
