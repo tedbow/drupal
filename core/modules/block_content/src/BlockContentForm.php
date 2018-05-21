@@ -23,18 +23,6 @@ class BlockContentForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form = parent::buildForm($form, $form_state);
-    if (!$this->entity->isReusable()) {
-      $this->messenger()->addError("This block is non-reusable. It can only be edited from the entity that uses it.");
-      return [];
-    }
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function form(array $form, FormStateInterface $form_state) {
     $block = $this->entity;
 
