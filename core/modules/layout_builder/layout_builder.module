@@ -116,3 +116,37 @@ function layout_builder_cron() {
   $inline_block_usage = \Drupal::service('inline_block_content.usage');
   $inline_block_usage->removeAllUnused();
 }
+
+/**
+ * Implements hook_theme().
+ */
+function layout_builder_theme() {
+  $theme = [];
+  $theme['inline_block'] = [
+    'render element' => 'elements',
+    'file' => 'inline_block.page.inc',
+    'template' => 'inline_block',
+  ];
+  $theme['inline_block_content_add_list'] = [
+    'render element' => 'content',
+    'variables' => ['content' => NULL],
+    'file' => 'inline_block.page.inc',
+  ];
+  return $theme;
+}
+
+/**
+* Implements hook_theme_suggestions_HOOK().
+*/
+function layout_builder_theme_suggestions_inline_block(array $variables) {
+  $suggestions = [];
+  $entity = $variables['elements']['#inline_block'];
+  $sanitized_view_mode = strtr($variables['elements']['#view_mode'], '.', '_');
+
+  $suggestions[] = 'inline_block__' . $sanitized_view_mode;
+  $suggestions[] = 'inline_block__' . $entity->bundle();
+  $suggestions[] = 'inline_block__' . $entity->bundle() . '__' . $sanitized_view_mode;
+  $suggestions[] = 'inline_block__' . $entity->id();
+  $suggestions[] = 'inline_block__' . $entity->id() . '__' . $sanitized_view_mode;
+  return $suggestions;
+}

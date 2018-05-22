@@ -1,0 +1,22 @@
+{#
+/**
+ * @file inline_block.html.twig
+ * Default theme implementation to present Inline block data.
+ *
+ * This template is used when viewing Inline block pages.
+ *
+ *
+ * Available variables:
+ * - content: A list of content items. Use 'content' to print all content, or
+ * - attributes: HTML attributes for the container element.
+ *
+ * @see template_preprocess_inline_block()
+ *
+ * @ingroup themeable
+ */
+#}
+<div{{ attributes.addClass('inline_block') }}>
+  {% if content %}
+    {{- content -}}
+  {% endif %}
+</div>

@@ -3,3 +3,33 @@
 configure any layout:
   title: 'Configure any layout'
   restrict access: true
+add inline block entities:
+  title: 'Create new Inline block entities'
+
+administer inline block entities:
+  title: 'Administer Inline block entities'
+  description: 'Allow to access the administration form to configure Inline block entities.'
+  restrict access: true
+
+delete inline block entities:
+  title: 'Delete Inline block entities'
+
+edit inline block entities:
+  title: 'Edit Inline block entities'
+
+view published inline block entities:
+  title: 'View published Inline block entities'
+
+view unpublished inline block entities:
+  title: 'View unpublished Inline block entities'
+
+view all inline block revisions:
+  title: 'View all Inline block revisions'
+
+revert all inline block revisions:
+  title: 'Revert all Inline block revisions'
+  description: 'Role requires permission <em>view Inline block revisions</em> and <em>edit rights</em> for inline block entities in question or <em>administer inline block entities</em>.'
+
+delete all inline block revisions:
+  title: 'Delete all revisions'
+  description: 'Role requires permission to <em>view Inline block revisions</em> and <em>delete rights</em> for inline block entities in question or <em>administer inline block entities</em>.'

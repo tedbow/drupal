@@ -1,0 +1,12 @@
+layout_builder.inline_block_type.*:
+  type: config_entity
+  label: 'Inline block type config'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    uuid:
+      type: string

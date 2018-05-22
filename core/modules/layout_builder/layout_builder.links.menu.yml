@@ -1,0 +1,18 @@
+
+# Inline block menu items definition
+entity.inline_block.collection:
+  title: 'Inline block list'
+  route_name: entity.inline_block.collection
+  description: 'List Inline block entities'
+  parent: system.admin_structure
+  weight: 100
+
+
+# Inline block type menu items definition
+entity.inline_block_type.collection:
+  title: 'Inline block type'
+  route_name: entity.inline_block_type.collection
+  description: 'List Inline block type (bundles)'
+  parent: system.admin_structure
+  weight: 99
+
