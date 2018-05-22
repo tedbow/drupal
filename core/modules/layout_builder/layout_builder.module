@@ -94,7 +94,7 @@ function layout_builder_field_config_delete(FieldConfigInterface $field_config) 
  * @todo Move to "block_content" module before Layout Builder is stable.
  */
 function layout_builder_entity_presave(EntityInterface $entity) {
-  /** @var \Drupal\layout_builder\InlineBlockContentUsage $inline_block_usage */
+  /** @var \Drupal\layout_builder\InlineBlockUsage $inline_block_usage */
   $inline_block_usage = \Drupal::service('inline_block_content.usage');
   $inline_block_usage->handlePreSave($entity);
 }
@@ -103,20 +103,10 @@ function layout_builder_entity_presave(EntityInterface $entity) {
  * Implements hook_entity_delete().
  */
 function layout_builder_entity_delete(EntityInterface $entity) {
-  /** @var \Drupal\layout_builder\InlineBlockContentUsage $inline_block_usage */
+  /** @var \Drupal\layout_builder\InlineBlockUsage $inline_block_usage */
   $inline_block_usage = \Drupal::service('inline_block_content.usage');
   $inline_block_usage->handleEntityDelete($entity);
 }
-
-/**
- * Implements hook_cron().
- */
-function layout_builder_cron() {
-  /** @var \Drupal\layout_builder\InlineBlockContentUsage $inline_block_usage */
-  $inline_block_usage = \Drupal::service('inline_block_content.usage');
-  $inline_block_usage->removeAllUnused();
-}
-
 /**
  * Implements hook_theme().
  */

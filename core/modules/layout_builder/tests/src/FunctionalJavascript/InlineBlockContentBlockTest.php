@@ -4,7 +4,10 @@ namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
+use Drupal\layout_builder\Entity\InlineBlockType;
 use Drupal\node\Entity\Node;
 use Drupal\Tests\contextual\FunctionalJavascript\ContextualLinkClickTrait;
 
@@ -25,7 +28,6 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     'layout_test',
     'layout_builder_test',
     'block',
-    'block_content',
     'node',
     'contextual',
   ];
@@ -61,13 +63,13 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
       ],
     ]);
 
-    $bundle = BlockContentType::create([
+    $bundle = InlineBlockType::create([
       'id' => 'basic',
       'label' => 'Basic block',
       'revision' => 1,
     ]);
     $bundle->save();
-    block_content_add_body_field($bundle->id());
+    $this->addBodyField($bundle->id());
   }
 
   /**
@@ -92,6 +94,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $page->clickLink('Add Block');
     $assert_session->assertWaitOnAjaxRequest();
     $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
+    $assert_session->linkExists('Basic block');
     $this->clickLink('Basic block');
     $assert_session->assertWaitOnAjaxRequest();
     $assert_session->fieldValueEquals('Title', '');
@@ -100,7 +103,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $textarea->setValue('The DEFAULT block body');
     $page->pressButton('Add Block');
     $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->elementTextContains('css', '.block-inline-block-contentbasic', 'The DEFAULT block body');
+    $assert_session->elementTextContains('css', '.inline_block', 'The DEFAULT block body');
 
     $this->assertSaveLayout();
 
@@ -115,7 +118,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
 
     // Confirm the block can be edited.
     $this->drupalGet('node/1/layout');
-    $this->clickContextualLink('.block-inline-block-contentbasic', 'Configure');
+    $this->clickContextualLink('.inline_block', 'Configure');
     $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
     $this->assertNotEmpty($textarea);
     $page->findField('Title')->setValue('Block title');
@@ -158,9 +161,9 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     // Confirm the block can be edited.
     $this->drupalGet('node/1/layout');
     /* @var \Behat\Mink\Element\NodeElement $inline_block_2 */
-    $inline_block_2 = $page->findAll('css', '.block-inline-block-contentbasic')[1];
+    $inline_block_2 = $page->findAll('css', '.inline_block')[1];
     $uuid = $inline_block_2->getAttribute('data-layout-block-uuid');
-    $this->clickContextualLink(".block-inline-block-contentbasic[data-layout-block-uuid=\"$uuid\"]", 'Configure');
+    $this->clickContextualLink(".inline_block[data-layout-block-uuid=\"$uuid\"]", 'Configure');
     $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
     $this->assertNotEmpty($textarea);
     $this->assertSame('The 2nd block body', $textarea->getValue());
@@ -181,7 +184,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->drupalGet("$field_ui_prefix/display-layout/default");
     $assert_session->pageTextContains('The DEFAULT block body');
     // Confirm default layout still only has 1 inline block.
-    $assert_session->elementsCount('css', '.block-inline-block-contentbasic', 1);
+    $assert_session->elementsCount('css', '.inline_block', 1);
   }
 
   /**
@@ -240,7 +243,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
 
     // Confirm the block can be edited.
     $this->drupalGet('node/1/layout');
-    $this->clickContextualLink('.block-inline-block-contentbasic', 'Configure');
+    $this->clickContextualLink('.inline_block', 'Configure');
     $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
     $this->assertNotEmpty($textarea);
     $page->findField('Title')->setValue('Block title updated');
@@ -333,7 +336,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
 
     // Update the block.
     $this->drupalGet('node/1/layout');
-    $this->clickContextualLink('.block-inline-block-contentbasic', 'Configure');
+    $this->clickContextualLink('.inline_block', 'Configure');
     $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
     $this->assertNotEmpty($textarea);
     $page->findField('Title')->setValue('Block title');
@@ -476,7 +479,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
    * Gets the latest content block id.
    */
   protected function getLatestBlockConentId() {
-    $block_ids  = \Drupal::entityQuery('block_content')->sort('id','DESC')->range(0,1)->execute();
+    $block_ids  = \Drupal::entityQuery('inline_block')->sort('id','DESC')->range(0,1)->execute();
     $block_id = array_pop($block_ids);
     $this->assertNotEmpty(BlockContent::load($block_id));
     return $block_id;
@@ -506,14 +509,14 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
   protected function removeInlineBlockFromLayout() {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
-    $block_content = $page->find('css', '.block-inline-block-contentbasic')->getText();
-    $this->assertNotEmpty($block_content);
-    $assert_session->pageTextContains($block_content);
-    $this->clickContextualLink('.block-inline-block-contentbasic', 'Remove block');
+    $inline_block = $page->find('css', '.inline_block')->getText();
+    $this->assertNotEmpty($inline_block);
+    $assert_session->pageTextContains($inline_block);
+    $this->clickContextualLink('.inline_block', 'Remove block');
     $assert_session->assertWaitOnAjaxRequest();
     $page->find('css', '#drupal-off-canvas')->pressButton('Remove');
     $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->pageTextNotContains($block_content);
+    $assert_session->pageTextNotContains($inline_block);
   }
 
   /**
@@ -533,7 +536,47 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $textarea->setValue($body);
     $page->pressButton('Add Block');
     $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->elementTextContains('css', '.block-inline-block-contentbasic', $body);
+    $assert_session->elementTextContains('css', '.inline_block', $body);
+  }
+
+  protected function addBodyField($type_id) {
+
+    // Add or remove the body field, as needed.
+    $field = FieldConfig::loadByName('inline_block', $type_id, 'body');
+    if (empty($field)) {
+      $field_storage = FieldStorageConfig::loadByName('inline_block', 'body');
+      if (empty($field_storage)) {
+        $field_storage = FieldStorageConfig::create([
+          'field_name' => 'body',
+          'entity_type' => 'inline_block',
+          'type' => 'text',
+        ]);
+        $field_storage->save();
+      }
+      $field = FieldConfig::create([
+        'field_storage' => $field_storage,
+        'bundle' => $type_id,
+        'label' => 'Body',
+        'settings' => ['display_summary' => FALSE],
+      ]);
+      $field->save();
+
+      // Assign widget settings for the 'default' form mode.
+      entity_get_form_display('inline_block', $type_id, 'default')
+        ->setComponent('body', [
+          'type' => 'text_textarea_with_summary',
+        ])
+        ->save();
+
+      // Assign display settings for 'default' view mode.
+      entity_get_display('inline_block', $type_id, 'default')
+        ->setComponent('body', [
+          'label' => 'hidden',
+          'type' => 'text_default',
+        ])
+        ->save();
+    }
+
   }
 
 }

@@ -16,7 +16,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   label = @Translation("Inline block"),
  *   bundle_label = @Translation("Inline block type"),
  *   handlers = {
- *     "storage" = "Drupal\Core\Entity\Sql\SqlContentEntityStorage",
+ *     "storage" = "Drupal\layout_builder\InlineBlockStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "form" = {
  *       "default" = "Drupal\Core\Entity\ContentEntityForm",
