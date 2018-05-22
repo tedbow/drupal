@@ -13,7 +13,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\layout_builder\EntityUsageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -23,7 +22,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  id = "inline_block",
  *  admin_label = @Translation("Inline custom block"),
  *  category = @Translation("Inline custom blocks"),
- *  deriver = "Drupal\layout_builder\Plugin\Derivative\InlineBlockContentDeriver",
+ *  deriver = "Drupal\layout_builder\Plugin\Derivative\InlineBlockDeriver",
  * )
  */
 class InlineBlockBlock extends BlockBase implements ContainerFactoryPluginInterface {
@@ -64,13 +63,6 @@ class InlineBlockBlock extends BlockBase implements ContainerFactoryPluginInterf
   protected $isNew = TRUE;
 
   /**
-   * The entity usage tracker service.
-   *
-   * @var \Drupal\layout_builder\EntityUsageInterface
-   */
-  protected $entityUsage;
-
-  /**
    * Constructs a new InlineBlockContentBlock.
    *
    * @param array $configuration
@@ -83,16 +75,13 @@ class InlineBlockBlock extends BlockBase implements ContainerFactoryPluginInterf
    *   The entity type manager service.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The account for which view access should be checked.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
-   *   The entity display repository.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, AccountInterface $account, EntityDisplayRepositoryInterface $entity_display_repository, EntityUsageInterface $entity_usage) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, AccountInterface $account, EntityDisplayRepositoryInterface $entity_display_repository) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
     $this->account = $account;
     $this->entityDisplayRepository = $entity_display_repository;
-    $this->entityUsage = $entity_usage;
     if (!empty($this->configuration['block_revision_id']) || !empty($this->configuration['block_serialized'])) {
       $this->isNew = FALSE;
     }
@@ -108,8 +97,7 @@ class InlineBlockBlock extends BlockBase implements ContainerFactoryPluginInterf
       $plugin_definition,
       $container->get('entity_type.manager'),
       $container->get('current_user'),
-      $container->get('entity_display.repository'),
-      $container->get('entity.usage')
+      $container->get('entity_display.repository')
     );
   }
 
@@ -195,12 +183,11 @@ class InlineBlockBlock extends BlockBase implements ContainerFactoryPluginInterf
 
     // @todo Remove when https://www.drupal.org/project/drupal/issues/2948549 is closed.
     $block_form = NestedArray::getValue($form, $form_state->getTemporaryValue('block_form_parents'));
-    /** @var \Drupal\block_content\BlockContentInterface $block */
+    /** @var \Drupal\layout_builder\Entity\InlineBlockInterface $block */
     $block = $block_form['#block'];
     $form_display = EntityFormDisplay::collectRenderDisplay($block, 'edit');
     $complete_form_state = ($form_state instanceof SubformStateInterface) ? $form_state->getCompleteFormState() : $form_state;
     $form_display->extractFormValues($block, $block_form, $complete_form_state);
-    $block->setInfo($this->configuration['label']);
     $this->configuration['block_serialized'] = serialize($block);
   }
 
@@ -301,7 +288,6 @@ class InlineBlockBlock extends BlockBase implements ContainerFactoryPluginInterf
       $this->configuration['block_revision_id'] = $block->getRevisionId();
       $this->configuration['block_serialized'] = NULL;
       if ($new_usage && $parent_entity) {
-        $this->entityUsage->addByEntities($block, $parent_entity);
       }
     }
   }
