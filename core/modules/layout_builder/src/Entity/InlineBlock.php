@@ -20,11 +20,8 @@ use Drupal\user\UserInterface;
  *   label = @Translation("Inline block"),
  *   bundle_label = @Translation("Inline block type"),
  *   handlers = {
- *     "storage" = "Drupal\layout_builder\InlineBlockStorage",
+ *     "storage" = "Drupal\Core\Entity\Sql\SqlContentEntityStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\layout_builder\InlineBlockListBuilder",
- *     "views_data" = "Drupal\layout_builder\Entity\InlineBlockViewsData",
- *
  *     "form" = {
  *       "default" = "Drupal\layout_builder\Form\InlineBlockForm",
  *       "add" = "Drupal\layout_builder\Form\InlineBlockForm",
@@ -32,9 +29,6 @@ use Drupal\user\UserInterface;
  *       "delete" = "Drupal\layout_builder\Form\InlineBlockDeleteForm",
  *     },
  *     "access" = "Drupal\layout_builder\InlineBlockAccessControlHandler",
- *     "route_provider" = {
- *       "html" = "Drupal\layout_builder\InlineBlockHtmlRouteProvider",
- *     },
  *   },
  *   base_table = "inline_block",
  *   revision_table = "inline_block_revision",
@@ -52,15 +46,6 @@ use Drupal\user\UserInterface;
  *   },
  *   links = {
  *     "canonical" = "/admin/structure/inline_block/{inline_block}",
- *     "add-page" = "/admin/structure/inline_block/add",
- *     "add-form" = "/admin/structure/inline_block/add/{inline_block_type}",
- *     "edit-form" = "/admin/structure/inline_block/{inline_block}/edit",
- *     "delete-form" = "/admin/structure/inline_block/{inline_block}/delete",
- *     "version-history" = "/admin/structure/inline_block/{inline_block}/revisions",
- *     "revision" = "/admin/structure/inline_block/{inline_block}/revisions/{inline_block_revision}/view",
- *     "revision_revert" = "/admin/structure/inline_block/{inline_block}/revisions/{inline_block_revision}/revert",
- *     "revision_delete" = "/admin/structure/inline_block/{inline_block}/revisions/{inline_block_revision}/delete",
- *     "collection" = "/admin/structure/inline_block",
  *   },
  *   bundle_entity_type = "inline_block_type",
  *   field_ui_base_route = "entity.inline_block_type.edit_form"
@@ -136,21 +121,6 @@ class InlineBlock extends RevisionableContentEntityBase implements InlineBlockIn
   /**
    * {@inheritdoc}
    */
-  public function getCreatedTime() {
-    return $this->get('created')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setCreatedTime($timestamp) {
-    $this->set('created', $timestamp);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getOwner() {
     return $this->get('user_id')->entity;
   }
@@ -181,48 +151,24 @@ class InlineBlock extends RevisionableContentEntityBase implements InlineBlockIn
   /**
    * {@inheritdoc}
    */
-  public function isPublished() {
-    return (bool) $this->getEntityKey('status');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setPublished($published) {
-    $this->set('status', $published ? TRUE : FALSE);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['user_id'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Authored by'))
-      ->setDescription(t('The user ID of author of the Inline block entity.'))
-      ->setRevisionable(TRUE)
-      ->setSetting('target_type', 'user')
-      ->setSetting('handler', 'default')
-      ->setTranslatable(TRUE)
-      ->setDisplayOptions('view', [
-        'label' => 'hidden',
-        'type' => 'author',
-        'weight' => 0,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'entity_reference_autocomplete',
-        'weight' => 5,
-        'settings' => [
-          'match_operator' => 'CONTAINS',
-          'size' => '60',
-          'autocomplete_type' => 'tags',
-          'placeholder' => '',
-        ],
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
+    // parent_entity_type and parent_entity_id are only for usage tracking.
+    $fields['parent_entity_type'] = BaseFieldDefinition::create('string')
+      // @todo Also no need to revision since can't change?
+      ->setRevisionable(FALSE)
+      ->setTranslatable(FALSE)
+      ->setDisplayConfigurable('form', FALSE)
+      ->setDisplayConfigurable('view', FALSE)
+
+    $fields['parent_entity_id'] = BaseFieldDefinition::create('string')
+      // @todo Also no need to revision since can't change?
+      ->setRevisionable(FALSE)
+      ->setTranslatable(FALSE)
+      ->setDisplayConfigurable('form', FALSE)
+      ->setDisplayConfigurable('view', FALSE);
+
 
     $fields['name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Name'))
@@ -245,24 +191,6 @@ class InlineBlock extends RevisionableContentEntityBase implements InlineBlockIn
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE)
       ->setRequired(TRUE);
-
-    $fields['status'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Publishing status'))
-      ->setDescription(t('A boolean indicating whether the Inline block is published.'))
-      ->setRevisionable(TRUE)
-      ->setDefaultValue(TRUE)
-      ->setDisplayOptions('form', [
-        'type' => 'boolean_checkbox',
-        'weight' => -3,
-      ]);
-
-    $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Created'))
-      ->setDescription(t('The time that the entity was created.'));
-
-    $fields['changed'] = BaseFieldDefinition::create('changed')
-      ->setLabel(t('Changed'))
-      ->setDescription(t('The time that the entity was last edited.'));
 
     return $fields;
   }

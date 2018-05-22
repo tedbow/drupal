@@ -8,9 +8,9 @@ use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Retrieves block plugin definitions for all custom block types.
+ * Retrieves block plugin definitions for all inline block types.
  */
-class InlineBlockContentDeriver extends DeriverBase implements ContainerDeriverInterface {
+class InlineBlockDeriver extends DeriverBase implements ContainerDeriverInterface {
 
   /**
    * The entity type manager service.
@@ -43,9 +43,9 @@ class InlineBlockContentDeriver extends DeriverBase implements ContainerDeriverI
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
     $this->derivatives = [];
-    if ($this->entityTypeManager->hasDefinition('block_content_type')) {
-      $block_content_types = $this->entityTypeManager->getStorage('block_content_type')->loadMultiple();
-      foreach ($block_content_types as $id => $type) {
+    if ($this->entityTypeManager->hasDefinition('inline_block_type')) {
+      $inline_block_types = $this->entityTypeManager->getStorage('inline_block_type')->loadMultiple();
+      foreach ($inline_block_types as $id => $type) {
         $this->derivatives[$id] = $base_plugin_definition;
         $this->derivatives[$id]['admin_label'] = $type->label();
         $this->derivatives[$id]['config_dependencies'][$type->getConfigDependencyKey()][] = $type->getConfigDependencyName();

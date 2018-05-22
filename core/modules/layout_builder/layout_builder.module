@@ -16,7 +16,7 @@ use Drupal\field\FieldConfigInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplayStorage;
 use Drupal\layout_builder\Form\LayoutBuilderEntityViewDisplayForm;
-use Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock;
+use Drupal\layout_builder\Plugin\Block\InlineBlockBlock;
 use Drupal\block_content\Entity\BlockContent;
 
 /**

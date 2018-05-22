@@ -3,6 +3,7 @@
 namespace Drupal\layout_builder\Entity;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Entity\RevisionLogInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\user\EntityOwnerInterface;
@@ -12,7 +13,7 @@ use Drupal\user\EntityOwnerInterface;
  *
  * @ingroup layout_builder
  */
-interface InlineBlockInterface extends ContentEntityInterface, RevisionLogInterface, EntityChangedInterface, EntityOwnerInterface {
+interface InlineBlockInterface extends ContentEntityInterface, RevisionLogInterface {
 
   // Add get/set methods for your configuration properties here.
 
@@ -34,65 +35,6 @@ interface InlineBlockInterface extends ContentEntityInterface, RevisionLogInterf
    *   The called Inline block entity.
    */
   public function setName($name);
-
-  /**
-   * Gets the Inline block creation timestamp.
-   *
-   * @return int
-   *   Creation timestamp of the Inline block.
-   */
-  public function getCreatedTime();
-
-  /**
-   * Sets the Inline block creation timestamp.
-   *
-   * @param int $timestamp
-   *   The Inline block creation timestamp.
-   *
-   * @return \Drupal\layout_builder\Entity\InlineBlockInterface
-   *   The called Inline block entity.
-   */
-  public function setCreatedTime($timestamp);
-
-  /**
-   * Returns the Inline block published status indicator.
-   *
-   * Unpublished Inline block are only visible to restricted users.
-   *
-   * @return bool
-   *   TRUE if the Inline block is published.
-   */
-  public function isPublished();
-
-  /**
-   * Sets the published status of a Inline block.
-   *
-   * @param bool $published
-   *   TRUE to set this Inline block to published, FALSE to set it to unpublished.
-   *
-   * @return \Drupal\layout_builder\Entity\InlineBlockInterface
-   *   The called Inline block entity.
-   */
-  public function setPublished($published);
-
-  /**
-   * Gets the Inline block revision creation timestamp.
-   *
-   * @return int
-   *   The UNIX timestamp of when this revision was created.
-   */
-  public function getRevisionCreationTime();
-
-  /**
-   * Sets the Inline block revision creation timestamp.
-   *
-   * @param int $timestamp
-   *   The UNIX timestamp of when this revision was created.
-   *
-   * @return \Drupal\layout_builder\Entity\InlineBlockInterface
-   *   The called Inline block entity.
-   */
-  public function setRevisionCreationTime($timestamp);
 
   /**
    * Gets the Inline block revision author.

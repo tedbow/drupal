@@ -20,13 +20,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Defines an inline custom block type.
  *
  * @Block(
- *  id = "inline_block_content",
+ *  id = "inline_block",
  *  admin_label = @Translation("Inline custom block"),
  *  category = @Translation("Inline custom blocks"),
  *  deriver = "Drupal\layout_builder\Plugin\Derivative\InlineBlockContentDeriver",
  * )
  */
-class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class InlineBlockBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
    * The entity type manager service.
@@ -138,7 +138,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
       '#block' => $block,
     ];
 
-    $options = $this->entityDisplayRepository->getViewModeOptionsByBundle('block_content', $block->bundle());
+    $options = $this->entityDisplayRepository->getViewModeOptionsByBundle('inline_block', $block->bundle());
 
     $form['view_mode'] = [
       '#type' => 'select',
@@ -237,11 +237,11 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
         $this->blockContent = unserialize($this->configuration['block_serialized']);
       }
       elseif (!empty($this->configuration['block_revision_id'])) {
-        $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($this->configuration['block_revision_id']);
+        $entity = $this->entityTypeManager->getStorage('inline_block')->loadRevision($this->configuration['block_revision_id']);
         $this->blockContent = $entity;
       }
       else {
-        $this->blockContent = $this->entityTypeManager->getStorage('block_content')->create([
+        $this->blockContent = $this->entityTypeManager->getStorage('inline_block')->create([
           'type' => $this->getDerivativeId(),
           'reusable' => FALSE,
         ]);

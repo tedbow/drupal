@@ -1,25 +1,2 @@
 layout_builder_ui:
   deriver: '\Drupal\layout_builder\Plugin\Derivative\LayoutBuilderLocalTaskDeriver'
-# Inline block routing definition
-
-entity.inline_block.canonical:
-  route_name: entity.inline_block.canonical
-  base_route: entity.inline_block.canonical
-  title: 'View'
-
-entity.inline_block.edit_form:
-  route_name: entity.inline_block.edit_form
-  base_route: entity.inline_block.canonical
-  title: 'Edit'
-
-entity.inline_block.version_history:
-  route_name: entity.inline_block.version_history
-  base_route: entity.inline_block.canonical
-  title: 'Revisions'
-
-entity.inline_block.delete_form:
-  route_name:  entity.inline_block.delete_form
-  base_route:  entity.inline_block.canonical
-  title: Delete
-  weight: 10
-
