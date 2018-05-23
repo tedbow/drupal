@@ -18,6 +18,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   handlers = {
  *     "storage" = "Drupal\layout_builder\InlineBlockStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
+ *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
  *       "default" = "Drupal\Core\Entity\ContentEntityForm",
  *       "add" = "Drupal\Core\Entity\ContentEntityForm",

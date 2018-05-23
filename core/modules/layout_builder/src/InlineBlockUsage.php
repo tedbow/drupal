@@ -205,7 +205,7 @@ class InlineBlockUsage {
       $plugin = $component->getPlugin();
       $configuration = $plugin->getConfiguration();
       if (!empty($configuration['block_revision_id'])) {
-        if ($block = $this->entityTypeManager->getStorage('block_content')
+        if ($block = $this->entityTypeManager->getStorage('inline_block')
           ->loadRevision($configuration['block_revision_id'])) {
           $block_ids[] = $block->id();
         }

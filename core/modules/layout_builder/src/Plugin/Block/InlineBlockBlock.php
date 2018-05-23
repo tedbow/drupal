@@ -270,7 +270,7 @@ class InlineBlockBlock extends BlockBase implements ContainerFactoryPluginInterf
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = NULL;
     if ($duplicate_block && !empty($this->configuration['block_revision_id']) && empty($this->configuration['block_serialized'])) {
-      $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($this->configuration['block_revision_id']);
+      $entity = $this->entityTypeManager->getStorage('inline_block')->loadRevision($this->configuration['block_revision_id']);
       $block = $entity->createDuplicate();
     }
     elseif (isset($this->configuration['block_serialized'])) {

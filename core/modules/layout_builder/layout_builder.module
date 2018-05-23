@@ -5,10 +5,8 @@
  * Provides hook implementations for Layout Builder.
  */
 
-use Drupal\block\BlockInterface;
+
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
@@ -16,8 +14,6 @@ use Drupal\field\FieldConfigInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplayStorage;
 use Drupal\layout_builder\Form\LayoutBuilderEntityViewDisplayForm;
-use Drupal\layout_builder\Plugin\Block\InlineBlockBlock;
-use Drupal\block_content\Entity\BlockContent;
 
 /**
  * Implements hook_help().
@@ -102,7 +98,7 @@ function layout_builder_entity_presave(EntityInterface $entity) {
 /**
  * Implements hook_entity_delete().
  */
-function layout_builder_entity_delete(EntityInterface $entity) {
+function layout_builder_entity_predelete(EntityInterface $entity) {
   /** @var \Drupal\layout_builder\InlineBlockUsage $inline_block_usage */
   $inline_block_usage = \Drupal::service('inline_block_content.usage');
   $inline_block_usage->handleEntityDelete($entity);
