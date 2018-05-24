@@ -562,7 +562,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
    *   The block entity if exists.
    */
   protected function loadBlock($id) {
-    return $this->loadBlock($id);
+    return $this->getInlineStorage()->load($id);
   }
 
 }
