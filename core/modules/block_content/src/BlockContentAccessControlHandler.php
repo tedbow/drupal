@@ -20,20 +20,25 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
     if ($operation === 'view') {
+      $dependee_access = NULL;
       /** @var \Drupal\block_content\BlockContentInterface $entity */
       if (!$entity->isReusable()) {
         if (!$entity instanceof AccessDependentInterface) {
           throw new \Exception("what?");
         }
-        if (empty($entity->getAccessDependees())) {
-          return AccessResult::forbidden("None set");
+        $dependee = $entity->getAccessDependee();
+        if (empty($dependee)) {
+          return AccessResult::forbidden("No dependee entity set.")->addCacheableDependency($dependee);
         }
-        if (!$entity->dependeeAccess($operation, $account)) {
-          return AccessResult::forbidden('no access to parent');
-        }
+        $dependee_access = $dependee->access($operation, $account, TRUE);
       }
-      return AccessResult::allowedIf($entity->isPublished())->addCacheableDependency($entity)
+      $access = AccessResult::allowedIf($entity->isPublished())->addCacheableDependency($entity)
         ->orIf(AccessResult::allowedIfHasPermission($account, 'administer blocks'));
+      if ($dependee_access) {
+        $access->andIf($dependee_access);
+      }
+      return $access;
+
     }
     return parent::checkAccess($entity, $operation, $account);
   }

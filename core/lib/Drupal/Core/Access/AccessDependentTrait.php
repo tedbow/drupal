@@ -1,11 +1,10 @@
 <?php
 
-
 namespace Drupal\Core\Access;
 
-
-use Drupal\Core\Session\AccountInterface;
-
+/**
+ * Implements \Drupal\Core\Access\AccessDependentInterface.
+ */
 trait AccessDependentTrait {
 
   /**
@@ -16,34 +15,18 @@ trait AccessDependentTrait {
   protected $accessDependee;
 
   /**
-   * @param \Drupal\Core\Access\AccessibleInterface $access_dependee
+   * {@inheritdoc}
    */
   public function setAccessDependee(AccessibleInterface $access_dependee) {
+    $this->accessDependee = $access_dependee;
 
   }
 
   /**
-   * Gets the access dependees.
-   *
-   * @return \Drupal\Core\Access\AccessibleInterface
-   *   The access dependees.
+   * {@inheritdoc}
    */
   public function getAccessDependee() {
-
+    return $this->accessDependee;
   }
 
-  /*function dependeeAccess($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
-    if (!$this->accessDependees) {
-      return AccessResult::forbidden();
-    }
-    $access = NULL;
-    /** @var  \Drupal\Core\Access\AccessibleInterface $accessDependee */
-    foreach ($this->accessDependees as $accessDependee) {
-      if ($access === NULL) {
-        $access = $accessDependee->access($operation, $account, TRUE);
-      }
-      $access->andIf($accessDependee->access($operation, $account, TRUE));
-    }
-    return $access;
-  }*/
 }

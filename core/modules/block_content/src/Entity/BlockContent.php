@@ -2,6 +2,8 @@
 
 namespace Drupal\block_content\Entity;
 
+use Drupal\Core\Access\AccessDependentInterface;
+use Drupal\Core\Access\AccessDependentTrait;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -75,7 +77,9 @@ use Drupal\user\UserInterface;
  * caching.
  * See https://www.drupal.org/node/2284917#comment-9132521 for more information.
  */
-class BlockContent extends EditorialContentEntityBase implements BlockContentInterface, AccessDependentInterace {
+class BlockContent extends EditorialContentEntityBase implements BlockContentInterface, AccessDependentInterface {
+
+  use AccessDependentTrait;
 
   /**
    * The theme the block is being created in.
