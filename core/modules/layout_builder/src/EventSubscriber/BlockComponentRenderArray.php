@@ -57,14 +57,23 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
       return;
     }
 
-    $this->setBlockDependee($event, $block);
+    // Set block block access dependee even if we are not checking access on
+    // this level. Block itself may render another AccessDependentInterface
+    // object and need to pass on this value.
+    if ($block instanceof AccessDependentInterface) {
+      $contexts = $event->getContexts();
+      if (isset($contexts['layout_builder.entity'])) {
+        if ($entity = $contexts['layout_builder.entity']->getContextValue()) {
+          $block->setAccessDependee($entity);
+        }
+      }
+    }
 
     // Only check access if the component is not being previewed.
     if ($event->inPreview()) {
       $access = AccessResult::allowed()->setCacheMaxAge(0);
     }
     else {
-
       $access = $block->access($this->currentUser, TRUE);
     }
 
@@ -86,18 +95,4 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
     }
   }
 
-  /**
-   * @param \Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent $event
-   * @param $block
-   */
-  protected function setBlockDependee(SectionComponentBuildRenderArrayEvent $event, $block) {
-    if ($block instanceof AccessDependentInterface) {
-      $contexts = $event->getContexts();
-      if (isset($contexts['layout_builder.entity'])) {
-        if ($entity = $contexts['layout_builder.entity']->getContextValue()) {
-          $block->setAccessDependee($entity);
-        }
-      }
-    }
-  }
 }
