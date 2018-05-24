@@ -89,6 +89,8 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    *   The account for which view access should be checked.
    * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
    *   The entity display repository.
+   * @param \Drupal\layout_builder\EntityUsageInterface $entity_usage
+   *   The entity usage service.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, AccountInterface $account, EntityDisplayRepositoryInterface $entity_display_repository, EntityUsageInterface $entity_usage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);

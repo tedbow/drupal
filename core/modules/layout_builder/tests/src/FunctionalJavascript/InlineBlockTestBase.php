@@ -167,7 +167,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     /* @var \Behat\Mink\Element\NodeElement $inline_block_2 */
     $inline_block_2 = $page->findAll('css', static::$inlineBlockCssLocator)[1];
     $uuid = $inline_block_2->getAttribute('data-layout-block-uuid');
-    $this->clickContextualLink(static::$inlineBlockCssLocator ."[data-layout-block-uuid=\"$uuid\"]", 'Configure');
+    $this->clickContextualLink(static::$inlineBlockCssLocator . "[data-layout-block-uuid=\"$uuid\"]", 'Configure');
     $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
     $this->assertNotEmpty($textarea);
     $this->assertSame('The 2nd block body', $textarea->getValue());
@@ -347,7 +347,6 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
 
     $assert_session->pageTextContains('The DEFAULT block body');
 
-
     // Create a new revision.
     $this->drupalGet('node/1/edit');
     $page->pressButton('Save');
@@ -380,7 +379,6 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $assert_session->pageTextContains('The DEFAULT block body');
     $assert_session->pageTextNotContains('The NEW block body');
   }
-
 
   /**
    * Tests that entity blocks deleted correctly.
@@ -502,7 +500,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
    * Gets the latest block entity id.
    */
   protected function getLatestBlockEntityId() {
-    $block_ids  = \Drupal::entityQuery(static::$blockEntityType)->sort('id','DESC')->range(0,1)->execute();
+    $block_ids  = \Drupal::entityQuery(static::$blockEntityType)->sort('id', 'DESC')->range(0, 1)->execute();
     $block_id = array_pop($block_ids);
     $this->assertNotEmpty($this->loadBlock($block_id));
     return $block_id;
@@ -543,6 +541,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $assert_session->assertWaitOnAjaxRequest();
     $assert_session->elementTextContains('css', static::$inlineBlockCssLocator, $body);
   }
+
   /**
    * Create block entity type bundle for test.
    */
