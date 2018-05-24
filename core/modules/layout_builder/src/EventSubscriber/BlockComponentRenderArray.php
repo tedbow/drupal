@@ -2,6 +2,7 @@
 
 namespace Drupal\layout_builder\EventSubscriber;
 
+use Drupal\Core\Access\AccessDependentInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -56,11 +57,14 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
       return;
     }
 
+    $this->setBlockDependee($event, $block);
+
     // Only check access if the component is not being previewed.
     if ($event->inPreview()) {
       $access = AccessResult::allowed()->setCacheMaxAge(0);
     }
     else {
+
       $access = $block->access($this->currentUser, TRUE);
     }
 
@@ -82,4 +86,18 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
     }
   }
 
+  /**
+   * @param \Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent $event
+   * @param $block
+   */
+  protected function setBlockDependee(SectionComponentBuildRenderArrayEvent $event, $block) {
+    if ($block instanceof AccessDependentInterface) {
+      $contexts = $event->getContexts();
+      if (isset($contexts['layout_builder.entity'])) {
+        if ($entity = $contexts['layout_builder.entity']->getContextValue()) {
+          $block->setAccessDependee($entity);
+        }
+      }
+    }
+  }
 }
