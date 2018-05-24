@@ -182,4 +182,3 @@ function block_content_update_8601() {
   }
   $view->save();
 }
-
