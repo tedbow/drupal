@@ -75,7 +75,7 @@ use Drupal\user\UserInterface;
  * caching.
  * See https://www.drupal.org/node/2284917#comment-9132521 for more information.
  */
-class BlockContent extends EditorialContentEntityBase implements BlockContentInterface {
+class BlockContent extends EditorialContentEntityBase implements BlockContentInterface, AccessDependentInterace {
 
   /**
    * The theme the block is being created in.
