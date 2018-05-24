@@ -86,4 +86,13 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
     $this->addBodyField($bundle->id());
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function loadBlock($id) {
+    $this->getInlineStorage()->resetCache([$id]);
+    return parent::loadBlock($id);
+  }
+
+
 }
