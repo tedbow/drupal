@@ -79,7 +79,6 @@ class EntityUsageTest extends EntityKernelTestBase {
     ]);
     $this->childEntity2->save();
 
-
     $this->entityUsage = $this->container->get('entity.usage');
     $this->connection = $this->container->get('database');
   }
