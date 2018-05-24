@@ -509,14 +509,9 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     // @todo Why wait?
     sleep(3);
     if (stristr($this->getUrl(), 'admin/structure') === FALSE) {
-      file_put_contents('/Users/ted.bowman/Sites/www/new.html', $this->getSession()->getPage()->getOuterHtml());
       $assert_session->pageTextContains('The layout override has been saved.');
     }
     else {
-      $page = $this->getSession()->getPage();
-      if (stristr($page->getText(), 'The layout has been saved.') === FALSE) {
-        file_put_contents('/Users/ted.bowman/Sites/www/dd.html', $page->getOuterHtml());
-      }
       $assert_session->pageTextContains('The layout has been saved.');
     }
   }

@@ -36,7 +36,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "bundle" = "type",
  *     "uuid" = "uuid",
  *     "langcode" = "langcode",
- *     "status" = "status",
  *   },
  *   links = {
  *     "canonical" = "/admin/structure/inline_block/{inline_block}",
@@ -62,6 +61,13 @@ class InlineBlock extends RevisionableContentEntityBase implements InlineBlockIn
       ->setDisplayConfigurable('view', FALSE);
 
     $fields['parent_entity_id'] = BaseFieldDefinition::create('string')
+      // @todo Also no need to revision since can't change?
+      ->setRevisionable(FALSE)
+      ->setTranslatable(FALSE)
+      ->setDisplayConfigurable('form', FALSE)
+      ->setDisplayConfigurable('view', FALSE);
+
+    $fields['parent_revision_id'] = BaseFieldDefinition::create('int')
       // @todo Also no need to revision since can't change?
       ->setRevisionable(FALSE)
       ->setTranslatable(FALSE)
