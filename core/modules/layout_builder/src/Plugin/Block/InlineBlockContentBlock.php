@@ -3,6 +3,8 @@
 namespace Drupal\layout_builder\Plugin\Block;
 
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Access\AccessDependentInterface;
+use Drupal\Core\Access\AccessDependentTrait;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
@@ -26,7 +28,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  deriver = "Drupal\layout_builder\Plugin\Derivative\InlineBlockContentDeriver",
  * )
  */
-class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface, AccessDependentInterface {
+
+  use AccessDependentTrait;
 
   /**
    * The entity type manager service.
@@ -208,8 +212,12 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    * {@inheritdoc}
    */
   protected function blockAccess(AccountInterface $account) {
-    if ($this->getEntity()) {
-      return $this->getEntity()->access('view', $account, TRUE);
+    $entity = $this->getEntity();
+    if ($entity) {
+      if ($entity instanceof AccessDependentInterface) {
+        $entity->setAccessDependee($this->getAccessDependee());
+        return $entity->access('view', $account, TRUE);
+      }
     }
     return AccessResult::forbidden();
   }
@@ -219,6 +227,9 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    */
   public function build() {
     $block = $this->getEntity();
+    if ($block instanceof AccessDependentInterface) {
+      $block->setAccessDependee($this->getAccessDependee());
+    }
     return $this->entityTypeManager->getViewBuilder($block->getEntityTypeId())->view($block, $this->configuration['view_mode']);
   }
 
