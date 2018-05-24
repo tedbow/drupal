@@ -144,4 +144,3 @@ function layout_builder_update_8001() {
   ];
   Database::getConnection()->schema()->createTable('entity_usage', $entity_usage_schema);
 }
-
