@@ -21,7 +21,8 @@ class InlineBlockAccessControlHandler extends EntityAccessControlHandler {
     /** @var \Drupal\layout_builder\Entity\InlineBlockInterface $entity */
     switch ($operation) {
       case 'view':
-        return AccessResult::allowedIfHasPermission($account, 'view published inline block entities');
+        // @todo Implement logic to check parent entity access.
+        return AccessResult::allowed();
 
       case 'update':
         return AccessResult::allowedIfHasPermission($account, 'edit inline block entities');

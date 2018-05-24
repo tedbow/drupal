@@ -67,13 +67,6 @@ class InlineBlock extends RevisionableContentEntityBase implements InlineBlockIn
       ->setDisplayConfigurable('form', FALSE)
       ->setDisplayConfigurable('view', FALSE);
 
-    $fields['parent_revision_id'] = BaseFieldDefinition::create('int')
-      // @todo Also no need to revision since can't change?
-      ->setRevisionable(FALSE)
-      ->setTranslatable(FALSE)
-      ->setDisplayConfigurable('form', FALSE)
-      ->setDisplayConfigurable('view', FALSE);
-
     return $fields;
   }
 
