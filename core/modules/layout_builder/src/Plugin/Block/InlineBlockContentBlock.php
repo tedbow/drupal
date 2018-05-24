@@ -212,12 +212,8 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    * {@inheritdoc}
    */
   protected function blockAccess(AccountInterface $account) {
-    $entity = $this->getEntity();
-    if ($entity) {
-      if ($entity instanceof AccessDependentInterface) {
-        $entity->setAccessDependee($this->getAccessDependee());
-        return $entity->access('view', $account, TRUE);
-      }
+    if ($this->getEntity()) {
+      return $this->getEntity()->access('view', $account, TRUE);
     }
     return AccessResult::forbidden();
   }
@@ -227,9 +223,6 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    */
   public function build() {
     $block = $this->getEntity();
-    if ($block instanceof AccessDependentInterface) {
-      $block->setAccessDependee($this->getAccessDependee());
-    }
     return $this->entityTypeManager->getViewBuilder($block->getEntityTypeId())->view($block, $this->configuration['view_mode']);
   }
 
@@ -257,6 +250,9 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
           'reusable' => FALSE,
         ]);
       }
+    }
+    if ($this->blockContent instanceof AccessDependentInterface && $dependee = $this->getAccessDependee()) {
+      $this->blockContent->setAccessDependee($dependee);
     }
     return $this->blockContent;
   }
