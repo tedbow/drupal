@@ -280,7 +280,6 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    *   Whether to create new revision.
    * @param bool $duplicate_block
    *   Whether to duplicate the "block_content" entity.
-   *
    * @param \Drupal\Core\Entity\EntityInterface|null $parent_entity
    *   The parent entity if any that is using this plugin.
    *
