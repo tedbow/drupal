@@ -5,6 +5,7 @@
  * Provides hook implementations for Layout Builder.
  */
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
@@ -80,4 +81,33 @@ function layout_builder_field_config_delete(FieldConfigInterface $field_config) 
   $sample_entity_generator = \Drupal::service('layout_builder.sample_entity_generator');
   $sample_entity_generator->delete($field_config->getTargetEntityTypeId(), $field_config->getTargetBundle());
   \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
+}
+
+/**
+ * Implements hook_entity_presave().
+ *
+ * @todo Move to "block_content" module before Layout Builder is stable.
+ */
+function layout_builder_entity_presave(EntityInterface $entity) {
+  /** @var \Drupal\layout_builder\InlineBlockContentUsage $inline_block_usage */
+  $inline_block_usage = \Drupal::service('inline_block_content.usage');
+  $inline_block_usage->handlePreSave($entity);
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function layout_builder_entity_delete(EntityInterface $entity) {
+  /** @var \Drupal\layout_builder\InlineBlockContentUsage $inline_block_usage */
+  $inline_block_usage = \Drupal::service('inline_block_content.usage');
+  $inline_block_usage->handleEntityDelete($entity);
+}
+
+/**
+ * Implements hook_cron().
+ */
+function layout_builder_cron() {
+  /** @var \Drupal\layout_builder\InlineBlockContentUsage $inline_block_usage */
+  $inline_block_usage = \Drupal::service('inline_block_content.usage');
+  $inline_block_usage->removeAllUnused();
 }

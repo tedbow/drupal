@@ -2,6 +2,7 @@
 
 namespace Drupal\block_content;
 
+use Drupal\Core\Access\AccessDependentInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
@@ -19,8 +20,25 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
     if ($operation === 'view') {
-      return AccessResult::allowedIf($entity->isPublished())->addCacheableDependency($entity)
+      $dependee_access = NULL;
+      /** @var \Drupal\block_content\BlockContentInterface $entity */
+      if (!$entity->isReusable()) {
+        if (!$entity instanceof AccessDependentInterface) {
+          throw new \Exception("what?");
+        }
+        $dependee = $entity->getAccessDependee();
+        if (empty($dependee)) {
+          return AccessResult::forbidden("No dependee entity set.")->addCacheableDependency($dependee);
+        }
+        $dependee_access = $dependee->access($operation, $account, TRUE);
+      }
+      $access = AccessResult::allowedIf($entity->isPublished())->addCacheableDependency($entity)
         ->orIf(AccessResult::allowedIfHasPermission($account, 'administer blocks'));
+      if ($dependee_access) {
+        $access->andIf($dependee_access);
+      }
+      return $access;
+
     }
     return parent::checkAccess($entity, $operation, $account);
   }
