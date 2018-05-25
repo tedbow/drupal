@@ -78,7 +78,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Tests adding and editing of inline blocks.
    */
   public function testInlineBlocks() {
     $assert_session = $this->assertSession();
@@ -383,7 +383,6 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
   /**
    * Tests that entity blocks deleted correctly.
    *
-   * @throws \Behat\Mink\Exception\ElementNotFoundException
    * @throws \Behat\Mink\Exception\ExpectationException
    * @throws \Behat\Mink\Exception\ResponseTextException
    */
@@ -500,7 +499,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
    * Gets the latest block entity id.
    */
   protected function getLatestBlockEntityId() {
-    $block_ids  = \Drupal::entityQuery(static::$blockEntityType)->sort('id', 'DESC')->range(0, 1)->execute();
+    $block_ids = \Drupal::entityQuery(static::$blockEntityType)->sort('id', 'DESC')->range(0, 1)->execute();
     $block_id = array_pop($block_ids);
     $this->assertNotEmpty($this->loadBlock($block_id));
     return $block_id;
@@ -524,6 +523,15 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
 
   /**
    * Adds an entity block to the layout.
+   *
+   * @param string $title
+   *   The title field value.
+   * @param string $body
+   *   The body field value.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   * @throws \Behat\Mink\Exception\ElementTextException
+   * @throws \Behat\Mink\Exception\ExpectationException
    */
   protected function addInlineBlockToLayout($title, $body) {
     $assert_session = $this->assertSession();
@@ -547,6 +555,12 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
    */
   abstract protected function createBlockBundle();
 
+  /**
+   * Returns the entity storage for inline blocks.
+   *
+   * @return \Drupal\Core\Entity\Sql\SqlContentEntityStorage
+   *   The storage handler.
+   */
   protected function getInlineStorage() {
     return $this->container->get('entity_type.manager')->getStorage(static::$blockEntityType);
   }
