@@ -105,3 +105,52 @@ function block_content_add_body_field($block_type_id, $label = 'Body') {
 
   return $field;
 }
+
+/**
+ * Implements hook_query_TAG_alter().
+ */
+function block_content_query_block_content_access_alter(AlterableInterface $query) {
+  if ($query instanceof SelectInterface && $query->hasAllTags('entity_query_block_content')) {
+    $reusable_conditions = array_filter($query->conditions(), '_block_content_has_reusable_condition');
+    if (empty($reusable_conditions)) {
+      // If no reusable condition set to one.
+      $query->condition('reusable', TRUE);
+    }
+  }
+}
+
+function _block_content_has_reusable_condition($condition) {
+  if (!is_array($condition)) {
+    return FALSE;
+  }
+  $field = isset($condition['field']) ? $condition['field'] : NULL;
+  if (is_object($field) && $field instanceof \Drupal\Core\Database\Query\Condition) {
+    return _block_content_has_reusable_condition($field->conditions());
+  }
+  if (isset($condition['#conjunction'])) {
+    foreach ($condition as $key => $nested_condition) {
+      if (is_int($key)) {
+        if (_block_content_has_reusable_condition($nested_condition)) {
+          return TRUE;
+        }
+      }
+    }
+    return FALSE;
+  }
+  return $field === 'reusable' || $field == 'block_content_field_data.reusable';
+}
+
+/**
+ * Implements hook_query_alter().
+ */
+function block_content_query_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
+  $a = 'b';
+  if ($query instanceof \Drupal\Core\Database\Query\SelectInterface && $query->hasAllTags('entity_query_block_content')) {
+    $reusable_conditions = array_filter($query->conditions(), '_block_content_has_reusable_condition');
+    if (empty($reusable_conditions)) {
+      // If no reusable condition set to one.
+      $query->condition('reusable', TRUE);
+    }
+  }
+
+}
