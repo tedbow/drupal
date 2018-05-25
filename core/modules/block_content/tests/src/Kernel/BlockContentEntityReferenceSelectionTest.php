@@ -11,6 +11,8 @@ use Drupal\Tests\token\Kernel\KernelTestBase;
  * Tests that EntityReference selection handlers don't find non-reusable blocks.
  *
  * @see block_content_query_block_content_access_alter()
+ *
+ * @group block_content
  */
 class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
 
