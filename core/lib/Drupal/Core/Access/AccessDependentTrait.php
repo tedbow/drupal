@@ -8,7 +8,7 @@ namespace Drupal\Core\Access;
 trait AccessDependentTrait {
 
   /**
-   * The object that are depended on.
+   * The object that is depended on.
    *
    * @var \Drupal\Core\Access\AccessibleInterface
    */
