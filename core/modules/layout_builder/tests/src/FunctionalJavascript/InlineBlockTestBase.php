@@ -310,6 +310,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $assert_session = $this->assertSession();
     $assert_session->linkExists('Save Layout');
     $this->clickLink('Save Layout');
+    $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
     if (stristr($this->getUrl(), 'admin/structure') === FALSE) {
       $assert_session->pageTextContains('The layout override has been saved.');
     }
