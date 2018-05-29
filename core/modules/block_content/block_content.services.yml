@@ -4,7 +4,3 @@ services:
     arguments: ['@cache.bootstrap', '@lock', '@entity_type.manager']
     tags:
       - { name: needs_destruction }
-  access_check.entity.block_content:
-    class: Drupal\block_content\Access\ReusableAccessCheck
-    tags:
-      - { name: access_check, applies_to: _is_reusable_block_content }

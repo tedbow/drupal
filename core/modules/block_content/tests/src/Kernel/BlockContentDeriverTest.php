@@ -8,7 +8,7 @@ use Drupal\Component\Plugin\PluginBase;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
- * Tests block content derivative.
+ * Tests block content plugin deriver.
  *
  * @group block_content
  */
@@ -32,7 +32,7 @@ class BlockContentDeriverTest extends KernelTestBase {
   /**
    * Tests that reusable blocks only are derived.
    */
-  public function testThatReusableBlocksOnlyAreDerived() {
+  public function testReusableBlocksOnlyAreDerived() {
     // Create a block content type.
     $block_content_type = BlockContentType::create([
       'id' => 'spiffy',
@@ -47,8 +47,8 @@ class BlockContentDeriverTest extends KernelTestBase {
     ]);
     $block_content->save();
 
-    // Make sure the block content provides a derivative block plugin in the
-    // block repository.
+    // Ensure the reusable block content is provided as a derivative block
+    // plugin.
     /** @var \Drupal\Core\Block\BlockManagerInterface $block_manager */
     $block_manager = $this->container->get('plugin.manager.block');
     $plugin_id = 'block_content' . PluginBase::DERIVATIVE_SEPARATOR . $block_content->uuid();
@@ -58,6 +58,8 @@ class BlockContentDeriverTest extends KernelTestBase {
     $block_content->setReusable(FALSE);
     $block_content->save();
 
+    // Ensure the non-reusable block content is not provided a derivative block
+    // plugin.
     $this->assertFalse($block_manager->hasDefinition($plugin_id));
   }
 
