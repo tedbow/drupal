@@ -21,7 +21,7 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
     $dependee_access = NULL;
     /** @var \Drupal\block_content\BlockContentInterface $entity */
-    if (!$entity->isReusable()) {
+    if ($entity->isReusable() === FALSE) {
       if (!$entity instanceof AccessDependentInterface) {
         throw new \Exception("Non-reusable block entities must implement \Drupal\Core\Access\AccessDependentInterface for access control.");
       }
@@ -37,7 +37,7 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
 
     }
     else {
-      $access = parent::checkAccess($entity, $operation, $account)->andIf($dependee_access);
+      $access = parent::checkAccess($entity, $operation, $account);
     }
 
     if ($dependee_access) {
