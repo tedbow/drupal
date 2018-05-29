@@ -109,5 +109,5 @@ function layout_builder_entity_delete(EntityInterface $entity) {
 function layout_builder_cron() {
   /** @var \Drupal\layout_builder\InlineBlockContentUsage $inline_block_usage */
   $inline_block_usage = \Drupal::service('inline_block_content.usage');
-  $inline_block_usage->removeAllUnused();
+  $inline_block_usage->removeUnused();
 }

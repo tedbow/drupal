@@ -155,10 +155,10 @@ class EntityUsageTest extends EntityKernelTestBase {
     $this->assertUnsortedArrayEquals([$this->childEntity2->id(), $this->childEntity->id()], $this->entityUsage->getEntitiesWithNoUses('entity_test', 2));
     $this->assertCount(1, $this->entityUsage->getEntitiesWithNoUses('entity_test', 1));
 
-    $this->entityUsage->delete($this->childEntity->getEntityTypeId(), $this->childEntity->id());
+    $this->entityUsage->deleteMultiple($this->childEntity->getEntityTypeId(), [$this->childEntity->id()]);
     $this->assertEquals([$this->childEntity2->id()], $this->entityUsage->getEntitiesWithNoUses('entity_test'));
 
-    $this->entityUsage->delete($this->childEntity2->getEntityTypeId(), $this->childEntity2->id());
+    $this->entityUsage->deleteMultiple($this->childEntity2->getEntityTypeId(), [$this->childEntity2->id()]);
     $this->assertEmpty($this->entityUsage->getEntitiesWithNoUses('entity_test'));
   }
 

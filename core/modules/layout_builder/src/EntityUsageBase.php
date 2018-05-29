@@ -20,7 +20,7 @@ abstract class EntityUsageBase implements EntityUsageInterface {
    * {@inheritdoc}
    */
   public function deleteByChildEntity(EntityInterface $child_entity) {
-    $this->delete($child_entity->getEntityTypeId(), $child_entity->id());
+    $this->deleteMultiple($child_entity->getEntityTypeId(), [$child_entity->id()]);
   }
 
   /**
