@@ -131,8 +131,6 @@ class InlineBlockContentUsage {
     $duplicate_blocks = FALSE;
 
     $this->removeUnusedForEntityOnSave($entity);
-    /** @var \Drupal\layout_builder\Section[] $sections */
-    $sections = NULL;
 
     if ($this->isInlineBlockContentBlock($entity)) {
       /** @var \Drupal\block\BlockInterface $entity */
@@ -141,6 +139,8 @@ class InlineBlockContentUsage {
       $plugin->saveBlockContent(FALSE, FALSE, $entity);
       $entity->set('settings', $plugin->getConfiguration());
     }
+    /** @var \Drupal\layout_builder\Section[] $sections */
+    $sections = NULL;
     if ($this->isLayoutCompatibleEntity($entity) && $sections = $this->getEntitySections($entity)) {
       if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
         if (!$entity->isNew() && isset($entity->original)) {
@@ -174,7 +174,7 @@ class InlineBlockContentUsage {
   }
 
   /**
-   * The all Inline Blocks in Sections.
+   * Gets the all Block Content IDs in Sections.
    *
    * @param array $sections
    *   The layout sections.
