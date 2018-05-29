@@ -206,7 +206,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
 
     $fields['reusable'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Reusable'))
-      ->setDescription(t('Determine if the block should be reusable or not.'))
+      ->setDescription(t('A boolean indicating whether this block is reusable.'))
       ->setDefaultValue(TRUE);
 
     return $fields;
