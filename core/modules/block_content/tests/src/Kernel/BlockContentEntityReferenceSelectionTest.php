@@ -33,6 +33,8 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
    */
   public function setUp() {
     parent::setUp();
+    $this->installSchema('system', ['sequence']);
+    $this->installEntitySchema('user');
     $this->installEntitySchema('block_content');
 
     // Create a block content type.
