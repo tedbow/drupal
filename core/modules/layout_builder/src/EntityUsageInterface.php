@@ -8,10 +8,10 @@ use Drupal\Core\Entity\EntityInterface;
  * Entity usage interface.
  *
  * Be default usage records are still kept when they have a count of "0". This
- * allows finding entities that were used but are not longer being used as
- * opposed to entities that never were tracked.
+ * allows finding entities that were used but are no longer being used as
+ * opposed to entities that have never been used.
  *
- * Modules using this service are responsible for deleting the entities with "0"
+ * Modules using this service are responsible for deleting the entities with 0
  * used count.
  */
 interface EntityUsageInterface {
@@ -52,7 +52,7 @@ interface EntityUsageInterface {
    * @param \Drupal\Core\Entity\EntityInterface $parent_entity
    *   The parent entity.
    * @param int $count
-   *   The count to remove.
+   *   The count to remove, defaults to 1.
    *
    * @return int
    *   The new total uses for the entity.
@@ -71,7 +71,7 @@ interface EntityUsageInterface {
    * @param string $parent_id
    *   The parent ID.
    * @param int $count
-   *   The count to remove.
+   *   The count to remove, defaults to 1.
    *
    * @return int
    *   The new total uses for the entity.
@@ -91,7 +91,7 @@ interface EntityUsageInterface {
   public function removeByParentEntity($child_entity_type_id, EntityInterface $parent_entity, $retain_usage_record = TRUE);
 
   /**
-   * Determines where a entity is used.
+   * Determines where an entity is used.
    *
    * @param \Drupal\Core\Entity\EntityInterface $child_entity
    *   A child  entity.
@@ -104,14 +104,14 @@ interface EntityUsageInterface {
   public function listUsage(EntityInterface $child_entity);
 
   /**
-   * Gets all entities have been tracked but currently have no uses.
+   * Gets all entities that have been tracked but currently have no uses.
    *
    * This can be used by modules to determine which entities should be deleted.
    *
    * @param string $child_entity_type_id
    *   The entity type to query.
-   * @param int $limit
-   *   The maximum number of entities to fetch.
+   * @param int|null $limit
+   *   The maximum number of entities to fetch or null for no limit.
    *
    * @return int[]
    *   The entity IDs.
