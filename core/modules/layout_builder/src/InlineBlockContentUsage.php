@@ -256,7 +256,7 @@ class InlineBlockContentUsage {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   public function removeAllUnused() {
-    $entity_ids = $this->entityUsage->getEntitiesWithNoUses('block_content');
+    $entity_ids = $this->entityUsage->getEntitiesWithNoUses('block_content', 40);
     foreach ($entity_ids as $entity_id) {
       if ($block = $this->entityTypeManager->getStorage('block_content')->load($entity_id)) {
         $block->delete();
