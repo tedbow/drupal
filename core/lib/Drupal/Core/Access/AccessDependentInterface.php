@@ -3,7 +3,7 @@
 namespace Drupal\Core\Access;
 
 /**
- * Interface objects that are dependent other accessible objects.
+ * Interface for objects that are dependent on other accessible objects.
  */
 interface AccessDependentInterface {
 
