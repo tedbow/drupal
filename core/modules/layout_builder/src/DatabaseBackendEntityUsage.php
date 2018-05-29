@@ -58,7 +58,7 @@ class DatabaseBackendEntityUsage extends EntityUsageBase {
    * {@inheritdoc}
    */
   public function remove($child_entity_type_id, $child_entity_id, $parent_type, $parent_id, $count = 1) {
-    // Delete rows that have uses.
+    // Update rows that have uses.
     $query = $this->connection->update($this->tableName)
       ->condition('entity_type', $child_entity_type_id)
       ->condition('entity_id', $child_entity_id)
@@ -68,8 +68,8 @@ class DatabaseBackendEntityUsage extends EntityUsageBase {
     $query->expression('count', 'count - :count', [':count' => $count]);
     $result = $query->execute();
     if (empty($result)) {
-      // If not rows were found where the count is greater than or equal $count
-      // then set any rows less then to 0.
+      // If no rows were found where the count is greater than or equal $count
+      // then set any rows less then $count to 0.
       $query = $this->connection->update($this->tableName)
         ->condition('entity_type', $child_entity_type_id)
         ->condition('entity_id', $child_entity_id)
@@ -130,25 +130,21 @@ class DatabaseBackendEntityUsage extends EntityUsageBase {
    * {@inheritdoc}
    */
   public function getEntitiesWithNoUses($child_entity_type_id, $limit = 100) {
-    // @todo Implement $limit logic.
-    $query = $this->connection->select($this->tableName);
-    $query->fields($this->tableName, ['entity_id']);
-    $query->condition('entity_type', $child_entity_type_id)
+    $query = $this->connection->select($this->tableName, 't1');
+    $query->fields('t1', ['entity_id']);
+    $query->condition('t1.entity_type', $child_entity_type_id)
       ->condition('count', 0);
-    $entity_ids = $query->execute()->fetchCol();
-
-    if ($entity_ids) {
-      // @todo Use ::notExists() to do this sub query.
-      $sub_query = $this->connection->select($this->tableName);
-      $sub_query->condition('entity_type', $child_entity_type_id)
-        ->condition('count', 0, '>')
-        ->condition('entity_id', $entity_ids, 'IN');
-      $sub_query->fields($this->tableName, ['entity_id']);
-      $used_entity_ids = $sub_query->execute()->fetchCol();
-      $unused_entity_ids = array_diff($entity_ids, $used_entity_ids);
-      return array_values(array_unique($unused_entity_ids));
+    if ($limit !== NULL) {
+      $query->range(0, $limit);
     }
-    return [];
+
+    $sub_query = $this->connection->select($this->tableName, 't2');
+    $sub_query->where('t1.entity_id = t2.entity_id');
+    $sub_query->condition('t2.entity_type', $child_entity_type_id)
+      ->condition('count', 0, '>');
+    $sub_query->fields('t2', ['entity_id']);
+    $query->notExists($sub_query);
+    return $query->execute()->fetchCol();
 
   }
 

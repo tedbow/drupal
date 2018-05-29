@@ -55,7 +55,7 @@ function layout_builder_schema() {
         'not null' => TRUE,
       ],
       'entity_type' => [
-        'description' => 'The name of the object type in which the file is used.',
+        'description' => 'The entity type',
         'type' => 'varchar_ascii',
         'length' => 64,
         'not null' => TRUE,
@@ -70,7 +70,7 @@ function layout_builder_schema() {
         'default' => '',
       ],
       'parent_id' => [
-        'description' => 'The primary key of the entity using the entity.',
+        'description' => 'The ID of the object using the entity.',
         'type' => 'varchar_ascii',
         'length' => EntityTypeInterface::ID_MAX_LENGTH,
         'not null' => TRUE,
@@ -107,7 +107,7 @@ function layout_builder_update_8001() {
         'not null' => TRUE,
       ],
       'entity_type' => [
-        'description' => 'The name of the object type in which the file is used.',
+        'description' => 'The entity type',
         'type' => 'varchar_ascii',
         'length' => 64,
         'not null' => TRUE,
@@ -122,7 +122,7 @@ function layout_builder_update_8001() {
         'default' => '',
       ],
       'parent_id' => [
-        'description' => 'The primary key of the entity using the entity.',
+        'description' => 'The ID of the object using the entity.',
         'type' => 'varchar_ascii',
         'length' => EntityTypeInterface::ID_MAX_LENGTH,
         'not null' => TRUE,
