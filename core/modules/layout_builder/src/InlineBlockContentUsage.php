@@ -249,20 +249,23 @@ class InlineBlockContentUsage {
   }
 
   /**
-   * Removes all unused.
+   * Removes unused block content entities.
    *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @param int $limit
+   *   The maximum number of block content entities to remove.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function removeAllUnused() {
-    $entity_ids = $this->entityUsage->getEntitiesWithNoUses('block_content', 40);
+  public function removeUnused($limit = 100) {
+    $entity_ids = $this->entityUsage->getEntitiesWithNoUses('block_content', $limit);
     foreach ($entity_ids as $entity_id) {
       if ($block = $this->entityTypeManager->getStorage('block_content')->load($entity_id)) {
         $block->delete();
       }
-      $this->entityUsage->delete('block_content', $entity_id);
     }
+    $this->entityUsage->deleteMultiple('block_content', $entity_ids);
   }
 
   /**

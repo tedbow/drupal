@@ -119,14 +119,14 @@ interface EntityUsageInterface {
   public function getEntitiesWithNoUses($child_entity_type_id, $limit = 100);
 
   /**
-   * Delete all usage for an entity.
+   * Delete multiple entity usage records.
    *
    * @param string $child_entity_type_id
    *   The entity type ID.
-   * @param string $child_entity_id
-   *   The entity ID.
+   * @param string[] $child_entity_ids
+   *   The entity IDs.
    */
-  public function delete($child_entity_type_id, $child_entity_id);
+  public function deleteMultiple($child_entity_type_id, array $child_entity_ids);
 
   /**
    * Delete all usage records by entity.
