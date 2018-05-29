@@ -143,7 +143,6 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
       '#default_value' => $this->configuration['view_mode'],
       '#access' => count($options) > 1,
     ];
-    $form['title']['#description'] = $this->t('The title of the block as shown to the user.');
     return $form;
   }
 
@@ -259,6 +258,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
       // can't check $this->getEntity()->isNew().
       unset($form['label']['#default_value']);
     }
+    $form['label']['#description'] = $this->t('The title of the block as shown to the user.');
     return $form;
   }
 
