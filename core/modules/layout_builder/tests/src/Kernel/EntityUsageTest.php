@@ -15,9 +15,7 @@ use Drupal\entity_test\Entity\EntityTest;
 class EntityUsageTest extends EntityKernelTestBase {
 
   /**
-   * The list of modules to enable.
-   *
-   * @var array
+   * {@inheritdoc}
    */
   public static $modules = ['layout_builder'];
 
@@ -49,6 +47,8 @@ class EntityUsageTest extends EntityKernelTestBase {
   protected $entityUsage;
 
   /**
+   * The database connection.
+   *
    * @var \Drupal\Core\Database\Connection
    */
   protected $connection;
@@ -152,6 +152,8 @@ class EntityUsageTest extends EntityKernelTestBase {
 
     $this->assertEquals(0, $this->entityUsage->remove($this->childEntity->getEntityTypeId(), $this->childEntity->id(), 'A_PARENT_TYPE', 'A_PARENT_ID', 2));
     $this->assertUnsortedArrayEquals([$this->childEntity2->id(), $this->childEntity->id()], $this->entityUsage->getEntitiesWithNoUses('entity_test'));
+    $this->assertUnsortedArrayEquals([$this->childEntity2->id(), $this->childEntity->id()], $this->entityUsage->getEntitiesWithNoUses('entity_test', 2));
+    $this->assertCount(1, $this->entityUsage->getEntitiesWithNoUses('entity_test', 1));
 
     $this->entityUsage->delete($this->childEntity->getEntityTypeId(), $this->childEntity->id());
     $this->assertEquals([$this->childEntity2->id()], $this->entityUsage->getEntitiesWithNoUses('entity_test'));
