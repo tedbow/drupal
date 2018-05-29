@@ -96,18 +96,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $this->clickLink('Manage layout');
     $assert_session->addressEquals("$field_ui_prefix/display-layout/default");
     // Add a basic block with the body field set.
-    $page->clickLink('Add Block');
-    $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
-    $this->clickLink('Basic block');
-    $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->fieldValueEquals('Title', '');
-    $page->findField('Title')->setValue('Block title');
-    $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
-    $textarea->setValue('The DEFAULT block body');
-    $page->pressButton('Add Block');
-    $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->elementTextContains('css', static::$inlineBlockCssLocator, 'The DEFAULT block body');
+    $this->addInlineBlockToLayout('Block title', 'The DEFAULT block body');
 
     $this->assertSaveLayout();
 
@@ -141,17 +130,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
 
     // Add a basic block with the body field set.
     $this->drupalGet('node/1/layout');
-    $page->clickLink('Add Block');
-    $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
-    $this->clickLink('Basic block');
-    $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->fieldValueEquals('Title', '');
-    $page->findField('Title')->setValue('2nd Block title');
-    $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
-    $textarea->setValue('The 2nd block body');
-    $page->pressButton('Add Block');
-    $assert_session->assertWaitOnAjaxRequest();
+    $this->addInlineBlockToLayout('2nd Block title', 'The 2nd block body');
     $this->assertSaveLayout();
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body!');
@@ -167,7 +146,8 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     /* @var \Behat\Mink\Element\NodeElement $inline_block_2 */
     $inline_block_2 = $page->findAll('css', static::$inlineBlockCssLocator)[1];
     $uuid = $inline_block_2->getAttribute('data-layout-block-uuid');
-    $this->clickContextualLink(static::$inlineBlockCssLocator . "[data-layout-block-uuid=\"$uuid\"]", 'Configure');
+    $block_css_locator = static::$inlineBlockCssLocator . "[data-layout-block-uuid=\"$uuid\"]";
+    $this->clickContextualLink($block_css_locator, 'Configure');
     $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
     $this->assertNotEmpty($textarea);
     $this->assertSame('The 2nd block body', $textarea->getValue());
@@ -211,19 +191,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $this->drupalPostForm("$field_ui_prefix/display/default", ['layout[allow_custom]' => TRUE], 'Save');
 
     $this->drupalGet('node/1/layout');
-
-    $page->clickLink('Add Block');
-    $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
-    $this->clickLink('Basic block');
-    $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->fieldValueEquals('Title', '');
-    $page->findField('Title')->setValue('Block title');
-    $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
-    $textarea->setValue('The block body');
-    $page->pressButton('Add Block');
-    $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->pageTextContains('The block body');
+    $this->addInlineBlockToLayout('Block title', 'The block body');
     $this->clickLink($no_save_link_text);
     if ($confirm_button_text) {
       $page->pressButton($confirm_button_text);
@@ -548,7 +516,15 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $textarea->setValue($body);
     $page->pressButton('Add Block');
     $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->elementTextContains('css', static::$inlineBlockCssLocator, $body);
+    $found_new_text = FALSE;
+    /** @var \Behat\Mink\Element\NodeElement $element */
+    foreach ($page->findAll('css', static::$inlineBlockCssLocator) as $element) {
+      if (stristr($element->getText(), $body)) {
+        $found_new_text = TRUE;
+        break;
+      }
+    }
+    $this->assertNotEmpty($found_new_text, 'Found block text on page.');
   }
 
   /**
