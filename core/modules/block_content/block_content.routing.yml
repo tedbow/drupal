@@ -27,7 +27,6 @@ entity.block_content.canonical:
   requirements:
     _entity_access: 'block_content.update'
     block_content: \d+
-    _is_reusable_block_content: 'true'
 
 entity.block_content.edit_form:
   path: '/block/{block_content}'
@@ -38,7 +37,6 @@ entity.block_content.edit_form:
   requirements:
     _entity_access: 'block_content.update'
     block_content: \d+
-    _is_reusable_block_content: 'true'
 
 entity.block_content.delete_form:
   path: '/block/{block_content}/delete'
@@ -50,7 +48,6 @@ entity.block_content.delete_form:
   requirements:
     _entity_access: 'block_content.delete'
     block_content: \d+
-    _is_reusable_block_content: 'true'
 
 block_content.type_add:
   path: '/admin/structure/block/block-content/types/add'
