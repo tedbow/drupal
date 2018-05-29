@@ -151,10 +151,10 @@ class DatabaseBackendEntityUsage extends EntityUsageBase {
   /**
    * {@inheritdoc}
    */
-  public function delete($child_entity_type_id, $child_entity_id) {
+  public function deleteMultiple($child_entity_type_id, array $child_entity_ids) {
     $this->connection->delete($this->tableName)
       ->condition('entity_type', $child_entity_type_id)
-      ->condition('entity_id', $child_entity_id)
+      ->condition('entity_id', $child_entity_ids, 'IN')
       ->execute();
   }
 
