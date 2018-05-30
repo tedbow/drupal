@@ -90,12 +90,23 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
       'sort' => ['field' => '_none'],
     ];
     $selection_handler = new DefaultSelection($configuration, '', '', $this->container->get('entity.manager'), $this->container->get('module_handler'), \Drupal::currentUser());
-    $referenceable_entities = $selection_handler->getReferenceableEntities();
     $this->assertEquals(
       [
         'spiffy' => [$block_content_reusable->id() => $block_content_reusable->label()],
       ],
-      $referenceable_entities
+      $selection_handler->getReferenceableEntities()
+    );
+    $block_content_nonreusable->setReusable(TRUE);
+    $block_content_nonreusable->save();
+    // Ensure that the block is now returned as a referenceable entity.
+    $this->assertEquals(
+      [
+        'spiffy' => [
+          $block_content_reusable->id() => $block_content_reusable->label(),
+          $block_content_nonreusable->id() => $block_content_nonreusable->label(),
+        ],
+      ],
+      $selection_handler->getReferenceableEntities()
     );
   }
 
