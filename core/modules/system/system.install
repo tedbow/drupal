@@ -1153,6 +1153,52 @@ function system_schema() {
     ],
   ];
 
+  $schema['entity_usage'] = [
+    'description' => 'Track where a entity is used.',
+    'fields' => [
+      'entity_id' => [
+        'description' => 'Entity ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'entity_type' => [
+        'description' => 'The entity type',
+        'type' => 'varchar_ascii',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      // @todo will the parent always be an entity.
+      'parent_type' => [
+        'description' => 'The name of the object type in which the entity is used.',
+        'type' => 'varchar_ascii',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'parent_id' => [
+        'description' => 'The ID of the object using the entity.',
+        'type' => 'varchar_ascii',
+        'length' => EntityTypeInterface::ID_MAX_LENGTH,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'count' => [
+        'description' => 'The number of times this entity is used by this parent.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['entity_id', 'entity_type', 'parent_id'],
+    'indexes' => [
+      'type_id' => ['parent_type', 'parent_id'],
+      'entity_id_count' => ['entity_id', 'count'],
+    ],
+  ];
+
   // Create the url_alias table. The alias_storage service can auto-create its
   // table, but this relies on exceptions being thrown. These exceptions will be
   // thrown every request until an alias is created.
@@ -2144,3 +2190,56 @@ function system_update_8501() {
     }
   }
 }
+
+/**
+ * Create the 'entity_usage' table.
+ */
+function system_update_8502() {
+  $entity_usage_schema = [
+    'description' => 'Track where a entity is used.',
+    'fields' => [
+      'entity_id' => [
+        'description' => 'Entity ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'entity_type' => [
+        'description' => 'The entity type',
+        'type' => 'varchar_ascii',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      // @todo will the parent always be an entity.
+      'parent_type' => [
+        'description' => 'The name of the object type in which the entity is used.',
+        'type' => 'varchar_ascii',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'parent_id' => [
+        'description' => 'The ID of the object using the entity.',
+        'type' => 'varchar_ascii',
+        'length' => EntityTypeInterface::ID_MAX_LENGTH,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'count' => [
+        'description' => 'The number of times this entity is used by this parent.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['entity_id', 'entity_type', 'parent_id'],
+    'indexes' => [
+      'type_id' => ['parent_type', 'parent_id'],
+      'entity_id_count' => ['entity_id', 'count'],
+    ],
+  ];
+  Database::getConnection()->schema()->createTable('entity_usage', $entity_usage_schema);
+}
+
