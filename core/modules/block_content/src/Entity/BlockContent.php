@@ -2,6 +2,8 @@
 
 namespace Drupal\block_content\Entity;
 
+use Drupal\Core\Access\AccessDependentInterface;
+use Drupal\Core\Access\AccessDependentTrait;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -75,7 +77,9 @@ use Drupal\user\UserInterface;
  * caching.
  * See https://www.drupal.org/node/2284917#comment-9132521 for more information.
  */
-class BlockContent extends EditorialContentEntityBase implements BlockContentInterface {
+class BlockContent extends EditorialContentEntityBase implements BlockContentInterface, AccessDependentInterface {
+
+  use AccessDependentTrait;
 
   /**
    * The theme the block is being created in.
@@ -200,6 +204,11 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
       ->setTranslatable(TRUE)
       ->setRevisionable(TRUE);
 
+    $fields['reusable'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Reusable'))
+      ->setDescription(t('A boolean indicating whether this block is reusable.'))
+      ->setDefaultValue(TRUE);
+
     return $fields;
   }
 
@@ -279,6 +288,21 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    */
   public function setRevisionLogMessage($revision_log_message) {
     $this->set('revision_log', $revision_log_message);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isReusable() {
+    return (bool) $this->get('reusable')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setReusable($reusable = TRUE) {
+    $this->set('reusable', $reusable);
     return $this;
   }
 
