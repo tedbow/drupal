@@ -43,7 +43,7 @@ class BlockContent extends DeriverBase implements ContainerDeriverInterface {
    * {@inheritdoc}
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
-    $block_contents = $this->blockContentStorage->loadByProperties(['reusable' => TRUE]);
+    $block_contents = $this->blockContentStorage->loadMultiple();
     // Reset the discovered definitions.
     $this->derivatives = [];
     /** @var $block_content \Drupal\block_content\Entity\BlockContent */

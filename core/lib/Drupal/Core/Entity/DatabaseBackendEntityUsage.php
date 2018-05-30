@@ -1,9 +1,8 @@
 <?php
 
-namespace Drupal\layout_builder;
+namespace Drupal\Core\Entity;
 
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Entity usage service using the database backend.

@@ -1,8 +1,6 @@
 <?php
 
-namespace Drupal\layout_builder;
-
-use Drupal\Core\Entity\EntityInterface;
+namespace Drupal\Core\Entity;
 
 /**
  * Base class for entity usage service.

@@ -358,6 +358,11 @@ services:
   datetime.time:
     class: Drupal\Component\Datetime\Time
     arguments: ['@request_stack']
+  entity.usage:
+    class: Drupal\Core\Entity\DatabaseBackendEntityUsage
+    arguments: ['@database', 'entity_usage']
+    tags:
+      - { name: backend_overridable }
   file_system:
     class: Drupal\Core\File\FileSystem
     arguments: ['@stream_wrapper_manager', '@settings', '@logger.channel.file']

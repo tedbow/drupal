@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\layout_builder\Kernel;
+namespace Drupal\KernelTests\Entity;
 
 use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
 use Drupal\entity_test\Entity\EntityTest;
@@ -8,7 +8,7 @@ use Drupal\entity_test\Entity\EntityTest;
 /**
  * Tests entity usage.
  *
- * @coversDefaultClass \Drupal\layout_builder\DatabaseBackendEntityUsage
+ * @coversDefaultClass \Drupal\Core\Entity\DatabaseBackendEntityUsage
  *
  * @group layout_builder
  */
@@ -17,7 +17,7 @@ class EntityUsageTest extends EntityKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['layout_builder'];
+  public static $modules = ['system'];
 
   /**
    * The child entity 1.
@@ -29,7 +29,7 @@ class EntityUsageTest extends EntityKernelTestBase {
   /**
    * The entity usage service.
    *
-   * @var \Drupal\layout_builder\DatabaseBackendEntityUsage
+   * @var \Drupal\Core\Entity\DatabaseBackendEntityUsage
    */
   protected $entityUsage;
 
@@ -52,7 +52,7 @@ class EntityUsageTest extends EntityKernelTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $this->installSchema('layout_builder', 'entity_usage');
+    $this->installSchema('system', 'entity_usage');
 
     // Create a parent entity.
     $this->parentEntityId = 1;
