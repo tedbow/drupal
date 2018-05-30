@@ -97,7 +97,6 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $assert_session->addressEquals("$field_ui_prefix/display-layout/default");
     // Add a basic block with the body field set.
     $this->addInlineBlockToLayout('Block title', 'The DEFAULT block body');
-
     $this->assertSaveLayout();
 
     $this->drupalGet('node/1');
@@ -111,14 +110,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
 
     // Confirm the block can be edited.
     $this->drupalGet('node/1/layout');
-    $this->clickContextualLink(static::$inlineBlockCssLocator, 'Configure');
-    $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
-    $this->assertNotEmpty($textarea);
-    $page->findField('Title')->setValue('Block title');
-    $this->assertSame('The DEFAULT block body', $textarea->getValue());
-    $textarea->setValue('The NEW block body!');
-    $page->pressButton('Update');
-    $assert_session->assertWaitOnAjaxRequest();
+    $this->configureInlineBlock('The DEFAULT block body', 'The NEW block body!');
     $this->assertSaveLayout();
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body');
@@ -147,13 +139,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $inline_block_2 = $page->findAll('css', static::$inlineBlockCssLocator)[1];
     $uuid = $inline_block_2->getAttribute('data-layout-block-uuid');
     $block_css_locator = static::$inlineBlockCssLocator . "[data-layout-block-uuid=\"$uuid\"]";
-    $this->clickContextualLink($block_css_locator, 'Configure');
-    $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
-    $this->assertNotEmpty($textarea);
-    $this->assertSame('The 2nd block body', $textarea->getValue());
-    $textarea->setValue('The 2nd NEW block body!');
-    $page->pressButton('Update');
-    $assert_session->assertWaitOnAjaxRequest();
+    $this->configureInlineBlock('The 2nd block body', 'The 2nd NEW block body!', $block_css_locator);
     $this->assertSaveLayout();
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body!');
@@ -203,7 +189,6 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $this->drupalGet('node/1/layout');
 
     $this->addInlineBlockToLayout('Block title', 'The block body');
-
     $this->assertSaveLayout();
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The block body');
@@ -215,14 +200,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
 
     // Confirm the block can be edited.
     $this->drupalGet('node/1/layout');
-    $this->clickContextualLink(static::$inlineBlockCssLocator, 'Configure');
-    $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
-    $this->assertNotEmpty($textarea);
-    $page->findField('Title')->setValue('Block title updated');
-    $this->assertSame('The block body', $textarea->getValue());
-    $textarea->setValue('The block updated body');
-    $page->pressButton('Update');
-    $assert_session->assertWaitOnAjaxRequest();
+    $this->configureInlineBlock('The block body', 'The block updated body');
     $assert_session->pageTextContains('The block updated body');
 
     $this->clickLink($no_save_link_text);
@@ -310,7 +288,6 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
 
     // Add a entity block.
     $this->addInlineBlockToLayout('Block title', 'The DEFAULT block body');
-
     $this->assertSaveLayout();
     $this->drupalGet('node/1');
 
@@ -326,14 +303,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
 
     // Update the block.
     $this->drupalGet('node/1/layout');
-    $this->clickContextualLink(static::$inlineBlockCssLocator, 'Configure');
-    $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
-    $this->assertNotEmpty($textarea);
-    $page->findField('Title')->setValue('Block title');
-    $this->assertSame('The DEFAULT block body', $textarea->getValue());
-    $textarea->setValue('The NEW block body!');
-    $page->pressButton('Update');
-    $assert_session->assertWaitOnAjaxRequest();
+    $this->configureInlineBlock('The DEFAULT block body', 'The NEW block body');
     $this->assertSaveLayout();
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body');
@@ -499,7 +469,6 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
    *   The body field value.
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
-   * @throws \Behat\Mink\Exception\ElementTextException
    * @throws \Behat\Mink\Exception\ExpectationException
    */
   protected function addInlineBlockToLayout($title, $body) {
@@ -553,6 +522,29 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
    */
   protected function loadBlock($id) {
     return $this->getInlineStorage()->load($id);
+  }
+
+  /**
+   * Configures an inline block in the Layout Builder.
+   *
+   * @param string $old_body
+   *   The old body field value.
+   * @param string $new_body
+   *   The new body field value.
+   * @param string $block_css_locator
+   *   The CSS locator to use to select the contextual link.
+   */
+  protected function configureInlineBlock($old_body, $new_body, $block_css_locator = NULL) {
+    $block_css_locator = $block_css_locator ?: static::$inlineBlockCssLocator;
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    $this->clickContextualLink($block_css_locator, 'Configure');
+    $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
+    $this->assertNotEmpty($textarea);
+    $this->assertSame($old_body, $textarea->getValue());
+    $textarea->setValue($new_body);
+    $page->pressButton('Update');
+    $assert_session->assertWaitOnAjaxRequest();
   }
 
 }
