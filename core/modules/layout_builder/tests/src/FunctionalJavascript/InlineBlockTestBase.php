@@ -39,8 +39,6 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
    */
   public static $modules = [
     'layout_builder',
-    'layout_test',
-    'layout_builder_test',
     'block',
     'node',
     'contextual',
