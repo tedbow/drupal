@@ -8,25 +8,25 @@ namespace Drupal\Core\Access;
 trait AccessDependentTrait {
 
   /**
-   * The object that is depended on.
+   * The access dependency.
    *
    * @var \Drupal\Core\Access\AccessibleInterface
    */
-  protected $accessDependee;
+  protected $accessDependency;
 
   /**
    * {@inheritdoc}
    */
-  public function setAccessDependee(AccessibleInterface $access_dependee) {
-    $this->accessDependee = $access_dependee;
+  public function setAccessDependency(AccessibleInterface $access_dependency) {
+    $this->accessDependency = $access_dependency;
 
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAccessDependee() {
-    return $this->accessDependee;
+  public function getAccessDependency() {
+    return $this->accessDependency;
   }
 
 }

@@ -207,7 +207,8 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
     $fields['reusable'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Reusable'))
       ->setDescription(t('A boolean indicating whether this block is reusable.'))
-      ->setDefaultValue(TRUE);
+      ->setDefaultValue(TRUE)
+      ->setInitialValue(TRUE);
 
     return $fields;
   }
@@ -302,8 +303,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    * {@inheritdoc}
    */
   public function setReusable($reusable = TRUE) {
-    $this->set('reusable', $reusable);
-    return $this;
+    return $this->set('reusable', $reusable);
   }
 
   /**

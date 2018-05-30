@@ -29,9 +29,9 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
     /** @var \Drupal\block_content\BlockContentInterface $entity */
     if ($entity->isReusable() === FALSE) {
       if (!$entity instanceof AccessDependentInterface) {
-        throw new \Exception("Non-reusable block entities must implement \Drupal\Core\Access\AccessDependentInterface for access control.");
+        throw new \LogicException("Non-reusable block entities must implement \Drupal\Core\Access\AccessDependentInterface for access control.");
       }
-      $dependee = $entity->getAccessDependee();
+      $dependee = $entity->getAccessDependency();
       if (empty($dependee)) {
         return AccessResult::forbidden("Non-reusable blocks must set an access dependee for access control.")->addCacheableDependency($dependee);
       }
