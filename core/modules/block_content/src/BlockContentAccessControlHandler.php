@@ -19,7 +19,13 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    $dependee_access = NULL;
+    if ($operation === 'view') {
+      $access = AccessResult::allowedIf($entity->isPublished())->addCacheableDependency($entity)
+        ->orIf(AccessResult::allowedIfHasPermission($account, 'administer blocks'));
+    }
+    else {
+      $access = parent::checkAccess($entity, $operation, $account);
+    }
     /** @var \Drupal\block_content\BlockContentInterface $entity */
     if ($entity->isReusable() === FALSE) {
       if (!$entity instanceof AccessDependentInterface) {
@@ -29,19 +35,7 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
       if (empty($dependee)) {
         return AccessResult::forbidden("Non-reusable blocks must set an access dependee for access control.")->addCacheableDependency($dependee);
       }
-      $dependee_access = $dependee->access($operation, $account, TRUE);
-    }
-    if ($operation === 'view') {
-      $access = AccessResult::allowedIf($entity->isPublished())->addCacheableDependency($entity)
-        ->orIf(AccessResult::allowedIfHasPermission($account, 'administer blocks'));
-
-    }
-    else {
-      $access = parent::checkAccess($entity, $operation, $account);
-    }
-
-    if ($dependee_access) {
-      $access->andIf($dependee_access);
+      $access->andIf($dependee->access($operation, $account, TRUE));
     }
     return $access;
   }
