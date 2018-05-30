@@ -44,20 +44,3 @@ layout_builder.component:
     additional:
       type: ignore
       label: 'Additional data'
-
-inline_block_contents:
-  type: block_settings
-  label: 'Inline content block'
-  mapping:
-    view_mode:
-      type: string
-      lable: 'View mode'
-    block_revision_id:
-      type: integer
-      label: 'Block revisions'
-    block_serialized:
-      type: string
-      label: 'Serialized block'
-
-block.settings.inline_block_content:*:
-  type: inline_block_contents
