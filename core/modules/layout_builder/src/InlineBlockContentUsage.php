@@ -5,6 +5,7 @@ namespace Drupal\layout_builder;
 use Drupal\block\BlockInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\EntityUsageInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
@@ -18,7 +19,7 @@ class InlineBlockContentUsage {
   /**
    * The entity usage service.
    *
-   * @var \Drupal\layout_builder\EntityUsageInterface
+   * @var \Drupal\Core\Entity\EntityUsageInterface
    */
   protected $entityUsage;
 
@@ -32,7 +33,7 @@ class InlineBlockContentUsage {
   /**
    * InlineBlockContentUsage constructor.
    *
-   * @param \Drupal\layout_builder\EntityUsageInterface $entity_usage
+   * @param \Drupal\Core\Entity\EntityUsageInterface $entity_usage
    *   The entity usage service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.

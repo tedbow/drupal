@@ -15,7 +15,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\layout_builder\EntityUsageInterface;
+use Drupal\Core\Entity\EntityUsageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -63,7 +63,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   /**
    * The entity usage tracker service.
    *
-   * @var \Drupal\layout_builder\EntityUsageInterface
+   * @var \Drupal\Core\Entity\EntityUsageInterface
    */
   protected $entityUsage;
 
@@ -80,7 +80,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    *   The entity type manager service.
    * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
    *   The entity display repository.
-   * @param \Drupal\layout_builder\EntityUsageInterface $entity_usage
+   * @param \Drupal\Core\Entity\EntityUsageInterface $entity_usage
    *   The entity usage service.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, EntityUsageInterface $entity_usage) {
