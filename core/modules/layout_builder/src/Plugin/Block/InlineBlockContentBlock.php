@@ -9,13 +9,11 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\layout_builder\EntityUsageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -61,13 +59,6 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   protected $isNew = TRUE;
 
   /**
-   * The entity usage tracker service.
-   *
-   * @var \Drupal\layout_builder\EntityUsageInterface
-   */
-  protected $entityUsage;
-
-  /**
    * Constructs a new InlineBlockContentBlock.
    *
    * @param array $configuration
@@ -80,15 +71,12 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    *   The entity type manager service.
    * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
    *   The entity display repository.
-   * @param \Drupal\layout_builder\EntityUsageInterface $entity_usage
-   *   The entity usage service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, EntityUsageInterface $entity_usage) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
-    $this->entityUsage = $entity_usage;
     if (!empty($this->configuration['block_revision_id']) || !empty($this->configuration['block_serialized'])) {
       $this->isNew = FALSE;
     }
@@ -103,8 +91,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
       $plugin_id,
       $plugin_definition,
       $container->get('entity_type.manager'),
-      $container->get('entity_display.repository'),
-      $container->get('entity.usage')
+      $container->get('entity_display.repository')
     );
   }
 
@@ -241,8 +228,8 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
         ]);
       }
     }
-    if ($this->blockContent instanceof AccessDependentInterface && $dependee = $this->getAccessDependee()) {
-      $this->blockContent->setAccessDependee($dependee);
+    if ($this->blockContent instanceof AccessDependentInterface && $dependee = $this->getAccessDependency()) {
+      $this->blockContent->setAccessDependency($dependee);
     }
     return $this->blockContent;
   }
@@ -269,14 +256,12 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    *   Whether to create new revision.
    * @param bool $duplicate_block
    *   Whether to duplicate the "block_content" entity.
-   * @param \Drupal\Core\Entity\EntityInterface|null $parent_entity
-   *   The parent entity if any that is using this plugin.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function saveBlockContent($new_revision = FALSE, $duplicate_block = FALSE, EntityInterface $parent_entity = NULL) {
+  public function saveBlockContent($new_revision = FALSE, $duplicate_block = FALSE) {
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = NULL;
     if ($duplicate_block && !empty($this->configuration['block_revision_id']) && empty($this->configuration['block_serialized'])) {
@@ -290,16 +275,12 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
       }
     }
     if ($block) {
-      $new_usage = $block->isNew();
       if ($new_revision) {
         $block->setNewRevision();
       }
       $block->save();
       $this->configuration['block_revision_id'] = $block->getRevisionId();
       $this->configuration['block_serialized'] = NULL;
-      if ($new_usage && $parent_entity) {
-        $this->entityUsage->addByEntities($block, $parent_entity);
-      }
     }
   }
 
