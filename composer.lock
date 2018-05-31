@@ -1423,11 +1423,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-<<<<<<< HEAD
             "time": "2018-05-16T08:49:21+00:00"
-=======
-            "time": "2018-04-30T01:22:56+00:00"
->>>>>>> Reverse composer changes
         },
         {
             "name": "symfony/debug",
@@ -4468,7 +4464,6 @@
             ],
             "description": "Symfony CssSelector Component",
             "homepage": "https://symfony.com",
-<<<<<<< HEAD
             "time": "2018-05-16T12:49:49+00:00"
         },
         {
@@ -4483,30 +4478,11 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/symfony/dom-crawler/zipball/201b210fafcdd193c1e45b2994bf7133fb6263e8",
                 "reference": "201b210fafcdd193c1e45b2994bf7133fb6263e8",
-=======
-            "time": "2018-03-19T22:32:39+00:00"
-        },
-        {
-            "name": "symfony/dom-crawler",
-            "version": "v3.4.9",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/dom-crawler.git",
-                "reference": "1a4cffeb059226ff6bee9f48acb388faf674afff"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/dom-crawler/zipball/1a4cffeb059226ff6bee9f48acb388faf674afff",
-                "reference": "1a4cffeb059226ff6bee9f48acb388faf674afff",
->>>>>>> Reverse composer changes
                 "shasum": ""
             },
             "require": {
                 "php": "^5.5.9|>=7.0.8",
-<<<<<<< HEAD
                 "symfony/polyfill-ctype": "~1.8",
-=======
->>>>>>> Reverse composer changes
                 "symfony/polyfill-mbstring": "~1.0"
             },
             "require-dev": {
@@ -4545,17 +4521,9 @@
             ],
             "description": "Symfony DomCrawler Component",
             "homepage": "https://symfony.com",
-<<<<<<< HEAD
             "time": "2018-05-01T22:53:27+00:00"
         },
         {
-=======
->>>>>>> reusable access check
-=======
-            "time": "2018-03-19T22:32:39+00:00"
-        },
-        {
->>>>>>> Reverse composer changes
             "name": "symfony/phpunit-bridge",
             "version": "v3.4.11",
             "source": {
