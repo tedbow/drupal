@@ -3,6 +3,8 @@
 namespace Drupal\layout_builder;
 
 use Drupal\block\BlockInterface;
+use Drupal\block_content\Entity\BlockContent;
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
@@ -16,11 +18,11 @@ use Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock;
 class InlineBlockContentUsage {
 
   /**
-   * The entity usage service.
+   * The database connection.
    *
-   * @var \Drupal\layout_builder\EntityUsageInterface
+   * @var \Drupal\Core\Database\Connection
    */
-  protected $entityUsage;
+  protected $connection;
 
   /**
    * The entity type manager service.
@@ -32,13 +34,13 @@ class InlineBlockContentUsage {
   /**
    * InlineBlockContentUsage constructor.
    *
-   * @param \Drupal\layout_builder\EntityUsageInterface $entity_usage
-   *   The entity usage service.
+   * @param \Drupal\Core\Database\Connection $connection
+   *   The database connection.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
    */
-  public function __construct(EntityUsageInterface $entity_usage, EntityTypeManagerInterface $entityTypeManager) {
-    $this->entityUsage = $entity_usage;
+  public function __construct(Connection $connection, EntityTypeManagerInterface $entityTypeManager) {
+    $this->connection = $connection;
     $this->entityTypeManager = $entityTypeManager;
   }
 
@@ -52,6 +54,7 @@ class InlineBlockContentUsage {
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function removeUnusedForEntityOnSave(EntityInterface $entity) {
     if ($this->isLayoutCompatibleEntity($entity)) {
@@ -64,13 +67,10 @@ class InlineBlockContentUsage {
         return;
       }
       $original_sections = $this->getEntitySections($entity->original);
-      $removed_ids = array_diff($this->getInlineBlockIdsInSections($original_sections), $this->getInlineBlockIdsInSections($sections));
-
-      foreach ($removed_ids as $removed_id) {
-        $this->entityUsage->remove('block_content', $removed_id, $entity->getEntityTypeId(), $entity->id());
+      if ($removed_ids = array_diff($this->getInlineBlockIdsInSections($original_sections), $this->getInlineBlockIdsInSections($sections))) {
+        $this->deleteBlocksAndUsage($removed_ids);
       }
     }
-
   }
 
   /**
@@ -90,7 +90,7 @@ class InlineBlockContentUsage {
       return;
     }
     if ($this->isLayoutCompatibleEntity($entity)) {
-      $this->entityUsage->removeByParentEntity('block_content', $entity);
+      $this->removeByParent($entity);
     }
   }
 
@@ -136,7 +136,7 @@ class InlineBlockContentUsage {
       /** @var \Drupal\block\BlockInterface $entity */
       /** @var \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin */
       $plugin = $entity->getPlugin();
-      $plugin->saveBlockContent(FALSE, FALSE, $entity);
+      $plugin->saveBlockContent(FALSE, FALSE);
       $entity->set('settings', $plugin->getConfiguration());
     }
     /** @var \Drupal\layout_builder\Section[] $sections */
@@ -167,7 +167,13 @@ class InlineBlockContentUsage {
       foreach ($this->getInlineBlockComponents($sections) as $component) {
         /** @var \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin */
         $plugin = $component->getPlugin();
-        $plugin->saveBlockContent($new_revision, $duplicate_blocks, $entity);
+        $pre_save_configuration = $plugin->getConfiguration();
+        $plugin->saveBlockContent($new_revision, $duplicate_blocks);
+        $post_save_configuration = $plugin->getConfiguration();
+        if ($duplicate_blocks || (empty($pre_save_configuration['block_revision_id']) && !empty($post_save_configuration['block_revision_id']))) {
+          $block_revision = $this->getPluginBlockRevision($plugin);
+          $this->addUsage($block_revision, $entity);
+        }
         $component->setConfiguration($plugin->getConfiguration());
       }
     }
@@ -189,14 +195,8 @@ class InlineBlockContentUsage {
     $block_ids = [];
     $components = $this->getInlineBlockComponents($sections);
     foreach ($components as $component) {
-      /** @var \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin */
-      $plugin = $component->getPlugin();
-      $configuration = $plugin->getConfiguration();
-      if (!empty($configuration['block_revision_id'])) {
-        if ($block = $this->entityTypeManager->getStorage('block_content')
-          ->loadRevision($configuration['block_revision_id'])) {
-          $block_ids[] = $block->id();
-        }
+      if ($block = $this->getPluginBlockRevision($component->getPlugin())) {
+        $block_ids[] = $block->id();
       }
     }
     return $block_ids;
@@ -213,14 +213,8 @@ class InlineBlockContentUsage {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function deleteBlockContentOnBlockDelete(BlockInterface $block_entity) {
-    $blockPlugin = $block_entity->getPlugin();
-    $configuration = $blockPlugin->getConfiguration();
-    if (!empty($configuration['block_revision_id'])) {
-      /** @var \Drupal\block_content\BlockContentInterface $block_content */
-      if ($block_content = \Drupal::entityTypeManager()->getStorage('block_content')->loadRevision($configuration['block_revision_id'])) {
-        $block_content->delete();
-        $this->entityUsage->removeByParentEntity('block_content', $block_entity, FALSE);
-      }
+    if ($block_content = $this->getPluginBlockRevision($block_entity->getPlugin())) {
+      $this->removeByParent($block_entity, TRUE);
     }
   }
 
@@ -259,13 +253,14 @@ class InlineBlockContentUsage {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function removeUnused($limit = 100) {
-    $entity_ids = $this->entityUsage->getEntitiesWithNoUses('block_content', $limit);
-    foreach ($entity_ids as $entity_id) {
-      if ($block = $this->entityTypeManager->getStorage('block_content')->load($entity_id)) {
-        $block->delete();
-      }
+    $query = $this->connection->select('inline_block_content_usage', 't');
+    $query->fields('t', ['entity_id']);
+    $query->isNull('parent_entity_id');
+    $query->isNull('parent_entity_type');
+    if ($entity_ids = $query->range(0, $limit)->execute()->fetchCol()) {
+      $this->deleteBlocksAndUsage($entity_ids);
     }
-    $this->entityUsage->deleteMultiple('block_content', $entity_ids);
+
   }
 
   /**
@@ -300,6 +295,76 @@ class InlineBlockContentUsage {
       }
     }
     return FALSE;
+  }
+
+  /**
+   * @param \Drupal\block_content\Entity\BlockContent $block
+   * @param \Drupal\Core\Entity\EntityInterface $parent_entity
+   */
+  protected function addUsage(BlockContent $block, EntityInterface $parent_entity) {
+    $this->connection->merge('inline_block_content_usage')
+      ->keys([
+        'entity_id' => $block->id(),
+        'parent_entity_id' => $parent_entity->id(),
+        'parent_entity_type' => $parent_entity->getEntityTypeId(),
+      ])->execute();
+  }
+
+  /**
+   * @param \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin
+   *
+   * @return BlockContent|null
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  protected function getPluginBlockRevision(InlineBlockContentBlock $plugin) {
+    $configuration = $plugin->getConfiguration();
+    if (!empty($configuration['block_revision_id'])) {
+      return $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
+    }
+    return NULL;
+  }
+
+  public function removeInlineBlockUsage($removed_ids) {
+
+  }
+
+  /**
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param bool $remove_usage
+   */
+  protected function removeByParent(EntityInterface $entity, $remove_usage = FALSE) {
+    if ($remove_usage) {
+      $query = $this->connection->delete('inline_block_content_usage');
+    }
+    else {
+      $query = $this->connection->update('inline_block_content_usage');
+      $query->fields([
+        'parent_entity_type' => NULL,
+        'parent_entity_id' => NULL,
+      ]);
+    }
+    $query->condition('parent_entity_type', $entity->getEntityTypeId());
+    $query->condition('parent_entity_id', $entity->id());
+    $query->execute();
+  }
+
+  /**
+   * @param int[] $block_content_ids
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  protected function deleteBlocksAndUsage(array $block_content_ids) {
+    foreach ($block_content_ids as $block_content_id) {
+      if ($block = $this->entityTypeManager->getStorage('block_content')->load($block_content_id)) {
+        $block->delete();
+      }
+    }
+    $query = $this->connection->delete('inline_block_content_usage')->condition('entity_id', $block_content_ids, 'IN');
+    $query->execute();
   }
 
 }
