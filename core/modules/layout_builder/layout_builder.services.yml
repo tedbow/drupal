@@ -41,4 +41,4 @@ services:
     arguments: ['layout_builder']
   inline_block_content.usage:
     class: Drupal\layout_builder\InlineBlockContentUsage
-    arguments: ['@entity.usage', '@entity_type.manager']
+    arguments: ['@database', '@entity_type.manager']

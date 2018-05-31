@@ -6,6 +6,8 @@
  */
 
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Database\Database;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Section;
 
@@ -37,4 +39,76 @@ function layout_builder_install() {
   // the cacheability metadata will have changed and should be processed to
   // prepare for future changes.
   Cache::invalidateTags(['rendered']);
+}
+
+/**
+ * Implements hook_schema().
+ */
+function layout_builder_schema() {
+  $schema['inline_block_content_usage'] = [
+    'description' => 'Track where a entity is used.',
+    'fields' => [
+      'entity_id' => [
+        'description' => 'Entity ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'parent_entity_type' => [
+        'description' => 'The name of the object type in which the entity is used.',
+        'type' => 'varchar_ascii',
+        'length' => 64,
+        'not null' => FALSE,
+        'default' => '',
+      ],
+      'parent_entity_id' => [
+        'description' => 'The ID of the object using the entity.',
+        'type' => 'varchar_ascii',
+        'length' => EntityTypeInterface::ID_MAX_LENGTH,
+        'not null' => FALSE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['entity_id'],
+    'indexes' => [
+      'type_id' => ['parent_entity_type', 'parent_entity_id'],
+    ],
+  ];
+  return $schema;
+}
+
+/**
+ * Create the 'entity_usage' table.
+ */
+function layout_builder_update_8001() {
+  $inline_block_content_usage = [
+    'description' => 'Track where a entity is used.',
+    'fields' => [
+      'entity_id' => [
+        'description' => 'Entity ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'parent_entity_type' => [
+        'description' => 'The name of the object type in which the entity is used.',
+        'type' => 'varchar_ascii',
+        'length' => 64,
+        'not null' => FALSE,
+        'default' => '',
+      ],
+      'parent_entity_id' => [
+        'description' => 'The ID of the object using the entity.',
+        'type' => 'varchar_ascii',
+        'length' => EntityTypeInterface::ID_MAX_LENGTH,
+        'not null' => FALSE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['entity_id'],
+    'indexes' => [
+      'type_id' => ['parent_entity_type', 'parent_entity_id'],
+    ],
+  ];
+  Database::getConnection()->schema()->createTable('inline_block_content_usage', $inline_block_content_usage);
 }
