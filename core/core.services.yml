@@ -360,7 +360,7 @@ services:
     arguments: ['@request_stack']
   entity.usage:
     class: Drupal\Core\Entity\DatabaseBackendEntityUsage
-    arguments: ['@database', 'entity_usage']
+    arguments: ['@database', 'core_entity_usage']
     tags:
       - { name: backend_overridable }
   file_system:

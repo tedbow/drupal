@@ -52,7 +52,7 @@ class EntityUsageTest extends EntityKernelTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $this->installSchema('system', 'entity_usage');
+    $this->installSchema('system', 'core_entity_usage');
 
     // Create a parent entity.
     $this->parentEntityId = 1;

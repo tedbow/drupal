@@ -1153,7 +1153,7 @@ function system_schema() {
     ],
   ];
 
-  $schema['entity_usage'] = [
+  $schema['core_entity_usage'] = [
     'description' => 'Track where a entity is used.',
     'fields' => [
       'entity_id' => [
@@ -2192,7 +2192,7 @@ function system_update_8501() {
 }
 
 /**
- * Create the 'entity_usage' table.
+ * Create the 'core_entity_usage' table.
  */
 function system_update_8502() {
   $entity_usage_schema = [
@@ -2240,6 +2240,6 @@ function system_update_8502() {
       'entity_id_count' => ['entity_id', 'count'],
     ],
   ];
-  Database::getConnection()->schema()->createTable('entity_usage', $entity_usage_schema);
+  Database::getConnection()->schema()->createTable('core_entity_usage', $entity_usage_schema);
 }
 
