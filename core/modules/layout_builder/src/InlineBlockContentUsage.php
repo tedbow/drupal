@@ -4,6 +4,7 @@ namespace Drupal\layout_builder;
 
 use Drupal\block\BlockInterface;
 use Drupal\block_content\Entity\BlockContent;
+use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -81,7 +82,6 @@ class InlineBlockContentUsage {
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function handleEntityDelete(EntityInterface $entity) {
     if ($this->isInlineBlockContentBlock($entity)) {
@@ -126,6 +126,7 @@ class InlineBlockContentUsage {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Exception
    */
   public function handlePreSave(EntityInterface $entity) {
     $duplicate_blocks = FALSE;
@@ -210,7 +211,6 @@ class InlineBlockContentUsage {
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function deleteBlockContentOnBlockDelete(BlockInterface $block_entity) {
     if ($block_content = $this->getPluginBlockRevision($block_entity->getPlugin())) {
@@ -298,8 +298,14 @@ class InlineBlockContentUsage {
   }
 
   /**
+   * Add a usage record.
+   *
    * @param \Drupal\block_content\Entity\BlockContent $block
+   *   The block content entity to track.
    * @param \Drupal\Core\Entity\EntityInterface $parent_entity
+   *   The parent entity.
+   *
+   * @throws \Exception
    */
   protected function addUsage(BlockContent $block, EntityInterface $parent_entity) {
     $this->connection->merge('inline_block_content_usage')
@@ -311,31 +317,38 @@ class InlineBlockContentUsage {
   }
 
   /**
-   * @param \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin
+   * Gets a block revision for a inline block content plugin.
    *
-   * @return BlockContent|null
+   * @param \Drupal\Component\Plugin\PluginInspectionInterface $plugin
+   *   The inline block content plugin.
+   *
+   * @return \Drupal\block_content\Entity\BlockContent|null
+   *   The block content entity or null none available.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function getPluginBlockRevision(InlineBlockContentBlock $plugin) {
+  protected function getPluginBlockRevision(PluginInspectionInterface $plugin) {
+    /** @var \Drupal\Component\Plugin\ConfigurablePluginInterface $plugin */
     $configuration = $plugin->getConfiguration();
     if (!empty($configuration['block_revision_id'])) {
-      return $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
+      /** @var \Drupal\block_content\Entity\BlockContent $block_content */
+      $block_content = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
+      return $block_content;
     }
     return NULL;
   }
 
-  public function removeInlineBlockUsage($removed_ids) {
-
-  }
-
   /**
+   * Remove usage record by parent entity.
+   *
    * @param \Drupal\Core\Entity\EntityInterface $entity
-   * @param bool $remove_usage
+   *   The parent entity.
+   * @param bool $delete_record
+   *   Whether to deleted the usage record.
    */
-  protected function removeByParent(EntityInterface $entity, $remove_usage = FALSE) {
-    if ($remove_usage) {
+  protected function removeByParent(EntityInterface $entity, $delete_record = FALSE) {
+    if ($delete_record) {
       $query = $this->connection->delete('inline_block_content_usage');
     }
     else {
@@ -351,7 +364,10 @@ class InlineBlockContentUsage {
   }
 
   /**
+   * Delete the content blocks and delete the usage records.
+   *
    * @param int[] $block_content_ids
+   *   The block content entity IDs.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
