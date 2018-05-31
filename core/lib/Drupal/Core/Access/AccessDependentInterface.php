@@ -20,7 +20,7 @@ namespace Drupal\Core\Access;
  * $accessible->getAccessDependee()->access($op, $account, TRUE);
  * @endcode
  */
-interface AccessDependentInterface extends AccessibleInterface {
+interface AccessDependentInterface {
 
   /**
    * Sets the access dependency.
