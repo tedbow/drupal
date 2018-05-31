@@ -31,11 +31,11 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
       if (!$entity instanceof AccessDependentInterface) {
         throw new \LogicException("Non-reusable block entities must implement \Drupal\Core\Access\AccessDependentInterface for access control.");
       }
-      $dependee = $entity->getAccessDependency();
-      if (empty($dependee)) {
-        return AccessResult::forbidden("Non-reusable blocks must set an access dependee for access control.")->addCacheableDependency($dependee);
+      $dependency = $entity->getAccessDependency();
+      if (empty($dependency)) {
+        return AccessResult::forbidden("Non-reusable blocks must set an access dependency for access control.")->addCacheableDependency($dependency);
       }
-      $access->andIf($dependee->access($operation, $account, TRUE));
+      $access->andIf($dependency->access($operation, $account, TRUE));
     }
     return $access;
   }
