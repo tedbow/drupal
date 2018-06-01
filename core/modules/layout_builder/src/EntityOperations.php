@@ -60,7 +60,8 @@ class EntityOperations implements ContainerInjectionInterface {
   /**
    * Remove all unused entities on save.
    *
-   * Entities that were used in prevision revisions will be used.
+   * Entities that were used in prevision revisions will be removed if not
+   * saving a new revision.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The parent entity.
@@ -152,8 +153,7 @@ class EntityOperations implements ContainerInjectionInterface {
       $plugin->saveBlockContent(FALSE, FALSE);
       $entity->set('settings', $plugin->getConfiguration());
     }
-    /** @var \Drupal\layout_builder\Section[] $sections */
-    $sections = NULL;
+
     if ($this->isLayoutCompatibleEntity($entity) && $sections = $this->getEntitySections($entity)) {
       if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
         if (!$entity->isNew() && isset($entity->original)) {
