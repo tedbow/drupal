@@ -5,7 +5,7 @@ namespace Drupal\Tests\block_content\Kernel;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
-use Drupal\Tests\token\Kernel\KernelTestBase;
+use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Tests EntityReference selection handlers don't return non-reusable blocks.
