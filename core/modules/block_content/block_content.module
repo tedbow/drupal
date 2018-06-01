@@ -8,9 +8,6 @@
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\Core\Database\Query\SelectInterface;
-use Drupal\Core\Database\Query\AlterableInterface;
-use Drupal\Core\Condition\ConditionInterface;
 
 /**
  * Implements hook_help().
@@ -108,63 +105,3 @@ function block_content_add_body_field($block_type_id, $label = 'Body') {
 
   return $field;
 }
-
-/**
- * Implements hook_query_TAG_alter().
- *
- * Alters any query with all tags:
- * entity_reference, entity_query_block_content, entity_query_block_content.
- *
- * These queries should only return reusable blocks unless a condition on
- * reusable is explicitly set.
- *
- * Since block_content entities can be set to be non-reusable they should by
- * default not be selectable as entity reference values. A module can still
- * create a instance of
- * \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface
- * that will will allow selection of non-reusable blocks by explicitly setting
- * a condition on the reusable field.
- *
- * @see \Drupal\block_content\BlockContentAccessControlHandler
- */
-function block_content_query_block_content_access_alter(AlterableInterface $query) {
-  $data_table = \Drupal::entityTypeManager()->getDefinition('block_content')->getDataTable();
-  if ($query instanceof SelectInterface && $query->hasAllTags('entity_query_block_content', 'entity_reference') && array_key_exists($data_table, $query->getTables())) {
-    $reusable_conditions = array_filter($query->conditions(), '_block_content_has_reusable_condition');
-    if (empty($reusable_conditions)) {
-      // If no reusable condition create a condition set to TRUE.
-      $query->condition("$data_table.reusable", TRUE);
-    }
-  }
-}
-
-/**
- * Utility function to find nested conditions using the reusable field.
- *
- * @param mixed $condition
- *   The conditions to check.
- *
- * @return bool
- *   Whether the conditions contain any condition using the reusable field.
- */
-function _block_content_has_reusable_condition($condition) {
-  if (!is_array($condition)) {
-    return FALSE;
-  }
-  $field = isset($condition['field']) ? $condition['field'] : NULL;
-  if (is_object($field) && $field instanceof ConditionInterface) {
-    return _block_content_has_reusable_condition($field->conditions());
-  }
-  if (isset($condition['#conjunction'])) {
-    foreach ($condition as $key => $nested_condition) {
-      if (is_int($key) && is_array($nested_condition)) {
-        if (_block_content_has_reusable_condition($nested_condition)) {
-          return TRUE;
-        }
-      }
-    }
-    return FALSE;
-  }
-  return $field === 'block_content_field_data.reusable';
-}
-
