@@ -13,6 +13,7 @@ use Drupal\field\FieldConfigInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplayStorage;
 use Drupal\layout_builder\Form\LayoutBuilderEntityViewDisplayForm;
+use Drupal\layout_builder\EntityOperations;
 
 /**
  * Implements hook_help().
@@ -85,29 +86,27 @@ function layout_builder_field_config_delete(FieldConfigInterface $field_config) 
 
 /**
  * Implements hook_entity_presave().
- *
- * @todo Move to "block_content" module before Layout Builder is stable.
  */
 function layout_builder_entity_presave(EntityInterface $entity) {
-  /** @var \Drupal\layout_builder\InlineBlockContentUsage $inline_block_usage */
-  $inline_block_usage = \Drupal::service('inline_block_content.usage');
-  $inline_block_usage->handlePreSave($entity);
+  \Drupal::service('class_resolver')
+    ->getInstanceFromDefinition(EntityOperations::class)
+    ->handlePreSave($entity);
 }
 
 /**
  * Implements hook_entity_delete().
  */
 function layout_builder_entity_delete(EntityInterface $entity) {
-  /** @var \Drupal\layout_builder\InlineBlockContentUsage $inline_block_usage */
-  $inline_block_usage = \Drupal::service('inline_block_content.usage');
-  $inline_block_usage->handleEntityDelete($entity);
+  \Drupal::service('class_resolver')
+    ->getInstanceFromDefinition(EntityOperations::class)
+    ->handleEntityDelete($entity);
 }
 
 /**
  * Implements hook_cron().
  */
 function layout_builder_cron() {
-  /** @var \Drupal\layout_builder\InlineBlockContentUsage $inline_block_usage */
-  $inline_block_usage = \Drupal::service('inline_block_content.usage');
-  $inline_block_usage->removeUnused();
+  \Drupal::service('class_resolver')
+    ->getInstanceFromDefinition(EntityOperations::class)
+    ->removeUnused();
 }
