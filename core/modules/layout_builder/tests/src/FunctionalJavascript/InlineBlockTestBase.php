@@ -293,13 +293,20 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
 
     $assert_session->pageTextContains('The DEFAULT block body');
 
+    /** @var \Drupal\node\NodeStorageInterface $node_storage */
+    $node_storage = $this->container->get('entity_type.manager')->getStorage('node');
+    $original_revision_id = $node_storage->getLatestRevisionId(1);
+
     // Create a new revision.
     $this->drupalGet('node/1/edit');
+    $page->findField('title[0][value]')->setValue('Node updated');
     $page->pressButton('Save');
 
     $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The DEFAULT block body');
 
     $assert_session->linkExists('Revisions');
+
 
     // Update the block.
     $this->drupalGet('node/1/layout');
@@ -309,8 +316,15 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $assert_session->pageTextContains('The NEW block body');
     $assert_session->pageTextNotContains('The DEFAULT block body');
 
+    $revision_url = "node/1/revisions/$original_revision_id";
+
+    // Ensure viewing the previous revision shows the previous block revision.
+    $this->drupalGet("$revision_url/view");
+    $assert_session->pageTextContains('The DEFAULT block body');
+    $assert_session->pageTextNotContains('The NEW block body');
+
     // Revert to first revision.
-    $revision_url = 'node/1/revisions/1/revert';
+    $revision_url = "$revision_url/revert";
     $this->drupalGet($revision_url);
     $page->pressButton('Revert');
 
