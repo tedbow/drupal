@@ -172,9 +172,12 @@ class EntityOperations implements ContainerInjectionInterface {
       if ($entity instanceof RevisionableInterface) {
         // If the parent entity will have a new revision create a new revision
         // of the block.
-        // Currently revisions are not actually created.
+        // @todo Currently revisions are not actually created.
         // @see https://www.drupal.org/node/2937199
-        $new_revision = $entity->isNewRevision();
+        // To bypass this always make a revision because the parent entity is
+        // instnace of RevisionableInterface. After the issue is fixed only
+        // create a new revision if '$entity->isNewRevision()'.
+        $new_revision = TRUE;
       }
 
       foreach ($this->getInlineBlockComponents($sections) as $component) {
