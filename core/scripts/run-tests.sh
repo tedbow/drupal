@@ -145,14 +145,6 @@ if (!Composer::upgradePHPUnitCheck($phpunit_version)) {
 }
 
 $test_list = simpletest_script_get_test_list();
-$test_class_1 = 'Drupal\Tests\layout_builder\FunctionalJavascript\InlineBlockContentBlockTest';
-if (in_array($test_class_1, $test_list)) {
-  // Do the test 1 times.
- $test_list = [$test_class_1];
-}
-else {
-  $test_list = [];
-}
 
 // Try to allocate unlimited time to run the tests.
 drupal_set_time_limit(0);

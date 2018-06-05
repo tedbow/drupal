@@ -160,7 +160,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
    *
    * @dataProvider layoutNoSaveProvider
    */
-  public function xtestNoLayoutSave($operation, $no_save_link_text, $confirm_button_text) {
+  public function testNoLayoutSave($operation, $no_save_link_text, $confirm_button_text) {
 
     $this->drupalLogin($this->drupalCreateUser([
       'access contextual links',
@@ -253,11 +253,9 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
   protected function assertSaveLayout() {
     $assert_session = $this->assertSession();
     // $this->clickLink('Save Layout') is causing random failures.
-    $address = $this->getUrl();
     $link = $this->getSession()->getPage()->findLink('Save Layout');
     $this->drupalGet($link->getAttribute('href'));
     $this->getSession()->wait(300);
-    $assert_session->addressNotEquals($address);
     $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
     if (stristr($this->getUrl(), 'admin/structure') === FALSE) {
       $assert_session->pageTextContains('The layout override has been saved.');
@@ -270,7 +268,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
   /**
    * Tests entity blocks revisioning.
    */
-  public function xtestInlineBlocksRevisioning() {
+  public function testInlineBlocksRevisioning() {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
 
@@ -341,7 +339,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
    * @throws \Behat\Mink\Exception\ExpectationException
    * @throws \Behat\Mink\Exception\ResponseTextException
    */
-  public function xtestDeletion() {
+  public function testDeletion() {
     /** @var \Drupal\Core\Cron $cron */
     $cron = \Drupal::service('cron');
     $this->drupalLogin($this->drupalCreateUser([
