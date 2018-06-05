@@ -252,20 +252,18 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
    */
   protected function assertSaveLayout() {
     $assert_session = $this->assertSession();
-
     // $this->clickLink('Save Layout') is causing random failures.
     $address = $this->getUrl();
-    $assert_session->addressEquals($address);
     $link = $this->getSession()->getPage()->findLink('Save Layout');
     $this->drupalGet($link->getAttribute('href'));
     $this->getSession()->wait(300);
     $assert_session->addressNotEquals($address);
     $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
     if (stristr($this->getUrl(), 'admin/structure') === FALSE) {
-      //$assert_session->pageTextContains('The layout override has been saved.');
+      $assert_session->pageTextContains('The layout override has been saved.');
     }
     else {
-      //$assert_session->pageTextContains('The layout has been saved.');
+      $assert_session->pageTextContains('The layout has been saved.');
     }
   }
 
