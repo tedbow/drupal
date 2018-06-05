@@ -1,10 +1,12 @@
 <?php
 
-namespace Drupal\Tests\layout_builder\FunctionalJavascript;
+namespace Drupal\Tests\layout_builder\Functional;
 
-use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
+use Drupal\Component\Serialization\Json;
 use Drupal\node\Entity\Node;
-use Drupal\Tests\contextual\FunctionalJavascript\ContextualLinkClickTrait;
+use Drupal\Tests\BrowserTestBase;
+use Drupal\user\Entity\Role;
+use GuzzleHttp\RequestOptions;
 
 /**
  * Temporary inline-block base test.
@@ -16,9 +18,7 @@ use Drupal\Tests\contextual\FunctionalJavascript\ContextualLinkClickTrait;
  * @see https://www.drupal.org/node/2957425
  * @see https://www.drupal.org/node/2974860
  */
-abstract class InlineBlockTestBase extends JavascriptTestBase {
-
-  use ContextualLinkClickTrait;
+abstract class InlineBlockTestBase extends BrowserTestBase {
 
   /**
    * CSS locator for entity blocks.
@@ -81,6 +81,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
   public function testInlineBlocks() {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
+    $this->grantPermissions(Role::load(Role::ANONYMOUS_ID), [ 'access contextual links']);
 
     $this->drupalLogin($this->drupalCreateUser([
       'access contextual links',
@@ -252,12 +253,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
    */
   protected function assertSaveLayout() {
     $assert_session = $this->assertSession();
-    // $this->clickLink('Save Layout') is causing random failures.
-    $link = $this->getSession()->getPage()->findLink('Save Layout');
-    $this->drupalGet($link->getAttribute('href'));
-    $this->getSession()->wait(300);
-
-    $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
+    $this->clickLink('Save Layout');
     if (stristr($this->getUrl(), 'admin/structure') === FALSE) {
       $assert_session->pageTextContains('The layout override has been saved.');
     }
@@ -490,19 +486,12 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
     $page->clickLink('Add Block');
-    $assert_session->assertWaitOnAjaxRequest();
-    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '.block-categories details:contains(Create new block)'));
     $this->clickLink('Basic block');
-    $assert_session->assertWaitOnAjaxRequest();
     $assert_session->fieldValueEquals('Title', '');
     $page->findField('Title')->setValue($title);
     $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
     $textarea->setValue($body);
     $page->pressButton('Add Block');
-    // @todo Replace with 'assertNoElementAfterWait()' after
-    // https://www.drupal.org/project/drupal/issues/2892440.
-    $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->elementNotExists('css', '#drupal-off-canvas');
     $found_new_text = FALSE;
     /** @var \Behat\Mink\Element\NodeElement $element */
     foreach ($page->findAll('css', static::$inlineBlockCssLocator) as $element) {
@@ -557,13 +546,37 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $block_css_locator = $block_css_locator ?: static::$inlineBlockCssLocator;
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
-    $this->clickContextualLink($block_css_locator, 'Configure');
-    $textarea = $assert_session->waitForElementVisible('css', '[name="settings[block_form][body][0][value]"]');
-    $this->assertNotEmpty($textarea);
+    file_put_contents('/Users/ted.bowman/Sites/www/basic.html', $page->getOuterHtml());
+
+    $rendered_block = $page->find('css', $block_css_locator);
+    $this->getContextualLinkUrl($block_css_locator, 'Configure');
+    $uuid = $rendered_block->getAttribute('data-layout-block-uuid');
+    $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
+    $textarea = $page->find('[name="settings[block_form][body][0][value]"]');
     $this->assertSame($old_body, $textarea->getValue());
     $textarea->setValue($new_body);
     $page->pressButton('Update');
-    $assert_session->assertWaitOnAjaxRequest();
+  }
+
+  protected function getContextualLinkUrl($css_locator, $link_text, $current_path = '') {
+    $page = $this->getSession()->getPage();
+    $contextual_element = $page->find('css', "$css_locator [data-contextual-id]");
+    $contextual_id = $contextual_element->getAttribute('data-contextual-id');
+    $post['ids[0]'] = $contextual_id;
+
+    $serialized = json_encode($post);
+    $request_options = [
+      RequestOptions::HEADERS => ['Content-Type' => 'application/json'],
+      RequestOptions::BODY => $serialized,
+    ];
+
+    /** @var \GuzzleHttp\ClientInterface $client */
+    $client = $this->getSession()->getDriver()->getClient()->getClient();
+    $response = $client->request('POST', $this->buildUrl('contextual/render', ['query' => ['destination' => $current_path]]), $request_options);
+    $decoded = json_decode($response);
+
+    print_r($decoded);
+
   }
 
 }
