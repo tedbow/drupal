@@ -260,20 +260,13 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $this->drupalGet($link->getAttribute('href'));
     $this->getSession()->wait(300);
     $assert_session->addressNotEquals($address);
-    //$this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
-    try {
-      if (stristr($this->getUrl(), 'admin/structure') === FALSE) {
-        $assert_session->pageTextContains('The layout override has been saved.');
-      }
-      else {
-        $assert_session->pageTextContains('The layout has been saved.');
-      }
+    $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
+    if (stristr($this->getUrl(), 'admin/structure') === FALSE) {
+      //$assert_session->pageTextContains('The layout override has been saved.');
     }
-    catch (\Exception $e) {
-     print "page: " . $this->getSession()->getPage()->getText();
-     throw $e;
+    else {
+      //$assert_session->pageTextContains('The layout has been saved.');
     }
-
   }
 
   /**
