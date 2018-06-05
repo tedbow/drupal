@@ -305,7 +305,6 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
 
     $assert_session->linkExists('Revisions');
 
-
     // Update the block.
     $this->drupalGet('node/1/layout');
     $this->configureInlineBlock('The DEFAULT block body', 'The NEW block body');
