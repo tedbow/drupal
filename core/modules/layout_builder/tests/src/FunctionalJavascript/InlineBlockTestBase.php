@@ -252,9 +252,8 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
    */
   protected function assertSaveLayout() {
     $assert_session = $this->assertSession();
-    // $this->clickLink('Save Layout') is causing random failures.
-    $link = $this->getSession()->getPage()->findLink('Save Layout');
-    $this->drupalGet($link->getAttribute('href'));
+    $assert_session->linkExists('Save Layout');
+    $this->clickLink('Save Layout');
     $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
     if (stristr($this->getUrl(), 'admin/structure') === FALSE) {
       $assert_session->pageTextContains('The layout override has been saved.');
@@ -489,7 +488,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $page = $this->getSession()->getPage();
     $page->clickLink('Add Block');
     $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->elementExists('css', '.block-categories details:contains(Create new block)');
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '.block-categories details:contains(Create new block)'));
     $this->clickLink('Basic block');
     $assert_session->assertWaitOnAjaxRequest();
     $assert_session->fieldValueEquals('Title', '');
@@ -497,7 +496,10 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
     $textarea->setValue($body);
     $page->pressButton('Add Block');
+    // @todo Replace with 'assertNoElementAfterWait()' after
+    // https://www.drupal.org/project/drupal/issues/2892440.
     $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->elementNotExists('css', '#drupal-off-canvas');
     $found_new_text = FALSE;
     /** @var \Behat\Mink\Element\NodeElement $element */
     foreach ($page->findAll('css', static::$inlineBlockCssLocator) as $element) {
