@@ -42,6 +42,36 @@ class TestSelection extends DefaultSelection {
           ->condition("reusable", 0)
           ->exists('type');
         $query->condition($group);
+        break;
+
+      case 'reusable_condition_group_true':
+        $group = $query->andConditionGroup()
+          ->condition("reusable", 1)
+          ->exists('type');
+        $query->condition($group);
+        break;
+
+      case 'reusable_condition_nested_group_false':
+        $query->exists('type');
+        $sub_group = $query->andConditionGroup()
+          ->condition("reusable", 0)
+          ->exists('type');
+        $group = $query->andConditionGroup()
+          ->exists('type')
+          ->condition($sub_group);
+        $query->condition($group);
+        break;
+
+      case 'reusable_condition_nested_group_true':
+        $query->exists('type');
+        $sub_group = $query->andConditionGroup()
+          ->condition("reusable", 1)
+          ->exists('type');
+        $group = $query->andConditionGroup()
+          ->exists('type')
+          ->condition($sub_group);
+        $query->condition($group);
+        break;
     }
     return $query;
   }

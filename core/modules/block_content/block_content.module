@@ -131,8 +131,7 @@ function block_content_query_entity_reference_alter(AlterableInterface $query) {
   if ($query instanceof SelectInterface && $query->getMetaData('entity_type') === 'block_content' && $query->hasTag('block_content_access')) {
     $data_table = \Drupal::entityTypeManager()->getDefinition('block_content')->getDataTable();
     if (array_key_exists($data_table, $query->getTables())) {
-      $reusable_conditions = _block_content_has_reusable_condition($query->conditions());
-      if (empty($reusable_conditions)) {
+      if (!_block_content_has_reusable_condition($query->conditions())) {
         // If no reusable condition create a condition set to TRUE.
         $query->condition("$data_table.reusable", TRUE);
       }
@@ -143,23 +142,18 @@ function block_content_query_entity_reference_alter(AlterableInterface $query) {
 /**
  * Utility function to find nested conditions using the reusable field.
  *
- * @param mixed $condition
- *   The conditions to check.
+ * @param array $condition
+ *   The condition or condition group to check.
  *
  * @return bool
  *   Whether the conditions contain any condition using the reusable field.
  */
-function _block_content_has_reusable_condition($condition) {
-  if (!is_array($condition)) {
-    return FALSE;
-  }
-  $field = isset($condition['field']) ? $condition['field'] : NULL;
-  if (is_object($field) && $field instanceof ConditionInterface) {
-    return _block_content_has_reusable_condition($field->conditions());
-  }
+function _block_content_has_reusable_condition(array $condition) {
+  // If this is a condition group call this function recursively for each nested
+  // condition until a condition is found that return TRUE.
   if (isset($condition['#conjunction'])) {
-    foreach ($condition as $key => $nested_condition) {
-      if (is_int($key) && is_array($nested_condition)) {
+    foreach ($condition as $nested_condition) {
+      if (is_array($nested_condition)) {
         if (_block_content_has_reusable_condition($nested_condition)) {
           return TRUE;
         }
@@ -167,7 +161,15 @@ function _block_content_has_reusable_condition($condition) {
     }
     return FALSE;
   }
-  $field_parts = explode('.', $field);
-  return strpos($field_parts[0], 'block_content_field_data') === 0 && $field_parts[1] ==='reusable';
+  if (isset($condition['field'])) {
+    $field = $condition['field'];
+    if (is_object($field) && $field instanceof ConditionInterface) {
+      return _block_content_has_reusable_condition($field->conditions());
+    }
+    $field_parts = explode('.', $field);
+    return strpos($field_parts[0], 'block_content_field_data') === 0 && $field_parts[1] === 'reusable';
+  }
+  return FALSE;
+
 }
 
