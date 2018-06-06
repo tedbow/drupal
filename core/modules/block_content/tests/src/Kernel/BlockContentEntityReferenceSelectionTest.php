@@ -102,7 +102,7 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
       ],
       $selection_handler->getReferenceableEntities()
     );
-    $selection_handler = new TestSelection($configuration, '', '', $this->container->get('entity.manager'), $this->container->get('module_handler'), \Drupal::currentUser());
+
     $selection_handler->setTestMode('reusable_condition_false');
     $this->assertEquals(
       [
@@ -110,7 +110,7 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
       ],
       $selection_handler->getReferenceableEntities()
     );
-    $selection_handler = new TestSelection($configuration, '', '', $this->container->get('entity.manager'), $this->container->get('module_handler'), \Drupal::currentUser());
+
     $selection_handler->setTestMode('reusable_condition_exists');
     $this->assertEquals(
       [
@@ -121,6 +121,16 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
       ],
       $selection_handler->getReferenceableEntities()
     );
+
+
+    $selection_handler->setTestMode('reusable_condition_group_false');
+    $this->assertEquals(
+      [
+        'spiffy' => [$block_content_nonreusable->id() => $block_content_nonreusable->label()],
+      ],
+      $selection_handler->getReferenceableEntities()
+    );
+
 
     $block_content_nonreusable->setReusable(TRUE);
     $block_content_nonreusable->save();
