@@ -4,6 +4,9 @@ namespace Drupal\block_content_test\Plugin\EntityReferenceSelection;
 
 use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
 
+/**
+ * Test EntityReferenceSelection class that adds various 'reusable' conditions.
+ */
 class TestSelection extends DefaultSelection {
 
   /**
