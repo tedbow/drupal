@@ -106,7 +106,6 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
     $reusable_block = ['spiffy' => [$block_content_reusable->id() => $block_content_reusable->label()]];
     $non_reusable_block = ['spiffy' => [$block_content_nonreusable->id() => $block_content_nonreusable->label()]];
 
-
     $this->assertEquals(
       $reusable_block,
       $selection_handler->getReferenceableEntities()
@@ -114,7 +113,8 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
 
     // Test various ways in which an EntityReferenceSelection plugin could set
     // the 'reusable' condition. If the plugin has set a condition on 'reusable'
-    // at all then
+    // at all then 'block_content_query_entity_reference_alter()' will not set
+    // a reusable condition.
     $selection_handler->setTestMode('reusable_condition_false');
     $this->assertEquals(
       $non_reusable_block,
@@ -126,7 +126,6 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
       $both_blocks,
       $selection_handler->getReferenceableEntities()
     );
-
 
     $selection_handler->setTestMode('reusable_condition_group_false');
     $this->assertEquals(
