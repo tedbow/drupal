@@ -69,20 +69,13 @@ class InlineBlockContentUsage {
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The parent entity.
-   * @param bool $delete_record
-   *   Whether to deleted the usage record.
    */
-  public function removeByParent(EntityInterface $entity, $delete_record = FALSE) {
-    if ($delete_record) {
-      $query = $this->connection->delete('inline_block_content_usage');
-    }
-    else {
-      $query = $this->connection->update('inline_block_content_usage');
-      $query->fields([
+  public function removeByParent(EntityInterface $entity) {
+    $query = $this->connection->update('inline_block_content_usage')
+      ->fields([
         'parent_entity_type' => NULL,
         'parent_entity_id' => NULL,
       ]);
-    }
     $query->condition('parent_entity_type', $entity->getEntityTypeId());
     $query->condition('parent_entity_id', $entity->id());
     $query->execute();

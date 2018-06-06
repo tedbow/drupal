@@ -88,25 +88,38 @@ function layout_builder_field_config_delete(FieldConfigInterface $field_config) 
  * Implements hook_entity_presave().
  */
 function layout_builder_entity_presave(EntityInterface $entity) {
-  \Drupal::service('class_resolver')
-    ->getInstanceFromDefinition(EntityOperations::class)
-    ->handlePreSave($entity);
+  /** @var \Drupal\layout_builder\EntityOperations $entity_operations */
+  $entity_operations = \Drupal::service('class_resolver')->getInstanceFromDefinition(EntityOperations::class);
+  $entity_operations->handlePreSave($entity);
 }
 
 /**
  * Implements hook_entity_delete().
  */
 function layout_builder_entity_delete(EntityInterface $entity) {
-  \Drupal::service('class_resolver')
-    ->getInstanceFromDefinition(EntityOperations::class)
-    ->handleEntityDelete($entity);
+  /** @var \Drupal\layout_builder\EntityOperations $entity_operations */
+  $entity_operations = \Drupal::service('class_resolver')->getInstanceFromDefinition(EntityOperations::class);
+  $entity_operations->handleEntityDelete($entity);
 }
 
 /**
  * Implements hook_cron().
  */
 function layout_builder_cron() {
-  \Drupal::service('class_resolver')
-    ->getInstanceFromDefinition(EntityOperations::class)
-    ->removeUnused();
+  /** @var \Drupal\layout_builder\EntityOperations $entity_operations */
+  $entity_operations = \Drupal::service('class_resolver')->getInstanceFromDefinition(EntityOperations::class);
+  $entity_operations->removeUnused();
+}
+
+/**
+ * Implements hook_plugin_filter_TYPE_alter().
+ */
+function layout_builder_plugin_filter_block_alter(array &$definitions, array $extra, $consumer) {
+  if ($consumer !== 'layout_builder') {
+    foreach ($definitions as $id => $definition) {
+      if ($definition['id'] === 'inline_block_content') {
+        unset($definitions[$id]);
+      }
+    }
+  }
 }

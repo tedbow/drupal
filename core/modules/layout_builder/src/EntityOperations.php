@@ -2,7 +2,6 @@
 
 namespace Drupal\layout_builder;
 
-use Drupal\block\BlockInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -21,18 +20,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityOperations implements ContainerInjectionInterface {
 
   /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Inline block content usage tracking service.
    *
    * @var \Drupal\layout_builder\InlineBlockContentUsage
    */
   protected $usage;
+
+  /**
+   * The block storage.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected $storage;
 
   /**
    * Constructs a new  EntityOperations object.
@@ -41,9 +40,14 @@ class EntityOperations implements ContainerInjectionInterface {
    *   The entity type manager service.
    * @param \Drupal\layout_builder\InlineBlockContentUsage $usage
    *   Inline block content usage tracking service.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function __construct(EntityTypeManagerInterface $entityTypeManager, InlineBlockContentUsage $usage) {
-    $this->entityTypeManager = $entityTypeManager;
+    if ($entityTypeManager->hasDefinition('block_content')) {
+      $this->storage = $entityTypeManager->getStorage('block_content');
+    }
     $this->usage = $usage;
   }
 
@@ -66,24 +70,20 @@ class EntityOperations implements ContainerInjectionInterface {
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The parent entity.
    *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function removeUnusedForEntityOnSave(EntityInterface $entity) {
-    if ($this->isLayoutCompatibleEntity($entity)) {
-      $sections = $this->getEntitySections($entity);
-      if ($entity->isNew() || !isset($entity->original) || $sections === NULL || ($entity->getEntityTypeId() !== 'entity_view_display' && empty($sections))) {
-        return;
-      }
-      // If this a new revision do not remove content_block entities.
-      if ($entity instanceof RevisionableInterface && $entity->isNewRevision()) {
-        return;
-      }
-      $original_sections = $this->getEntitySections($entity->original);
-      if ($removed_ids = array_diff($this->getInlineBlockIdsInSections($original_sections), $this->getInlineBlockIdsInSections($sections))) {
-        $this->deleteBlocksAndUsage($removed_ids);
-      }
+    $sections = $this->getEntitySections($entity);
+    if ($entity->isNew() || !isset($entity->original) || $sections === NULL || ($entity->getEntityTypeId() !== 'entity_view_display' && empty($sections))) {
+      return;
+    }
+    // If this a new revision do not remove content_block entities.
+    if ($entity instanceof RevisionableInterface && $entity->isNewRevision()) {
+      return;
+    }
+    $original_sections = $this->getEntitySections($entity->original);
+    if ($removed_ids = array_diff($this->getInlineBlockIdsInSections($original_sections), $this->getInlineBlockIdsInSections($sections))) {
+      $this->deleteBlocksAndUsage($removed_ids);
     }
   }
 
@@ -92,17 +92,9 @@ class EntityOperations implements ContainerInjectionInterface {
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The parent entity.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function handleEntityDelete(EntityInterface $entity) {
-    if ($this->isInlineBlockContentBlock($entity)) {
-      /** @var \Drupal\block\BlockInterface $entity */
-      $this->deleteBlockContentOnBlockDelete($entity);
-      return;
-    }
-    if ($this->isLayoutCompatibleEntity($entity)) {
+    if ($this->storage && $this->isLayoutCompatibleEntity($entity)) {
       $this->usage->removeByParent($entity);
     }
   }
@@ -142,19 +134,13 @@ class EntityOperations implements ContainerInjectionInterface {
    * @throws \Exception
    */
   public function handlePreSave(EntityInterface $entity) {
+    if (!$this->storage || !$this->isLayoutCompatibleEntity($entity)) {
+      return;
+    }
     $duplicate_blocks = FALSE;
-
     $this->removeUnusedForEntityOnSave($entity);
 
-    if ($this->isInlineBlockContentBlock($entity)) {
-      /** @var \Drupal\block\BlockInterface $entity */
-      /** @var \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin */
-      $plugin = $entity->getPlugin();
-      $plugin->saveBlockContent(FALSE, FALSE);
-      $entity->set('settings', $plugin->getConfiguration());
-    }
-
-    if ($this->isLayoutCompatibleEntity($entity) && $sections = $this->getEntitySections($entity)) {
+    if ($sections = $this->getEntitySections($entity)) {
       if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
         if (!$entity->isNew() && isset($entity->original)) {
           /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $original_sections_field */
@@ -175,7 +161,7 @@ class EntityOperations implements ContainerInjectionInterface {
         // @todo Currently revisions are not actually created.
         // @see https://www.drupal.org/node/2937199
         // To bypass this always make a revision because the parent entity is
-        // instnace of RevisionableInterface. After the issue is fixed only
+        // instance of RevisionableInterface. After the issue is fixed only
         // create a new revision if '$entity->isNewRevision()'.
         $new_revision = TRUE;
       }
@@ -193,6 +179,7 @@ class EntityOperations implements ContainerInjectionInterface {
         $component->setConfiguration($plugin->getConfiguration());
       }
     }
+
   }
 
   /**
@@ -204,8 +191,6 @@ class EntityOperations implements ContainerInjectionInterface {
    * @return int[]
    *   The block ids.
    *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function getInlineBlockIdsInSections(array $sections) {
     $block_ids = [];
@@ -216,21 +201,6 @@ class EntityOperations implements ContainerInjectionInterface {
       }
     }
     return $block_ids;
-  }
-
-  /**
-   * Deletes an Inline Block for a block entity.
-   *
-   * @param \Drupal\block\BlockInterface $block_entity
-   *   The block entity that has an Inline Block plugin.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  protected function deleteBlockContentOnBlockDelete(BlockInterface $block_entity) {
-    if ($block_content = $this->getPluginBlockRevision($block_entity->getPlugin())) {
-      $this->usage->removeByParent($block_entity, TRUE);
-    }
   }
 
   /**
@@ -272,26 +242,6 @@ class EntityOperations implements ContainerInjectionInterface {
   }
 
   /**
-   * Determines if the entity is Block entity that contains an Inline Block.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity to check.
-   *
-   * @return bool
-   *   TRUE if the entity can is a block entity with an Inline Block otherwise
-   *   FALSE.
-   */
-  protected function isInlineBlockContentBlock(EntityInterface $entity) {
-    if ($entity instanceof BlockInterface) {
-      $plugin = $entity->getPlugin();
-      if ($plugin instanceof InlineBlockContentBlock) {
-        return TRUE;
-      }
-    }
-    return FALSE;
-  }
-
-  /**
    * Gets a block revision for a inline block content plugin.
    *
    * @param \Drupal\Component\Plugin\PluginInspectionInterface $plugin
@@ -300,15 +250,13 @@ class EntityOperations implements ContainerInjectionInterface {
    * @return \Drupal\block_content\Entity\BlockContent|null
    *   The block content entity or null none available.
    *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function getPluginBlockRevision(PluginInspectionInterface $plugin) {
     /** @var \Drupal\Component\Plugin\ConfigurablePluginInterface $plugin */
     $configuration = $plugin->getConfiguration();
     if (!empty($configuration['block_revision_id'])) {
       /** @var \Drupal\block_content\Entity\BlockContent $block_content */
-      $block_content = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
+      $block_content = $this->storage->loadRevision($configuration['block_revision_id']);
       return $block_content;
     }
     return NULL;
@@ -320,13 +268,11 @@ class EntityOperations implements ContainerInjectionInterface {
    * @param int[] $block_content_ids
    *   The block content entity IDs.
    *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function deleteBlocksAndUsage(array $block_content_ids) {
     foreach ($block_content_ids as $block_content_id) {
-      if ($block = $this->entityTypeManager->getStorage('block_content')->load($block_content_id)) {
+      if ($block = $this->storage->load($block_content_id)) {
         $block->delete();
       }
     }
@@ -339,8 +285,6 @@ class EntityOperations implements ContainerInjectionInterface {
    * @param int $limit
    *   The maximum number of block content entities to remove.
    *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function removeUnused($limit = 100) {
