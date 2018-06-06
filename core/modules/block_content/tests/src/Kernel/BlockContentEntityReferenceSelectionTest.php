@@ -4,7 +4,7 @@ namespace Drupal\Tests\block_content\Kernel;
 
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
-use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
+use Drupal\block_content_test\Plugin\EntityReferenceSelection\TestSelection;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
@@ -19,7 +19,13 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['block', 'block_content', 'system', 'user'];
+  public static $modules = [
+    'block',
+    'block_content',
+    'block_content_test',
+    'system',
+    'user',
+  ];
 
   /**
    * The entity type manager.
@@ -89,13 +95,33 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
       'target_bundles' => ['spiffy' => 'spiffy'],
       'sort' => ['field' => '_none'],
     ];
-    $selection_handler = new DefaultSelection($configuration, '', '', $this->container->get('entity.manager'), $this->container->get('module_handler'), \Drupal::currentUser());
+    $selection_handler = new TestSelection($configuration, '', '', $this->container->get('entity.manager'), $this->container->get('module_handler'), \Drupal::currentUser());
     $this->assertEquals(
       [
         'spiffy' => [$block_content_reusable->id() => $block_content_reusable->label()],
       ],
       $selection_handler->getReferenceableEntities()
     );
+    $selection_handler = new TestSelection($configuration, '', '', $this->container->get('entity.manager'), $this->container->get('module_handler'), \Drupal::currentUser());
+    $selection_handler->setTestMode('reusable_condition_false');
+    $this->assertEquals(
+      [
+        'spiffy' => [$block_content_nonreusable->id() => $block_content_nonreusable->label()],
+      ],
+      $selection_handler->getReferenceableEntities()
+    );
+    $selection_handler = new TestSelection($configuration, '', '', $this->container->get('entity.manager'), $this->container->get('module_handler'), \Drupal::currentUser());
+    $selection_handler->setTestMode('reusable_condition_exists');
+    $this->assertEquals(
+      [
+        'spiffy' => [
+          $block_content_reusable->id() => $block_content_reusable->label(),
+          $block_content_nonreusable->id() => $block_content_nonreusable->label(),
+        ],
+      ],
+      $selection_handler->getReferenceableEntities()
+    );
+
     $block_content_nonreusable->setReusable(TRUE);
     $block_content_nonreusable->save();
     // Ensure that the block is now returned as a referenceable entity.
