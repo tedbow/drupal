@@ -38,9 +38,10 @@ class TestSelection extends DefaultSelection {
         break;
 
       case 'reusable_condition_group_false':
-        $query->andConditionGroup()
+        $group = $query->andConditionGroup()
           ->condition("reusable", 0)
           ->exists('type');
+        $query->condition($group);
     }
     return $query;
   }

@@ -10,7 +10,7 @@ use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Database\Query\AlterableInterface;
-use Drupal\Core\Condition\ConditionInterface;
+use Drupal\Core\Database\Query\ConditionInterface;
 
 /**
  * Implements hook_help().
@@ -131,7 +131,7 @@ function block_content_query_entity_reference_alter(AlterableInterface $query) {
   if ($query instanceof SelectInterface && $query->getMetaData('entity_type') === 'block_content' && $query->hasTag('block_content_access')) {
     $data_table = \Drupal::entityTypeManager()->getDefinition('block_content')->getDataTable();
     if (array_key_exists($data_table, $query->getTables())) {
-      $reusable_conditions = array_filter($query->conditions(), '_block_content_has_reusable_condition');
+      $reusable_conditions = _block_content_has_reusable_condition($query->conditions());
       if (empty($reusable_conditions)) {
         // If no reusable condition create a condition set to TRUE.
         $query->condition("$data_table.reusable", TRUE);
@@ -167,6 +167,7 @@ function _block_content_has_reusable_condition($condition) {
     }
     return FALSE;
   }
-  return $field === 'block_content_field_data.reusable';
+  $field_parts = explode('.', $field);
+  return strpos($field_parts[0], 'block_content_field_data') === 0 && $field_parts[1] ==='reusable';
 }
 
