@@ -78,7 +78,7 @@ function layout_builder_schema() {
 }
 
 /**
- * Create the 'entity_usage' table.
+ * Create the 'inline_block_content_usage' table.
  */
 function layout_builder_update_8001() {
   $inline_block_content_usage = [
