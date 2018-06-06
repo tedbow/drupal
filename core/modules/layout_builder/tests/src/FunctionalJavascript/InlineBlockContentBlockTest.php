@@ -33,6 +33,13 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
   ];
 
   /**
+   * The block storage.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected $blockStorage;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -67,6 +74,8 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     ]);
     $bundle->save();
     block_content_add_body_field($bundle->id());
+
+    $this->blockStorage = $this->container->get('entity_type.manager')->getStorage('block_content');
   }
 
   /**
@@ -163,7 +172,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     ]));
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
-    $this->assertEmpty($this->getInlineStorage()->loadMultiple(), 'No entity blocks exist');
+    $this->assertEmpty($this->blockStorage->loadMultiple(), 'No entity blocks exist');
     $field_ui_prefix = 'admin/structure/types/manage/bundle_with_section_field';
     // Enable overrides.
     $this->drupalPostForm("$field_ui_prefix/display/default", ['layout[allow_custom]' => TRUE], 'Save');
@@ -175,7 +184,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
       $page->pressButton($confirm_button_text);
     }
     $this->drupalGet('node/1');
-    $this->assertEmpty($this->getInlineStorage()->loadMultiple(), 'No entity blocks were created when layout is canceled.');
+    $this->assertEmpty($this->blockStorage->loadMultiple(), 'No entity blocks were created when layout is canceled.');
     $assert_session->pageTextNotContains('The block body');
 
     $this->drupalGet('node/1/layout');
@@ -184,7 +193,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->assertSaveLayout();
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The block body');
-    $blocks = $this->getInlineStorage()->loadMultiple();
+    $blocks = $this->blockStorage->loadMultiple();
     $this->assertEquals(count($blocks), 1);
     /* @var \Drupal\Core\Entity\ContentEntityBase $block */
     $block = array_pop($blocks);
@@ -201,7 +210,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     }
     $this->drupalGet('node/1');
 
-    $blocks = $this->getInlineStorage()->loadMultiple();
+    $blocks = $this->blockStorage->loadMultiple();
     // When reverting or canceling the update block should not be on the page.
     $assert_session->pageTextNotContains('The block updated body');
     if ($operation === 'cancel') {
@@ -353,7 +362,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->addInlineBlockToLayout('Block title', 'The DEFAULT block body');
     $this->assertSaveLayout();
 
-    $this->assertCount(1, $this->getInlineStorage()->loadMultiple());
+    $this->assertCount(1, $this->blockStorage->loadMultiple());
     $default_block_id = $this->getLatestBlockEntityId();
 
     // Ensure the block shows up on node pages.
@@ -373,21 +382,22 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->drupalGet('node/2/layout');
     $this->assertSaveLayout();
     $node_2_block_id = $this->getLatestBlockEntityId();
-    $this->assertCount(3, $this->getInlineStorage()->loadMultiple());
+    $this->assertCount(3, $this->blockStorage->loadMultiple());
 
     $this->drupalGet($field_ui_prefix . '/display/default');
     $this->clickLink('Manage layout');
     $assert_session->addressEquals("$field_ui_prefix/display-layout/default");
 
-    $this->assertNotEmpty($this->loadBlock($default_block_id));
+    $this->assertNotEmpty($this->blockStorage->load($default_block_id));
     // Remove block from default.
     $this->removeInlineBlockFromLayout();
     $this->assertSaveLayout();
     $cron->run();
     // Ensure the block in the default was deleted.
-    $this->assertEmpty($this->loadBlock($default_block_id));
+    $this->blockStorage->resetCache([$default_block_id]);
+    $this->assertEmpty($this->blockStorage->load($default_block_id));
     // Ensure other blocks still exist.
-    $this->assertCount(2, $this->getInlineStorage()->loadMultiple());
+    $this->assertCount(2, $this->blockStorage->loadMultiple());
 
     $this->drupalGet('node/1/layout');
     $assert_session->pageTextContains('The DEFAULT block body');
@@ -399,16 +409,16 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->assertSaveLayout();
     $cron->run();
     // Ensure entity block is not deleted because it is needed in revision.
-    $this->assertNotEmpty($this->loadBlock($node_1_block_id));
-    $this->assertCount(2, $this->getInlineStorage()->loadMultiple());*/
+    $this->assertNotEmpty($this->blockStorage->load($node_1_block_id));
+    $this->assertCount(2, $this->blockStorage->loadMultiple());*/
 
     // Ensure entity block is deleted when node is deleted.
     $this->drupalGet('node/1/delete');
     $page->pressButton('Delete');
     $this->assertEmpty(Node::load(1));
     $cron->run();
-    $this->assertEmpty($this->loadBlock($node_1_block_id));
-    $this->assertCount(1, $this->getInlineStorage()->loadMultiple());
+    $this->assertEmpty($this->blockStorage->load($node_1_block_id));
+    $this->assertCount(1, $this->blockStorage->loadMultiple());
 
     // Add another block to the default.
     $this->drupalGet($field_ui_prefix . '/display/default');
@@ -418,7 +428,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->assertSaveLayout();
     $cron->run();
     $default_block2_id = $this->getLatestBlockEntityId();
-    $this->assertCount(2, $this->getInlineStorage()->loadMultiple());
+    $this->assertCount(2, $this->blockStorage->loadMultiple());
 
     // Delete the other node so bundle can be deleted.
     $this->drupalGet('node/2/delete');
@@ -426,8 +436,8 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->assertEmpty(Node::load(2));
     $cron->run();
     // Ensure entity block was deleted.
-    $this->assertEmpty($this->loadBlock($node_2_block_id));
-    $this->assertCount(1, $this->getInlineStorage()->loadMultiple());
+    $this->assertEmpty($this->blockStorage->load($node_2_block_id));
+    $this->assertCount(1, $this->blockStorage->loadMultiple());
 
     // Delete the bundle which has the default layout.
     $this->drupalGet("$field_ui_prefix/delete");
@@ -435,8 +445,8 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $cron->run();
 
     // Ensure the entity block in default is deleted when bundle is deleted.
-    $this->assertEmpty($this->loadBlock($default_block2_id));
-    $this->assertCount(0, $this->getInlineStorage()->loadMultiple());
+    $this->assertEmpty($this->blockStorage->load($default_block2_id));
+    $this->assertCount(0, $this->blockStorage->loadMultiple());
   }
 
   /**
@@ -445,7 +455,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
   protected function getLatestBlockEntityId() {
     $block_ids = \Drupal::entityQuery('block_content')->sort('id', 'DESC')->range(0, 1)->execute();
     $block_id = array_pop($block_ids);
-    $this->assertNotEmpty($this->loadBlock($block_id));
+    $this->assertNotEmpty($this->blockStorage->load($block_id));
     return $block_id;
   }
 
@@ -502,30 +512,6 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
       }
     }
     $this->assertNotEmpty($found_new_text, 'Found block text on page.');
-  }
-
-  /**
-   * Returns the entity storage for inline blocks.
-   *
-   * @return \Drupal\Core\Entity\Sql\SqlContentEntityStorage
-   *   The storage handler.
-   */
-  protected function getInlineStorage() {
-    return $this->container->get('entity_type.manager')->getStorage('block_content');
-  }
-
-  /**
-   * Loads a block entity.
-   *
-   * @param int $id
-   *   The block entity id.
-   *
-   * @return \Drupal\Core\Entity\ContentEntityBase|null
-   *   The block entity if exists.
-   */
-  protected function loadBlock($id) {
-    $this->getInlineStorage()->resetCache([$id]);
-    return $this->getInlineStorage()->load($id);
   }
 
   /**
