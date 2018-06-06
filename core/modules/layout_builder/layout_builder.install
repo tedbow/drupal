@@ -57,7 +57,7 @@ function layout_builder_schema() {
       'parent_entity_type' => [
         'description' => 'The name of the object type in which the entity is used.',
         'type' => 'varchar_ascii',
-        'length' => 64,
+        'length' => EntityTypeInterface::ID_MAX_LENGTH,
         'not null' => FALSE,
         'default' => '',
       ],
@@ -93,7 +93,7 @@ function layout_builder_update_8001() {
       'parent_entity_type' => [
         'description' => 'The name of the object type in which the entity is used.',
         'type' => 'varchar_ascii',
-        'length' => 64,
+        'length' => EntityTypeInterface::ID_MAX_LENGTH,
         'not null' => FALSE,
         'default' => '',
       ],
