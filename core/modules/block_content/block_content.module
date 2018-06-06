@@ -167,7 +167,8 @@ function _block_content_has_reusable_condition(array $condition) {
       return _block_content_has_reusable_condition($field->conditions());
     }
     $field_parts = explode('.', $field);
-    return strpos($field_parts[0], 'block_content_field_data') === 0 && $field_parts[1] === 'reusable';
+    $data_table = $data_table = \Drupal::entityTypeManager()->getDefinition('block_content')->getDataTable();
+    return strpos($field_parts[0], $data_table) === 0 && $field_parts[1] === 'reusable';
   }
   return FALSE;
 
