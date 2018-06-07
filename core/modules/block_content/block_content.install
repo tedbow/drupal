@@ -161,7 +161,7 @@ function block_content_update_8601() {
   $base_table = 'block_content_field_data';
   // Make sure the view's 'base_table' is correct and the View is not new. The
   // default view may have been replaced by a completely different view with the
-  //same ID.
+  // same ID.
   if ($view->get('base_table') !== $base_table || $view->isNew()) {
     return;
   }
