@@ -107,6 +107,9 @@ class BlockContentReusableUpdateTest extends UpdatePathTestBase {
     $this->drupalGet('admin/structure/block/block-content');
     $assert_session->statusCodeEquals('200');
     $assert_session->responseNotContains('view-id-block_content');
+    $assert_session->pageTextContains($pre_block->label());
+    $assert_session->pageTextContains($after_block->label());
+    $assert_session->pageTextNotContains($non_reusable_block->label());
   }
 
 }
