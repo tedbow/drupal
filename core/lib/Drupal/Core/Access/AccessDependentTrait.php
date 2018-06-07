@@ -19,7 +19,7 @@ trait AccessDependentTrait {
    */
   public function setAccessDependency(AccessibleInterface $access_dependency) {
     $this->accessDependency = $access_dependency;
-
+    return $this;
   }
 
   /**

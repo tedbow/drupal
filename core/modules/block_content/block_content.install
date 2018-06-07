@@ -160,8 +160,8 @@ function block_content_update_8601() {
   $view = \Drupal::configFactory()->getEditable('views.view.block_content');
   $base_table = 'block_content_field_data';
   // Make sure the view's 'base_table' is correct and the View is not new. The
-  // default view could have been deleted and possibly the view ID could be used
-  // for a different view.
+  // default view may have been replaced by a completely different view with the
+  //same ID.
   if ($view->get('base_table') !== $base_table || $view->isNew()) {
     return;
   }
