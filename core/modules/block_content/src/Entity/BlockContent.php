@@ -122,7 +122,9 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
-    static::invalidateBlockPluginCache();
+    if ($this->isReusable() || (isset($this->original) && $this->original->isReusable())) {
+      static::invalidateBlockPluginCache();
+    }
   }
 
   /**
@@ -130,7 +132,14 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    */
   public static function postDelete(EntityStorageInterface $storage, array $entities) {
     parent::postDelete($storage, $entities);
-    static::invalidateBlockPluginCache();
+    /** @var \Drupal\block_content\BlockContentInterface $block */
+    foreach ($entities as $block) {
+      if ($block->isReusable()) {
+        // If any deleted blocks are reusable clear the block cache.
+        static::invalidateBlockPluginCache();
+        return;
+      }
+    }
   }
 
   /**
