@@ -504,7 +504,7 @@ display:
     position: 2
     display_options:
       display_extenders: {  }
-      path: blocks-override
+      path: extra-view-display
       filters:
         type:
           id: type
