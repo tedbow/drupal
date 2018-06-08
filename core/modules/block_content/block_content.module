@@ -8,6 +8,9 @@
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\Core\Database\Query\SelectInterface;
+use Drupal\Core\Database\Query\AlterableInterface;
+use Drupal\Core\Database\Query\ConditionInterface;
 
 /**
  * Implements hook_help().
@@ -105,3 +108,67 @@ function block_content_add_body_field($block_type_id, $label = 'Body') {
 
   return $field;
 }
+
+/**
+ * Implements hook_query_TAG_alter().
+ *
+ * Alters any 'entity_reference' query where the entity type is
+ * 'block_content' and the query has the tag 'block_content_access'.
+ *
+ * These queries should only return reusable blocks unless a condition on
+ * reusable is explicitly set.
+ *
+ * Since block_content entities can be set to be non-reusable they should by
+ * default not be selectable as entity reference values. A module can still
+ * create a instance of
+ * \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface
+ * that will will allow selection of non-reusable blocks by explicitly setting
+ * a condition on the reusable field.
+ *
+ * @see \Drupal\block_content\BlockContentAccessControlHandler
+ */
+function block_content_query_entity_reference_alter(AlterableInterface $query) {
+  if ($query instanceof SelectInterface && $query->getMetaData('entity_type') === 'block_content' && $query->hasTag('block_content_access')) {
+    $data_table = \Drupal::entityTypeManager()->getDefinition('block_content')->getDataTable();
+    if (array_key_exists($data_table, $query->getTables()) && !_block_content_has_reusable_condition($query->conditions())) {
+      // If no reusable condition create a condition set to TRUE.
+      $query->condition("$data_table.reusable", TRUE);
+    }
+  }
+}
+
+/**
+ * Utility function to find nested conditions using the reusable field.
+ *
+ * @param array $condition
+ *   The condition or condition group to check.
+ *
+ * @return bool
+ *   Whether the conditions contain any condition using the reusable field.
+ */
+function _block_content_has_reusable_condition(array $condition) {
+  // If this is a condition group call this function recursively for each nested
+  // condition until a condition is found that return TRUE.
+  if (isset($condition['#conjunction'])) {
+    foreach (array_filter($condition, 'is_array') as $nested_condition) {
+      if (_block_content_has_reusable_condition($nested_condition)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+  if (isset($condition['field'])) {
+    $field = $condition['field'];
+    if (is_object($field) && $field instanceof ConditionInterface) {
+      return _block_content_has_reusable_condition($field->conditions());
+    }
+    $field_parts = explode('.', $field);
+    $data_table = $data_table = \Drupal::entityTypeManager()->getDefinition('block_content')->getDataTable();
+    // With nested conditions the data table may have a suffix at the end like
+    // 'block_content_field_data_2'.
+    return strpos($field_parts[0], $data_table) === 0 && $field_parts[1] === 'reusable';
+  }
+  return FALSE;
+
+}
+
