@@ -8,6 +8,8 @@ use Drupal\views\Entity\View;
 
 /**
  * Tests 'reusable' field related update functions for the Block Content module.
+ *
+ * @group Update
  */
 class BlockContentReusableUpdateTest extends UpdatePathTestBase {
 
