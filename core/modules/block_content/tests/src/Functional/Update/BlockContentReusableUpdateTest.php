@@ -34,14 +34,30 @@ class BlockContentReusableUpdateTest extends UpdatePathTestBase {
     $page = $this->getSession()->getPage();
     $entity_definition_update_manager = \Drupal::entityDefinitionUpdateManager();
 
-    module_load_install('system');
-    system_update_8501();
-    module_load_install('block_content');
-    block_content_update_8400();
+/*    require_once $this->root . '/core/includes/install.inc';
+    require_once $this->root . '/core/includes/update.inc';
+
+    drupal_load_updates();
+    update_fix_compatibility();
+
+    $context = [
+      'sandbox' => [
+        '#finished' => 1,
+      ],
+    ];
+    update_do_one('system', 8501, [], $context);
+    print_r($context);
+    $context = [
+      'sandbox' => [
+        '#finished' => 1,
+      ],
+    ];
+    update_do_one('block_content', 8400, [], $context);
+    print_r($context);*/
 
     /** @var \Drupal\block_content\Entity\BlockContent $pre_block_1 */
     $pre_block_1 = BlockContent::create([
-      'info' => 'Previous block 1',
+      'info' => 'Previous block1',
       'type' => 'basic_block',
     ]);
     $pre_block_1->save();
@@ -49,49 +65,16 @@ class BlockContentReusableUpdateTest extends UpdatePathTestBase {
 
     /** @var \Drupal\block_content\Entity\BlockContent $pre_block_2 */
     $pre_block_2 = BlockContent::create([
-      'info' => 'Previous block 2',
+      'info' => 'Previous block2',
       'type' => 'basic_block',
     ]);
     $pre_block_2->save();
 
-    // Add another page display.
-    $data_table = $this->container->get('entity_type.manager')->getDefinition('block_content')->getDataTable();
-    /** @var \Drupal\views\Entity\View $view */
-    //$view = $this->config('views.view.block_content');
-    $view = View::load('block_content');
-    $view_ex = $view->getExecutable();
-
-
-    $new_display_id = $view->duplicateDisplayAsType('page_1', 'page');
-    $view->save();
-    // By setting the current display the changed marker will appear on the new
-    // display.
-
-    $display = $view->getDisplay($new_display_id);
-    $display['display_options']['filters']['info'] = [
-      'id' => 'info_1',
-      'plugin_id' => 'string',
-      'table' => $data_table,
-      'field' => "info",
-      'value' => 'block 2',
-      'operator' => 'contains',
-      'entity_type' => "block_content",
-      'entity_field' => "info",
-    ];
-    $display['display_options']['path'] = 'block-content/silly-filter';
-    // Save off the base part of the config path we are updating.
-    /*     $base = "display.$new_display_id.display_options.filters.info_1";
-
-   $view->set("$base.id", 'info_1')
-        ->set("$base.plugin_id", 'string')
-        ->set("$base.table", $data_table)
-        ->set("$base.field", "info")
-        ->set("$base.value", 'block 2')
-        ->set("$base.operator", 'contains')
-        ->set("$base.entity_type", "block_content")
-        ->set("$base.entity_field", "info");
-      //$view->set("display.$new_display_id.display_options.path", 'block-content/silly-filter');*/
-    $view->save();
+    // Delete custom block library view.
+    View::load('block_content')->delete();
+    // Install the test module with the 'block_content' view with another
+    // display with overridden filters.
+    $this->container->get('module_installer')->install(['block_content_view_override']);
 
 
     $admin_user = $this->drupalCreateUser(['administer blocks']);
@@ -107,7 +90,7 @@ class BlockContentReusableUpdateTest extends UpdatePathTestBase {
 
     // Ensure the standard Custom Block view shows the reusable blocks but not
     // the non-reusable block.
-    $this->drupalGet('block-content/silly-filter');
+    $this->drupalGet('blocks-override');
     $assert_session->statusCodeEquals('200');
     $assert_session->responseContains('view-id-block_content');
     $assert_session->pageTextNotContains($pre_block_1->label());
