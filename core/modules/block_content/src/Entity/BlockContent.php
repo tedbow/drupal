@@ -2,7 +2,6 @@
 
 namespace Drupal\block_content\Entity;
 
-use Drupal\Core\Access\AccessDependentInterface;
 use Drupal\Core\Access\AccessDependentTrait;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
