@@ -12,6 +12,7 @@ use Drupal\field\FieldConfigInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplayStorage;
 use Drupal\layout_builder\Form\LayoutBuilderEntityViewDisplayForm;
+use Drupal\block_content\Entity\BlockContent;
 
 /**
  * Implements hook_help().
@@ -80,4 +81,49 @@ function layout_builder_field_config_delete(FieldConfigInterface $field_config) 
   $sample_entity_generator = \Drupal::service('layout_builder.sample_entity_generator');
   $sample_entity_generator->delete($field_config->getTargetEntityTypeId(), $field_config->getTargetBundle());
   \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
+}
+
+/**
+ * Implements hook_plugin_filter_TYPE__CONSUMER_alter().
+ *
+ * Prevent a content_block entity from being added to its own
+ * layout in Layout Builder.
+ */
+function layout_builder_plugin_filter_block__layout_builder_alter(array &$definitions, array $extra) {
+  $section_storage = $extra['section_storage'];
+  $section_storage_type = $section_storage->getStorageType();
+  $section_storage_id = $section_storage->getStorageId();
+  // Only perform filtering if the entity type is block_content.
+  if (strpos($section_storage_id, 'block_content.') === 0) {
+    switch ($section_storage_type) {
+      case 'overrides':
+        // Retrieve the block ID from the section storage ID.
+        preg_match("/block_content.(\d+)/", $section_storage_id, $match);
+        if ($match[0] === $section_storage_id) {
+          $block = BlockContent::load($match[1]);
+          // Unset block_content definition with matching UUID.
+          unset($definitions['block_content:' . $block->uuid()]);
+        }
+        break;
+
+      case 'defaults':
+        // Retrieve the block type bundle from the section storage ID.
+        preg_match("/block_content.(.*).default/", $section_storage_id, $match);
+        if ($match[0] === $section_storage_id) {
+          $bundle = $match[1];
+          // @todo : Optimize query for non-reusable blocks; change in
+          //   https://www.drupal.org/project/drupal/issues/2976334.
+          $def = Drupal::entityTypeManager()->getDefinition('block_content');
+          $select = \Drupal::database()->select($def->getBaseTable(), 't')
+            ->fields('t', [$def->getKey('uuid')]);
+          $select->condition($def->getKey('bundle'), $bundle);
+          $uuids = $select->execute()->fetchCol();
+          foreach ($uuids as $uuid) {
+            // Unset any block_content instances with a matching bundle.
+            unset($definitions['block_content:' . $uuid]);
+          }
+        }
+        break;
+    }
+  }
 }
