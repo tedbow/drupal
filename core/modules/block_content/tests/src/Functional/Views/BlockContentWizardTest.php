@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\block_content\Functional\Wizard;
+namespace Drupal\Tests\block_content\Functional\Views\Wizard;
 
 use Drupal\Tests\block_content\Functional\BlockContentTestBase;
 
@@ -37,7 +37,7 @@ class BlockContentWizardTest extends BlockContentTestBase {
     $view['show[wizard_key]'] = 'block_content';
     $this->drupalPostForm('admin/structure/views/add', $view, t('Save and edit'));
 
-    $view_storage_controller = \Drupal::entityTypeManager()->getStorage('view');
+    $view_storage_controller = $this->container->get('entity_type.manager')->getStorage('view');
     /** @var \Drupal\views\Entity\View $view */
     $view = $view_storage_controller->load($view['id']);
 
