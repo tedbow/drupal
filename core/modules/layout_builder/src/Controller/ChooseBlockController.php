@@ -6,6 +6,7 @@ use Drupal\Core\Ajax\AjaxHelperTrait;
 use Drupal\Core\Block\BlockManagerInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeRepositoryInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -20,6 +21,7 @@ class ChooseBlockController implements ContainerInjectionInterface {
 
   use AjaxHelperTrait;
   use LayoutBuilderContextTrait;
+  use StringTranslationTrait;
 
   /**
    * The block manager.
@@ -83,17 +85,17 @@ class ChooseBlockController implements ContainerInjectionInterface {
     $field_block_category_weight = -200;
     foreach ($this->blockManager->getGroupedDefinitions($definitions) as $category => $blocks) {
       $build[$category]['#type'] = 'details';
-      $build[$category]['#open'] = in_array($category, $entity_type_labels);
       $build[$category]['#title'] = $category;
+      if (in_array($category, $entity_type_labels)) {
+        $build[$category]['#open'] = TRUE;
+        $build[$category]['#weight'] = $field_block_category_weight;
+        $field_block_category_weight += 10;
+      }
       $build[$category]['links'] = [
         '#theme' => 'links',
       ];
+      $more_links = [];
       foreach ($blocks as $block_id => $block) {
-        if ($block['id'] === 'field_block' && !isset($build[$category]['#weight'])) {
-          $build[$category]['#weight'] = $field_block_category_weight;
-          $field_block_category_weight += 10;
-        }
-
         $link = [
           'title' => $block['admin_label'],
           'url' => Url::fromRoute('layout_builder.add_block',
@@ -111,7 +113,23 @@ class ChooseBlockController implements ContainerInjectionInterface {
           $link['attributes']['data-dialog-type'][] = 'dialog';
           $link['attributes']['data-dialog-renderer'][] = 'off_canvas';
         }
-        $build[$category]['links']['#links'][] = $link;
+        if ($block['id'] === 'field_block' && !empty($block['_is_view_configurable'])) {
+          $more_links[] = $link;
+        }
+        else {
+          $build[$category]['links']['#links'][] = $link;
+        }
+      }
+      if ($more_links) {
+        $build[$category]['more_fields'] = [
+          '#type' => 'details',
+          '#title' => $this->t('More+'),
+          '#open' => FALSE,
+          'links' => [
+            '#theme' => 'links',
+            '#links' => $more_links,
+          ],
+        ];
       }
     }
     return $build;

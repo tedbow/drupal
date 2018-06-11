@@ -106,13 +106,7 @@ class FieldBlockDeriver extends DeriverBase implements ContainerDeriverInterface
             $derivative['default_formatter'] = $field_type_definition['default_formatter'];
           }
 
-          if ($field_definition->isDisplayConfigurable('view')) {
-            $derivative['category'] = $this->t('@entity', ['@entity' => $entity_type_labels[$entity_type_id]]);
-          }
-          else {
-            $derivative['category'] = $this->t('@entity(extended)', ['@entity' => $entity_type_labels[$entity_type_id]]);
-          }
-
+          $derivative['category'] = $this->t('@entity', ['@entity' => $entity_type_labels[$entity_type_id]]);
 
           $derivative['admin_label'] = $field_definition->getLabel();
 
@@ -123,6 +117,9 @@ class FieldBlockDeriver extends DeriverBase implements ContainerDeriverInterface
           // For any field that is not display configurable, mark it as
           // unavailable to place in the block UI.
           $derivative['_block_ui_hidden'] = !$field_definition->isDisplayConfigurable('view');
+
+          //
+          $derivative['_is_view_configurable'] = !$field_definition->isDisplayConfigurable('view');
 
           // @todo Use EntityContextDefinition after resolving
           //   https://www.drupal.org/node/2932462.
