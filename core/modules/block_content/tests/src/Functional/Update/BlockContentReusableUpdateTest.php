@@ -26,7 +26,7 @@ class BlockContentReusableUpdateTest extends UpdatePathTestBase {
    * Tests adding a reusable field to the block content entity type.
    *
    * @see block_content_update_8600
-   * @see block_content_update_8601
+   * @see block_content_post_update_add_views_reusable_filter
    */
   public function testReusableFieldAddition() {
     $assert_session = $this->assertSession();
