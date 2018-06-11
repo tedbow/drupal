@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\block_content\Functional\Views\Wizard;
+namespace Drupal\Tests\block_content\Functional\Views;
 
 use Drupal\Tests\block_content\Functional\BlockContentTestBase;
 
