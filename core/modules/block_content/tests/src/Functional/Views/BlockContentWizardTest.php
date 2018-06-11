@@ -2,43 +2,34 @@
 
 namespace Drupal\Tests\block_content\Functional\Wizard;
 
-use Drupal\block_content\Entity\BlockContentType;
-use Drupal\Tests\views\Functional\ViewTestBase;
+use Drupal\Tests\block_content\Functional\BlockContentTestBase;
 
 /**
- * Tests node wizard and generic entity integration.
+ * Tests block_content wizard and generic entity integration.
  *
  * @group Views
  * @group node
  */
-class BlockContentWizardTest extends ViewTestBase {
+class BlockContentWizardTest extends BlockContentTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static $modules = ['block_content', 'views_ui'];
 
-  protected function setUp($import_test_views = TRUE) {
-    parent::setUp($import_test_views);
-
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
     $this->drupalLogin($this->drupalCreateUser(['administer views']));
-    // Create the basic bundle since it is provided by standard.
-    BlockContentType::create([
-      'id' => 'basic',
-      'label' => 'Basic',
-      'revision' => FALSE,
-    ]);
+    $this->createBlockContentType('Basic block');
   }
 
   /**
-   * Tests creating a view with node titles.
+   * Tests creating a 'block_content' entity view.
    */
   public function testViewAddBlockContent() {
-    // Create the basic bundle since it is provided by standard.
-    $bundle = BlockContentType::create([
-      'id' => 'basic',
-      'label' => 'Basic',
-      'revision' => FALSE,
-    ]);
-    $bundle->save();
-
     $view = [];
     $view['label'] = $this->randomMachineName(16);
     $view['id'] = strtolower($this->randomMachineName(16));
@@ -47,7 +38,7 @@ class BlockContentWizardTest extends ViewTestBase {
     $view['show[wizard_key]'] = 'block_content';
     $this->drupalPostForm('admin/structure/views/add', $view, t('Save and edit'));
 
-    $view_storage_controller = \Drupal::entityManager()->getStorage('view');
+    $view_storage_controller = \Drupal::entityTypeManager()->getStorage('view');
     /** @var \Drupal\views\Entity\View $view */
     $view = $view_storage_controller->load($view['id']);
 
@@ -55,8 +46,8 @@ class BlockContentWizardTest extends ViewTestBase {
 
     $this->assertEquals('block_content', $display_options['filters']['reusable']['entity_type']);
     $this->assertEquals('reusable', $display_options['filters']['reusable']['entity_field']);
-    $this->assertEquals('reusable', $display_options['filters']['reusable']['type']);
-
+    $this->assertEquals('boolean', $display_options['filters']['reusable']['plugin_id']);
+    $this->assertEquals('1', $display_options['filters']['reusable']['value']);
   }
 
 }
