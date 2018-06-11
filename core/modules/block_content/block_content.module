@@ -169,6 +169,4 @@ function _block_content_has_reusable_condition(array $condition) {
     return strpos($field_parts[0], $data_table) === 0 && $field_parts[1] === 'reusable';
   }
   return FALSE;
-
 }
-

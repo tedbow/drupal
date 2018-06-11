@@ -126,7 +126,7 @@ class BlockContentListViewsTest extends BlockContentTestBase {
     // Confirm that the empty text is displayed.
     $this->assertSession()->pageTextContains('There are no custom blocks available.');
     // Confirm the non-reusable block is not on the page.
-      $this->assertSession()->pageTextNotContains('Non-reusable block');
+    $this->assertSession()->pageTextNotContains('Non-reusable block');
   }
 
 }
