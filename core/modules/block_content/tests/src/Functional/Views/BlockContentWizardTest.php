@@ -7,8 +7,7 @@ use Drupal\Tests\block_content\Functional\BlockContentTestBase;
 /**
  * Tests block_content wizard and generic entity integration.
  *
- * @group Views
- * @group node
+ * @group block_content
  */
 class BlockContentWizardTest extends BlockContentTestBase {
 
