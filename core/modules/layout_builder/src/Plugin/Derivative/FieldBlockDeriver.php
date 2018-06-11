@@ -106,7 +106,13 @@ class FieldBlockDeriver extends DeriverBase implements ContainerDeriverInterface
             $derivative['default_formatter'] = $field_type_definition['default_formatter'];
           }
 
-          $derivative['category'] = $this->t('@entity', ['@entity' => $entity_type_labels[$entity_type_id]]);
+          if ($field_definition->isDisplayConfigurable('view')) {
+            $derivative['category'] = $this->t('@entity', ['@entity' => $entity_type_labels[$entity_type_id]]);
+          }
+          else {
+            $derivative['category'] = $this->t('@entity(extended)', ['@entity' => $entity_type_labels[$entity_type_id]]);
+          }
+
 
           $derivative['admin_label'] = $field_definition->getLabel();
 

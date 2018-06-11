@@ -5,6 +5,7 @@ namespace Drupal\layout_builder\Controller;
 use Drupal\Core\Ajax\AjaxHelperTrait;
 use Drupal\Core\Block\BlockManagerInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeRepositoryInterface;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -28,13 +29,23 @@ class ChooseBlockController implements ContainerInjectionInterface {
   protected $blockManager;
 
   /**
+   * The entity type repository.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeRepositoryInterface
+   */
+  protected $entityTypeRepository;
+
+  /**
    * ChooseBlockController constructor.
    *
    * @param \Drupal\Core\Block\BlockManagerInterface $block_manager
    *   The block manager.
+   * @param \Drupal\Core\Entity\EntityTypeRepositoryInterface $entity_type_repository
+   *   The entity type repository.
    */
-  public function __construct(BlockManagerInterface $block_manager) {
+  public function __construct(BlockManagerInterface $block_manager, EntityTypeRepositoryInterface $entity_type_repository) {
     $this->blockManager = $block_manager;
+    $this->entityTypeRepository = $entity_type_repository;
   }
 
   /**
@@ -42,7 +53,8 @@ class ChooseBlockController implements ContainerInjectionInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('plugin.manager.block')
+      $container->get('plugin.manager.block'),
+      $container->get('entity_type.repository')
     );
   }
 
@@ -60,6 +72,7 @@ class ChooseBlockController implements ContainerInjectionInterface {
    *   A render array.
    */
   public function build(SectionStorageInterface $section_storage, $delta, $region) {
+    $entity_type_labels = $this->entityTypeRepository->getEntityTypeLabels();
     $build['#type'] = 'container';
     $build['#attributes']['class'][] = 'block-categories';
 
@@ -67,14 +80,20 @@ class ChooseBlockController implements ContainerInjectionInterface {
       'section_storage' => $section_storage,
       'region' => $region,
     ]);
+    $field_block_category_weight = -200;
     foreach ($this->blockManager->getGroupedDefinitions($definitions) as $category => $blocks) {
       $build[$category]['#type'] = 'details';
-      $build[$category]['#open'] = TRUE;
+      $build[$category]['#open'] = in_array($category, $entity_type_labels);
       $build[$category]['#title'] = $category;
       $build[$category]['links'] = [
         '#theme' => 'links',
       ];
       foreach ($blocks as $block_id => $block) {
+        if ($block['id'] === 'field_block' && !isset($build[$category]['#weight'])) {
+          $build[$category]['#weight'] = $field_block_category_weight;
+          $field_block_category_weight += 10;
+        }
+
         $link = [
           'title' => $block['admin_label'],
           'url' => Url::fromRoute('layout_builder.add_block',
