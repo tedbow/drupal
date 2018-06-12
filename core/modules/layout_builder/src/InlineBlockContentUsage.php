@@ -32,19 +32,19 @@ class InlineBlockContentUsage {
    *
    * @param int $block_content_id
    *   The block content id.
-   * @param string $parent_entity_type
-   *   The parent entity type.
-   * @param string $parent_entity_id
-   *   The parent entity id.
+   * @param string $layout_entity_type
+   *   The layout entity type.
+   * @param string $layout_entity_id
+   *   The layout entity id.
    *
    * @throws \Exception
    */
-  public function addUsage($block_content_id, $parent_entity_type, $parent_entity_id) {
+  public function addUsage($block_content_id, $layout_entity_type, $layout_entity_id) {
     $this->connection->merge('inline_block_content_usage')
       ->keys([
         'block_content_id' => $block_content_id,
-        'parent_entity_id' => $parent_entity_id,
-        'parent_entity_type' => $parent_entity_type,
+        'layout_entity_id' => $layout_entity_id,
+        'layout_entity_type' => $layout_entity_type,
       ])->execute();
   }
 
@@ -60,25 +60,25 @@ class InlineBlockContentUsage {
   public function getUnused($limit = 100) {
     $query = $this->connection->select('inline_block_content_usage', 't');
     $query->fields('t', ['block_content_id']);
-    $query->isNull('parent_entity_id');
-    $query->isNull('parent_entity_type');
+    $query->isNull('layout_entity_id');
+    $query->isNull('layout_entity_type');
     return $query->range(0, $limit)->execute()->fetchCol();
   }
 
   /**
-   * Remove usage record by parent entity.
+   * Remove usage record by layout entity.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The parent entity.
+   *   The layout entity.
    */
-  public function removeByParent(EntityInterface $entity) {
+  public function removeByLayoutEntity(EntityInterface $entity) {
     $query = $this->connection->update('inline_block_content_usage')
       ->fields([
-        'parent_entity_type' => NULL,
-        'parent_entity_id' => NULL,
+        'layout_entity_type' => NULL,
+        'layout_entity_id' => NULL,
       ]);
-    $query->condition('parent_entity_type', $entity->getEntityTypeId());
-    $query->condition('parent_entity_id', $entity->id());
+    $query->condition('layout_entity_type', $entity->getEntityTypeId());
+    $query->condition('layout_entity_id', $entity->id());
     $query->execute();
   }
 

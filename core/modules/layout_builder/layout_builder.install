@@ -54,14 +54,14 @@ function layout_builder_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ],
-      'parent_entity_type' => [
+      'layout_entity_type' => [
         'description' => 'The entity type of the parent entity.',
         'type' => 'varchar_ascii',
         'length' => EntityTypeInterface::ID_MAX_LENGTH,
         'not null' => FALSE,
         'default' => '',
       ],
-      'parent_entity_id' => [
+      'layout_entity_id' => [
         'description' => 'The ID of the parent entity.',
         'type' => 'varchar_ascii',
         'length' => 128,
@@ -71,7 +71,7 @@ function layout_builder_schema() {
     ],
     'primary key' => ['block_content_id'],
     'indexes' => [
-      'type_id' => ['parent_entity_type', 'parent_entity_id'],
+      'type_id' => ['layout_entity_type', 'layout_entity_id'],
     ],
   ];
   return $schema;
@@ -90,14 +90,14 @@ function layout_builder_update_8001() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ],
-      'parent_entity_type' => [
+      'layout_entity_type' => [
         'description' => 'The entity type of the parent entity.',
         'type' => 'varchar_ascii',
         'length' => EntityTypeInterface::ID_MAX_LENGTH,
         'not null' => FALSE,
         'default' => '',
       ],
-      'parent_entity_id' => [
+      'layout_entity_id' => [
         'description' => 'The ID of the parent entity.',
         'type' => 'varchar_ascii',
         'length' => 128,
@@ -107,7 +107,7 @@ function layout_builder_update_8001() {
     ],
     'primary key' => ['block_content_id'],
     'indexes' => [
-      'type_id' => ['parent_entity_type', 'parent_entity_id'],
+      'type_id' => ['layout_entity_type', 'layout_entity_id'],
     ],
   ];
   Database::getConnection()->schema()->createTable('inline_block_content_usage', $inline_block_content_usage);

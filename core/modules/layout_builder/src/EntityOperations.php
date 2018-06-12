@@ -102,7 +102,7 @@ class EntityOperations implements ContainerInjectionInterface {
    */
   public function handleEntityDelete(EntityInterface $entity) {
     if ($this->isStorageAvailable() && $this->isLayoutCompatibleEntity($entity)) {
-      $this->usage->removeByParent($entity);
+      $this->usage->removeByLayoutEntity($entity);
     }
   }
 
