@@ -137,6 +137,8 @@ class ChooseBlockController implements ContainerInjectionInterface {
         }
 
       }
+      // If this a entity category and there are links besides non 'view'
+      // configurable field blocks move the category to the top and open it.
       if (in_array($category, $entity_type_labels) && $links) {
         $build[$category]['#open'] = TRUE;
         $build[$category]['#weight'] = $field_block_category_weight;
