@@ -2,7 +2,6 @@
 
 namespace Drupal\block_content\Entity;
 
-use Drupal\Core\Access\AccessDependentInterface;
 use Drupal\Core\Access\AccessDependentTrait;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -77,7 +76,7 @@ use Drupal\user\UserInterface;
  * caching.
  * See https://www.drupal.org/node/2284917#comment-9132521 for more information.
  */
-class BlockContent extends EditorialContentEntityBase implements BlockContentInterface, AccessDependentInterface {
+class BlockContent extends EditorialContentEntityBase implements BlockContentInterface {
 
   use AccessDependentTrait;
 
@@ -122,7 +121,9 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
-    static::invalidateBlockPluginCache();
+    if ($this->isReusable() || (isset($this->original) && $this->original->isReusable())) {
+      static::invalidateBlockPluginCache();
+    }
   }
 
   /**
@@ -130,7 +131,14 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    */
   public static function postDelete(EntityStorageInterface $storage, array $entities) {
     parent::postDelete($storage, $entities);
-    static::invalidateBlockPluginCache();
+    /** @var \Drupal\block_content\BlockContentInterface $block */
+    foreach ($entities as $block) {
+      if ($block->isReusable()) {
+        // If any deleted blocks are reusable clear the block cache.
+        static::invalidateBlockPluginCache();
+        return;
+      }
+    }
   }
 
   /**
@@ -207,6 +215,8 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
     $fields['reusable'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Reusable'))
       ->setDescription(t('A boolean indicating whether this block is reusable.'))
+      ->setTranslatable(FALSE)
+      ->setRevisionable(FALSE)
       ->setDefaultValue(TRUE)
       ->setInitialValue(TRUE);
 

@@ -17,7 +17,7 @@ namespace Drupal\Core\Access;
  * To check the access to the dependency the object implementing this interface
  * can use code like this:
  * @code
- * $accessible->getAccessDependee()->access($op, $account, TRUE);
+ * $accessible->getAccessDependency()->access($op, $account, TRUE);
  * @endcode
  */
 interface AccessDependentInterface {
@@ -26,7 +26,9 @@ interface AccessDependentInterface {
    * Sets the access dependency.
    *
    * @param \Drupal\Core\Access\AccessibleInterface $access_dependency
-   *   The access dependency.
+   *   The object upon which access depends.
+   *
+   * @return $this
    */
   public function setAccessDependency(AccessibleInterface $access_dependency);
 

@@ -33,9 +33,9 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
       }
       $dependency = $entity->getAccessDependency();
       if (empty($dependency)) {
-        return AccessResult::forbidden("Non-reusable blocks must set an access dependency for access control.")->addCacheableDependency($dependency);
+        return AccessResult::forbidden("Non-reusable blocks must set an access dependency for access control.");
       }
-      $access->andIf($dependency->access($operation, $account, TRUE));
+      $access->andIf($dependency->access($operation, $account, TRUE))->addCacheableDependency($access);
     }
     return $access;
   }

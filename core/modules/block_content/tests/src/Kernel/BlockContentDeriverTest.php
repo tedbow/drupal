@@ -30,7 +30,7 @@ class BlockContentDeriverTest extends KernelTestBase {
   }
 
   /**
-   * Tests that reusable blocks only are derived.
+   * Tests that only reusable blocks are derived.
    */
   public function testReusableBlocksOnlyAreDerived() {
     // Create a block content type.
