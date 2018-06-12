@@ -90,6 +90,9 @@ class EntityOperations implements ContainerInjectionInterface {
     }
     $original_sections = $this->getEntitySections($entity->original);
     if ($removed_ids = array_diff($this->getInlineBlockIdsInSections($original_sections), $this->getInlineBlockIdsInSections($sections))) {
+      // @todo This deletes all 'block_content' entities that were removed if we don't need to save them for revision purposes.
+      //   Should this still only be deleting the usage and waiting to delete the actual block entities on cron.
+      //   Would there every be enough 'block_content' entities
       $this->deleteBlocksAndUsage($removed_ids);
     }
   }
@@ -198,10 +201,17 @@ class EntityOperations implements ContainerInjectionInterface {
   protected function getInlineBlockIdsInSections(array $sections) {
     $block_ids = [];
     $components = $this->getInlineBlockComponents($sections);
+    $revision_ids = [];
     foreach ($components as $component) {
-      if ($id = $this->getPluginBlockId($component->getPlugin())) {
-        $block_ids[] = $id;
+      $configuration = $component->getPlugin()->getConfiguration();
+      if (!empty($configuration['block_revision_id'])) {
+        $revision_ids[] = $configuration['block_revision_id'];
       }
+    }
+    if ($revision_ids) {
+      $query = $this->storage->getQuery();
+      $query->condition('revision_id', $revision_ids, 'IN');
+      $block_ids = $query->execute();
     }
     return $block_ids;
   }

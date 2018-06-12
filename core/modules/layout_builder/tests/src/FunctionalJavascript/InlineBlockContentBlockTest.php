@@ -392,7 +392,6 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     // Remove block from default.
     $this->removeInlineBlockFromLayout();
     $this->assertSaveLayout();
-    $cron->run();
     // Ensure the block in the default was deleted.
     $this->blockStorage->resetCache([$default_block_id]);
     $this->assertEmpty($this->blockStorage->load($default_block_id));
