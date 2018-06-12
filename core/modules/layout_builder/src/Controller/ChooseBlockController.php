@@ -86,15 +86,12 @@ class ChooseBlockController implements ContainerInjectionInterface {
     foreach ($this->blockManager->getGroupedDefinitions($definitions) as $category => $blocks) {
       $build[$category]['#type'] = 'details';
       $build[$category]['#title'] = $category;
-      if (in_array($category, $entity_type_labels)) {
-        $build[$category]['#open'] = TRUE;
-        $build[$category]['#weight'] = $field_block_category_weight;
-        $field_block_category_weight += 10;
-      }
+
       $build[$category]['links'] = [
         '#theme' => 'links',
       ];
-      $more_links = [];
+      $non_view_configurable_field_links = [];
+      $links = [];
       foreach ($blocks as $block_id => $block) {
         $link = [
           'title' => $block['admin_label'],
@@ -114,22 +111,36 @@ class ChooseBlockController implements ContainerInjectionInterface {
           $link['attributes']['data-dialog-renderer'][] = 'off_canvas';
         }
         if ($block['id'] === 'field_block' && !empty($block['_is_view_configurable'])) {
-          $more_links[] = $link;
+          $non_view_configurable_field_links[] = $link;
         }
         else {
-          $build[$category]['links']['#links'][] = $link;
+          $links[] = $link;
         }
       }
-      if ($more_links) {
-        $build[$category]['more_fields'] = [
-          '#type' => 'details',
-          '#title' => $this->t('More+'),
-          '#open' => FALSE,
-          'links' => [
-            '#theme' => 'links',
-            '#links' => $more_links,
-          ],
-        ];
+      $build[$category]['links']['#links'] = $links;
+      if ($non_view_configurable_field_links) {
+        if (empty($links)) {
+          // If no other links exist add these links as top level links for the
+          // category.
+          $build[$category]['links']['#links'] = $non_view_configurable_field_links;
+        }
+        else {
+          $build[$category]['more_fields'] = [
+            '#type' => 'details',
+            '#title' => $this->t('More+'),
+            '#open' => FALSE,
+            'links' => [
+              '#theme' => 'links',
+              '#links' => $non_view_configurable_field_links,
+            ],
+          ];
+        }
+
+      }
+      if (in_array($category, $entity_type_labels) && $links) {
+        $build[$category]['#open'] = TRUE;
+        $build[$category]['#weight'] = $field_block_category_weight;
+        $field_block_category_weight += 10;
       }
     }
     return $build;
