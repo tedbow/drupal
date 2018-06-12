@@ -2,7 +2,6 @@
 
 namespace Drupal\layout_builder;
 
-use Drupal\block_content\Entity\BlockContent;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityInterface;
 
@@ -31,19 +30,21 @@ class InlineBlockContentUsage {
   /**
    * Add a usage record.
    *
-   * @param \Drupal\block_content\Entity\BlockContent $block
-   *   The block content entity to track.
-   * @param \Drupal\Core\Entity\EntityInterface $parent_entity
-   *   The parent entity.
+   * @param int $block_content_id
+   *   The block content id.
+   * @param string $parent_entity_type
+   *   The parent entity type.
+   * @param string $parent_entity_id
+   *   The parent entity id.
    *
    * @throws \Exception
    */
-  public function addUsage(BlockContent $block, EntityInterface $parent_entity) {
+  public function addUsage($block_content_id, $parent_entity_type, $parent_entity_id) {
     $this->connection->merge('inline_block_content_usage')
       ->keys([
-        'entity_id' => $block->id(),
-        'parent_entity_id' => $parent_entity->id(),
-        'parent_entity_type' => $parent_entity->getEntityTypeId(),
+        'block_content_id' => $block_content_id,
+        'parent_entity_id' => $parent_entity_id,
+        'parent_entity_type' => $parent_entity_type,
       ])->execute();
   }
 
@@ -58,7 +59,7 @@ class InlineBlockContentUsage {
    */
   public function getUnused($limit = 100) {
     $query = $this->connection->select('inline_block_content_usage', 't');
-    $query->fields('t', ['entity_id']);
+    $query->fields('t', ['block_content_id']);
     $query->isNull('parent_entity_id');
     $query->isNull('parent_entity_type');
     return $query->range(0, $limit)->execute()->fetchCol();
@@ -88,7 +89,7 @@ class InlineBlockContentUsage {
    *   The block content entity IDs.
    */
   public function deleteUsage(array $block_content_ids) {
-    $query = $this->connection->delete('inline_block_content_usage')->condition('entity_id', $block_content_ids, 'IN');
+    $query = $this->connection->delete('inline_block_content_usage')->condition('block_content_id', $block_content_ids, 'IN');
     $query->execute();
   }
 

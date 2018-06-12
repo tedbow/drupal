@@ -73,8 +73,15 @@ class EntityOperations implements ContainerInjectionInterface {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function removeUnusedForEntityOnSave(EntityInterface $entity) {
+    // If the entity is new or '$entity->original' is not set then there will
+    // not be any unused inline blocks to remove.
+    if ($entity->isNew() || !isset($entity->original)) {
+      return;
+    }
     $sections = $this->getEntitySections($entity);
-    if ($entity->isNew() || !isset($entity->original) || $sections === NULL || ($entity->getEntityTypeId() !== 'entity_view_display' && empty($sections))) {
+    // If this is a layout override and there are no sections then it is a new
+    // override.
+    if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout') && empty($sections)) {
       return;
     }
     // If this a new revision do not remove content_block entities.
@@ -94,7 +101,7 @@ class EntityOperations implements ContainerInjectionInterface {
    *   The parent entity.
    */
   public function handleEntityDelete(EntityInterface $entity) {
-    if ($this->storage && $this->isLayoutCompatibleEntity($entity)) {
+    if ($this->isStorageAvailable() && $this->isLayoutCompatibleEntity($entity)) {
       $this->usage->removeByParent($entity);
     }
   }
@@ -115,9 +122,7 @@ class EntityOperations implements ContainerInjectionInterface {
       return $entity->getSections();
     }
     elseif ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
-      /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $sections_field */
-      $sections_field = $entity->get('layout_builder__layout');
-      return $sections_field->getSections();
+      return $entity->get('layout_builder__layout')->getSections();
     }
     return NULL;
   }
@@ -134,7 +139,7 @@ class EntityOperations implements ContainerInjectionInterface {
    * @throws \Exception
    */
   public function handlePreSave(EntityInterface $entity) {
-    if (!$this->storage || !$this->isLayoutCompatibleEntity($entity)) {
+    if (!$this->isStorageAvailable() || !$this->isLayoutCompatibleEntity($entity)) {
       return;
     }
     $duplicate_blocks = FALSE;
@@ -173,8 +178,7 @@ class EntityOperations implements ContainerInjectionInterface {
         $plugin->saveBlockContent($new_revision, $duplicate_blocks);
         $post_save_configuration = $plugin->getConfiguration();
         if ($duplicate_blocks || (empty($pre_save_configuration['block_revision_id']) && !empty($post_save_configuration['block_revision_id']))) {
-          $block_revision = $this->getPluginBlockRevision($plugin);
-          $this->usage->addUsage($block_revision, $entity);
+          $this->usage->addUsage($this->getPluginBlockId($plugin), $entity->getEntityTypeId(), $entity->id());
         }
         $component->setConfiguration($plugin->getConfiguration());
       }
@@ -185,19 +189,18 @@ class EntityOperations implements ContainerInjectionInterface {
   /**
    * Gets the all Block Content IDs in Sections.
    *
-   * @param array $sections
+   * @param \Drupal\layout_builder\Section[] $sections
    *   The layout sections.
    *
    * @return int[]
    *   The block ids.
-   *
    */
   protected function getInlineBlockIdsInSections(array $sections) {
     $block_ids = [];
     $components = $this->getInlineBlockComponents($sections);
     foreach ($components as $component) {
-      if ($block = $this->getPluginBlockRevision($component->getPlugin())) {
-        $block_ids[] = $block->id();
+      if ($id = $this->getPluginBlockId($component->getPlugin())) {
+        $block_ids[] = $id;
       }
     }
     return $block_ids;
@@ -242,22 +245,21 @@ class EntityOperations implements ContainerInjectionInterface {
   }
 
   /**
-   * Gets a block revision for a inline block content plugin.
+   * Gets a block ID for a inline block content plugin.
    *
    * @param \Drupal\Component\Plugin\PluginInspectionInterface $plugin
    *   The inline block content plugin.
    *
-   * @return \Drupal\block_content\Entity\BlockContent|null
-   *   The block content entity or null none available.
-   *
+   * @return int
+   *   The block content ID or null none available.
    */
-  protected function getPluginBlockRevision(PluginInspectionInterface $plugin) {
+  protected function getPluginBlockId(PluginInspectionInterface $plugin) {
     /** @var \Drupal\Component\Plugin\ConfigurablePluginInterface $plugin */
     $configuration = $plugin->getConfiguration();
     if (!empty($configuration['block_revision_id'])) {
-      /** @var \Drupal\block_content\Entity\BlockContent $block_content */
-      $block_content = $this->storage->loadRevision($configuration['block_revision_id']);
-      return $block_content;
+      $query = $this->storage->getQuery();
+      $query->condition('revision_id', $configuration['block_revision_id']);
+      return array_pop($query->execute());
     }
     return NULL;
   }
@@ -288,7 +290,22 @@ class EntityOperations implements ContainerInjectionInterface {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function removeUnused($limit = 100) {
-    $this->deleteBlocksAndUsage($this->usage->getUnused($limit));
+    if ($this->isStorageAvailable()) {
+      $this->deleteBlocksAndUsage($this->usage->getUnused($limit));
+    }
+  }
+
+  /**
+   * The block_content entity storage is available.
+   *
+   * If the 'block_content' module is not enable this the public methods on this
+   * class should not execute their operations.
+   *
+   * @return bool
+   *   Whether the 'block_content' storage is available.
+   */
+  protected function isStorageAvailable() {
+    return !empty($this->storage);
   }
 
 }

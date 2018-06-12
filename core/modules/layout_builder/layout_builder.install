@@ -46,30 +46,30 @@ function layout_builder_install() {
  */
 function layout_builder_schema() {
   $schema['inline_block_content_usage'] = [
-    'description' => 'Track where a entity is used.',
+    'description' => 'Track where a block_content entity is used.',
     'fields' => [
-      'entity_id' => [
-        'description' => 'Entity ID.',
+      'block_content_id' => [
+        'description' => 'The block_content entity ID.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ],
       'parent_entity_type' => [
-        'description' => 'The name of the object type in which the entity is used.',
+        'description' => 'The entity type of the parent entity.',
         'type' => 'varchar_ascii',
         'length' => EntityTypeInterface::ID_MAX_LENGTH,
         'not null' => FALSE,
         'default' => '',
       ],
       'parent_entity_id' => [
-        'description' => 'The ID of the object using the entity.',
+        'description' => 'The ID of the parent entity.',
         'type' => 'varchar_ascii',
         'length' => 128,
         'not null' => FALSE,
         'default' => 0,
       ],
     ],
-    'primary key' => ['entity_id'],
+    'primary key' => ['block_content_id'],
     'indexes' => [
       'type_id' => ['parent_entity_type', 'parent_entity_id'],
     ],
@@ -84,28 +84,28 @@ function layout_builder_update_8001() {
   $inline_block_content_usage = [
     'description' => 'Track where a entity is used.',
     'fields' => [
-      'entity_id' => [
-        'description' => 'Entity ID.',
+      'block_content_id' => [
+        'description' => 'The block_content entity ID.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ],
       'parent_entity_type' => [
-        'description' => 'The name of the object type in which the entity is used.',
+        'description' => 'The entity type of the parent entity.',
         'type' => 'varchar_ascii',
         'length' => EntityTypeInterface::ID_MAX_LENGTH,
         'not null' => FALSE,
         'default' => '',
       ],
       'parent_entity_id' => [
-        'description' => 'The ID of the object using the entity.',
+        'description' => 'The ID of the parent entity.',
         'type' => 'varchar_ascii',
         'length' => 128,
         'not null' => FALSE,
         'default' => 0,
       ],
     ],
-    'primary key' => ['entity_id'],
+    'primary key' => ['block_content_id'],
     'indexes' => [
       'type_id' => ['parent_entity_type', 'parent_entity_id'],
     ],
