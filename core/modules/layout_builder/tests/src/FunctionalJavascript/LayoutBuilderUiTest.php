@@ -69,12 +69,14 @@ class LayoutBuilderUiTest extends JavascriptTestBase {
 
     $this->assertBlockLinkNotVisible('Messages');
     $this->clickBlockCategory('System');
+    $this->assertEmpty($this->findCategoryMoreElement('System'));
     $this->assertBlockLinkVisible('Messages');
 
     // Currently User has no configurable fields. Therefore it will have no
     // "More+" link and the category will be closed by default.
     $this->assertBlockLinkNotVisible('Roles');
     $this->clickBlockCategory('User');
+    $this->assertEmpty($this->findCategoryMoreElement('User'));
     $this->assertBlockLinkVisible('Roles');
 
     // Add user field that will be 'view' configurable.
@@ -141,9 +143,7 @@ class LayoutBuilderUiTest extends JavascriptTestBase {
    *   The category.
    */
   protected function clickMore($category) {
-    $category_details = $this->findCategoryDetails($category);
-    $this->assertNotEmpty($category_details);
-    $category_details->find('css', "summary:contains('More+')")->click();
+    $this->findCategoryMoreElement($category)->click();
   }
 
   /**
@@ -190,6 +190,19 @@ class LayoutBuilderUiTest extends JavascriptTestBase {
       $display_categories[] = $category_summary->getText();
     }
     $this->assertEquals($categories, array_values(array_intersect($display_categories, $categories)));
+  }
+
+  /**
+   * Find the 'More+' element for a category.
+   *
+   * @param string $category
+   *   The category.
+   *
+   * @return \Behat\Mink\Element\NodeElement|mixed|null
+   *   The 'More+' element if it exists or NULL.
+   */
+  protected function findCategoryMoreElement($category) {
+    return $this->findCategoryDetails($category)->find('css', "summary:contains('More+')");
   }
 
 }
