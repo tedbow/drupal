@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
-use Behat\Mink\Exception\ElementNotFoundException;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
@@ -35,7 +34,6 @@ class LayoutBuilderUiTest extends JavascriptTestBase {
    * Tests the block list in the Layout Builder.
    */
   public function testBlockList() {
-    //$this->enableTheme('classy');
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
 
@@ -58,6 +56,10 @@ class LayoutBuilderUiTest extends JavascriptTestBase {
     $assert_session->linkExists('Add Block');
     $page->clickLink('Add Block');
     $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#drupal-off-canvas'));
+
+    // User category should not be moved to the top if there are no 'view'
+    // configurable fields.
+    $this->assertRelativeCategoryOrder(['Content', 'System', 'User']);
     $this->assertBlockLinkVisible('Body');
     $this->assertBlockLinkNotVisible('Title');
     $this->assertBlockLinkNotVisible('Revision ID');
@@ -65,13 +67,17 @@ class LayoutBuilderUiTest extends JavascriptTestBase {
     $this->assertBlockLinkVisible('Title');
     $this->assertBlockLinkVisible('Revision ID');
 
+    $this->assertBlockLinkNotVisible('Messages');
+    $this->clickBlockCategory('System');
+    $this->assertBlockLinkVisible('Messages');
+
     // Currently User has no configurable fields. Therefore it will have no
-    // "More+" link.
+    // "More+" link and the category will be closed by default.
     $this->assertBlockLinkNotVisible('Roles');
     $this->clickBlockCategory('User');
     $this->assertBlockLinkVisible('Roles');
 
-    // Add user field
+    // Add user field that will be 'view' configurable.
     FieldStorageConfig::create([
       'field_name' => 'bio',
       'entity_type' => 'user',
@@ -93,48 +99,73 @@ class LayoutBuilderUiTest extends JavascriptTestBase {
     $assert_session->linkExists('Add Block');
     $page->clickLink('Add Block');
     $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#drupal-off-canvas'));
-    file_put_contents('/Users/ted.bowman/Sites/www/what.html', $page->getOuterHtml());
-    // Currently User has no configurable fields. Therefore it will have no
-    // "More+" link.
-    $this->assertBlockLinkNotVisible('Roles');
-    $this->clickBlockCategory('User');
+    // User category should now be moved to the top since the new 'Bio' field
+    // is 'view' configurable.
+    $this->assertRelativeCategoryOrder(['Content', 'User', 'System']);
+
+    // Ensure new 'Bio' field is visible by default and other fields are only
+    // visible after clicking 'More+'.
     $this->assertBlockLinkVisible('Bio');
     $this->assertBlockLinkNotVisible('Roles');
     $this->clickMore('User');
-
-
-    $this->assertBlockLinkNotVisible('Messages');
-    $this->clickBlockCategory('System');
-    $this->assertBlockLinkVisible('Messages');
-
-
+    $this->assertBlockLinkVisible('Bio');
+    $this->assertBlockLinkVisible('Roles');
   }
 
+  /**
+   * Asserts that block link is visible.
+   *
+   * @param string $link_text
+   *   The link text.
+   */
   protected function assertBlockLinkNotVisible($link_text) {
     $link = $this->getSession()->getPage()->find('css', "#drupal-off-canvas a:contains('$link_text')");
     $this->assertEmpty($link->isVisible());
   }
 
+  /**
+   * Asserts that block link is not visible.
+   *
+   * @param string $link_text
+   *   The link text.
+   */
   protected function assertBlockLinkVisible($link_text) {
     $link = $this->getSession()->getPage()->find('css', "#drupal-off-canvas a:contains('$link_text')");
     $this->assertNotEmpty($link->isVisible());
   }
 
+  /**
+   * Clicks the 'More +' element of a category.
+   *
+   * @param string $category
+   *   The category.
+   */
   protected function clickMore($category) {
-    $page = $this->getSession()->getPage();
     $category_details = $this->findCategoryDetails($category);
     $this->assertNotEmpty($category_details);
     $category_details->find('css', "summary:contains('More+')")->click();
   }
 
   /**
+   * Clicks a category in the block list.
+   *
    * @param string $category
+   *   The category.
    */
   protected function clickBlockCategory($category) {
     $page = $this->getSession()->getPage();
     $page->find('css', "#drupal-off-canvas summary:contains('$category')")->click();
   }
 
+  /**
+   * Finds a 'details' element for a category.
+   *
+   * @param string $category
+   *   The category to find.
+   *
+   * @return \Behat\Mink\Element\NodeElement|null
+   *   The 'details' element element if it exists, otherwise NULL.
+   */
   protected function findCategoryDetails($category) {
     $all_details = $this->getSession()->getPage()->findAll('css', "#drupal-off-canvas .block-categories details");
     foreach ($all_details as $details) {
@@ -143,6 +174,22 @@ class LayoutBuilderUiTest extends JavascriptTestBase {
       }
     }
     return NULL;
+  }
+
+  /**
+   * Asserts that given categories are in the correct relative order.
+   *
+   * @param string[] $categories
+   *   The categories in the order to check.
+   */
+  protected function assertRelativeCategoryOrder(array $categories) {
+    $page = $this->getSession()->getPage();
+    $display_categories = [];
+    /** @var \Behat\Mink\Element\NodeElement $category_summary */
+    foreach ($page->findAll('css', "#drupal-off-canvas summary") as $category_summary) {
+      $display_categories[] = $category_summary->getText();
+    }
+    $this->assertEquals($categories, array_values(array_intersect($display_categories, $categories)));
   }
 
 }
