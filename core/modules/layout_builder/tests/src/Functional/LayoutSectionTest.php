@@ -45,7 +45,8 @@ class LayoutSectionTest extends BrowserTestBase {
       ->save();
 
     $this->drupalLogin($this->drupalCreateUser([
-      'configure any layout',
+      'administer layout sections',
+      'administer layout section blocks',
       'administer node display',
       'administer node fields',
       'administer content types',

@@ -1,5 +1,8 @@
 # @todo Expand permissions to be more granular in
 #   https://www.drupal.org/node/2914486.
-configure any layout:
-  title: 'Configure any layout'
+administer layout sections:
+  title: 'Administer layout sections'
+  restrict access: true
+administer layout section blocks:
+  title: 'Administer layout section blocks'
   restrict access: true

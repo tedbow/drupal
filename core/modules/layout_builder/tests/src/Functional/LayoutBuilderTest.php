@@ -66,7 +66,8 @@ class LayoutBuilderTest extends BrowserTestBase {
     $page = $this->getSession()->getPage();
 
     $this->drupalLogin($this->drupalCreateUser([
-      'configure any layout',
+      'administer layout sections',
+      'administer layout section blocks',
       'administer node display',
       'administer node fields',
     ]));
@@ -201,7 +202,8 @@ class LayoutBuilderTest extends BrowserTestBase {
 
     $this->container->get('module_installer')->install(['menu_ui']);
     $this->drupalLogin($this->drupalCreateUser([
-      'configure any layout',
+      'administer layout sections',
+      'administer layout section blocks',
       'administer node display',
       'administer menu',
     ]));
@@ -271,7 +273,8 @@ class LayoutBuilderTest extends BrowserTestBase {
     $page = $this->getSession()->getPage();
 
     $this->drupalLogin($this->drupalCreateUser([
-      'configure any layout',
+      'administer layout sections',
+      'administer layout section blocks',
       'administer node display',
       'administer node fields',
     ]));
@@ -332,7 +335,8 @@ class LayoutBuilderTest extends BrowserTestBase {
     $assert_session = $this->assertSession();
 
     $this->drupalLogin($this->drupalCreateUser([
-      'configure any layout',
+      'administer layout sections',
+      'administer layout section blocks',
       'administer node display',
       'administer node fields',
     ]));
@@ -361,7 +365,8 @@ class LayoutBuilderTest extends BrowserTestBase {
     $page = $this->getSession()->getPage();
 
     $this->drupalLogin($this->drupalCreateUser([
-      'configure any layout',
+      'administer layout sections',
+      'administer layout section blocks',
       'administer node display',
     ]));
 

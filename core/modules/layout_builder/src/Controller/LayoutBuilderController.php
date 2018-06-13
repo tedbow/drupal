@@ -14,6 +14,8 @@ use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Session\AccountProxyInterface;
 
 /**
  * Defines a controller to provide the Layout Builder admin UI.
@@ -46,10 +48,13 @@ class LayoutBuilderController implements ContainerInjectionInterface {
    *   The layout tempstore repository.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
+   * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   *   Gets the current active user.
    */
-  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger) {
+  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger, AccountProxyInterface $current_user) {
     $this->layoutTempstoreRepository = $layout_tempstore_repository;
     $this->messenger = $messenger;
+    $this->currentUser = $current_user;
   }
 
   /**
@@ -58,7 +63,8 @@ class LayoutBuilderController implements ContainerInjectionInterface {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('layout_builder.tempstore_repository'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('current_user')
     );
   }
 
@@ -267,20 +273,7 @@ class LayoutBuilderController implements ContainerInjectionInterface {
           'data-dialog-renderer' => 'off_canvas',
         ],
       ],
-      'remove' => [
-        '#type' => 'link',
-        '#title' => $this->t('Remove section'),
-        '#url' => Url::fromRoute('layout_builder.remove_section', [
-          'section_storage_type' => $storage_type,
-          'section_storage' => $storage_id,
-          'delta' => $delta,
-        ]),
-        '#attributes' => [
-          'class' => ['use-ajax', 'remove-section'],
-          'data-dialog-type' => 'dialog',
-          'data-dialog-renderer' => 'off_canvas',
-        ],
-      ],
+      'remove' => $this->getRemoveLinkData($storage_type, $storage_id, $delta),
       'layout-section' => $build,
     ];
   }
@@ -306,6 +299,43 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     }
 
     return new RedirectResponse($section_storage->getRedirectUrl()->setAbsolute()->toString());
+  }
+
+  /**
+   * Returns data for link 'remove' if user have access to remove.
+   *
+   * @param string $storage_type
+   *   The storage type value.
+   * @param string $storage_id
+   *   The storage id value.
+   * @param int $delta
+   *   The delta of the section.
+   *
+   * @return array
+   *   Returns data for link or empty array if user does not have access for
+   *   removing sections.
+   */
+  protected function getRemoveLinkData($storage_type, $storage_id, $delta) {
+    $account = $this->currentUser->getAccount();
+    $removed_link_data = [];
+    $access = AccessResult::allowedIfHasPermission($account, 'administer layout sections');
+    if ($access->isAllowed()) {
+      $removed_link_data = [
+        '#type' => 'link',
+        '#title' => $this->t('Remove section'),
+        '#url' => Url::fromRoute('layout_builder.remove_section', [
+          'section_storage_type' => $storage_type,
+          'section_storage' => $storage_id,
+          'delta' => $delta,
+        ]),
+        '#attributes' => [
+          'class' => ['use-ajax', 'remove-section'],
+          'data-dialog-type' => 'dialog',
+          'data-dialog-renderer' => 'off_canvas',
+        ],
+      ];
+    }
+    return $removed_link_data;
   }
 
   /**

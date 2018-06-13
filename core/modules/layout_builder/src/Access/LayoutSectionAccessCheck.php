@@ -37,7 +37,7 @@ class LayoutSectionAccessCheck implements AccessInterface {
       $access = AccessResult::forbidden();
     }
     else {
-      $access = AccessResult::allowedIfHasPermission($account, 'configure any layout');
+      $access = AccessResult::allowedIfHasPermission($account, 'administer layout sections');
     }
 
     return $access->addCacheableDependency($section_storage);
