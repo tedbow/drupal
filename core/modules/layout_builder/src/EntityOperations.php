@@ -89,11 +89,16 @@ class EntityOperations implements ContainerInjectionInterface {
       return;
     }
     $original_sections = $this->getEntitySections($entity->original);
-    if ($removed_ids = array_diff($this->getInlineBlockIdsInSections($original_sections), $this->getInlineBlockIdsInSections($sections))) {
-      // @todo This deletes all 'block_content' entities that were removed if we don't need to save them for revision purposes.
-      //   Should this still only be deleting the usage and waiting to delete the actual block entities on cron.
-      //   Would there every be enough 'block_content' entities
-      $this->deleteBlocksAndUsage($removed_ids);
+    $current_revision_ids = $this->getInBlockRevisionIdsInSection($sections);
+    // If there are any revisions in the original that aren't current there may
+    // some blocks that need to be removed.
+    if ($original_revision_ids = array_diff($this->getInBlockRevisionIdsInSection($original_sections), $current_revision_ids)) {
+      if ($removed_ids = array_diff($this->getBlockIdsForRevisionIds($original_revision_ids), $this->getBlockIdsForRevisionIds($current_revision_ids))) {
+        // @todo This deletes all 'block_content' entities that were removed if we don't need to save them for revision purposes.
+        //   Should this still only be deleting the usage and waiting to delete the actual block entities on cron.
+        //   Would there every be enough 'block_content' entities
+        $this->deleteBlocksAndUsage($removed_ids);
+      }
     }
   }
 
@@ -115,7 +120,7 @@ class EntityOperations implements ContainerInjectionInterface {
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity.
    *
-   * @return array|\Drupal\layout_builder\Section[]|null
+   * @return \Drupal\layout_builder\Section[]|null
    *   The entity layout sections if available.
    *
    * @internal
@@ -146,7 +151,6 @@ class EntityOperations implements ContainerInjectionInterface {
       return;
     }
     $duplicate_blocks = FALSE;
-    $this->removeUnusedForEntityOnSave($entity);
 
     if ($sections = $this->getEntitySections($entity)) {
       if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
@@ -186,34 +190,7 @@ class EntityOperations implements ContainerInjectionInterface {
         $component->setConfiguration($plugin->getConfiguration());
       }
     }
-
-  }
-
-  /**
-   * Gets the all Block Content IDs in Sections.
-   *
-   * @param \Drupal\layout_builder\Section[] $sections
-   *   The layout sections.
-   *
-   * @return int[]
-   *   The block ids.
-   */
-  protected function getInlineBlockIdsInSections(array $sections) {
-    $block_ids = [];
-    $components = $this->getInlineBlockComponents($sections);
-    $revision_ids = [];
-    foreach ($components as $component) {
-      $configuration = $component->getPlugin()->getConfiguration();
-      if (!empty($configuration['block_revision_id'])) {
-        $revision_ids[] = $configuration['block_revision_id'];
-      }
-    }
-    if ($revision_ids) {
-      $query = $this->storage->getQuery();
-      $query->condition('revision_id', $revision_ids, 'IN');
-      $block_ids = $query->execute();
-    }
-    return $block_ids;
+    $this->removeUnusedForEntityOnSave($entity);
   }
 
   /**
@@ -269,7 +246,7 @@ class EntityOperations implements ContainerInjectionInterface {
     if (!empty($configuration['block_revision_id'])) {
       $query = $this->storage->getQuery();
       $query->condition('revision_id', $configuration['block_revision_id']);
-      return array_pop($query->execute());
+      return array_values($query->execute())[0];
     }
     return NULL;
   }
@@ -316,6 +293,46 @@ class EntityOperations implements ContainerInjectionInterface {
    */
   protected function isStorageAvailable() {
     return !empty($this->storage);
+  }
+
+  /**
+   * Gets revision IDs for layout sections.
+   *
+   * @param \Drupal\layout_builder\Section[] $sections
+   *   The layout sections.
+   *
+   * @return int[]
+   *   The revision IDs.
+   */
+  protected function getInBlockRevisionIdsInSection(array $sections) {
+    $revision_ids = [];
+    foreach ($this->getInlineBlockComponents($sections) as $component) {
+      $configuration = $component->getPlugin()->getConfiguration();
+      if (!empty($configuration['block_revision_id'])) {
+        $revision_ids[] = $configuration['block_revision_id'];
+      }
+    }
+    return $revision_ids;
+  }
+
+  /**
+   * Gets blocks IDs for an array of revision IDs.
+   *
+   * @param int[] $revision_ids
+   *   The revision IDs.
+   *
+   * @return int[]
+   *   The block IDs.
+   */
+  protected function getBlockIdsForRevisionIds(array $revision_ids) {
+    if ($revision_ids) {
+      $query = $this->storage->getQuery();
+      $query->condition('revision_id', $revision_ids, 'IN');
+      $block_ids = $query->execute();
+      return $block_ids;
+    }
+    return [];
+
   }
 
 }
