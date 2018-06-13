@@ -94,9 +94,6 @@ class EntityOperations implements ContainerInjectionInterface {
     // some blocks that need to be removed.
     if ($original_revision_ids = array_diff($this->getInBlockRevisionIdsInSection($original_sections), $current_revision_ids)) {
       if ($removed_ids = array_diff($this->getBlockIdsForRevisionIds($original_revision_ids), $this->getBlockIdsForRevisionIds($current_revision_ids))) {
-        // @todo This deletes all 'block_content' entities that were removed if we don't need to save them for revision purposes.
-        //   Should this still only be deleting the usage and waiting to delete the actual block entities on cron.
-        //   Would there every be enough 'block_content' entities
         $this->deleteBlocksAndUsage($removed_ids);
       }
     }
