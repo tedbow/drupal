@@ -1,0 +1,10 @@
+block.settings.layout_builder_test_entity_block:
+  type: block_settings
+  label: 'Test Entity Block'
+  mapping:
+    entity_type_id:
+      type: string
+      label: 'Entity type ID'
+    entity_id:
+      type: integer
+      label: 'Entity ID'
