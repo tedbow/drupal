@@ -11,7 +11,11 @@
 
   behaviors.layoutBuilder = {
     attach: function attach(context) {
-      $(context).find('.layout-builder--layout__region').sortable({
+      $('[data-layout-block-uuid]').children().on('click mousedown', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      $(context).find('.layout-builder--lay     out__region').sortable({
         items: '> .draggable',
         connectWith: '.layout-builder--layout__region',
         placeholder: 'ui-state-drop',

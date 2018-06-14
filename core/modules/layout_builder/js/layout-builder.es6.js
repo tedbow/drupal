@@ -1,6 +1,10 @@
 (($, { ajax, behaviors }) => {
   behaviors.layoutBuilder = {
     attach(context) {
+      $('[data-layout-block-uuid]').children().on('click mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
       $(context).find('.layout-builder--layout__region').sortable({
         items: '> .draggable',
         connectWith: '.layout-builder--layout__region',
