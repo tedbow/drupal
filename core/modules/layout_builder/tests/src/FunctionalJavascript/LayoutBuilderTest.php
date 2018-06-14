@@ -99,9 +99,9 @@ class LayoutBuilderTest extends JavascriptTestBase {
     $assert_session->addressEquals("$field_ui_prefix/display-layout/default");
     $this->addBlock('Search form', '.search-block-form');
 
-    $page->pressButton('Search');
-    // Ensure we didn't get redirected to the search page.
-    $this->assertEmpty($assert_session->waitForElement('css', '.search-form'));
+      $page->pressButton('Search');
+      // Ensure we didn't get redirected to the search page.
+      $this->assertEmpty($assert_session->waitForElement('css', '.search-form'));
     $assert_session->addressEquals("$field_ui_prefix/display-layout/default");
 
     $this->addBlock('Block with link', 'block-field-blockblock-contentbasicbody');
