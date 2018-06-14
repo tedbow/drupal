@@ -30,6 +30,11 @@ class LayoutRecursionTest extends BrowserTestBase {
     //   https://www.drupal.org/project/drupal/issues/2917777.
     $this->drupalPlaceBlock('local_tasks_block');
 
+
+    // @todo Find balance.
+    // when creating 5 nodes here
+    // \Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay::RECURSIVE_RENDER_LIMIT
+    // has to be 1.
     for ($i = 1; $i <= 5; $i++) {
       Node::create([
         'type' => 'type_with_recursion',

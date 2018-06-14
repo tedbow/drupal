@@ -314,25 +314,27 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   }
 
   /**
-   * Tests if this entity has been rendered beyond the recursive limit.
+   * Tests if this section has been rendered beyond the recursive limit.
    *
    * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
    *   The entity being rendered.
+   * @param int $section_delta
+   *   The section delta.
    *
    * @return bool
    *   TRUE if the recursive limit has been reached, otherwise FALSE.
    */
   protected function isRecursiveRenderLimit(FieldableEntityInterface $entity, $section_delta) {
-    $render_id_keys = [
-      $entity->getEntityTypeId(),
-      $entity->id(),
-      $this->getMode(),
-      $section_delta,
+    $render_id_values = [
+      '%entity_type' => $entity->getEntityTypeId(),
+      '%entiy_id' => $entity->id(),
+      '%view_mode' => $this->getMode(),
+      '%section_delta' => $section_delta,
     ];
     if ($entity instanceof RevisionableInterface) {
-      $render_id_keys[] = $entity->getRevisionId();
+      $render_id_values['%revision_id'] = $entity->getRevisionId();
     }
-    $recursive_render_id = implode(':', $render_id_keys);
+    $recursive_render_id = implode(':', $render_id_values);
 
     if (isset(static::$recursiveRenderDepth[$recursive_render_id])) {
       static::$recursiveRenderDepth[$recursive_render_id]++;
@@ -343,11 +345,11 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
 
     // Protect ourselves from recursive rendering.
     if (static::$recursiveRenderDepth[$recursive_render_id] > static::RECURSIVE_RENDER_LIMIT) {
-      $this->getLogger()
-        ->error('Recursive rendering detected when rendering entity %entity_type: %entity_id, using the %field_name field on the %bundle_name bundle. Aborting rendering.', [
-          '%entity_type' => $entity->getEntityTypeId(),
-          '%entity_id' => $entity->id(),
-        ]);
+      $error = 'Recursive rendering detected when rendering layout:';
+      foreach ($render_id_values as $key => $render_id_value) {
+        $error .= str_replace('%', '', $key) . ": $key, ";
+      }
+      $this->getLogger()->error("$error. Aborting rendering.", $render_id_values);
       return TRUE;
     }
     return FALSE;
