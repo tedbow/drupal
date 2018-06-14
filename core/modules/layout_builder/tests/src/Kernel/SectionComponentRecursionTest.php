@@ -8,7 +8,9 @@ use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 
 /**
- * Tests the recursion protection in \Drupal\layout_builder\SectionComponent.
+ * Tests the recursion protection in \Drupal\layout_builder\SectionComponent.\
+ *
+ * @group layout_builder
  */
 class SectionComponentRecursionTest extends EntityKernelTestBase {
 
