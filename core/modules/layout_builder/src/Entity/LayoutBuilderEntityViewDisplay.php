@@ -27,6 +27,25 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   use SectionStorageTrait;
 
   /**
+   * The number of times this formatter allows rendering the same entity.
+   *
+   * @var int
+   */
+  const RECURSIVE_RENDER_LIMIT = 20;
+
+  /**
+   * An array of counters for the recursive rendering protection.
+   *
+   * Each counter takes into account all the relevant information about the
+   * field and the referenced entity that is being rendered.
+   *
+   * @see \Drupal\Core\Field\Plugin\Field\FieldFormatter\EntityReferenceEntityFormatter::viewElements()
+   *
+   * @var array
+   */
+  protected static $recursiveRenderDepth = [];
+
+  /**
    * {@inheritdoc}
    */
   public function isOverridable() {
@@ -140,6 +159,9 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
     foreach ($entities as $id => $entity) {
       $sections = $this->getRuntimeSections($entity);
       if ($sections) {
+       /* $recursive_render_id = implode(':', [
+          $entity->
+        ]);*/
         foreach ($build_list[$id] as $name => $build_part) {
           $field_definition = $this->getFieldDefinition($name);
           if ($field_definition && $field_definition->isDisplayConfigurable($this->displayContext)) {
