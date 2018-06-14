@@ -166,10 +166,6 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
             unset($build_list[$id][$name]);
           }
         }
-        if ($this->isRecursiveRenderLimit($entity)) {
-          $build_list[$id]['_layout_builder'] = [];
-          continue;
-        }
 
         // Bypass ::getContexts() in order to use the runtime entity, not a
         // sample entity.
@@ -179,7 +175,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
         $contexts['layout_builder.entity'] = new Context(new ContextDefinition("entity:{$entity->getEntityTypeId()}", new TranslatableMarkup('@entity being viewed', ['@entity' => $entity->getEntityType()->getLabel()])), $entity);
         foreach ($sections as $delta => $section) {
           if ($this->isRecursiveRenderLimit($entity, $delta)) {
-            $build_list[$id]['_layout_builder'] = [];
+            $build_list[$id]['_layout_builder'][$delta] = [];
             continue;
           }
           $build_list[$id]['_layout_builder'][$delta] = $section->toRenderArray($contexts);
