@@ -3,56 +3,66 @@
  * Visual styling for summary and details in the off-canvas dialog.
  */
 
-#drupal-off-canvas details,
-#drupal-off-canvas summary {
+#drupal-off-canvas details:not(.js-off-canvas-ignore),
+#drupal-off-canvas summary:not(.js-off-canvas-ignore) {
   display: block;
   font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
 }
-#drupal-off-canvas details,
-#drupal-off-canvas summary,
-#drupal-off-canvas .ui-dialog-content {
+
+#drupal-off-canvas details:not(.js-off-canvas-ignore),
+#drupal-off-canvas summary:not(.js-off-canvas-ignore),
+#drupal-off-canvas .ui-dialog-content:not(.js-off-canvas-ignore) {
   background: #474747;
   color: #ddd;
 }
-#drupal-off-canvas summary a {
+
+#drupal-off-canvas summary a:not(.js-off-canvas-ignore) {
   color: #ddd;
   padding-top: 0;
   padding-bottom: 0;
 }
-#drupal-off-canvas summary a:hover,
-#drupal-off-canvas summary a:focus {
+
+#drupal-off-canvas summary a:not(.js-off-canvas-ignore):hover,
+#drupal-off-canvas summary a:not(.js-off-canvas-ignore):focus {
   color: #fff;
 }
-#drupal-off-canvas details,
-#drupal-off-canvas summary,
-#drupal-off-canvas .details-wrapper {
+
+#drupal-off-canvas details:not(.js-off-canvas-ignore),
+#drupal-off-canvas summary:not(.js-off-canvas-ignore),
+#drupal-off-canvas .details-wrapper:not(.js-off-canvas-ignore) {
   border-width: 0;
   /* Cancel out the padding of the parent. */
   margin: 0 -20px;
   padding: 0 20px;
 }
-#drupal-off-canvas summary {
+
+#drupal-off-canvas summary:not(.js-off-canvas-ignore) {
   text-shadow: none;
   padding: 10px 20px;
   font-size: 14px;
   transition: all 0.5s ease;
 }
-#drupal-off-canvas summary:hover,
-#drupal-off-canvas summary:focus {
+
+#drupal-off-canvas summary:not(.js-off-canvas-ignore):hover,
+#drupal-off-canvas summary:not(.js-off-canvas-ignore):focus {
   background-color: #222;
 }
-#drupal-off-canvas details[open] {
+
+#drupal-off-canvas details[open]:not(.js-off-canvas-ignore) {
   padding-bottom: 10px;
 }
-#drupal-off-canvas details[open] > summary {
+
+#drupal-off-canvas details[open] > summary:not(.js-off-canvas-ignore) {
   background-color: #333;
   color: #eee;
 }
-#drupal-off-canvas details[open] > summary:hover {
+
+#drupal-off-canvas details[open] > summary:not(.js-off-canvas-ignore):hover {
   background-color: #222;
   color: #fff;
 }
-#drupal-off-canvas details .placeholder {
+
+#drupal-off-canvas details .placeholder:not(.js-off-canvas-ignore) {
   font: inherit;
   color: inherit;
   font-style: italic;
