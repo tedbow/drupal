@@ -5,6 +5,7 @@ namespace Drupal\layout_builder\Entity;
 use Drupal\Core\Entity\Entity\EntityViewDisplay as BaseEntityViewDisplay;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -31,7 +32,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    *
    * @var int
    */
-  const RECURSIVE_RENDER_LIMIT = 20;
+  const RECURSIVE_RENDER_LIMIT = 1;
 
   /**
    * An array of counters for the recursive rendering protection.
@@ -155,18 +156,19 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    */
   public function buildMultiple(array $entities) {
     $build_list = parent::buildMultiple($entities);
-
+    /** @var \Drupal\Core\Entity\FieldableEntityInterface $entity */
     foreach ($entities as $id => $entity) {
       $sections = $this->getRuntimeSections($entity);
       if ($sections) {
-       /* $recursive_render_id = implode(':', [
-          $entity->
-        ]);*/
         foreach ($build_list[$id] as $name => $build_part) {
           $field_definition = $this->getFieldDefinition($name);
           if ($field_definition && $field_definition->isDisplayConfigurable($this->displayContext)) {
             unset($build_list[$id][$name]);
           }
+        }
+        if ($this->isRecursiveRenderLimit($entity)) {
+          $build_list[$id]['_layout_builder'] = [];
+          continue;
         }
 
         // Bypass ::getContexts() in order to use the runtime entity, not a
@@ -176,6 +178,10 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
         //   https://www.drupal.org/node/2932462.
         $contexts['layout_builder.entity'] = new Context(new ContextDefinition("entity:{$entity->getEntityTypeId()}", new TranslatableMarkup('@entity being viewed', ['@entity' => $entity->getEntityType()->getLabel()])), $entity);
         foreach ($sections as $delta => $section) {
+          if ($this->isRecursiveRenderLimit($entity, $delta)) {
+            $build_list[$id]['_layout_builder'] = [];
+            continue;
+          }
           $build_list[$id]['_layout_builder'][$delta] = $section->toRenderArray($contexts);
         }
       }
@@ -309,6 +315,46 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
 
     // Return the first section.
     return $this->getSection(0);
+  }
+
+  /**
+   * Tests if this entity has been rendered beyond the recursive limit.
+   *
+   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
+   *   The entity being rendered.
+   *
+   * @return bool
+   *   TRUE if the recursive limit has been reached, otherwise FALSE.
+   */
+  protected function isRecursiveRenderLimit(FieldableEntityInterface $entity, $section_delta) {
+    $render_id_keys = [
+      $entity->getEntityTypeId(),
+      $entity->id(),
+      $this->getMode(),
+      $section_delta,
+    ];
+    if ($entity instanceof RevisionableInterface) {
+      $render_id_keys[] = $entity->getRevisionId();
+    }
+    $recursive_render_id = implode(':', $render_id_keys);
+
+    if (isset(static::$recursiveRenderDepth[$recursive_render_id])) {
+      static::$recursiveRenderDepth[$recursive_render_id]++;
+    }
+    else {
+      static::$recursiveRenderDepth[$recursive_render_id] = 1;
+    }
+
+    // Protect ourselves from recursive rendering.
+    if (static::$recursiveRenderDepth[$recursive_render_id] > static::RECURSIVE_RENDER_LIMIT) {
+      $this->getLogger()
+        ->error('Recursive rendering detected when rendering entity %entity_type: %entity_id, using the %field_name field on the %bundle_name bundle. Aborting rendering.', [
+          '%entity_type' => $entity->getEntityTypeId(),
+          '%entity_id' => $entity->id(),
+        ]);
+      return TRUE;
+    }
+    return FALSE;
   }
 
 }
