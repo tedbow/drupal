@@ -7,6 +7,8 @@ use Drupal\Tests\BrowserTestBase;
 
 /**
  * Tests recursion prevention in layouts.
+ *
+ * @group layout_builder
  */
 class LayoutRecursionTest extends BrowserTestBase {
   /**
