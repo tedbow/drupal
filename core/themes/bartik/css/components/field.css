@@ -59,6 +59,7 @@
 .field--type-image img,
 .field--name-user-picture img {
   margin: 0 0 1em;
+  float: left;
 }
 .field--type-image a {
   border-bottom: none;
@@ -96,4 +97,13 @@
 [dir="rtl"] .field--name-field-tags ul.links li {
   padding: 0 0 0 1em;
   float: right;
+}
+/*.field--name-field-images {
+ width: 100%;
+}*/
+
+.field--name-field-images .field__item {
+  float: left;
+  margin: 20px;
+
 }
