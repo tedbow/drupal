@@ -46,13 +46,17 @@ class LayoutRecursionTest extends BrowserTestBase {
     }
   }
 
+  /**
+   * Tests recursion prevention.
+   *
+   * @throws \Behat\Mink\Exception\ResponseTextException
+   */
   public function testRecursionPrevention() {
     $this->drupalLogin($this->drupalCreateUser([
       'access content',
     ]));
 
     $this->drupalGet('node/1');
-    file_put_contents('/Users/ted.bowman/Sites/www/test.html', $this->getSession()->getPage()->getOuterHtml());
     $this->assertSession()->pageTextContains("Title 1");
 
   }
