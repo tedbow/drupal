@@ -2,6 +2,9 @@
 
 namespace Drupal\layout_builder;
 
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\RevisionableInterface;
+
 /**
  * Provides a domain object for layout sections.
  *
@@ -46,6 +49,25 @@ class Section {
   protected $components = [];
 
   /**
+   * The number of times this formatter allows rendering the same entity.
+   *
+   * @var int
+   */
+  const RECURSIVE_RENDER_LIMIT = 2;
+
+  /**
+   * An array of counters for the recursive rendering protection.
+   *
+   * Each counter takes into account all the relevant information about the
+   * field and the referenced entity that is being rendered.
+   *
+   * @see \Drupal\Core\Field\Plugin\Field\FieldFormatter\EntityReferenceEntityFormatter::viewElements()
+   *
+   * @var array
+   */
+  protected static $recursiveRenderDepth = [];
+
+  /**
    * Constructs a new Section.
    *
    * @param string $layout_id
@@ -77,6 +99,12 @@ class Section {
   public function toRenderArray(array $contexts = [], $in_preview = FALSE) {
     $regions = [];
     foreach ($this->getComponents() as $component) {
+      if (!empty($contexts['layout_builder.entity'])) {
+        $entity = $contexts['layout_builder.entity']->getContextValue();
+        if ($this->isRecursiveRenderLimit($entity, $component->getUuid())) {
+          continue;
+        }
+      }
       if ($output = $component->toRenderArray($contexts, $in_preview)) {
         $regions[$component->getRegion()][$component->getUuid()] = $output;
       }
@@ -354,6 +382,48 @@ class Section {
       $section['layout_settings'],
       array_map([SectionComponent::class, 'fromArray'], $section['components'])
     );
+  }
+
+  /**
+   * Tests if this section has been rendered beyond the recursive limit.
+   *
+   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
+   *   The entity being rendered.
+   * @param int $section_delta
+   *   The section delta.
+   *
+   * @return bool
+   *   TRUE if the recursive limit has been reached, otherwise FALSE.
+   */
+  protected function isRecursiveRenderLimit(FieldableEntityInterface $entity, $component_uuid) {
+    $render_id_values = [
+      '%entity_type' => $entity->getEntityTypeId(),
+      '%entiy_id' => $entity->id(),
+      '%layout_id' => $this->getLayoutId(),
+      '%component_uuid' => $component_uuid,
+    ];
+    if ($entity instanceof RevisionableInterface) {
+      $render_id_values['%revision_id'] = $entity->getRevisionId();
+    }
+    $recursive_render_id = implode(':', $render_id_values);
+
+    if (isset(static::$recursiveRenderDepth[$recursive_render_id])) {
+      static::$recursiveRenderDepth[$recursive_render_id]++;
+    }
+    else {
+      static::$recursiveRenderDepth[$recursive_render_id] = 1;
+    }
+
+    // Protect ourselves from recursive rendering.
+    if (static::$recursiveRenderDepth[$recursive_render_id] > static::RECURSIVE_RENDER_LIMIT) {
+      $error = 'Recursive rendering detected when rendering layout:';
+      foreach ($render_id_values as $key => $render_id_value) {
+        $error .= str_replace('%', '', $key) . ": $key, ";
+      }
+      \Drupal::logger('entity')->error("$error. Aborting rendering.", $render_id_values);
+      return TRUE;
+    }
+    return FALSE;
   }
 
 }

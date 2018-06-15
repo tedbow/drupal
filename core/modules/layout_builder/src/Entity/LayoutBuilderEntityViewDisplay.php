@@ -5,7 +5,6 @@ namespace Drupal\layout_builder\Entity;
 use Drupal\Core\Entity\Entity\EntityViewDisplay as BaseEntityViewDisplay;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -26,25 +25,6 @@ use Drupal\layout_builder\SectionStorage\SectionStorageTrait;
 class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements LayoutEntityDisplayInterface {
 
   use SectionStorageTrait;
-
-  /**
-   * The number of times this formatter allows rendering the same entity.
-   *
-   * @var int
-   */
-  const RECURSIVE_RENDER_LIMIT = 1;
-
-  /**
-   * An array of counters for the recursive rendering protection.
-   *
-   * Each counter takes into account all the relevant information about the
-   * field and the referenced entity that is being rendered.
-   *
-   * @see \Drupal\Core\Field\Plugin\Field\FieldFormatter\EntityReferenceEntityFormatter::viewElements()
-   *
-   * @var array
-   */
-  protected static $recursiveRenderDepth = [];
 
   /**
    * {@inheritdoc}
@@ -156,7 +136,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    */
   public function buildMultiple(array $entities) {
     $build_list = parent::buildMultiple($entities);
-    /** @var \Drupal\Core\Entity\FieldableEntityInterface $entity */
+
     foreach ($entities as $id => $entity) {
       $sections = $this->getRuntimeSections($entity);
       if ($sections) {
@@ -174,10 +154,6 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
         //   https://www.drupal.org/node/2932462.
         $contexts['layout_builder.entity'] = new Context(new ContextDefinition("entity:{$entity->getEntityTypeId()}", new TranslatableMarkup('@entity being viewed', ['@entity' => $entity->getEntityType()->getLabel()])), $entity);
         foreach ($sections as $delta => $section) {
-          if ($this->isRecursiveRenderLimit($entity, $delta)) {
-            $build_list[$id]['_layout_builder'][$delta] = [];
-            continue;
-          }
           $build_list[$id]['_layout_builder'][$delta] = $section->toRenderArray($contexts);
         }
       }
@@ -311,48 +287,6 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
 
     // Return the first section.
     return $this->getSection(0);
-  }
-
-  /**
-   * Tests if this section has been rendered beyond the recursive limit.
-   *
-   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
-   *   The entity being rendered.
-   * @param int $section_delta
-   *   The section delta.
-   *
-   * @return bool
-   *   TRUE if the recursive limit has been reached, otherwise FALSE.
-   */
-  protected function isRecursiveRenderLimit(FieldableEntityInterface $entity, $section_delta) {
-    $render_id_values = [
-      '%entity_type' => $entity->getEntityTypeId(),
-      '%entiy_id' => $entity->id(),
-      '%view_mode' => $this->getMode(),
-      '%section_delta' => $section_delta,
-    ];
-    if ($entity instanceof RevisionableInterface) {
-      $render_id_values['%revision_id'] = $entity->getRevisionId();
-    }
-    $recursive_render_id = implode(':', $render_id_values);
-
-    if (isset(static::$recursiveRenderDepth[$recursive_render_id])) {
-      static::$recursiveRenderDepth[$recursive_render_id]++;
-    }
-    else {
-      static::$recursiveRenderDepth[$recursive_render_id] = 1;
-    }
-
-    // Protect ourselves from recursive rendering.
-    if (static::$recursiveRenderDepth[$recursive_render_id] > static::RECURSIVE_RENDER_LIMIT) {
-      $error = 'Recursive rendering detected when rendering layout:';
-      foreach ($render_id_values as $key => $render_id_value) {
-        $error .= str_replace('%', '', $key) . ": $key, ";
-      }
-      $this->getLogger()->error("$error. Aborting rendering.", $render_id_values);
-      return TRUE;
-    }
-    return FALSE;
   }
 
 }
