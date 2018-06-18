@@ -14,6 +14,9 @@ use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplayStorage;
 use Drupal\layout_builder\Form\LayoutBuilderEntityViewDisplayForm;
 use Drupal\layout_builder\EntityOperations;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
+use Drupal\layout_builder\Plugin\Block\ExtraFieldBlock;
 
 /**
  * Implements hook_help().
@@ -123,5 +126,57 @@ function layout_builder_plugin_filter_block_alter(array &$definitions, array $ex
         unset($definitions[$id]);
       }
     }
+  }
+}
+
+
+/**
+ * Implements hook_entity_view_alter().
+ *
+ * ExtraFieldBlock block plugins add placeholders for each extra field which is
+ * configured to be displayed. Those placeholders are replaced by this hook.
+ * Modules that implement 'hook_entity_extra_field_info' use their
+ *  implementations of 'hook_entity_view_alter' to add the rendered output of
+ * the extra fields they provide so we cannot get the rendered output of extra
+ * fields before this in the view process.
+ * 'layout_builder_module_implements_alter' moves this implementation of
+ * 'hook_entity_view_alter' to the last of the list.
+ *
+ * @see \Drupal\layout_builder\Plugin\Block\ExtraFieldBlock::build()
+ * @see layout_builder_module_implements_alter
+ */
+function layout_builder_entity_view_alter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
+  if ($display instanceof LayoutEntityDisplayInterface) {
+    /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
+    $field_manager = \Drupal::service('entity_field.manager');
+    $extra_fields = $field_manager->getExtraFields($entity->getEntityTypeId(), $entity->bundle());
+    if (!empty($extra_fields['display'])) {
+      foreach ($extra_fields['display'] as $field_name => $extra_field) {
+        if (isset($build[$field_name])) {
+          $replacement = $build[$field_name];
+        }
+        else {
+          // If the extra field is not set replace with an empty array to avoid
+          // the placeholder text from being rendered.
+          $replacement = [];
+        }
+        ExtraFieldBlock::replaceFieldPlaceholder($build, $replacement, $field_name);
+        unset($build[$field_name]);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_builder_module_implements_alter().
+ */
+function layout_builder_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'entity_view_alter') {
+    // Ensure that this module's implementation of 'hook_entity_view_alter' runs
+    // last so that other modules that use this hook to render extra fields will
+    // run before it.
+    $group = $implementations['layout_builder'];
+    unset($implementations['layout_builder']);
+    $implementations['layout_builder'] = $group;
   }
 }

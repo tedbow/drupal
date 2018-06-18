@@ -27,6 +27,22 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   use SectionStorageTrait;
 
   /**
+   * The entity field manager.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+   */
+  protected $entityFieldManager;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(array $values, $entity_type) {
+    $this->entityFieldManager = \Drupal::service('entity_field.manager');
+
+    parent::__construct($values, $entity_type);
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function isOverridable() {
@@ -257,12 +273,18 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
     $options = $this->content[$name];
     // Provide backwards compatibility by converting to a section component.
     $field_definition = $this->getFieldDefinition($name);
-    if ($field_definition && $field_definition->isDisplayConfigurable('view') && isset($options['type'])) {
+    $extra_fields = $this->entityFieldManager->getExtraFields($this->getTargetEntityTypeId(), $this->getTargetBundle());
+    if (($field_definition && $field_definition->isDisplayConfigurable('view') && isset($options['type'])) || isset($extra_fields['display'][$name])) {
       $configuration = [];
-      $configuration['id'] = 'field_block:' . $this->getTargetEntityTypeId() . ':' . $this->getTargetBundle() . ':' . $name;
-      $configuration['label_display'] = FALSE;
-      $keys = array_flip(['type', 'label', 'settings', 'third_party_settings']);
-      $configuration['formatter'] = array_intersect_key($options, $keys);
+      if ($field_definition) {
+        $configuration['id'] = 'field_block:' . $this->getTargetEntityTypeId() . ':' . $this->getTargetBundle() . ':' . $name;
+        $keys = array_flip(['type', 'label', 'settings', 'third_party_settings']);
+        $configuration['formatter'] = array_intersect_key($options, $keys);
+      }
+      else {
+        $configuration['id'] = 'extra_field_block:' . $this->getTargetEntityTypeId() . ':' . $this->getTargetBundle() . ':' . $name;
+      }
+      $configuration['label_display'] = '0';
       $configuration['context_mapping']['entity'] = 'layout_builder.entity';
 
       $section = $this->getDefaultSection();
