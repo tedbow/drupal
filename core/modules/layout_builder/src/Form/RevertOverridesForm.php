@@ -103,6 +103,9 @@ class RevertOverridesForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // @todo Remove this quick fix after https://www.drupal.org/node/2970801
+    $this->sectionStorage = \Drupal::service('plugin.manager.layout_builder.section_storage')->loadFromStorageId($this->sectionStorage->getStorageType(), $this->sectionStorage->getStorageId());
+
     // Remove all sections.
     while ($this->sectionStorage->count()) {
       $this->sectionStorage->removeSection(0);
