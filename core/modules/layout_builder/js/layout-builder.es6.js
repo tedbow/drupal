@@ -1,7 +1,7 @@
 (($, { ajax, behaviors }) => {
   behaviors.layoutBuilder = {
     attach(context) {
-      $('[data-layout-block-uuid]').children().on('click mousedown', (e) => {
+      $('[data-layout-block-uuid]', context).children().on('click mousedown', (e) => {
         e.preventDefault();
         e.stopPropagation();
       });
