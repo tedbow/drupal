@@ -5,13 +5,14 @@ namespace Drupal\block_content;
 use Drupal\Core\Access\AccessDependentInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\RevisionLogInterface;
 
 /**
  * Provides an interface defining a custom block entity.
  */
-interface BlockContentInterface extends ContentEntityInterface, EntityChangedInterface, RevisionLogInterface, EntityPublishedInterface, AccessDependentInterface {
+interface BlockContentInterface extends ContentEntityInterface, EntityChangedInterface, RevisionLogInterface, EntityPublishedInterface {
 
   /**
    * Returns the block revision log message.
@@ -50,24 +51,6 @@ interface BlockContentInterface extends ContentEntityInterface, EntityChangedInt
   public function setRevisionLog($revision_log);
 
   /**
-   * Determines if the block is reusable or not.
-   *
-   * @return bool
-   *   Returns TRUE if reusable and FALSE otherwise.
-   */
-  public function isReusable();
-
-  /**
-   * Sets the block to be reusable.
-   *
-   * @param bool $reusable
-   *   Whether the block should be reusable, defaults to TRUE.
-   *
-   * @return $this
-   */
-  public function setReusable($reusable = TRUE);
-
-  /**
    * Sets the theme value.
    *
    * When creating a new block content block from the block library, the user is
@@ -101,5 +84,42 @@ interface BlockContentInterface extends ContentEntityInterface, EntityChangedInt
    *   Array of Drupal\block\Core\Plugin\Entity\Block entities.
    */
   public function getInstances();
+
+  /**
+   * Sets the parent entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $parent_entity
+   *   The parent entity.
+   *
+   * @return \Drupal\block_content\BlockContentInterface
+   *   The class instance that this method is called on.
+   */
+  public function setParentEntity(EntityInterface $parent_entity);
+
+  /**
+   * Gets the parent entity.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   The parent entity or null if none exists.
+   *
+   * @todo How to deterine parent is set but no longer exists.
+   */
+  public function getParentEntity();
+
+  /**
+   * Removes the parent entity.
+   *
+   * @return \Drupal\block_content\BlockContentInterface
+   *   The class instance that this method is called on.
+   */
+  public function removeParentEntity();
+
+  /**
+   * Whether the block has a parent entity set.
+   *
+   * @return bool
+   *   TRUE if a parent entity is set, otherwise FALSE.
+   */
+  public function hasParentEntity();
 
 }
