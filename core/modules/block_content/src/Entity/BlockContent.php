@@ -2,8 +2,8 @@
 
 namespace Drupal\block_content\Entity;
 
-use Drupal\Core\Access\AccessDependentTrait;
 use Drupal\Core\Entity\EditorialContentEntityBase;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -78,8 +78,6 @@ use Drupal\user\UserInterface;
  */
 class BlockContent extends EditorialContentEntityBase implements BlockContentInterface {
 
-  use AccessDependentTrait;
-
   /**
    * The theme the block is being created in.
    *
@@ -121,7 +119,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
-    if ($this->isReusable() || (isset($this->original) && $this->original->isReusable())) {
+    if (empty($this->get('parent_entity_id')->value) || (isset($this->original) && empty($this->original->get('parent_entity_id')->value))) {
       static::invalidateBlockPluginCache();
     }
   }
@@ -133,8 +131,8 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
     parent::postDelete($storage, $entities);
     /** @var \Drupal\block_content\BlockContentInterface $block */
     foreach ($entities as $block) {
-      if ($block->isReusable()) {
-        // If any deleted blocks are reusable clear the block cache.
+      if (empty($block->get('parent_entity_id'))) {
+        // If any deleted blocks do not have a parent id clear the block cache.
         static::invalidateBlockPluginCache();
         return;
       }
@@ -212,13 +210,21 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
       ->setTranslatable(TRUE)
       ->setRevisionable(TRUE);
 
-    $fields['reusable'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Reusable'))
-      ->setDescription(t('A boolean indicating whether this block is reusable.'))
+    $fields['parent_entity_type'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Parent entity type'))
+      ->setDescription(t('The parent entity type.'))
       ->setTranslatable(FALSE)
       ->setRevisionable(FALSE)
-      ->setDefaultValue(TRUE)
-      ->setInitialValue(TRUE);
+      ->setDefaultValue('')
+      ->setInitialValue('');
+
+    $fields['parent_entity_id'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Parent ID'))
+      ->setDescription(t('The parent entity ID.'))
+      ->setTranslatable(FALSE)
+      ->setRevisionable(FALSE)
+      ->setDefaultValue('')
+      ->setInitialValue('');
 
     return $fields;
   }
@@ -303,20 +309,6 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function isReusable() {
-    return (bool) $this->get('reusable')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setReusable($reusable = TRUE) {
-    return $this->set('reusable', $reusable);
-  }
-
-  /**
    * Invalidates the block plugin cache after changes and deletions.
    */
   protected static function invalidateBlockPluginCache() {
@@ -324,4 +316,38 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
     \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function setParentEntity(EntityInterface $parent_entity) {
+    $this->set('parent_entity_type', $parent_entity->getEntityTypeId());
+    $this->set('parent_entity_id', $parent_entity->id());
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getParentEntity() {
+    if ($this->hasParentEntity()) {
+      return \Drupal::entityTypeManager()->getStorage($this->get('parent_entity_type')->value)->load($this->get('parent_entity_id')->value);
+    }
+    return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function removeParentEntity() {
+    $this->set('parent_entity_type', NULL);
+    $this->set('parent_entity_id', NULL);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasParentEntity() {
+    return !empty($this->get('parent_entity_type')->value) && !empty($this->get('parent_entity_id')->value);
+  }
 }
