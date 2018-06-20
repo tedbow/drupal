@@ -3,6 +3,7 @@
 namespace Drupal\layout_builder;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\Core\Database\Database;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -20,13 +21,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityOperations implements ContainerInjectionInterface {
 
   /**
-   * Inline block content usage tracking service.
-   *
-   * @var \Drupal\layout_builder\InlineBlockContentUsage
-   */
-  protected $usage;
-
-  /**
    * The block storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
@@ -34,21 +28,26 @@ class EntityOperations implements ContainerInjectionInterface {
   protected $storage;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a new  EntityOperations object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
-   * @param \Drupal\layout_builder\InlineBlockContentUsage $usage
-   *   Inline block content usage tracking service.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, InlineBlockContentUsage $usage) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+    $this->entityTypeManager = $entityTypeManager;
     if ($entityTypeManager->hasDefinition('block_content')) {
       $this->storage = $entityTypeManager->getStorage('block_content');
     }
-    $this->usage = $usage;
   }
 
   /**
@@ -56,8 +55,7 @@ class EntityOperations implements ContainerInjectionInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity_type.manager'),
-      $container->get('inline_block_content.usage')
+      $container->get('entity_type.manager')
     );
   }
 
@@ -94,7 +92,7 @@ class EntityOperations implements ContainerInjectionInterface {
     // some blocks that need to be removed.
     if ($original_revision_ids = array_diff($this->getInBlockRevisionIdsInSection($original_sections), $current_revision_ids)) {
       if ($removed_ids = array_diff($this->getBlockIdsForRevisionIds($original_revision_ids), $this->getBlockIdsForRevisionIds($current_revision_ids))) {
-        $this->deleteBlocksAndUsage($removed_ids);
+        $this->deleteBlocks($removed_ids);
       }
     }
   }
@@ -107,7 +105,22 @@ class EntityOperations implements ContainerInjectionInterface {
    */
   public function handleEntityDelete(EntityInterface $entity) {
     if ($this->isStorageAvailable() && $this->isLayoutCompatibleEntity($entity)) {
-      $this->usage->removeByLayoutEntity($entity);
+      $entity_type = $this->entityTypeManager->getDefinition($entity->getEntityTypeId());
+      if (!$entity_type->getDataTable()) {
+        // If the entity type does not have a data table we cannot find unused
+        // blocks on cron.
+        $block_storage = $this->entityTypeManager->getStorage('block_content');
+        $query = $block_storage->getQuery();
+        $query->condition('parent_entity_id', $entity->id());
+        $query->condition('parent_entity_type', $entity->getEntityTypeId());
+        $block_ids = $query->execute();
+        foreach ($block_ids as $block_id) {
+          /** @var \Drupal\block_content\BlockContentInterface $block */
+          $block = $block_storage->load($block_id);
+          $block->set('parent_entity_id', NULL);
+          $block->save();
+        }
+      }
     }
   }
 
@@ -178,12 +191,7 @@ class EntityOperations implements ContainerInjectionInterface {
       foreach ($this->getInlineBlockComponents($sections) as $component) {
         /** @var \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin */
         $plugin = $component->getPlugin();
-        $pre_save_configuration = $plugin->getConfiguration();
-        $plugin->saveBlockContent($new_revision, $duplicate_blocks);
-        $post_save_configuration = $plugin->getConfiguration();
-        if ($duplicate_blocks || (empty($pre_save_configuration['block_revision_id']) && !empty($post_save_configuration['block_revision_id']))) {
-          $this->usage->addUsage($this->getPluginBlockId($plugin), $entity->getEntityTypeId(), $entity->id());
-        }
+        $plugin->saveBlockContent($entity, $new_revision, $duplicate_blocks);
         $component->setConfiguration($plugin->getConfiguration());
       }
     }
@@ -256,13 +264,12 @@ class EntityOperations implements ContainerInjectionInterface {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function deleteBlocksAndUsage(array $block_content_ids) {
+  protected function deleteBlocks(array $block_content_ids) {
     foreach ($block_content_ids as $block_content_id) {
       if ($block = $this->storage->load($block_content_id)) {
         $block->delete();
       }
     }
-    $this->usage->deleteUsage($block_content_ids);
   }
 
   /**
@@ -275,7 +282,7 @@ class EntityOperations implements ContainerInjectionInterface {
    */
   public function removeUnused($limit = 100) {
     if ($this->isStorageAvailable()) {
-      $this->deleteBlocksAndUsage($this->usage->getUnused($limit));
+      $this->deleteBlocks($this->getUnused($limit));
     }
   }
 
@@ -330,6 +337,57 @@ class EntityOperations implements ContainerInjectionInterface {
     }
     return [];
 
+  }
+
+  /**
+   * Get unused IDs of blocks.
+   *
+   * @param int $limit
+   *   The limit of block IDs to return.
+   *
+   * @return int[]
+   *   The block IDs.
+   */
+  protected function getUnused($limit) {
+    $block_type_definition = $this->entityTypeManager->getDefinition('block_content');
+    $data_table = $block_type_definition->getDataTable();
+    $query = Database::getConnection()->select($data_table);
+    $query->distinct(TRUE);
+    $query->isNotNull('parent_entity_type');
+    $query->fields($data_table, ['parent_entity_type']);
+    $parent_entity_types = $query->execute()->fetchCol();
+    $block_id_key = $block_type_definition->getKey('id');
+    $block_ids = [];
+    foreach ($parent_entity_types as $parent_entity_type) {
+      $parent_type_definition = $this->entityTypeManager->getDefinition($parent_entity_type);
+      if ($parent_data_table = $parent_type_definition->getDataTable()) {
+        $sub_query = Database::getConnection()->select($parent_data_table, 'parent');
+        $parent_id_key = $parent_type_definition->getKey('id');
+        $sub_query->fields('parent', [$parent_id_key]);
+        $sub_query->where("blocks.parent_entity_id = parent.$parent_id_key");
+
+        $query = Database::getConnection()->select($data_table, 'blocks');
+        $query->fields('blocks', [$block_id_key]);
+        $query->isNotNull('parent_entity_id');
+        $query->condition('parent_entity_type', $parent_entity_type);
+        $query->notExists($sub_query);
+        $query->range(0, $limit - count($block_ids));
+        $new_block_ids = $query->execute()->fetchCol();
+      }
+      else {
+        // @todo Handle parent types with no data table.
+        $block_query = $this->entityTypeManager->getStorage('block_content')->getQuery();
+        $block_query->condition('parent_entity_type', $parent_entity_type);
+        $block_query->notExists('parent_entity_id');
+        $block_query->range(0, $limit - count($block_ids));
+        $new_block_ids = $block_query->execute();
+      }
+      $block_ids = array_merge($block_ids, $new_block_ids);
+      if (count($block_ids) > 50) {
+        break;
+      }
+    }
+    return $block_ids;
   }
 
 }
