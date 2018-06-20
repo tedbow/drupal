@@ -35,7 +35,7 @@ class BlockContentListBuilder extends EntityListBuilder {
     $query = $this->getStorage()->getQuery()
       ->sort($this->entityType->getKey('id'));
 
-    $query->condition('reusable', TRUE);
+    $query->notExists('parent_entity_id');
 
     // Only add the pager if a limit is specified.
     if ($this->limit) {
