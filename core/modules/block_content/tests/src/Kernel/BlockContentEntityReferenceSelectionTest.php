@@ -6,9 +6,10 @@ use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\block_content_test\Plugin\EntityReferenceSelection\TestSelection;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\user\Entity\User;
 
 /**
- * Tests EntityReference selection handlers don't return non-reusable blocks.
+ * Tests EntityReference selection handlers don't return blocks with parents.
  *
  * @see block_content_query_block_content_access_alter()
  *
@@ -40,6 +41,7 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
   public function setUp() {
     parent::setUp();
     $this->installSchema('system', ['sequence']);
+    $this->installSchema('system', ['sequences']);
     $this->installEntitySchema('user');
     $this->installEntitySchema('block_content');
 
@@ -54,26 +56,31 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
   }
 
   /**
-   * Tests that non-reusable blocks are not referenceable entities.
+   * Tests that blocks with parent are not referenceable entities.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Exception
    */
   public function testReferenceableEntities() {
-    // And reusable and non-reusable block content entities.
-    $block_content_reusable = BlockContent::create([
-      'info' => 'Reusable Block',
-      'type' => 'spiffy',
-      'reusable' => TRUE,
+    $user = User::create([
+      'name' => 'username',
+      'status' => 1,
     ]);
-    $block_content_reusable->save();
-    $block_content_nonreusable = BlockContent::create([
-      'info' => 'Non-reusable Block',
+    $user->save();
+
+    // And block content entities with and without parents.
+    $block_content = BlockContent::create([
+      'info' => 'Block no parent',
       'type' => 'spiffy',
-      'reusable' => FALSE,
     ]);
-    $block_content_nonreusable->save();
+    $block_content->save();
+    $block_content_with_parent = BlockContent::create([
+      'info' => 'Block with parent',
+      'type' => 'spiffy',
+    ]);
+    $block_content_with_parent->setParentEntity($user);
+    $block_content_with_parent->save();
 
     // Ensure that queries without all the tags are not altered.
     $query = $this->entityTypeManager->getStorage('block_content')->getQuery();
@@ -89,7 +96,7 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
 
     // Use \Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection
     // class to test that getReferenceableEntities() does not get the
-    // non-reusable entity.
+    // entity wth a parent.
     $configuration = [
       'target_type' => 'block_content',
       'target_bundles' => ['spiffy' => 'spiffy'],
@@ -99,61 +106,57 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
     // Setup the 3 expectation cases.
     $both_blocks = [
       'spiffy' => [
-        $block_content_reusable->id() => $block_content_reusable->label(),
-        $block_content_nonreusable->id() => $block_content_nonreusable->label(),
+        $block_content->id() => $block_content->label(),
+        $block_content_with_parent->id() => $block_content_with_parent->label(),
       ],
     ];
-    $reusable_block = ['spiffy' => [$block_content_reusable->id() => $block_content_reusable->label()]];
-    $non_reusable_block = ['spiffy' => [$block_content_nonreusable->id() => $block_content_nonreusable->label()]];
+    $block_no_parent = ['spiffy' => [$block_content->id() => $block_content->label()]];
+    $block_with_parent = ['spiffy' => [$block_content_with_parent->id() => $block_content_with_parent->label()]];
 
     $this->assertEquals(
-      $reusable_block,
+      $block_no_parent,
       $selection_handler->getReferenceableEntities()
     );
 
     // Test various ways in which an EntityReferenceSelection plugin could set
-    // the 'reusable' condition. If the plugin has set a condition on 'reusable'
-    // at all then 'block_content_query_entity_reference_alter()' will not set
-    // a reusable condition.
-    $selection_handler->setTestMode('reusable_condition_false');
-    $this->assertEquals(
-      $non_reusable_block,
-      $selection_handler->getReferenceableEntities()
-    );
+    // a condition on either the 'parent_entity_id' or 'parent_entity_type'
+    // fields. If the plugin has set a condition on either of these fields
+    // then 'block_content_query_entity_reference_alter()' will not set
+    // a parent condition.
+    foreach (['parent_entity_id', 'parent_entity_type'] as $field) {
+      $selection_handler->setTestMode("{$field}_condition_false");
+      $this->assertEquals(
+        $block_no_parent,
+        $selection_handler->getReferenceableEntities()
+      );
 
-    $selection_handler->setTestMode('reusable_condition_exists');
-    $this->assertEquals(
-      $both_blocks,
-      $selection_handler->getReferenceableEntities()
-    );
+      $selection_handler->setTestMode("{$field}_condition_group_false");
+      $this->assertEquals(
+        $block_no_parent,
+        $selection_handler->getReferenceableEntities()
+      );
 
-    $selection_handler->setTestMode('reusable_condition_group_false');
-    $this->assertEquals(
-      $non_reusable_block,
-      $selection_handler->getReferenceableEntities()
-    );
+      $selection_handler->setTestMode("{$field}_condition_group_true");
+      $this->assertEquals(
+        $block_with_parent,
+        $selection_handler->getReferenceableEntities()
+      );
 
-    $selection_handler->setTestMode('reusable_condition_group_true');
-    $this->assertEquals(
-      $reusable_block,
-      $selection_handler->getReferenceableEntities()
-    );
+      $selection_handler->setTestMode("{$field}_condition_nested_group_false");
+      $this->assertEquals(
+        $block_no_parent,
+        $selection_handler->getReferenceableEntities()
+      );
 
-    $selection_handler->setTestMode('reusable_condition_nested_group_false');
-    $this->assertEquals(
-      $non_reusable_block,
-      $selection_handler->getReferenceableEntities()
-    );
+      $selection_handler->setTestMode("{$field}_condition_nested_group_true");
+      $this->assertEquals(
+        $block_with_parent,
+        $selection_handler->getReferenceableEntities()
+      );
+    }
 
-    $selection_handler->setTestMode('reusable_condition_nested_group_true');
-    $this->assertEquals(
-      $reusable_block,
-      $selection_handler->getReferenceableEntities()
-    );
-
-    // Change the block to reusable.
-    $block_content_nonreusable->setReusable(TRUE);
-    $block_content_nonreusable->save();
+    $block_content_with_parent->removeParentEntity();
+    $block_content_with_parent->save();
     // Don't use any conditions.
     $selection_handler->setTestMode(NULL);
     // Ensure that the block is now returned as a referenceable entity.
