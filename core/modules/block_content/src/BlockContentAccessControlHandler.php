@@ -2,7 +2,6 @@
 
 namespace Drupal\block_content;
 
-use Drupal\Core\Access\AccessDependentInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
@@ -27,15 +26,9 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
       $access = parent::checkAccess($entity, $operation, $account);
     }
     /** @var \Drupal\block_content\BlockContentInterface $entity */
-    if ($entity->isReusable() === FALSE) {
-      if (!$entity instanceof AccessDependentInterface) {
-        throw new \LogicException("Non-reusable block entities must implement \Drupal\Core\Access\AccessDependentInterface for access control.");
-      }
-      $dependency = $entity->getAccessDependency();
-      if (empty($dependency)) {
-        return AccessResult::forbidden("Non-reusable blocks must set an access dependency for access control.");
-      }
-      $access->andIf($dependency->access($operation, $account, TRUE))->addCacheableDependency($access);
+    if ($parent_entity = $entity->getParentEntity()) {
+      $parent_access = $parent_entity->access($operation, $account, TRUE);
+      $access = $access->andIf($parent_access)->addCacheableDependency($entity);
     }
     return $access;
   }
