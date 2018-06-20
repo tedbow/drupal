@@ -6,6 +6,7 @@ use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\user\Entity\User;
 
 /**
  * Tests block content plugin deriver.
@@ -25,14 +26,15 @@ class BlockContentDeriverTest extends KernelTestBase {
   public function setUp() {
     parent::setUp();
     $this->installSchema('system', ['sequence']);
+    $this->installSchema('system', ['sequences']);
     $this->installEntitySchema('user');
     $this->installEntitySchema('block_content');
   }
 
   /**
-   * Tests that only reusable blocks are derived.
+   * Tests that block with parents are not derived.
    */
-  public function testReusableBlocksOnlyAreDerived() {
+  public function testBlocksWithParentsNotDerived() {
     // Create a block content type.
     $block_content_type = BlockContentType::create([
       'id' => 'spiffy',
@@ -47,18 +49,23 @@ class BlockContentDeriverTest extends KernelTestBase {
     ]);
     $block_content->save();
 
-    // Ensure the reusable block content is provided as a derivative block
+    // Ensure block entity with no parent is provided as a derivative block
     // plugin.
     /** @var \Drupal\Core\Block\BlockManagerInterface $block_manager */
     $block_manager = $this->container->get('plugin.manager.block');
     $plugin_id = 'block_content' . PluginBase::DERIVATIVE_SEPARATOR . $block_content->uuid();
     $this->assertTrue($block_manager->hasDefinition($plugin_id));
 
-    // Set the block not to be reusable.
-    $block_content->setReusable(FALSE);
+    // Set the block not to have a parent.
+    $user = User::create([
+      'name' => 'username',
+      'status' => 1,
+    ]);
+    $user->save();
+    $block_content->setParentEntity($user);
     $block_content->save();
 
-    // Ensure the non-reusable block content is not provided a derivative block
+    // Ensure the block content with a parent is not provided a derivative block
     // plugin.
     $this->assertFalse($block_manager->hasDefinition($plugin_id));
   }

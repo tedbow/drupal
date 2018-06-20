@@ -5,7 +5,7 @@ namespace Drupal\block_content_test\Plugin\EntityReferenceSelection;
 use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
 
 /**
- * Test EntityReferenceSelection class that adds various 'reusable' conditions.
+ * Test EntityReferenceSelection that adds various parent entity conditions.
  */
 class TestSelection extends DefaultSelection {
 
@@ -31,33 +31,35 @@ class TestSelection extends DefaultSelection {
    */
   protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
     $query = parent::buildEntityQuery($match, $match_operator);
+    if (strpos($this->testMode, 'parent_entity_id') === 0) {
+      $field = 'parent_entity_id';
+    }
+    else {
+      $field = 'parent_entity_type';
+    }
     switch ($this->testMode) {
-      case 'reusable_condition_false':
-        $query->condition("reusable", 0);
+      case "{$field}_condition_false":
+        $query->notExists($field);
         break;
 
-      case 'reusable_condition_exists':
-        $query->exists('reusable');
-        break;
-
-      case 'reusable_condition_group_false':
+      case "{$field}_condition_group_false":
         $group = $query->andConditionGroup()
-          ->condition("reusable", 0)
+          ->notExists($field)
           ->exists('type');
         $query->condition($group);
         break;
 
-      case 'reusable_condition_group_true':
+      case "{$field}_condition_group_true":
         $group = $query->andConditionGroup()
-          ->condition("reusable", 1)
+          ->exists($field)
           ->exists('type');
         $query->condition($group);
         break;
 
-      case 'reusable_condition_nested_group_false':
+      case "{$field}_condition_nested_group_false":
         $query->exists('type');
         $sub_group = $query->andConditionGroup()
-          ->condition("reusable", 0)
+          ->notExists($field)
           ->exists('type');
         $group = $query->andConditionGroup()
           ->exists('type')
@@ -65,10 +67,10 @@ class TestSelection extends DefaultSelection {
         $query->condition($group);
         break;
 
-      case 'reusable_condition_nested_group_true':
+      case "{$field}_condition_nested_group_true":
         $query->exists('type');
         $sub_group = $query->andConditionGroup()
-          ->condition("reusable", 1)
+          ->exists($field)
           ->exists('type');
         $group = $query->andConditionGroup()
           ->exists('type')
