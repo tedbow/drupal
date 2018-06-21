@@ -404,12 +404,15 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     // Remove block from override.
     // Currently revisions are not actually created so this check will not pass.
     // @see https://www.drupal.org/node/2937199
-    /*$this->removeInlineBlockFromLayout();
+    // @todo Uncomment this portion when fixed.
+    /*
+    $this->removeInlineBlockFromLayout();
     $this->assertSaveLayout();
     $cron->run();
     // Ensure entity block is not deleted because it is needed in revision.
     $this->assertNotEmpty($this->blockStorage->load($node_1_block_id));
-    $this->assertCount(2, $this->blockStorage->loadMultiple());*/
+    $this->assertCount(2, $this->blockStorage->loadMultiple());
+    */
 
     // Ensure entity block is deleted when node is deleted.
     $this->drupalGet('node/1/delete');
