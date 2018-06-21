@@ -119,7 +119,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
-    if (empty($this->get('parent_entity_id')->value) || (isset($this->original) && empty($this->original->get('parent_entity_id')->value))) {
+    if (empty($this->get('parent_entity_type')->value) || (isset($this->original) && empty($this->original->get('parent_entity_type')->value))) {
       static::invalidateBlockPluginCache();
     }
   }
@@ -210,6 +210,8 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
       ->setTranslatable(TRUE)
       ->setRevisionable(TRUE);
 
+    // @todo Is there a core issue to add
+    //   https://www.drupal.org/project/dynamic_entity_reference
     $fields['parent_entity_type'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Parent entity type'))
       ->setDescription(t('The parent entity type.'))
@@ -348,6 +350,8 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    * {@inheritdoc}
    */
   public function hasParentEntity() {
-    return !empty($this->get('parent_entity_type')->value) && !empty($this->get('parent_entity_id')->value);
+    // If either parent field value is set then the block is considered to have
+    // a parent.
+    return !empty($this->get('parent_entity_type')->value) || !empty($this->get('parent_entity_id')->value);
   }
 }
