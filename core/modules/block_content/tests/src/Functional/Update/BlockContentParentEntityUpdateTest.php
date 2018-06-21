@@ -100,7 +100,6 @@ class BlockContentParentEntityUpdateTest extends UpdatePathTestBase {
 
     // Ensure the Custom Block view shows the blocks without parents only.
     $this->drupalGet('admin/structure/block/block-content');
-    file_put_contents('/Users/ted.bowman/Sites/www/test.html', $this->getSession()->getPage()->getOuterHtml());
     $assert_session->statusCodeEquals('200');
     $assert_session->responseContains('view-id-block_content');
     $assert_session->pageTextContains($after_block1->label());
