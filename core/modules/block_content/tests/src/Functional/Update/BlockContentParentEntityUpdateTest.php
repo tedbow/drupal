@@ -44,12 +44,21 @@ class BlockContentParentEntityUpdateTest extends UpdatePathTestBase {
     // Run updates.
     $this->runUpdates();
 
-    // Check that the field exists and is configured correctly.
+    // Check that the 'parent_entity_type' field exists and is configured
+    // correctly.
     $parent_type_field = $entity_definition_update_manager->getFieldStorageDefinition('parent_entity_type', 'block_content');
     $this->assertEquals('Parent entity type', $parent_type_field->getLabel());
     $this->assertEquals('The parent entity type.', $parent_type_field->getDescription());
     $this->assertEquals(FALSE, $parent_type_field->isRevisionable());
     $this->assertEquals(FALSE, $parent_type_field->isTranslatable());
+
+    // Check that the 'parent_entity_id' field exists and is configured
+    // correctly.
+    $parent_id_field = $entity_definition_update_manager->getFieldStorageDefinition('parent_entity_id', 'block_content');
+    $this->assertEquals('Parent ID', $parent_id_field->getLabel());
+    $this->assertEquals('The parent entity ID.', $parent_id_field->getDescription());
+    $this->assertEquals(FALSE, $parent_id_field->isRevisionable());
+    $this->assertEquals(FALSE, $parent_id_field->isTranslatable());
 
     $after_block1 = BlockContent::create([
       'info' => 'After update block1',

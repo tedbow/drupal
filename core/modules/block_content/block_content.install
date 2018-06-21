@@ -164,11 +164,3 @@ function block_content_update_8600() {
 
   $update_manager->installFieldStorageDefinition('parent_entity_id', 'block_content', 'block_content', $parent_entity_id);
 }
-
-
-/**
- * dfdf
- */
-function block_content_update_8601() {
-
-}
