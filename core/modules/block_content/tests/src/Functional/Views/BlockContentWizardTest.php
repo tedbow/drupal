@@ -44,7 +44,7 @@ class BlockContentWizardTest extends BlockContentTestBase {
     $display_options = $view->getDisplay('default')['display_options'];
 
     $this->assertEquals('block_content', $display_options['filters']['has_parent']['entity_type']);
-    $this->assertEquals('parent_entity_id', $display_options['filters']['has_parent']['entity_field']);
+    $this->assertEquals('parent_entity_type', $display_options['filters']['has_parent']['entity_field']);
     $this->assertEquals('boolean_string', $display_options['filters']['has_parent']['plugin_id']);
     $this->assertEquals('0', $display_options['filters']['has_parent']['value']);
   }

@@ -29,8 +29,8 @@ class BlockContentViewsData extends EntityViewsData {
         'id' => 'boolean_string',
         'accept_null' => TRUE,
       ],
-      'entity field' => 'parent_entity_id',
-      'real field' => 'parent_entity_id',
+      'entity field' => 'parent_entity_type',
+      'real field' => 'parent_entity_type',
     ];
 
     $data['block_content_field_data']['type']['field']['id'] = 'field';
