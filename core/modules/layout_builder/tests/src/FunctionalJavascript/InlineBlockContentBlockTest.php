@@ -412,7 +412,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     // Ensure entity block is not deleted because it is needed in revision.
     $this->assertNotEmpty($this->blockStorage->load($node_1_block_id));
     $this->assertCount(2, $this->blockStorage->loadMultiple());
-    */
+     */
 
     // Ensure entity block is deleted when node is deleted.
     $this->drupalGet('node/1/delete');
