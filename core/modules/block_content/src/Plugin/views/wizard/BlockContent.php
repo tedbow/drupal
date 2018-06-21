@@ -28,7 +28,7 @@ class BlockContent extends WizardPluginBase {
       'operator' => '=',
       'value' => '0',
       'entity_type' => $this->entityTypeId,
-      'entity_field' => 'parent_entity_id',
+      'entity_field' => 'parent_entity_type',
     ];
     return $filters;
   }
