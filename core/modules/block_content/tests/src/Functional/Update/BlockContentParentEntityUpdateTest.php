@@ -159,7 +159,6 @@ class BlockContentParentEntityUpdateTest extends UpdatePathTestBase {
 
     $this->drupalGet('block/' . $block_with_parent->id());
     $assert_session->statusCodeEquals('403');
-
   }
 
 }
