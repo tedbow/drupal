@@ -131,8 +131,8 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
     parent::postDelete($storage, $entities);
     /** @var \Drupal\block_content\BlockContentInterface $block */
     foreach ($entities as $block) {
-      if (empty($block->get('parent_entity_id'))) {
-        // If any deleted blocks do not have a parent id clear the block cache.
+      if (!$block->hasParentEntity()) {
+        // If any deleted blocks do not have a parent ID clear the block cache.
         static::invalidateBlockPluginCache();
         return;
       }
@@ -215,16 +215,16 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
       ->setDescription(t('The parent entity type.'))
       ->setTranslatable(FALSE)
       ->setRevisionable(FALSE)
-      ->setDefaultValue('')
-      ->setInitialValue('');
+      ->setDefaultValue(NULL)
+      ->setInitialValue(NULL);
 
     $fields['parent_entity_id'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Parent ID'))
       ->setDescription(t('The parent entity ID.'))
       ->setTranslatable(FALSE)
       ->setRevisionable(FALSE)
-      ->setDefaultValue('')
-      ->setInitialValue('');
+      ->setDefaultValue(NULL)
+      ->setInitialValue(NULL);
 
     return $fields;
   }
