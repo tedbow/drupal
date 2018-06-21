@@ -3,8 +3,6 @@
 namespace Drupal\layout_builder\Plugin\Block;
 
 use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\Access\AccessDependentInterface;
-use Drupal\Core\Access\AccessDependentTrait;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
@@ -223,7 +221,6 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
       else {
         $this->blockContent = $this->entityTypeManager->getStorage('block_content')->create([
           'type' => $this->getDerivativeId(),
-          'reusable' => FALSE,
         ]);
       }
     }
