@@ -2,7 +2,6 @@
 
 namespace Drupal\block_content;
 
-use Drupal\Core\Access\AccessDependentInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityInterface;
