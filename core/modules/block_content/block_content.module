@@ -132,7 +132,7 @@ function block_content_query_entity_reference_alter(AlterableInterface $query) {
     $data_table = \Drupal::entityTypeManager()->getDefinition('block_content')->getDataTable();
     if (array_key_exists($data_table, $query->getTables()) && !_block_content_has_parent_entity_condition($query->conditions())) {
       // If no parent entity condition create a condition.
-      $query->isNull("$data_table.parent_entity_id");
+      $query->isNull("$data_table.parent_entity_type");
     }
   }
 }
