@@ -354,4 +354,5 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
     // a parent.
     return !empty($this->get('parent_entity_type')->value) || !empty($this->get('parent_entity_id')->value);
   }
+
 }
