@@ -111,9 +111,9 @@ class EntityOperations implements ContainerInjectionInterface {
   public function handleEntityDelete(EntityInterface $entity) {
     if ($this->isStorageAvailable() && $this->isLayoutCompatibleEntity($entity)) {
       if (!$this->isUsingDataTables($entity->getEntityTypeId())) {
-        // If either entity type does not have a data table we cannot find
-        // unused blocks in '::removeUnused()'.
-        // @see ::getUnusedBlockIdsForEntityWithDataTable
+        // If either entity type does not have a data table we need to remove
+        // 'parent_entity_id' so that we are able to find the entities to delete
+        // in ::getUnused().
         $block_storage = $this->entityTypeManager->getStorage('block_content');
         $query = $block_storage->getQuery();
         $query->condition('parent_entity_id', $entity->id());
@@ -366,6 +366,9 @@ class EntityOperations implements ContainerInjectionInterface {
           $new_block_ids = $this->getUnusedBlockIdsForEntityWithDataTable($limit - count($block_ids), $definition);
         }
         else {
+          // For parent entity types that don't use a datatable we remove
+          // 'parent_entity_id' on entity delete.
+          // @see ::handleEntityDelete()
           $block_query = $this->entityTypeManager->getStorage('block_content')->getQuery();
           $block_query->condition('parent_entity_type', $definition->id());
           $block_query->notExists('parent_entity_id');
