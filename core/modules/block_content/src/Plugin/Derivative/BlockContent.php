@@ -47,7 +47,7 @@ class BlockContent extends DeriverBase implements ContainerDeriverInterface {
     $block_contents = $this->blockContentStorage->loadMultiple($block_ids);
     // Reset the discovered definitions.
     $this->derivatives = [];
-    /** @var $block_content \Drupal\block_content\Entity\BlockContent */
+    /* @var $block_content \Drupal\block_content\Entity\BlockContent */
     foreach ($block_contents as $block_content) {
       $this->derivatives[$block_content->uuid()] = $base_plugin_definition;
       $this->derivatives[$block_content->uuid()]['admin_label'] = $block_content->label();
