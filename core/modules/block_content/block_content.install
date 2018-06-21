@@ -149,8 +149,8 @@ function block_content_update_8600() {
     ->setDescription(t('The parent entity type.'))
     ->setTranslatable(FALSE)
     ->setRevisionable(FALSE)
-    ->setDefaultValue('')
-    ->setInitialValue('');
+    ->setDefaultValue(NULL)
+    ->setInitialValue(NULL);
 
   $update_manager->installFieldStorageDefinition('parent_entity_type', 'block_content', 'block_content', $parent_entity_type);
 
@@ -159,8 +159,8 @@ function block_content_update_8600() {
     ->setDescription(t('The parent entity ID.'))
     ->setTranslatable(FALSE)
     ->setRevisionable(FALSE)
-    ->setDefaultValue('')
-    ->setInitialValue('');
+    ->setDefaultValue(NULL)
+    ->setInitialValue(NULL);
 
   $update_manager->installFieldStorageDefinition('parent_entity_id', 'block_content', 'block_content', $parent_entity_id);
 }
