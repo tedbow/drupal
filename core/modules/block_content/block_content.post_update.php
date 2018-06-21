@@ -31,7 +31,7 @@ function block_content_post_update_add_views_parent_filter() {
           ->set("$base.field", "has_parent")
           ->set("$base.value", '0')
           ->set("$base.entity_type", "block_content")
-          ->set("$base.entity_field", "parent_entity_id");
+          ->set("$base.entity_field", "parent_entity_type");
       }
     }
     $view->save();
