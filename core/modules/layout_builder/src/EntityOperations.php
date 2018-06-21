@@ -6,6 +6,7 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\RevisionableInterface;
@@ -102,13 +103,17 @@ class EntityOperations implements ContainerInjectionInterface {
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The parent entity.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function handleEntityDelete(EntityInterface $entity) {
     if ($this->isStorageAvailable() && $this->isLayoutCompatibleEntity($entity)) {
-      $entity_type = $this->entityTypeManager->getDefinition($entity->getEntityTypeId());
-      if (!$entity_type->getDataTable()) {
-        // If the entity type does not have a data table we cannot find unused
-        // blocks on cron.
+      if (!$this->isUsingDataTables($entity->getEntityTypeId())) {
+        // If either entity type does not have a data table we cannot find
+        // unused blocks in '::removeUnused()'.
+        // @see ::getUnusedBlockIdsForEntityWithDataTable
         $block_storage = $this->entityTypeManager->getStorage('block_content');
         $query = $block_storage->getQuery();
         $query->condition('parent_entity_id', $entity->id());
@@ -278,6 +283,8 @@ class EntityOperations implements ContainerInjectionInterface {
    * @param int $limit
    *   The maximum number of block content entities to remove.
    *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function removeUnused($limit = 100) {
@@ -347,47 +354,86 @@ class EntityOperations implements ContainerInjectionInterface {
    *
    * @return int[]
    *   The block IDs.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function getUnused($limit) {
-    $block_type_definition = $this->entityTypeManager->getDefinition('block_content');
-    $data_table = $block_type_definition->getDataTable();
-    $query = Database::getConnection()->select($data_table);
-    $query->distinct(TRUE);
-    $query->isNotNull('parent_entity_type');
-    $query->fields($data_table, ['parent_entity_type']);
-    $parent_entity_types = $query->execute()->fetchCol();
-    $block_id_key = $block_type_definition->getKey('id');
     $block_ids = [];
-    foreach ($parent_entity_types as $parent_entity_type) {
-      $parent_type_definition = $this->entityTypeManager->getDefinition($parent_entity_type);
-      if ($parent_data_table = $parent_type_definition->getDataTable()) {
-        $sub_query = Database::getConnection()->select($parent_data_table, 'parent');
-        $parent_id_key = $parent_type_definition->getKey('id');
-        $sub_query->fields('parent', [$parent_id_key]);
-        $sub_query->where("blocks.parent_entity_id = parent.$parent_id_key");
+    foreach ($this->entityTypeManager->getDefinitions() as $definition) {
+      if ($this->entityTypeSupportsLayouts($definition)) {
+        if ($this->isUsingDataTables($definition->id())) {
+          $new_block_ids = $this->getUnusedBlockIdsForEntityWithDataTable($limit - count($block_ids), $definition);
+        }
+        else {
+          $block_query = $this->entityTypeManager->getStorage('block_content')->getQuery();
+          $block_query->condition('parent_entity_type', $definition->id());
+          $block_query->notExists('parent_entity_id');
+          $block_query->range(0, $limit - count($block_ids));
+          $new_block_ids = $block_query->execute();
+        }
+        $block_ids = array_merge($block_ids, $new_block_ids);
+        if (count($block_ids) >= $limit) {
+          break;
+        }
+      }
 
-        $query = Database::getConnection()->select($data_table, 'blocks');
-        $query->fields('blocks', [$block_id_key]);
-        $query->isNotNull('parent_entity_id');
-        $query->condition('parent_entity_type', $parent_entity_type);
-        $query->notExists($sub_query);
-        $query->range(0, $limit - count($block_ids));
-        $new_block_ids = $query->execute()->fetchCol();
-      }
-      else {
-        // @todo Handle parent types with no data table.
-        $block_query = $this->entityTypeManager->getStorage('block_content')->getQuery();
-        $block_query->condition('parent_entity_type', $parent_entity_type);
-        $block_query->notExists('parent_entity_id');
-        $block_query->range(0, $limit - count($block_ids));
-        $new_block_ids = $block_query->execute();
-      }
-      $block_ids = array_merge($block_ids, $new_block_ids);
-      if (count($block_ids) > 50) {
-        break;
-      }
     }
     return $block_ids;
+  }
+
+  /**
+   * Gets the unused block IDs for an entity type using a datatable.
+   *
+   * @param int $limit
+   *   The limit of number of block IDs to retrieve.
+   * @param \Drupal\Core\Entity\EntityTypeInterface $parent_type_definition
+   *   The parent entity type definition.
+   *
+   * @return int[]
+   *   The block IDs.
+   */
+  protected function getUnusedBlockIdsForEntityWithDataTable($limit, EntityTypeInterface $parent_type_definition) {
+    $block_type_definition = $this->entityTypeManager->getDefinition('block_content');
+    $sub_query = Database::getConnection()
+      ->select($parent_type_definition->getDataTable(), 'parent');
+    $parent_id_key = $parent_type_definition->getKey('id');
+    $sub_query->fields('parent', [$parent_id_key]);
+    $sub_query->where("blocks.parent_entity_id = parent.$parent_id_key");
+
+    $query = Database::getConnection()->select($block_type_definition->getDataTable(), 'blocks');
+    $query->fields('blocks', [$block_type_definition->getKey('id')]);
+    $query->isNotNull('parent_entity_id');
+    $query->condition('parent_entity_type', $parent_type_definition->id());
+    $query->notExists($sub_query);
+    $query->range(0, $limit);
+    return $query->execute()->fetchCol();
+  }
+
+  /**
+   * Determines if parent entity and 'block_content' type are using datatables.
+   *
+   * @param string $parent_entity_type_id
+   *   The parent entity type.
+   *
+   * @return bool
+   *   TRUE if the parent entity and 'block_content' are using datatables.
+   */
+  protected function isUsingDataTables($parent_entity_type_id) {
+    return $this->entityTypeManager->getDefinition($parent_entity_type_id)->getDataTable() && $this->entityTypeManager->getDefinition('block_content')->getDataTable();
+  }
+
+  /**
+   * Checks if the entity type supports layouts.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $definition
+   *   The entity type definition.
+   *
+   * @return bool
+   *   TRUE if the entity type supports layouts.
+   */
+  protected function entityTypeSupportsLayouts(EntityTypeInterface $definition) {
+    return $definition->id() === 'entity_view_display' || array_search(FieldableEntityInterface::class, class_implements($definition->getClass())) !== FALSE;
   }
 
 }

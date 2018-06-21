@@ -43,7 +43,7 @@ class BlockContent extends DeriverBase implements ContainerDeriverInterface {
    * {@inheritdoc}
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
-    $block_ids = $this->blockContentStorage->getQuery()->notExists('parent_entity_id')->execute();
+    $block_ids = $this->blockContentStorage->getQuery()->notExists('parent_entity_type')->execute();
     $block_contents = $this->blockContentStorage->loadMultiple($block_ids);
     // Reset the discovered definitions.
     $this->derivatives = [];
