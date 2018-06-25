@@ -28,11 +28,11 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
     /** @var \Drupal\block_content\BlockContentInterface $entity */
     if ($entity->hasParentEntity()) {
       if ($parent_entity = $entity->getParentEntity()) {
-        $access = $access->andIf($parent_entity->access($operation, $account, TRUE))->addCacheableDependency($entity);
+        $access = $access->andIf($parent_entity->access($operation, $account, TRUE));
       }
       else {
         // The entity has a parent but it was not able to be loaded.
-        return AccessResult::forbidden('Parent entity not available.')->addCacheableDependency($entity);
+        $access = $access->andIf(AccessResult::forbidden('Parent entity not available.'));
       }
     }
     return $access;
