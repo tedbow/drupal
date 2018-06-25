@@ -41,8 +41,23 @@ class BlockContentParentEntityUpdateTest extends UpdatePathTestBase {
     // 'info' field.
     $this->container->get('module_installer')->install(['block_content_view_override']);
 
+    // Ensure that parent entity fields are not present before updates.
+    $this->assertEmpty($entity_definition_update_manager->getFieldStorageDefinition('parent_entity_type', 'block_content'));
+    $this->assertEmpty($entity_definition_update_manager->getFieldStorageDefinition('parent_entity_id', 'block_content'));
+
+    // Ensure that 'has_parent' filter is not present before updates.
+    $view_config = \Drupal::configFactory()->get('views.view.block_content');
+    $this->assertFalse($view_config->isNew());
+    $this->assertEmpty($view_config->get('display.default.display_options.filters.has_parent'));
+    $this->assertEmpty($view_config->get('display.page_2.display_options.filters.has_parent'));
     // Run updates.
     $this->runUpdates();
+
+    // Ensure that 'has_parent' filter is present after updates.
+    \Drupal::configFactory()->clearStaticCache();
+    $view_config = \Drupal::configFactory()->get('views.view.block_content');
+    $this->assertNotEmpty($view_config->get('display.default.display_options.filters.has_parent'));
+    $this->assertNotEmpty($view_config->get('display.page_2.display_options.filters.has_parent'));
 
     // Check that the 'parent_entity_type' field exists and is configured
     // correctly.
