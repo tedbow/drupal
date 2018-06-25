@@ -12,7 +12,7 @@ use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Database\Query\AlterableInterface;
 use Drupal\Core\Database\Query\ConditionInterface;
-use Drupal\block_content\EntityOperations;
+use Drupal\block_content\BlockContentWithParentDeleter;
 
 /**
  * Implements hook_help().
@@ -179,16 +179,16 @@ function _block_content_has_parent_entity_condition(array $condition) {
  * Implements hook_entity_delete().
  */
 function block_content_entity_delete(EntityInterface $entity) {
-  /** @var \Drupal\block_content\EntityOperations $entity_operations */
-  $entity_operations = \Drupal::service('class_resolver')->getInstanceFromDefinition(EntityOperations::class);
-  $entity_operations->handleEntityDelete($entity);
+  /** @var \Drupal\block_content\BlockContentWithParentDeleter $block_deleter */
+  $block_deleter = \Drupal::service('class_resolver')->getInstanceFromDefinition(BlockContentWithParentDeleter::class);
+  $block_deleter->handleEntityDelete($entity);
 }
 
 /**
  * Implements hook_cron().
  */
 function block_content_cron() {
-  /** @var \Drupal\block_content\EntityOperations $entity_operations */
-  $entity_operations = \Drupal::service('class_resolver')->getInstanceFromDefinition(EntityOperations::class);
-  $entity_operations->removeUnused();
+  /** @var \Drupal\block_content\BlockContentWithParentDeleter $block_deleter */
+  $block_deleter = \Drupal::service('class_resolver')->getInstanceFromDefinition(BlockContentWithParentDeleter::class);
+  $block_deleter->removeUnused();
 }
