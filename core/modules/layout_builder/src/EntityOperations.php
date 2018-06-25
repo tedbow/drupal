@@ -130,7 +130,7 @@ class EntityOperations implements ContainerInjectionInterface {
    * @throws \Drupal\Core\Entity\EntityStorageException
    * @throws \Exception
    */
-  public function       handlePreSave(EntityInterface $entity) {
+  public function handlePreSave(EntityInterface $entity) {
     if (!$this->isLayoutCompatibleEntity($entity)) {
       return;
     }
