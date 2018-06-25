@@ -10,7 +10,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Defines a class for deleting 'block_entity' when parents deleted.
+ * A class for deleting 'block_content' entities when parents are deleted.
  *
  * @internal
  */
@@ -67,11 +67,11 @@ class BlockContentWithParentDeleter implements ContainerInjectionInterface {
     if (!$this->isUsingDataTables($entity->getEntityTypeId())) {
       // If either entity type does not have a data table we need to remove
       // 'parent_entity_id' so that we are able to find the entities to delete
-      // in ::getUnused(). We can not delete the actuall entities here because
+      // in ::getUnused(). We can not delete the actual entities here because
       // it may take too long in a single request. Also the 'block_content'
-      // entities may also have layout overrides that have their own inline
-      // block entities. Therefore deleting the block entities here could
-      // trigger a cascade delete.
+      // entities may also be parents are other 'block_content' entities.
+      // Therefore deleting the block entities here could trigger a cascade
+      // delete.
       $block_storage = $this->entityTypeManager->getStorage('block_content');
       $query = $block_storage->getQuery();
       $query->condition('parent_entity_id', $entity->id());
