@@ -9,6 +9,10 @@ use Drupal\user\Entity\User;
 
 /**
  * Tests that 'block_content' entities are delete if their parent is deleted.
+ *
+ * @see \Drupal\block_content\BlockContentWithParentDeleter
+ *
+ * @group block_content
  */
 class BlockContentParentDeleteTest extends KernelTestBase {
   /**
