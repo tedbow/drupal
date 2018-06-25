@@ -10,11 +10,11 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Defines a class for reacting to entity events.
+ * Defines a class for deleting 'block_entity' when parents deleted.
  *
  * @internal
  */
-class EntityOperations implements ContainerInjectionInterface {
+class BlockContentWithParentDeleter implements ContainerInjectionInterface {
 
   /**
    * The block storage.
@@ -31,7 +31,7 @@ class EntityOperations implements ContainerInjectionInterface {
   protected $entityTypeManager;
 
   /**
-   * Constructs a new  EntityOperations object.
+   * Constructs a new  BlockContentWithParentDeleter object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
