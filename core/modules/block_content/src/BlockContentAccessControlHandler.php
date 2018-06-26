@@ -3,16 +3,50 @@
 namespace Drupal\block_content;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Session\AccountInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Defines the access control handler for the custom block entity type.
  *
  * @see \Drupal\block_content\Entity\BlockContent
  */
-class BlockContentAccessControlHandler extends EntityAccessControlHandler {
+class BlockContentAccessControlHandler extends EntityAccessControlHandler implements EntityHandlerInterface {
+
+  /**
+   * The database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
+
+  /**
+   * Constructs a BlockContentAccessControlHandler instance.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
+   */
+  public function __construct(EntityTypeInterface $entity_type, Connection $database) {
+    parent::__construct($entity_type);
+    $this->database = $database;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+    return new static(
+      $entity_type,
+      $container->get('database')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -27,15 +61,41 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
     }
     /** @var \Drupal\block_content\BlockContentInterface $entity */
     if ($entity->hasParentEntity()) {
-      if ($parent_entity = $entity->getParentEntity()) {
-        $access = $access->andIf($parent_entity->access($operation, $account, TRUE));
+      if ($this->isParentDeleted($entity)) {
+        // If the blocks parent has been deleted then access is forbidden. This
+        // must be checked before loading the parent entity because if the
+        // parent entity type allows arbitrary IDs then the entity type ID could
+        // be reused after the original parent entity was deleted.
+        $access = $access->andIf(AccessResult::forbidden('The parent entity has been deleted.'));
       }
       else {
-        // The entity has a parent but it was not able to be loaded.
-        $access = $access->andIf(AccessResult::forbidden('Parent entity not available.'));
+        if ($parent_entity = $entity->getParentEntity()) {
+          $access = $access->andIf($parent_entity->access($operation, $account, TRUE));
+        }
+        else {
+          // The entity has a parent but it was not able to be loaded.
+          $access = $access->andIf(AccessResult::forbidden('Parent entity not available.'));
+        }
       }
     }
     return $access;
+  }
+
+  /**
+   * Checks if blocks parent has been deleted.
+   *
+   * @param \Drupal\block_content\BlockContentInterface $block
+   *   The block content entity.
+   *
+   * @return bool
+   *   TRUE if the 'block_content' entity parent entity has been deleted
+   *   otherwise FALSE.
+   */
+  protected function isParentDeleted(BlockContentInterface $block) {
+    $query = $this->database->select('block_content_delete')
+      ->fields('block_content_delete', ['block_content_id']);
+    $query->condition('block_content_id', $block->id());
+    return !empty($query->execute()->rowCount());
   }
 
 }
