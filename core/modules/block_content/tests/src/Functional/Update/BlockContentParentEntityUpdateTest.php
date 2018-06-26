@@ -4,7 +4,6 @@ namespace Drupal\Tests\block_content\Functional\Update;
 
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\FunctionalTests\Update\UpdatePathTestBase;
-use Drupal\views\Entity\View;
 
 /**
  * Tests entity parent fields update functions for the Block Content module.
