@@ -33,7 +33,7 @@ class BlockContentParentEntityUpdateTest extends UpdatePathTestBase {
     $entity_definition_update_manager = \Drupal::entityDefinitionUpdateManager();
 
     // Delete custom block library view.
-    View::load('block_content')->delete();
+    $this->config('views.view.block_content')->delete();
     // Install the test module with the 'block_content' view with an extra
     // display with overridden filters. This extra display should also have the
     // 'has_parent' filter added so that it does not expose fields with parents
