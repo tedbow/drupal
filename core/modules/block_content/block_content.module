@@ -179,16 +179,16 @@ function _block_content_has_parent_entity_condition(array $condition) {
  * Implements hook_entity_delete().
  */
 function block_content_entity_delete(EntityInterface $entity) {
-  /** @var \Drupal\block_content\BlockContentWithParentDeleter $block_deleter */
-  $block_deleter = \Drupal::service('class_resolver')->getInstanceFromDefinition(BlockContentWithParentDeleter::class);
-  $block_deleter->handleEntityDelete($entity);
+  /** @var \Drupal\block_content\BlockContentStorageInterface $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $storage->setParentStatus($entity->getEntityTypeId(), $entity->id(), \Drupal\block_content\BlockContentInterface::PARENT_DELETED);
 }
 
 /**
  * Implements hook_cron().
  */
 function block_content_cron() {
-  /** @var \Drupal\block_content\BlockContentWithParentDeleter $block_deleter */
-  $block_deleter = \Drupal::service('class_resolver')->getInstanceFromDefinition(BlockContentWithParentDeleter::class);
-  $block_deleter->removeUnused();
+  /** @var \Drupal\block_content\BlockContentStorageInterface $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $storage->deleteBlocksWithParentDeleted();
 }

@@ -41,7 +41,6 @@ class BlockContentParentDeleteTest extends KernelTestBase {
     $this->installSchema('system', ['sequence']);
     $this->installSchema('system', ['sequences']);
     $this->installSchema('user', ['users_data']);
-    $this->installSchema('block_content', ['block_content_delete']);
     $this->installEntitySchema('user');
     $this->installEntitySchema('block_content');
 
@@ -98,7 +97,7 @@ class BlockContentParentDeleteTest extends KernelTestBase {
     $this->assertNotEmpty($block_storage->load($block_content->id()));
     $this->assertEmpty($block_storage->load($block_content_with_parent->id()));
 
-    // Test a parent entity type without a datatable.
+    // Test a parent config entity type.
     $config_entity = $this->entityTypeManager->getStorage('config_test')->create([
       'id' => 'test_entity',
       'label' => 'Test config entity',

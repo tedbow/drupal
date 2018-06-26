@@ -61,7 +61,7 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler implem
     }
     /** @var \Drupal\block_content\BlockContentInterface $entity */
     if ($entity->hasParentEntity()) {
-      if ($this->isParentDeleted($entity)) {
+      if ($entity->get('parent_status')->value === BlockContentInterface::PARENT_DELETED) {
         // If the blocks parent has been deleted then access is forbidden. This
         // must be checked before loading the parent entity because if the
         // parent entity type allows arbitrary IDs then the entity type ID could
@@ -79,23 +79,6 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler implem
       }
     }
     return $access;
-  }
-
-  /**
-   * Checks if blocks parent has been deleted.
-   *
-   * @param \Drupal\block_content\BlockContentInterface $block
-   *   The block content entity.
-   *
-   * @return bool
-   *   TRUE if the 'block_content' entity parent entity has been deleted
-   *   otherwise FALSE.
-   */
-  protected function isParentDeleted(BlockContentInterface $block) {
-    $query = $this->database->select('block_content_delete')
-      ->fields('block_content_delete', ['block_content_id']);
-    $query->condition('block_content_id', $block->id());
-    return !empty($query->execute()->fetchCol());
   }
 
 }
