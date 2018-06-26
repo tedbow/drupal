@@ -3,50 +3,16 @@
 namespace Drupal\block_content;
 
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Database\Connection;
-use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Session\AccountInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Defines the access control handler for the custom block entity type.
  *
  * @see \Drupal\block_content\Entity\BlockContent
  */
-class BlockContentAccessControlHandler extends EntityAccessControlHandler implements EntityHandlerInterface {
-
-  /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
-   * Constructs a BlockContentAccessControlHandler instance.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database connection.
-   */
-  public function __construct(EntityTypeInterface $entity_type, Connection $database) {
-    parent::__construct($entity_type);
-    $this->database = $database;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    return new static(
-      $entity_type,
-      $container->get('database')
-    );
-  }
+class BlockContentAccessControlHandler extends EntityAccessControlHandler {
 
   /**
    * {@inheritdoc}
