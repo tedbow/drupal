@@ -5,6 +5,7 @@
  * Allows the creation of custom blocks through the user interface.
  */
 
+use Drupal\block_content\BlockContentInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\field\Entity\FieldConfig;
@@ -180,7 +181,7 @@ function _block_content_has_parent_entity_condition(array $condition) {
 function block_content_entity_delete(EntityInterface $entity) {
   /** @var \Drupal\block_content\BlockContentStorageInterface $storage */
   $storage = \Drupal::entityTypeManager()->getStorage('block_content');
-  $storage->setParentStatus($entity->getEntityTypeId(), $entity->id(), \Drupal\block_content\BlockContentInterface::PARENT_DELETED);
+  $storage->setParentStatus($entity->getEntityTypeId(), $entity->id(), BlockContentInterface::PARENT_DELETED);
 }
 
 /**
