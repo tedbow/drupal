@@ -95,7 +95,7 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler implem
     $query = $this->database->select('block_content_delete')
       ->fields('block_content_delete', ['block_content_id']);
     $query->condition('block_content_id', $block->id());
-    return !empty($query->execute()->rowCount());
+    return !empty($query->execute()->fetchCol());
   }
 
 }
