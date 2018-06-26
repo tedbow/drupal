@@ -34,4 +34,5 @@ class BlockContentStorage extends SqlContentEntityStorage implements BlockConten
     $blocks = $this->loadMultiple($query->execute());
     $this->delete($blocks);
   }
+
 }
