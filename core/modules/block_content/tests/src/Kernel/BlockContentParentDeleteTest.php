@@ -41,6 +41,7 @@ class BlockContentParentDeleteTest extends KernelTestBase {
     $this->installSchema('system', ['sequence']);
     $this->installSchema('system', ['sequences']);
     $this->installSchema('user', ['users_data']);
+    $this->installSchema('block_content', ['block_content_delete']);
     $this->installEntitySchema('user');
     $this->installEntitySchema('block_content');
 
