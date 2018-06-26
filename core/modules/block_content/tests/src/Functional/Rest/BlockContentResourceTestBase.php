@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\block_content\Functional\Rest;
 
+use Drupal\block_content\BlockContentInterface;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\Core\Cache\Cache;
@@ -94,6 +95,11 @@ abstract class BlockContentResourceTestBase extends EntityResourceTestBase {
       ],
       'parent_entity_type' => [],
       'parent_entity_id' => [],
+      'parent_status' => [
+        [
+          'value' => BlockContentInterface::PARENT_NONE,
+        ],
+      ],
       'type' => [
         [
           'target_id' => 'basic',

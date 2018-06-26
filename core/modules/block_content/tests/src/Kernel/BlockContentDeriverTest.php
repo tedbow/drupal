@@ -68,6 +68,13 @@ class BlockContentDeriverTest extends KernelTestBase {
     // Ensure the block content with a parent is not provided a derivative block
     // plugin.
     $this->assertFalse($block_manager->hasDefinition($plugin_id));
+
+    $block_content->removeParentEntity();
+    $block_content->save();
+
+    // Ensure the block content is provided a derivative block
+    // plugin after the parent is removed.
+    $this->assertTrue($block_manager->hasDefinition($plugin_id));
   }
 
 }
