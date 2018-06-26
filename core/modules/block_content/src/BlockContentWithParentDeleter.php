@@ -89,11 +89,15 @@ class BlockContentWithParentDeleter implements ContainerInjectionInterface {
     $query = $this->database->select('block_content_delete')
       ->range(0, $limit)
       ->fields('block_content_delete', ['block_content_id']);
-    foreach ($query->execute()->fetchCol() as $block_content_id) {
+    $block_content_ids = $query->execute()->fetchCol();
+    foreach ($block_content_ids as $block_content_id) {
       if ($block = $this->storage->load($block_content_id)) {
         $block->delete();
       }
     }
+    $this->database->delete('block_content_delete')
+      ->condition('block_content_id', $block_content_ids, 'IN')
+      ->execute();
   }
 
 }
