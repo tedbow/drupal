@@ -92,6 +92,8 @@ abstract class BlockContentResourceTestBase extends EntityResourceTestBase {
           'value' => 'en',
         ],
       ],
+      'parent_entity_type' => [],
+      'parent_entity_id' => [],
       'type' => [
         [
           'target_id' => 'basic',

@@ -4,6 +4,7 @@ namespace Drupal\block_content;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\RevisionLogInterface;
 
@@ -82,5 +83,42 @@ interface BlockContentInterface extends ContentEntityInterface, EntityChangedInt
    *   Array of Drupal\block\Core\Plugin\Entity\Block entities.
    */
   public function getInstances();
+
+  /**
+   * Sets the parent entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $parent_entity
+   *   The parent entity.
+   *
+   * @return \Drupal\block_content\BlockContentInterface
+   *   The class instance that this method is called on.
+   */
+  public function setParentEntity(EntityInterface $parent_entity);
+
+  /**
+   * Gets the parent entity.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   The parent entity or null if none exists.
+   *
+   * @todo How to deterine parent is set but no longer exists.
+   */
+  public function getParentEntity();
+
+  /**
+   * Removes the parent entity.
+   *
+   * @return \Drupal\block_content\BlockContentInterface
+   *   The class instance that this method is called on.
+   */
+  public function removeParentEntity();
+
+  /**
+   * Whether the block has a parent entity set.
+   *
+   * @return bool
+   *   TRUE if a parent entity is set, otherwise FALSE.
+   */
+  public function hasParentEntity();
 
 }

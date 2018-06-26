@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\block_content\Functional;
 
+use Drupal\block_content\Entity\BlockContent;
+
 /**
  * Tests the Views-powered listing of custom blocks.
  *
@@ -112,6 +114,19 @@ class BlockContentListViewsTest extends BlockContentTestBase {
     // Confirm that the empty text is displayed.
     $this->assertText('There are no custom blocks available.');
     $this->assertLink('custom block');
+
+    $block_content = BlockContent::create([
+      'info' => 'Block with parent',
+      'type' => 'basic',
+    ]);
+    $block_content->setParentEntity($this->loggedInUser);
+    $block_content->save();
+
+    $this->drupalGet('admin/structure/block/block-content');
+    // Confirm that the empty text is displayed.
+    $this->assertSession()->pageTextContains('There are no custom blocks available.');
+    // Confirm the Block with parent is not on the page.
+    $this->assertSession()->pageTextNotContains('Block with parent');
   }
 
 }

@@ -21,7 +21,21 @@ class BlockContentViewsData extends EntityViewsData {
     $data['block_content_field_data']['info']['field']['id'] = 'field';
     $data['block_content_field_data']['info']['field']['link_to_entity default'] = TRUE;
 
+    $data['block_content_field_data']['has_parent'] = [
+      'title' => $this->t('Has Parent'),
+      'help' => $this->t('Whether the block has a parent'),
+      'field' => ['id' => 'field'],
+      'filter' => [
+        'id' => 'boolean_string',
+        'accept_null' => TRUE,
+      ],
+      'entity field' => 'parent_entity_type',
+      'real field' => 'parent_entity_type',
+    ];
+
     $data['block_content_field_data']['type']['field']['id'] = 'field';
+
+    $data['block_content_field_data']['table']['wizard_id'] = 'block_content';
 
     $data['block_content']['block_content_listing_empty'] = [
       'title' => $this->t('Empty block library behavior'),

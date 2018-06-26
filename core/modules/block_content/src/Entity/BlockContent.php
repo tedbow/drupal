@@ -3,6 +3,7 @@
 namespace Drupal\block_content\Entity;
 
 use Drupal\Core\Entity\EditorialContentEntityBase;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -118,7 +119,9 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
-    static::invalidateBlockPluginCache();
+    if (empty($this->get('parent_entity_type')->value) || (isset($this->original) && empty($this->original->get('parent_entity_type')->value))) {
+      static::invalidateBlockPluginCache();
+    }
   }
 
   /**
@@ -126,7 +129,14 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    */
   public static function postDelete(EntityStorageInterface $storage, array $entities) {
     parent::postDelete($storage, $entities);
-    static::invalidateBlockPluginCache();
+    /** @var \Drupal\block_content\BlockContentInterface $block */
+    foreach ($entities as $block) {
+      if (!$block->hasParentEntity()) {
+        // If any deleted blocks do not have a parent ID clear the block cache.
+        static::invalidateBlockPluginCache();
+        return;
+      }
+    }
   }
 
   /**
@@ -199,6 +209,24 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
       ->setDescription(t('The time that the custom block was last edited.'))
       ->setTranslatable(TRUE)
       ->setRevisionable(TRUE);
+
+    // @todo Is there a core issue to add
+    //   https://www.drupal.org/project/dynamic_entity_reference
+    $fields['parent_entity_type'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Parent entity type'))
+      ->setDescription(t('The parent entity type.'))
+      ->setTranslatable(FALSE)
+      ->setRevisionable(FALSE)
+      ->setDefaultValue(NULL)
+      ->setInitialValue(NULL);
+
+    $fields['parent_entity_id'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Parent ID'))
+      ->setDescription(t('The parent entity ID.'))
+      ->setTranslatable(FALSE)
+      ->setRevisionable(FALSE)
+      ->setDefaultValue(NULL)
+      ->setInitialValue(NULL);
 
     return $fields;
   }
@@ -288,6 +316,43 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   protected static function invalidateBlockPluginCache() {
     // Invalidate the block cache to update custom block-based derivatives.
     \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setParentEntity(EntityInterface $parent_entity) {
+    $this->set('parent_entity_type', $parent_entity->getEntityTypeId());
+    $this->set('parent_entity_id', $parent_entity->id());
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getParentEntity() {
+    if ($this->hasParentEntity()) {
+      return \Drupal::entityTypeManager()->getStorage($this->get('parent_entity_type')->value)->load($this->get('parent_entity_id')->value);
+    }
+    return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function removeParentEntity() {
+    $this->set('parent_entity_type', NULL);
+    $this->set('parent_entity_id', NULL);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasParentEntity() {
+    // If either parent field value is set then the block is considered to have
+    // a parent.
+    return !empty($this->get('parent_entity_type')->value) || !empty($this->get('parent_entity_id')->value);
   }
 
 }
