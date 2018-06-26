@@ -8,6 +8,7 @@
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Database\Database;
+use Drupal\block_content\BlockContentInterface;
 
 /**
  * Implements hook_update_dependencies().
@@ -164,48 +165,15 @@ function block_content_update_8600() {
     ->setInitialValue(NULL);
 
   $update_manager->installFieldStorageDefinition('parent_entity_id', 'block_content', 'block_content', $parent_entity_id);
+
+  $parent_status = BaseFieldDefinition::create('integer')
+    ->setLabel(t('Parent status'))
+    ->setDescription(t('The status parent entity if any.'))
+    ->setTranslatable(FALSE)
+    ->setRevisionable(FALSE)
+    ->setDefaultValue(BlockContentInterface::PARENT_NONE)
+    ->setInitialValue(BlockContentInterface::PARENT_NONE);
+
+  $update_manager->installFieldStorageDefinition('parent_status', 'block_content', 'block_content', $parent_status);
 }
 
-/**
- * Implements hook_schema().
- */
-function block_content_schema() {
-  $schema['block_content_delete'] = [
-    'description' => 'Tracks block_content entities to delete.',
-    'fields' => [
-      'block_content_id' => [
-        'description' => 'Block Content entity ID.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ],
-    ],
-    'primary key' => ['block_content_id'],
-    'indexes' => [
-      'block_content_id' => ['block_content_id'],
-    ],
-  ];
-  return $schema;
-}
-
-/**
- * Adds 'block_content_delete' table.
- */
-function block_content_update_8601() {
-  $block_content_delete = [
-    'description' => 'Tracks block_content entities to delete.',
-    'fields' => [
-      'block_content_id' => [
-        'description' => 'Block Content entity ID.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ],
-    ],
-    'primary key' => ['block_content_id'],
-    'indexes' => [
-      'block_content_id' => ['block_content_id'],
-    ],
-  ];
-  Database::getConnection()->schema()->createTable('block_content_delete', $block_content_delete);
-}
