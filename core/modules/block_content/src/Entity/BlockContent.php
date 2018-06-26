@@ -25,7 +25,7 @@ use Drupal\user\UserInterface;
  *   ),
  *   bundle_label = @Translation("Custom block type"),
  *   handlers = {
- *     "storage" = "Drupal\Core\Entity\Sql\SqlContentEntityStorage",
+ *     "storage" = "Drupal\block_content\BlockContentStorage",
  *     "access" = "Drupal\block_content\BlockContentAccessControlHandler",
  *     "list_builder" = "Drupal\block_content\BlockContentListBuilder",
  *     "view_builder" = "Drupal\block_content\BlockContentViewBuilder",
@@ -228,6 +228,14 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
       ->setDefaultValue(NULL)
       ->setInitialValue(NULL);
 
+    $fields['parent_status'] = BaseFieldDefinition::create('integer')
+      ->setLabel(t('Parent status'))
+      ->setDescription(t('The status parent entity if any.'))
+      ->setTranslatable(FALSE)
+      ->setRevisionable(FALSE)
+      ->setDefaultValue(BlockContentInterface::PARENT_NONE)
+      ->setInitialValue(BlockContentInterface::PARENT_NONE);
+
     return $fields;
   }
 
@@ -324,6 +332,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   public function setParentEntity(EntityInterface $parent_entity) {
     $this->set('parent_entity_type', $parent_entity->getEntityTypeId());
     $this->set('parent_entity_id', $parent_entity->id());
+    $this->set('parent_status', BlockContentInterface::PARENT_ACTIVE);
     return $this;
   }
 
@@ -343,6 +352,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   public function removeParentEntity() {
     $this->set('parent_entity_type', NULL);
     $this->set('parent_entity_id', NULL);
+    $this->set('parent_status', BlockContentInterface::PARENT_NONE);
     return $this;
   }
 
