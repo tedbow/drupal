@@ -14,6 +14,21 @@ use Drupal\Core\Entity\RevisionLogInterface;
 interface BlockContentInterface extends ContentEntityInterface, EntityChangedInterface, RevisionLogInterface, EntityPublishedInterface {
 
   /**
+   * Denotes that the block has no parent.
+   */
+  const PARENT_NONE = 0;
+
+  /**
+   * Denotes that the block has an active parent.
+   */
+  const PARENT_ACTIVE = 1;
+
+  /**
+   * Denotes that the block has a parent that has been deleted.
+   */
+  const PARENT_DELETED = 2;
+
+  /**
    * Returns the block revision log message.
    *
    * @return string
