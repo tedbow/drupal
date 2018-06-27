@@ -43,6 +43,7 @@ class BlockContentParentEntityUpdateTest extends UpdatePathTestBase {
     // Ensure that parent entity fields are not present before updates.
     $this->assertEmpty($entity_definition_update_manager->getFieldStorageDefinition('parent_entity_type', 'block_content'));
     $this->assertEmpty($entity_definition_update_manager->getFieldStorageDefinition('parent_entity_id', 'block_content'));
+    $this->assertEmpty($entity_definition_update_manager->getFieldStorageDefinition('parent_status', 'block_content'));
 
     // Ensure that 'has_parent' filter is not present before updates.
     $view_config = \Drupal::configFactory()->get('views.view.block_content');
@@ -71,6 +72,14 @@ class BlockContentParentEntityUpdateTest extends UpdatePathTestBase {
     $parent_id_field = $entity_definition_update_manager->getFieldStorageDefinition('parent_entity_id', 'block_content');
     $this->assertEquals('Parent ID', $parent_id_field->getLabel());
     $this->assertEquals('The parent entity ID.', $parent_id_field->getDescription());
+    $this->assertEquals(FALSE, $parent_id_field->isRevisionable());
+    $this->assertEquals(FALSE, $parent_id_field->isTranslatable());
+
+    // Check that the 'parent_entity_id' field exists and is configured
+    // correctly.
+    $parent_id_field = $entity_definition_update_manager->getFieldStorageDefinition('parent_status', 'block_content');
+    $this->assertEquals('Parent status', $parent_id_field->getLabel());
+    $this->assertEquals('The status parent entity if any.', $parent_id_field->getDescription());
     $this->assertEquals(FALSE, $parent_id_field->isRevisionable());
     $this->assertEquals(FALSE, $parent_id_field->isTranslatable());
 
