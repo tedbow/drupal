@@ -36,19 +36,39 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
   protected $entityTypeManager;
 
   /**
+   * Test user to use as block parent.
+   *
    * @var \Drupal\user\UserInterface
    */
   protected $parentUser;
 
   /**
+   * Test block without parent.
+   *
    * @var \Drupal\block_content\BlockContentInterface
    */
-  protected $block_without_parent;
+  protected $blockWithoutParent;
 
   /**
+   * Test block with parent.
+   *
    * @var \Drupal\block_content\BlockContentInterface
    */
-  protected $block_content_with_parent;
+  protected $blockContentWithParent;
+
+  /**
+   * Test selection handler.
+   *
+   * @var \Drupal\block_content_test\Plugin\EntityReferenceSelection\TestSelection
+   */
+  protected $selectionHandler;
+
+  /**
+   * Test block expectations.
+   *
+   * @var array
+   */
+  protected $expectations;
 
   /**
    * {@inheritdoc}
@@ -76,19 +96,47 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
     $this->parentUser->save();
 
     // And block content entities with and without parents.
-    $this->block_without_parent = BlockContent::create([
+    $this->blockWithoutParent = BlockContent::create([
       'info' => 'Block no parent',
       'type' => 'spiffy',
     ]);
-    $this->block_without_parent->save();
-    $this->block_content_with_parent = BlockContent::create([
+    $this->blockWithoutParent->save();
+    $this->blockContentWithParent = BlockContent::create([
       'info' => 'Block with parent',
       'type' => 'spiffy',
     ]);
-    $this->block_content_with_parent->setParentEntity($this->parentUser);
-    $this->block_content_with_parent->save();
+    $this->blockContentWithParent->setParentEntity($this->parentUser);
+    $this->blockContentWithParent->save();
+
+    // Use \Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection
+    // class to test that getReferenceableEntities() does not get the
+    // entity wth a parent.
+    $configuration = [
+      'target_type' => 'block_content',
+      'target_bundles' => ['spiffy' => 'spiffy'],
+      'sort' => ['field' => '_none'],
+    ];
+    $this->selectionHandler = new TestSelection($configuration, '', '', $this->container->get('entity.manager'), $this->container->get('module_handler'), \Drupal::currentUser());
+
+    // Setup the 3 expectation cases.
+    $this->expectations = [
+      'both_blocks' => [
+        'spiffy' => [
+          $this->blockWithoutParent->id() => $this->blockWithoutParent->label(),
+          $this->blockContentWithParent->id() => $this->blockContentWithParent->label(),
+        ],
+      ],
+      'block_no_parent' => ['spiffy' => [$this->blockWithoutParent->id() => $this->blockWithoutParent->label()]],
+      'block_with_parent' => ['spiffy' => [$this->blockContentWithParent->id() => $this->blockContentWithParent->label()]],
+    ];
   }
 
+  /**
+   * Tests to make sure queries without the expected tags are not altered.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
   public function testQueriesNotAltered() {
     // Ensure that queries without all the tags are not altered.
     $query = $this->entityTypeManager->getStorage('block_content')->getQuery();
@@ -102,91 +150,47 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
     $query->addTag('entity_query_block_content');
     $this->assertCount(2, $query->execute());
   }
+
   /**
-   * Tests that blocks with parent are not referenceable entities.
+   * Test with no conditions are set.
    *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Exception
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testReferenceableEntities() {
-
-    // Use \Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection
-    // class to test that getReferenceableEntities() does not get the
-    // entity wth a parent.
-    $configuration = [
-      'target_type' => 'block_content',
-      'target_bundles' => ['spiffy' => 'spiffy'],
-      'sort' => ['field' => '_none'],
-    ];
-    $selection_handler = new TestSelection($configuration, '', '', $this->container->get('entity.manager'), $this->container->get('module_handler'), \Drupal::currentUser());
-    // Setup the 3 expectation cases.
-    $expectations = [
-      'both_blocks' => [
-        'spiffy' => [
-          $this->block_without_parent->id() => $this->block_without_parent->label(),
-          $this->block_content_with_parent->id() => $this->block_content_with_parent->label(),
-        ],
-      ],
-      'block_no_parent' => ['spiffy' => [$this->block_without_parent->id() => $this->block_without_parent->label()]],
-      'block_with_parent' => ['spiffy' => [$this->block_content_with_parent->id() => $this->block_content_with_parent->label()]],
-    ];
-
-
+  public function testNoConditions() {
     $this->assertEquals(
-      $expectations['block_no_parent'],
-      $selection_handler->getReferenceableEntities()
+      $this->expectations['block_no_parent'],
+      $this->selectionHandler->getReferenceableEntities()
     );
 
-    // Test various ways in which an EntityReferenceSelection plugin could set
-    // a condition on either the 'parent_entity_id' or 'parent_entity_type'
-    // fields. If the plugin has set a condition on either of these fields
-    // then 'block_content_query_entity_reference_alter()' will not set
-    // a parent condition.
-    foreach (['parent_entity_id', 'parent_entity_type', 'parent_status'] as $field) {
-      $selection_handler->setTestMode($field, 'base', FALSE);
-      $this->assertEquals(
-        $expectations['block_no_parent'],
-        $selection_handler->getReferenceableEntities()
-      );
+    $this->blockContentWithParent->removeParentEntity();
+    $this->blockContentWithParent->save();
 
-      $selection_handler->setTestMode($field, 'group', FALSE);
-      $this->assertEquals(
-        $expectations['block_no_parent'],
-        $selection_handler->getReferenceableEntities()
-      );
-
-      $selection_handler->setTestMode($field, 'group', TRUE);
-      $this->assertEquals(
-        $expectations['block_with_parent'],
-        $selection_handler->getReferenceableEntities()
-      );
-
-      $selection_handler->setTestMode($field, 'nested_group', FALSE);
-      $this->assertEquals(
-        $expectations['block_no_parent'],
-        $selection_handler->getReferenceableEntities()
-      );
-
-      $selection_handler->setTestMode($field, 'nested_group', TRUE);
-      $this->assertEquals(
-        $expectations['block_with_parent'],
-        $selection_handler->getReferenceableEntities()
-      );
-    }
-
-    $this->block_content_with_parent->removeParentEntity();
-    $this->block_content_with_parent->save();
-    // Don't use any conditions.
-    $selection_handler->setTestMode(NULL);
     // Ensure that the block is now returned as a referenceable entity.
     $this->assertEquals(
-      $expectations['both_blocks'],
-      $selection_handler->getReferenceableEntities()
+      $this->expectations['both_blocks'],
+      $this->selectionHandler->getReferenceableEntities()
     );
   }
 
-  protected function fieldConditionProvider() {
+  /**
+   * Tests that blocks with parent are not referenceable entities.
+   *
+   * @dataProvider fieldConditionProvider
+   *
+   * @throws \Exception
+   */
+  public function testFieldConditions($field, $condition_type, $has_parent) {
+    $this->selectionHandler->setTestMode($field, $condition_type, $has_parent);
+    $this->assertEquals(
+      $has_parent ? $this->expectations['block_with_parent'] : $this->expectations['block_no_parent'],
+      $this->selectionHandler->getReferenceableEntities()
+    );
+  }
+
+  /**
+   * Provides possible fields and condition types.
+   */
+  public function fieldConditionProvider() {
     $cases = [];
     foreach (['parent_entity_id', 'parent_entity_type', 'parent_status'] as $field) {
       foreach (['base', 'group', 'nested_group'] as $condition_type) {
@@ -197,10 +201,9 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
             $has_parent,
           ];
         }
-
       }
-
     }
+    return $cases;
   }
 
 }
