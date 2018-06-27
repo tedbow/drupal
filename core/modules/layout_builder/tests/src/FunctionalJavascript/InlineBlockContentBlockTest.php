@@ -35,7 +35,7 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
   /**
    * The block storage.
    *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
+   * @var \Drupal\Core\Entity\ContentEntityStorageInterface
    */
   protected $blockStorage;
 
@@ -273,14 +273,17 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
 
-    $this->drupalLogin($this->drupalCreateUser([
+    $admin_user = $this->drupalCreateUser([
       'access contextual links',
       'configure any layout',
       'administer node display',
       'administer node fields',
       'administer nodes',
       'bypass node access',
-    ]));
+    ]);
+    $this->drupalLogin($admin_user);
+
+    $regular_user = $this->drupalCreateUser(['access content']);
 
     // Enable override.
     $field_ui_prefix = 'admin/structure/types/manage/bundle_with_section_field';
@@ -291,12 +294,14 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->addInlineBlockToLayout('Block title', 'The DEFAULT block body');
     $this->assertSaveLayout();
     $this->drupalGet('node/1');
+    $block_id = $this->getLatestBlockEntityId();
+    $original_block_revision_id = $this->blockStorage->getLatestRevisionId($block_id);
 
     $assert_session->pageTextContains('The DEFAULT block body');
 
     /** @var \Drupal\node\NodeStorageInterface $node_storage */
     $node_storage = $this->container->get('entity_type.manager')->getStorage('node');
-    $original_revision_id = $node_storage->getLatestRevisionId(1);
+    $original_node_revision_id = $node_storage->getLatestRevisionId(1);
 
     // Create a new revision.
     $this->drupalGet('node/1/edit');
@@ -315,13 +320,38 @@ class InlineBlockContentBlockTest extends JavascriptTestBase {
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The NEW block body');
     $assert_session->pageTextNotContains('The DEFAULT block body');
+    $updated_block_revision_id = $this->blockStorage->getLatestRevisionId($block_id);
 
-    $revision_url = "node/1/revisions/$original_revision_id";
+    $this->assertGreaterThan($original_block_revision_id, $updated_block_revision_id);
+
+    $revision_url = "node/1/revisions/$original_node_revision_id";
 
     // Ensure viewing the previous revision shows the previous block revision.
     $this->drupalGet("$revision_url/view");
     $assert_session->pageTextContains('The DEFAULT block body');
     $assert_session->pageTextNotContains('The NEW block body');
+
+    $this->drupalLogout();
+
+    $this->drupalLogin($regular_user);
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The NEW block body');
+    $assert_session->pageTextNotContains('The DEFAULT block body');
+    $updated_block = $this->blockStorage->loadRevision($updated_block_revision_id);
+    $this->assertTrue($updated_block->access('view', $regular_user));
+
+    // Ensure the regular user can not view the previous revision of the node
+    // and can also not view the previous revision of the block that is only
+    // on that revision of the node.
+    $this->drupalGet("$revision_url/view");
+    $assert_session->statusCodeEquals(403);
+    $original_block = $this->blockStorage->loadRevision($original_block_revision_id);
+    $this->assertFalse($original_block->access('view', $regular_user));
+
+    // Login as the admin again to revert the node.
+    $this->drupalLogout();
+    $this->drupalLogin($admin_user);
+
 
     // Revert to first revision.
     $revision_url = "$revision_url/revert";
