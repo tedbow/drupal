@@ -11,22 +11,35 @@ use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
 class TestSelection extends DefaultSelection {
 
   /**
-   * The test mode.
+   * The field.
    *
    * @var string
    */
   protected $field;
 
+  /**
+   * The condition type.
+   *
+   * @var string
+   */
   protected $conditionType;
 
+  /**
+   * Whether to set the condition to set for a parent.
+   *
+   * @var bool
+   */
   protected $hasParent;
 
   /**
    * Sets the test mode.
    *
-   * @param $field
-   * @param $condition_type
-   * @param $has_parent
+   * @param string $field
+   *   Field for condition.
+   * @param string $condition_type
+   *   The condition type.
+   * @param bool $has_parent
+   *   Whether to set the condition to check for parent or not.
    */
   public function setTestMode($field = NULL, $condition_type = NULL, $has_parent = NULL) {
     $this->field = $field;
@@ -40,7 +53,6 @@ class TestSelection extends DefaultSelection {
   protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
     $query = parent::buildEntityQuery($match, $match_operator);
     if ($this->field) {
-      //print "field:$field test_case:$test_case\n";
       switch ($this->conditionType) {
         case 'base':
           $add_condition = $query;
@@ -80,7 +92,6 @@ class TestSelection extends DefaultSelection {
           $add_condition->notExists($this->field);
         }
       }
-
     }
     return $query;
   }
