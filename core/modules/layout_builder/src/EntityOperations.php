@@ -79,8 +79,10 @@ class EntityOperations implements ContainerInjectionInterface {
     if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout') && empty($sections)) {
       return;
     }
-    // If this a new revision do not remove content_block entities.
-    if ($entity instanceof RevisionableInterface && $entity->isNewRevision()) {
+    // If this is a revisionable entity then do not remove block_content
+    // entities. They could be referenced in previous revisions even if this is
+    // not a new revision.
+    if ($entity instanceof RevisionableInterface) {
       return;
     }
     $original_sections = $this->getEntitySections($entity->original);
