@@ -108,9 +108,6 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
     $this->blockContentWithParent->setParentEntity($this->parentUser);
     $this->blockContentWithParent->save();
 
-    // Use \Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection
-    // class to test that getReferenceableEntities() does not get the
-    // entity wth a parent.
     $configuration = [
       'target_type' => 'block_content',
       'target_bundles' => ['spiffy' => 'spiffy'],
@@ -152,7 +149,7 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
   }
 
   /**
-   * Test with no conditions are set.
+   * Test with no conditions set.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
@@ -173,7 +170,7 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
   }
 
   /**
-   * Tests that blocks with parent are not referenceable entities.
+   * Tests setting conditions on different levels and parent entity fields.
    *
    * @dataProvider fieldConditionProvider
    *
