@@ -97,7 +97,7 @@ class BlockContentParentDeleteTest extends KernelTestBase {
     $this->assertNotEmpty($block_storage->load($block_content->id()));
     $this->assertEmpty($block_storage->load($block_content_with_parent->id()));
 
-    // Test a parent config entity type.
+    // Test a parent config entity type .
     $config_entity = $this->entityTypeManager->getStorage('config_test')->create([
       'id' => 'test_entity',
       'label' => 'Test config entity',
