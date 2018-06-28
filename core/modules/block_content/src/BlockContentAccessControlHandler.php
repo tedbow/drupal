@@ -2,6 +2,7 @@
 
 namespace Drupal\block_content;
 
+use Drupal\Core\Access\AccessDependentInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
@@ -26,23 +27,15 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
       $access = parent::checkAccess($entity, $operation, $account);
     }
     /** @var \Drupal\block_content\BlockContentInterface $entity */
-    if ($entity->hasParentEntity()) {
-      if ($entity->get('parent_status')->value === BlockContentInterface::PARENT_DELETED) {
-        // If the blocks parent has been deleted then access is forbidden. This
-        // must be checked before loading the parent entity because if the
-        // parent entity type allows arbitrary IDs then the entity type ID could
-        // be reused after the original parent entity was deleted.
-        $access = $access->andIf(AccessResult::forbidden('The parent entity has been deleted.'));
+    if ($entity->isReusable() === FALSE) {
+      if (!$entity instanceof AccessDependentInterface) {
+        throw new \LogicException("Non-reusable block entities must implement \Drupal\Core\Access\AccessDependentInterface for access control.");
       }
-      else {
-        if ($parent_entity = $entity->getParentEntity()) {
-          $access = $access->andIf($parent_entity->access($operation, $account, TRUE));
-        }
-        else {
-          // The entity has a parent but it was not able to be loaded.
-          $access = $access->andIf(AccessResult::forbidden('Parent entity not available.'));
-        }
+      $dependency = $entity->getAccessDependency();
+      if (empty($dependency)) {
+        return AccessResult::forbidden("Non-reusable blocks must set an access dependency for access control.");
       }
+      $access->andIf($dependency->access($operation, $account, TRUE));
     }
     return $access;
   }
