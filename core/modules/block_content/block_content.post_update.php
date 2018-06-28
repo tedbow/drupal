@@ -8,9 +8,9 @@
 use Drupal\Core\Config\Entity\ConfigEntityUpdater;
 
 /**
- * Adds 'has_parent' filter to Custom Block views.
+ * Adds 'reusable filter to   Custom Block views.
  */
-function block_content_post_update_add_views_parent_filter(&$sandbox = NULL) {
+function block_content_post_update_add_views_reusable_filter(&$sandbox = NULL) {
   $data_table = \Drupal::entityTypeManager()
     ->getDefinition('block_content')
     ->getDataTable();
@@ -24,16 +24,16 @@ function block_content_post_update_add_views_parent_filter(&$sandbox = NULL) {
     $displays = $view->get('display');
     foreach ($displays as $display_name => &$display) {
       // Update the default display and displays that have overridden filters.
-      if (!isset($display['display_options']['filters']['has_parent']) &&
+      if (!isset($display['display_options']['filters']['reusable']) &&
         ($display_name === 'default' || isset($display['display_options']['filters']))) {
-        $display['display_options']['filters']['has_parent'] = [
-          'id' => 'has_parent',
-          'plugin_id' => 'boolean_string',
+        $display['display_options']['filters']['reusable'] = [
+          'id' => 'reusable',
+          'plugin_id' => 'boolean',
           'table' => $data_table,
-          'field' => 'has_parent',
-          'value' => '0',
+          'field' => 'reusable',
+          'value' => '1',
           'entity_type' => 'block_content',
-          'entity_field' => 'parent_entity_type',
+          'entity_field' => 'reusable',
         ];
         $save_view = TRUE;
       }

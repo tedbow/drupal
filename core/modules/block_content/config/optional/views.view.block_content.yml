@@ -431,15 +431,15 @@ display:
           entity_type: block_content
           entity_field: type
           plugin_id: bundle
-        has_parent:
-          id: has_parent
+        reusable:
+          id: reusable
           table: block_content_field_data
-          field: has_parent
+          field: reusable
           relationship: none
           group_type: group
           admin_label: ''
           operator: '='
-          value: '0'
+          value: '1'
           group: 1
           exposed: false
           expose:
@@ -467,8 +467,8 @@ display:
             default_group_multiple: {  }
             group_items: {  }
           entity_type: block_content
-          entity_field: parent_entity_type
-          plugin_id: boolean_string
+          entity_field: reusable
+          plugin_id: boolean
       sorts: {  }
       title: 'Custom block library'
       header: {  }
