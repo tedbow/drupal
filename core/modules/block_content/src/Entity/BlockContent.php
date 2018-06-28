@@ -2,8 +2,8 @@
 
 namespace Drupal\block_content\Entity;
 
+use Drupal\Core\Access\AccessDependentTrait;
 use Drupal\Core\Entity\EditorialContentEntityBase;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -25,7 +25,7 @@ use Drupal\user\UserInterface;
  *   ),
  *   bundle_label = @Translation("Custom block type"),
  *   handlers = {
- *     "storage" = "Drupal\block_content\BlockContentStorage",
+ *     "storage" = "Drupal\Core\Entity\Sql\SqlContentEntityStorage",
  *     "access" = "Drupal\block_content\BlockContentAccessControlHandler",
  *     "list_builder" = "Drupal\block_content\BlockContentListBuilder",
  *     "view_builder" = "Drupal\block_content\BlockContentViewBuilder",
@@ -78,6 +78,8 @@ use Drupal\user\UserInterface;
  */
 class BlockContent extends EditorialContentEntityBase implements BlockContentInterface {
 
+  use AccessDependentTrait;
+
   /**
    * The theme the block is being created in.
    *
@@ -119,7 +121,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
-    if (empty($this->get('parent_entity_type')->value) || (isset($this->original) && empty($this->original->get('parent_entity_type')->value))) {
+    if ($this->isReusable() || (isset($this->original) && $this->original->isReusable())) {
       static::invalidateBlockPluginCache();
     }
   }
@@ -131,8 +133,8 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
     parent::postDelete($storage, $entities);
     /** @var \Drupal\block_content\BlockContentInterface $block */
     foreach ($entities as $block) {
-      if (!$block->hasParentEntity()) {
-        // If any deleted blocks do not have a parent ID clear the block cache.
+      if ($block->isReusable()) {
+        // If any deleted blocks are reusable clear the block cache.
         static::invalidateBlockPluginCache();
         return;
       }
@@ -210,31 +212,13 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
       ->setTranslatable(TRUE)
       ->setRevisionable(TRUE);
 
-    // @todo Is there a core issue to add
-    //   https://www.drupal.org/project/dynamic_entity_reference
-    $fields['parent_entity_type'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Parent entity type'))
-      ->setDescription(t('The parent entity type.'))
+    $fields['reusable'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Reusable'))
+      ->setDescription(t('A boolean indicating whether this block is reusable.'))
       ->setTranslatable(FALSE)
       ->setRevisionable(FALSE)
-      ->setDefaultValue(NULL)
-      ->setInitialValue(NULL);
-
-    $fields['parent_entity_id'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Parent ID'))
-      ->setDescription(t('The parent entity ID.'))
-      ->setTranslatable(FALSE)
-      ->setRevisionable(FALSE)
-      ->setDefaultValue(NULL)
-      ->setInitialValue(NULL);
-
-    $fields['parent_status'] = BaseFieldDefinition::create('integer')
-      ->setLabel(t('Parent status'))
-      ->setDescription(t('The status parent entity if any.'))
-      ->setTranslatable(FALSE)
-      ->setRevisionable(FALSE)
-      ->setDefaultValue(BlockContentInterface::PARENT_NONE)
-      ->setInitialValue(BlockContentInterface::PARENT_NONE);
+      ->setDefaultValue(TRUE)
+      ->setInitialValue(TRUE);
 
     return $fields;
   }
@@ -319,50 +303,25 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function isReusable() {
+    return (bool) $this->get('reusable')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setReusable($reusable = TRUE) {
+    return $this->set('reusable', $reusable);
+  }
+
+  /**
    * Invalidates the block plugin cache after changes and deletions.
    */
   protected static function invalidateBlockPluginCache() {
     // Invalidate the block cache to update custom block-based derivatives.
     \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setParentEntity(EntityInterface $parent_entity) {
-    $this->set('parent_entity_type', $parent_entity->getEntityTypeId());
-    $this->set('parent_entity_id', $parent_entity->id());
-    $this->set('parent_status', BlockContentInterface::PARENT_ACTIVE);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getParentEntity() {
-    if ($this->hasParentEntity()) {
-      return \Drupal::entityTypeManager()->getStorage($this->get('parent_entity_type')->value)->load($this->get('parent_entity_id')->value);
-    }
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function removeParentEntity() {
-    $this->set('parent_entity_type', NULL);
-    $this->set('parent_entity_id', NULL);
-    $this->set('parent_status', BlockContentInterface::PARENT_NONE);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function hasParentEntity() {
-    // If either parent field value is set then the block is considered to have
-    // a parent.
-    return !empty($this->get('parent_entity_type')->value) || !empty($this->get('parent_entity_id')->value);
   }
 
 }
