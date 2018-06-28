@@ -8,9 +8,9 @@ use Drupal\block_content_test\Plugin\EntityReferenceSelection\TestSelection;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
- * Tests EntityReference selection handlers don't return blocks with parents.
+ * Tests EntityReference selection handlers don't return non-reusable blocks.
  *
- * @see block_content_query_block_content_access_alter()
+ * @see block_content_query_entity_reference_alter()
  *
  * @group block_content
  */
@@ -42,7 +42,7 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
   protected $blockReusable;
 
   /**
-   * Test non-reusables parent.
+   * Test non-reusable block.
    *
    * @var \Drupal\block_content\BlockContentInterface
    */
@@ -81,14 +81,14 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
     $block_content_type->save();
     $this->entityTypeManager = $this->container->get('entity_type.manager');
 
-    // And block content entities with and without parents.
+    // And reusable block content entities.
     $this->blockReusable = BlockContent::create([
-      'info' => 'Block no parent',
+      'info' => 'Reusable Block',
       'type' => 'spiffy',
     ]);
     $this->blockReusable->save();
     $this->blockNonReusable = BlockContent::create([
-      'info' => 'Block with parent',
+      'info' => 'Non-reusable Block',
       'type' => 'spiffy',
       'reusable' => FALSE,
     ]);
@@ -157,7 +157,7 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
   }
 
   /**
-   * Tests setting conditions on different levels and parent entity fields.
+   * Tests setting 'reusable' condition on different levels.
    *
    * @dataProvider fieldConditionProvider
    *
