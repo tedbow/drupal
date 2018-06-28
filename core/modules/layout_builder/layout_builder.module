@@ -93,7 +93,28 @@ function layout_builder_entity_presave(EntityInterface $entity) {
     $entity_operations = \Drupal::classResolver(EntityOperations::class);
     $entity_operations->handlePreSave($entity);
   }
+}
 
+/**
+ * Implements hook_entity_delete().
+ */
+function layout_builder_entity_delete(EntityInterface $entity) {
+  if (\Drupal::moduleHandler()->moduleExists('block_content')) {
+    /** @var \Drupal\layout_builder\EntityOperations $entity_operations */
+    $entity_operations = \Drupal::classResolver(EntityOperations::class);
+    $entity_operations->handleEntityDelete($entity);
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function layout_builder_cron() {
+  if (\Drupal::moduleHandler()->moduleExists('block_content')) {
+    /** @var \Drupal\layout_builder\EntityOperations $entity_operations */
+    $entity_operations = \Drupal::classResolver(EntityOperations::class);
+    $entity_operations->removeUnused();
+  }
 }
 
 /**
