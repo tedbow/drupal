@@ -5,7 +5,7 @@ namespace Drupal\block_content_test\Plugin\EntityReferenceSelection;
 use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
 
 /**
- * Test EntityReferenceSelection that adds various parent entity conditions.
+ * Test EntityReferenceSelection with conditions on the 'reusable' field.
  */
 class TestSelection extends DefaultSelection {
 
@@ -17,7 +17,7 @@ class TestSelection extends DefaultSelection {
   protected $conditionType;
 
   /**
-   * Whether to set the condition to set for a parent.
+   * Whether to set the condition for reusable or non-reusable blocks.
    *
    * @var bool
    */
@@ -29,7 +29,7 @@ class TestSelection extends DefaultSelection {
    * @param string $condition_type
    *   The condition type.
    * @param bool $is_reusable
-   *   Whether to set the condition to check for parent or not.
+   *   Whether to set the condition for reusable or non-reusable blocks.
    */
   public function setTestMode($condition_type = NULL, $is_reusable = NULL) {
     $this->conditionType = $condition_type;
@@ -41,36 +41,38 @@ class TestSelection extends DefaultSelection {
    */
   protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
     $query = parent::buildEntityQuery($match, $match_operator);
-    /** @var \Drupal\Core\Database\Query\ConditionInterface $add_condition */
-    $add_condition = NULL;
-    switch ($this->conditionType) {
-      case 'base':
-        $add_condition = $query;
-        break;
+    if ($this->conditionType) {
+      /** @var \Drupal\Core\Database\Query\ConditionInterface $add_condition */
+      $add_condition = NULL;
+      switch ($this->conditionType) {
+        case 'base':
+          $add_condition = $query;
+          break;
 
-      case 'group':
-        $group = $query->andConditionGroup()
-          ->exists('type');
-        $add_condition = $group;
-        $query->condition($group);
-        break;
+        case 'group':
+          $group = $query->andConditionGroup()
+            ->exists('type');
+          $add_condition = $group;
+          $query->condition($group);
+          break;
 
-      case "nested_group":
-        $query->exists('type');
-        $sub_group = $query->andConditionGroup()
-          ->exists('type');
-        $add_condition = $sub_group;
-        $group = $query->andConditionGroup()
-          ->exists('type')
-          ->condition($sub_group);
-        $query->condition($group);
-        break;
-    }
-    if ($this->isReusable) {
-      $add_condition->condition('reusable', 1);
-    }
-    else {
-      $add_condition->condition('reusable', 0);
+        case "nested_group":
+          $query->exists('type');
+          $sub_group = $query->andConditionGroup()
+            ->exists('type');
+          $add_condition = $sub_group;
+          $group = $query->andConditionGroup()
+            ->exists('type')
+            ->condition($sub_group);
+          $query->condition($group);
+          break;
+      }
+      if ($this->isReusable) {
+        $add_condition->condition('reusable', 1);
+      }
+      else {
+        $add_condition->condition('reusable', 0);
+      }
     }
     return $query;
   }

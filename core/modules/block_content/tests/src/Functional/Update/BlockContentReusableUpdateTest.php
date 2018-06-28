@@ -22,10 +22,10 @@ class BlockContentReusableUpdateTest extends UpdatePathTestBase {
   }
 
   /**
-   * Tests adding parent entity fields to the block content entity type.
+   * Tests adding 'reusable' entity base field to the block content entity type.
    *
    * @see block_content_update_8600
-   * @see block_content_post_update_add_views_parent_filter
+   * @see block_content_post_update_add_views_reusable_filter
    */
   public function testReusableFieldAddition() {
     $assert_session = $this->assertSession();
@@ -90,7 +90,7 @@ class BlockContentReusableUpdateTest extends UpdatePathTestBase {
     ]);
     $block_non_reusable->save();
     // Add second block that would be shown with the 'info' filter on the
-    // additional view display if the 'has_parent' filter was not added.
+    // additional view display if the 'reusable' filter was not added.
     $block2_non_reusable = BlockContent::create([
       'info' => 'block2 non reusable',
       'type' => 'basic_block',
@@ -100,7 +100,7 @@ class BlockContentReusableUpdateTest extends UpdatePathTestBase {
     $this->assertFalse($block_non_reusable->isReusable());
     $this->assertFalse($block2_non_reusable->isReusable());
 
-    // Ensure the Custom Block view shows the blocks without parents only.
+    // Ensure the Custom Block view shows the reusable blocks only.
     $this->drupalGet('admin/structure/block/block-content');
     $assert_session->statusCodeEquals('200');
     $assert_session->responseContains('view-id-block_content');
@@ -109,8 +109,8 @@ class BlockContentReusableUpdateTest extends UpdatePathTestBase {
     $assert_session->pageTextNotContains($block_non_reusable->label());
     $assert_session->pageTextNotContains($block2_non_reusable->label());
 
-    // Ensure the view's other display also only shows blocks without parent and
-    // still filters on the 'info' field.
+    // Ensure the view's other display also only shows reusable blocks and still
+    // filters on the 'info' field.
     $this->drupalGet('extra-view-display');
     $assert_session->statusCodeEquals('200');
     $assert_session->responseContains('view-id-block_content');
@@ -120,7 +120,7 @@ class BlockContentReusableUpdateTest extends UpdatePathTestBase {
     $assert_session->pageTextNotContains($block2_non_reusable->label());
 
     // Ensure the Custom Block listing without Views installed shows the only
-    // blocks without parents.
+    // reusable blocks.
     $this->drupalGet('admin/structure/block/block-content');
     $this->container->get('module_installer')->uninstall(['views_ui', 'views']);
     $this->drupalGet('admin/structure/block/block-content');
@@ -134,7 +134,7 @@ class BlockContentReusableUpdateTest extends UpdatePathTestBase {
     $this->drupalGet('block/' . $after_block1->id());
     $assert_session->statusCodeEquals('200');
 
-    // Ensure the block with the parent is not accessible in the form.
+    // Ensure the non-reusable block is not accessible in the form.
     $this->drupalGet('block/' . $block_non_reusable->id());
     $assert_session->statusCodeEquals('403');
 
