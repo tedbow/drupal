@@ -132,15 +132,15 @@ function block_content_add_body_field($block_type_id, $label = 'Body') {
 function block_content_query_entity_reference_alter(AlterableInterface $query) {
   if ($query instanceof SelectInterface && $query->getMetaData('entity_type') === 'block_content' && $query->hasTag('block_content_access')) {
     $data_table = \Drupal::entityTypeManager()->getDefinition('block_content')->getDataTable();
-    if (array_key_exists($data_table, $query->getTables()) && !_block_content_has_parent_entity_condition($query->conditions(), $query->getTables())) {
-      // If no parent entity condition create a condition.
-      $query->isNull("$data_table.parent_entity_type");
+    if (array_key_exists($data_table, $query->getTables()) && !_block_content_has_reusable_condition($query->conditions(), $query->getTables())) {
+      // If no reusable condition create a condition set to TRUE.
+      $query->condition("$data_table.reusable", TRUE);
     }
   }
 }
 
 /**
- * Utility function to find nested conditions using the parent entity fields.
+ * Utility function to find nested conditions using the reusable field.
  *
  * @param array $condition
  *   The condition or condition group to check.
@@ -150,14 +150,14 @@ function block_content_query_entity_reference_alter(AlterableInterface $query) {
  * @see \Drupal\Core\Database\Query\SelectInterface::getTables
  *
  * @return bool
- *   Whether conditions contain any condition using the parent entity fields.
+ *   Whether the conditions contain any condition using the reusable field.
  */
-function _block_content_has_parent_entity_condition(array $condition, array $tables) {
+function _block_content_has_reusable_condition(array $condition, array $tables) {
   // If this is a condition group call this function recursively for each nested
   // condition until a condition is found that return TRUE.
   if (isset($condition['#conjunction'])) {
     foreach (array_filter($condition, 'is_array') as $nested_condition) {
-      if (_block_content_has_parent_entity_condition($nested_condition, $tables)) {
+      if (_block_content_has_reusable_condition($nested_condition, $tables)) {
         return TRUE;
       }
     }
@@ -166,14 +166,12 @@ function _block_content_has_parent_entity_condition(array $condition, array $tab
   if (isset($condition['field'])) {
     $field = $condition['field'];
     if (is_object($field) && $field instanceof ConditionInterface) {
-      return _block_content_has_parent_entity_condition($field->conditions(), $tables);
+      return _block_content_has_reusable_condition($field->conditions(), $tables);
     }
     $field_parts = explode('.', $field);
     $data_table = \Drupal::entityTypeManager()->getDefinition('block_content')->getDataTable();
-    // With nested conditions the data table may have a suffix at the end like
-    // 'block_content_field_data_2'.
     foreach ($tables as $table) {
-      if ($table['table'] === $data_table && $field_parts[0] === $table['alias'] && in_array($field_parts[1], ['parent_entity_id', 'parent_entity_type', 'parent_status'])) {
+      if ($table['table'] === $data_table && $field_parts[0] === $table['alias'] && $field_parts[1] === 'reusable') {
         return TRUE;
       }
     }

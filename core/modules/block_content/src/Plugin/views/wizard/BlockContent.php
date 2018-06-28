@@ -20,15 +20,14 @@ class BlockContent extends WizardPluginBase {
    */
   public function getFilters() {
     $filters = parent::getFilters();
-    $filters['has_parent'] = [
-      'id' => 'has_parent',
-      'plugin_id' => 'boolean_string',
+    $filters['reusable'] = [
+      'id' => 'reusable',
+      'plugin_id' => 'boolean',
       'table' => $this->base_table,
-      'field' => 'has_parent',
-      'operator' => '=',
-      'value' => '0',
+      'field' => 'reusable',
+      'value' => '1',
       'entity_type' => $this->entityTypeId,
-      'entity_field' => 'parent_entity_type',
+      'entity_field' => 'reusable',
     ];
     return $filters;
   }
