@@ -20,6 +20,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityOperations implements ContainerInjectionInterface {
 
   /**
+   * Inline block content usage tracking service.
+   *
+   * @var \Drupal\layout_builder\InlineBlockContentUsage
+   */
+  protected $usage;
+
+  /**
    * The block storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
@@ -38,13 +45,16 @@ class EntityOperations implements ContainerInjectionInterface {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
+   * @param \Drupal\layout_builder\InlineBlockContentUsage $usage
+   *   Inline block content usage tracking service.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, InlineBlockContentUsage $usage) {
     $this->entityTypeManager = $entityTypeManager;
     $this->storage = $entityTypeManager->getStorage('block_content');
+    $this->usage = $usage;
   }
 
   /**
@@ -52,7 +62,8 @@ class EntityOperations implements ContainerInjectionInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('inline_block_content.usage')
     );
   }
 
@@ -97,6 +108,18 @@ class EntityOperations implements ContainerInjectionInterface {
           }
         }
       }
+    }
+  }
+
+  /**
+   * Handles entity tracking on deleting a parent entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The parent entity.
+   */
+  public function handleEntityDelete(EntityInterface $entity) {
+    if ($this->isLayoutCompatibleEntity($entity)) {
+      $this->usage->removeByLayoutEntity($entity);
     }
   }
 
@@ -167,7 +190,12 @@ class EntityOperations implements ContainerInjectionInterface {
       foreach ($this->getInlineBlockComponents($sections) as $component) {
         /** @var \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin */
         $plugin = $component->getPlugin();
-        $plugin->saveBlockContent($entity, $new_revision, $duplicate_blocks);
+        $pre_save_configuration = $plugin->getConfiguration();
+        $plugin->saveBlockContent($new_revision, $duplicate_blocks);
+        $post_save_configuration = $plugin->getConfiguration();
+        if ($duplicate_blocks || (empty($pre_save_configuration['block_revision_id']) && !empty($post_save_configuration['block_revision_id']))) {
+          $this->usage->addUsage($this->getPluginBlockId($plugin), $entity->getEntityTypeId(), $entity->id());
+        }
         $component->setConfiguration($plugin->getConfiguration());
       }
     }
@@ -230,6 +258,35 @@ class EntityOperations implements ContainerInjectionInterface {
       return array_values($query->execute())[0];
     }
     return NULL;
+  }
+
+  /**
+   * Delete the content blocks and delete the usage records.
+   *
+   * @param int[] $block_content_ids
+   *   The block content entity IDs.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  protected function deleteBlocksAndUsage(array $block_content_ids) {
+    foreach ($block_content_ids as $block_content_id) {
+      if ($block = $this->storage->load($block_content_id)) {
+        $block->delete();
+      }
+    }
+    $this->usage->deleteUsage($block_content_ids);
+  }
+
+  /**
+   * Removes unused block content entities.
+   *
+   * @param int $limit
+   *   The maximum number of block content entities to remove.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  public function removeUnused($limit = 100) {
+    $this->deleteBlocksAndUsage($this->usage->getUnused($limit));
   }
 
   /**
