@@ -20,6 +20,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityOperations implements ContainerInjectionInterface {
 
   /**
+   * Inline block content usage tracking service.
+   *
+   * @var \Drupal\layout_builder\InlineBlockContentUsage
+   */
+  protected $usage;
+
+  /**
    * The block storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
@@ -27,24 +34,21 @@ class EntityOperations implements ContainerInjectionInterface {
   protected $storage;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a new  EntityOperations object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
+   * @param \Drupal\layout_builder\InlineBlockContentUsage $usage
+   *   Inline block content usage tracking service.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
-    $this->entityTypeManager = $entityTypeManager;
-    $this->storage = $entityTypeManager->getStorage('block_content');
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, InlineBlockContentUsage $usage) {
+    if ($entityTypeManager->hasDefinition('block_content')) {
+      $this->storage = $entityTypeManager->getStorage('block_content');
+    }
+    $this->usage = $usage;
   }
 
   /**
@@ -52,7 +56,8 @@ class EntityOperations implements ContainerInjectionInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('inline_block_content.usage')
     );
   }
 
@@ -79,10 +84,8 @@ class EntityOperations implements ContainerInjectionInterface {
     if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout') && empty($sections)) {
       return;
     }
-    // If this is a revisionable entity then do not remove block_content
-    // entities. They could be referenced in previous revisions even if this is
-    // not a new revision.
-    if ($entity instanceof RevisionableInterface) {
+    // If this a new revision do not remove content_block entities.
+    if ($entity instanceof RevisionableInterface && $entity->isNewRevision()) {
       return;
     }
     $original_sections = $this->getEntitySections($entity->original);
@@ -91,12 +94,20 @@ class EntityOperations implements ContainerInjectionInterface {
     // some blocks that need to be removed.
     if ($original_revision_ids = array_diff($this->getInBlockRevisionIdsInSection($original_sections), $current_revision_ids)) {
       if ($removed_ids = array_diff($this->getBlockIdsForRevisionIds($original_revision_ids), $this->getBlockIdsForRevisionIds($current_revision_ids))) {
-        foreach ($removed_ids as $block_content_id) {
-          if ($block = $this->storage->load($block_content_id)) {
-            $block->delete();
-          }
-        }
+        $this->deleteBlocksAndUsage($removed_ids);
       }
+    }
+  }
+
+  /**
+   * Handles entity tracking on deleting a parent entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The parent entity.
+   */
+  public function handleEntityDelete(EntityInterface $entity) {
+    if ($this->isStorageAvailable() && $this->isLayoutCompatibleEntity($entity)) {
+      $this->usage->removeByLayoutEntity($entity);
     }
   }
 
@@ -133,7 +144,7 @@ class EntityOperations implements ContainerInjectionInterface {
    * @throws \Exception
    */
   public function handlePreSave(EntityInterface $entity) {
-    if (!$this->isLayoutCompatibleEntity($entity)) {
+    if (!$this->isStorageAvailable() || !$this->isLayoutCompatibleEntity($entity)) {
       return;
     }
     $duplicate_blocks = FALSE;
@@ -167,7 +178,12 @@ class EntityOperations implements ContainerInjectionInterface {
       foreach ($this->getInlineBlockComponents($sections) as $component) {
         /** @var \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin */
         $plugin = $component->getPlugin();
-        $plugin->saveBlockContent($entity, $new_revision, $duplicate_blocks);
+        $pre_save_configuration = $plugin->getConfiguration();
+        $plugin->saveBlockContent($new_revision, $duplicate_blocks);
+        $post_save_configuration = $plugin->getConfiguration();
+        if ($duplicate_blocks || (empty($pre_save_configuration['block_revision_id']) && !empty($post_save_configuration['block_revision_id']))) {
+          $this->usage->addUsage($this->getPluginBlockId($plugin), $entity->getEntityTypeId(), $entity->id());
+        }
         $component->setConfiguration($plugin->getConfiguration());
       }
     }
@@ -233,6 +249,50 @@ class EntityOperations implements ContainerInjectionInterface {
   }
 
   /**
+   * Delete the content blocks and delete the usage records.
+   *
+   * @param int[] $block_content_ids
+   *   The block content entity IDs.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  protected function deleteBlocksAndUsage(array $block_content_ids) {
+    foreach ($block_content_ids as $block_content_id) {
+      if ($block = $this->storage->load($block_content_id)) {
+        $block->delete();
+      }
+    }
+    $this->usage->deleteUsage($block_content_ids);
+  }
+
+  /**
+   * Removes unused block content entities.
+   *
+   * @param int $limit
+   *   The maximum number of block content entities to remove.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  public function removeUnused($limit = 100) {
+    if ($this->isStorageAvailable()) {
+      $this->deleteBlocksAndUsage($this->usage->getUnused($limit));
+    }
+  }
+
+  /**
+   * The block_content entity storage is available.
+   *
+   * If the 'block_content' module is not enable this the public methods on this
+   * class should not execute their operations.
+   *
+   * @return bool
+   *   Whether the 'block_content' storage is available.
+   */
+  protected function isStorageAvailable() {
+    return !empty($this->storage);
+  }
+
+  /**
    * Gets revision IDs for layout sections.
    *
    * @param \Drupal\layout_builder\Section[] $sections
@@ -269,6 +329,7 @@ class EntityOperations implements ContainerInjectionInterface {
       return $block_ids;
     }
     return [];
+
   }
 
 }
