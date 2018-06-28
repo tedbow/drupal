@@ -117,15 +117,15 @@ function block_content_add_body_field($block_type_id, $label = 'Body') {
  * Alters any 'entity_reference' query where the entity type is
  * 'block_content' and the query has the tag 'block_content_access'.
  *
- * These queries should only return blocks with no parents unless a condition on
- * 'entity_parent_type' or 'entity_parent_id' is explicitly set.
+ * These queries should only return reusable blocks unless a condition on
+ * 'reusable' is explicitly set.
  *
- * Block_content entities that have a parent should by default not be selectable
+ * Block_content entities that are reusable should by default not be selectable
  * as entity reference values. A module can still
  * create an instance of
  * \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface
- * that will will allow selection of blocks with parents by explicitly setting
- * a condition on either the parent_entity_id or parent_entity_type fields.
+ * that will will allow selection of non-reusable blocks by explicitly setting
+ * a condition on either the 'reusable' field.
  *
  * @see \Drupal\block_content\BlockContentAccessControlHandler
  */
@@ -178,22 +178,4 @@ function _block_content_has_reusable_condition(array $condition, array $tables) 
 
   }
   return FALSE;
-}
-
-/**
- * Implements hook_entity_delete().
- */
-function block_content_entity_delete(EntityInterface $entity) {
-  /** @var \Drupal\block_content\BlockContentStorageInterface $storage */
-  $storage = \Drupal::entityTypeManager()->getStorage('block_content');
-  $storage->setParentStatus($entity->getEntityTypeId(), $entity->id(), BlockContentInterface::PARENT_DELETED);
-}
-
-/**
- * Implements hook_cron().
- */
-function block_content_cron() {
-  /** @var \Drupal\block_content\BlockContentStorageInterface $storage */
-  $storage = \Drupal::entityTypeManager()->getStorage('block_content');
-  $storage->deleteBlocksWithParentDeleted();
 }
