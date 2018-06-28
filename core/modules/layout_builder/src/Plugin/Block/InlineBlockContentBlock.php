@@ -3,11 +3,12 @@
 namespace Drupal\layout_builder\Plugin\Block;
 
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Access\AccessDependentInterface;
+use Drupal\Core\Access\AccessDependentTrait;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformStateInterface;
@@ -25,7 +26,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  deriver = "Drupal\layout_builder\Plugin\Derivative\InlineBlockContentDeriver",
  * )
  */
-class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface, AccessDependentInterface {
+
+  use AccessDependentTrait;
 
   /**
    * The entity type manager service.
@@ -221,8 +224,12 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
       else {
         $this->blockContent = $this->entityTypeManager->getStorage('block_content')->create([
           'type' => $this->getDerivativeId(),
+          'reusable' => FALSE,
         ]);
       }
+    }
+    if ($this->blockContent instanceof AccessDependentInterface && $dependee = $this->getAccessDependency()) {
+      $this->blockContent->setAccessDependency($dependee);
     }
     return $this->blockContent;
   }
@@ -245,8 +252,6 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   /**
    * Saves the "block_content" entity for this plugin.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $parent_entity
-   *   The parent entity.
    * @param bool $new_revision
    *   Whether to create new revision.
    * @param bool $duplicate_block
@@ -256,7 +261,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function saveBlockContent(EntityInterface $parent_entity, $new_revision = FALSE, $duplicate_block = FALSE) {
+  public function saveBlockContent($new_revision = FALSE, $duplicate_block = FALSE) {
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = NULL;
     if ($duplicate_block && !empty($this->configuration['block_revision_id']) && empty($this->configuration['block_serialized'])) {
@@ -270,7 +275,6 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
       }
     }
     if ($block) {
-      $block->setParentEntity($parent_entity);
       if ($new_revision) {
         $block->setNewRevision();
       }
