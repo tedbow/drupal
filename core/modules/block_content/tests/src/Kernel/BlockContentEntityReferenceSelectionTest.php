@@ -6,7 +6,6 @@ use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\block_content_test\Plugin\EntityReferenceSelection\TestSelection;
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\user\Entity\User;
 
 /**
  * Tests EntityReference selection handlers don't return blocks with parents.
@@ -36,25 +35,18 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
   protected $entityTypeManager;
 
   /**
-   * Test user to use as block parent.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $parentUser;
-
-  /**
-   * Test block without parent.
+   * Test reusable block.
    *
    * @var \Drupal\block_content\BlockContentInterface
    */
-  protected $blockWithoutParent;
+  protected $blockReusable;
 
   /**
-   * Test block with parent.
+   * Test non-reusables parent.
    *
    * @var \Drupal\block_content\BlockContentInterface
    */
-  protected $blockContentWithParent;
+  protected $blockNonReusable;
 
   /**
    * Test selection handler.
@@ -89,24 +81,19 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
     $block_content_type->save();
     $this->entityTypeManager = $this->container->get('entity_type.manager');
 
-    $this->parentUser = User::create([
-      'name' => 'username',
-      'status' => 1,
-    ]);
-    $this->parentUser->save();
-
     // And block content entities with and without parents.
-    $this->blockWithoutParent = BlockContent::create([
+    $this->blockReusable = BlockContent::create([
       'info' => 'Block no parent',
       'type' => 'spiffy',
     ]);
-    $this->blockWithoutParent->save();
-    $this->blockContentWithParent = BlockContent::create([
+    $this->blockReusable->save();
+    $this->blockNonReusable = BlockContent::create([
       'info' => 'Block with parent',
       'type' => 'spiffy',
+      'reusable' => FALSE,
     ]);
-    $this->blockContentWithParent->setParentEntity($this->parentUser);
-    $this->blockContentWithParent->save();
+    $this->blockNonReusable->setReusable(FALSE);
+    $this->blockNonReusable->save();
 
     $configuration = [
       'target_type' => 'block_content',
@@ -119,12 +106,12 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
     $this->expectations = [
       'both_blocks' => [
         'spiffy' => [
-          $this->blockWithoutParent->id() => $this->blockWithoutParent->label(),
-          $this->blockContentWithParent->id() => $this->blockContentWithParent->label(),
+          $this->blockReusable->id() => $this->blockReusable->label(),
+          $this->blockNonReusable->id() => $this->blockNonReusable->label(),
         ],
       ],
-      'block_no_parent' => ['spiffy' => [$this->blockWithoutParent->id() => $this->blockWithoutParent->label()]],
-      'block_with_parent' => ['spiffy' => [$this->blockContentWithParent->id() => $this->blockContentWithParent->label()]],
+      'block_reusable' => ['spiffy' => [$this->blockReusable->id() => $this->blockReusable->label()]],
+      'block_non_reusable' => ['spiffy' => [$this->blockNonReusable->id() => $this->blockNonReusable->label()]],
     ];
   }
 
@@ -155,12 +142,12 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
    */
   public function testNoConditions() {
     $this->assertEquals(
-      $this->expectations['block_no_parent'],
+      $this->expectations['block_reusable'],
       $this->selectionHandler->getReferenceableEntities()
     );
 
-    $this->blockContentWithParent->removeParentEntity();
-    $this->blockContentWithParent->save();
+    $this->blockNonReusable->setReusable(TRUE);
+    $this->blockNonReusable->save();
 
     // Ensure that the block is now returned as a referenceable entity.
     $this->assertEquals(
@@ -176,10 +163,10 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
    *
    * @throws \Exception
    */
-  public function testFieldConditions($field, $condition_type, $has_parent) {
-    $this->selectionHandler->setTestMode($field, $condition_type, $has_parent);
+  public function testFieldConditions($condition_type, $is_reusable) {
+    $this->selectionHandler->setTestMode($condition_type, $is_reusable);
     $this->assertEquals(
-      $has_parent ? $this->expectations['block_with_parent'] : $this->expectations['block_no_parent'],
+      $is_reusable ? $this->expectations['block_reusable'] : $this->expectations['block_non_reusable'],
       $this->selectionHandler->getReferenceableEntities()
     );
   }
@@ -189,15 +176,12 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
    */
   public function fieldConditionProvider() {
     $cases = [];
-    foreach (['parent_entity_id', 'parent_entity_type', 'parent_status'] as $field) {
-      foreach (['base', 'group', 'nested_group'] as $condition_type) {
-        foreach ([TRUE, FALSE] as $has_parent) {
-          $cases["$field:$condition_type:$has_parent"] = [
-            $field,
-            $condition_type,
-            $has_parent,
-          ];
-        }
+    foreach (['base', 'group', 'nested_group'] as $condition_type) {
+      foreach ([TRUE, FALSE] as $reusable) {
+        $cases["$condition_type:" . ($reusable ? 'reusable' : 'non-reusable')] = [
+          $condition_type,
+          $reusable,
+        ];
       }
     }
     return $cases;
