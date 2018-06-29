@@ -2,7 +2,9 @@
 
 namespace Drupal\layout_builder;
 
+use Drupal\block_content\BlockContentInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\Core\Database\Connection;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -41,6 +43,11 @@ class EntityOperations implements ContainerInjectionInterface {
   protected $entityTypeManager;
 
   /**
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
+
+  /**
    * Constructs a new  EntityOperations object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
@@ -51,10 +58,11 @@ class EntityOperations implements ContainerInjectionInterface {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, InlineBlockContentUsage $usage) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, InlineBlockContentUsage $usage, Connection $database) {
     $this->entityTypeManager = $entityTypeManager;
     $this->storage = $entityTypeManager->getStorage('block_content');
     $this->usage = $usage;
+    $this->database = $database;
   }
 
   /**
@@ -63,7 +71,8 @@ class EntityOperations implements ContainerInjectionInterface {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('inline_block_content.usage')
+      $container->get('inline_block_content.usage'),
+      $container->get('database')
     );
   }
 
@@ -324,6 +333,45 @@ class EntityOperations implements ContainerInjectionInterface {
       $query->condition('revision_id', $revision_ids, 'IN');
       $block_ids = $query->execute();
       return $block_ids;
+    }
+    return [];
+  }
+
+  public function handleAccessPrep(BlockContentInterface $block_content) {
+    if (!$block_content->isReusable() && empty($block_content->getAccessDependency())) {
+      /** @var \Drupal\layout_builder\InlineBlockContentUsage $usage */
+      if (($layout_entity_info = $this->usage->getUsage($block_content->id()))) {
+        $layout_entity_storage = $this->entityTypeManager->getStorage($layout_entity_info->layout_entity_type);
+        $layout_entity = $layout_entity_storage->load($layout_entity_info->layout_entity_id);
+        if ($this->isLayoutCompatibleEntity($layout_entity)) {
+          if (!$layout_entity->getEntityType()->isRevisionable()) {
+            $block_content->setAccessDependency($layout_entity);
+            return;
+          }
+          else {
+            foreach ($this->getRevisionIds($layout_entity) as $revision_id) {
+              $revision = $layout_entity_storage->loadRevision($revision_id);
+              $block_revision_ids = $this->getInBlockRevisionIdsInSection($this->getEntitySections($revision));
+              if (in_array($block_content->getRevisionId(), $block_revision_ids)) {
+                $block_content->setAccessDependency($revision);
+                return;
+              }
+            }
+          }
+        }
+
+      }
+    }
+  }
+
+  protected function getRevisionIds(EntityInterface $layout_entity) {
+    $entity_type = $this->entityTypeManager->getDefinition($layout_entity->getEntityTypeId());
+    if ($revision_table = $entity_type->getRevisionTable()) {
+      $query = $this->database->select($revision_table);
+      $query->condition($entity_type->getKey('id'));
+      $query->fields($revision_table, [$entity_type->getKey('revision')]);
+      $query->orderBy($entity_type->getKey('revision'), 'DESC');
+      return $query->execute()->fetchCol();
     }
     return [];
   }
