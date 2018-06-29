@@ -130,4 +130,11 @@ function layout_builder_plugin_filter_block_alter(array &$definitions, array $ex
       }
     }
   }
+  else {
+    foreach ($definitions as $id => $definition) {
+      if ($definition['id'] === 'inline_block_content') {
+        //unset($definitions[$id]);
+      }
+    }
+  }
 }
