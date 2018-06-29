@@ -138,3 +138,29 @@ function block_content_update_8400() {
     $definition_update_manager->uninstallFieldStorageDefinition($content_translation_status);
   }
 }
+
+/**
+ * Add parent entity fields to 'block_content' entities.
+ */
+function block_content_update_8600() {
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+  $parent_entity_type = BaseFieldDefinition::create('string')
+    ->setLabel(t('Parent entity type'))
+    ->setDescription(t('The parent entity type.'))
+    ->setTranslatable(FALSE)
+    ->setRevisionable(FALSE)
+    ->setDefaultValue(NULL)
+    ->setInitialValue(NULL);
+
+  $update_manager->installFieldStorageDefinition('parent_entity_type', 'block_content', 'block_content', $parent_entity_type);
+
+  $parent_entity_id = BaseFieldDefinition::create('string')
+    ->setLabel(t('Parent ID'))
+    ->setDescription(t('The parent entity ID.'))
+    ->setTranslatable(FALSE)
+    ->setRevisionable(FALSE)
+    ->setDefaultValue(NULL)
+    ->setInitialValue(NULL);
+
+  $update_manager->installFieldStorageDefinition('parent_entity_id', 'block_content', 'block_content', $parent_entity_id);
+}
