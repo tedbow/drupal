@@ -93,4 +93,21 @@ class InlineBlockContentUsage {
     $query->execute();
   }
 
+  /**
+   * Gets usage record for block content by ID.
+   *
+   * @param int $block_content_id
+   *   The block content entity ID.
+   *
+   * @return object
+   *   The usage record with properties layout_entity_id and layout_entity_type.
+   */
+  public function getUsage($block_content_id) {
+    $query = $this->connection->select('inline_block_content_usage');
+    $query->condition('block_content_id', $block_content_id);
+    $query->fields('inline_block_content_usage', ['layout_entity_id', 'layout_entity_type']);
+    $query->range(0, 1);
+    return $query->execute()->fetch();
+  }
+
 }
