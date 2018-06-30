@@ -4,6 +4,7 @@ namespace Drupal\block_content;
 
 use Drupal\Core\Access\AccessDependentInterface;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultForbidden;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Session\AccountInterface;
@@ -35,7 +36,7 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
       if (empty($dependency)) {
         return AccessResult::forbidden("Non-reusable blocks must set an access dependency for access control.");
       }
-      $access->andIf($dependency->access($operation, $account, TRUE));
+      $access = $access->andIf($dependency->access($operation, $account, TRUE));
     }
     return $access;
   }
