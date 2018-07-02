@@ -36,6 +36,11 @@ services:
     arguments: ['@current_user']
     tags:
       - { name: event_subscriber }
+  layout_builder.get_block_dependency_subscriber:
+    class: Drupal\layout_builder\EventSubscriber\SetInlineBlockDependency
+    arguments: ['@entity_type.manager', '@database', '@inline_block_content.usage']
+    tags:
+      - { name: event_subscriber }
   logger.channel.layout_builder:
     parent: logger.channel_base
     arguments: ['layout_builder']
