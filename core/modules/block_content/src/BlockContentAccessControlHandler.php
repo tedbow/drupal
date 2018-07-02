@@ -36,7 +36,11 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
       if (empty($dependency)) {
         return AccessResult::forbidden("Non-reusable blocks must set an access dependency for access control.");
       }
-      $access = $access->andIf($dependency->access($operation, $account, TRUE));
+      if (empty($dependency->in_preview)) {
+        /** @var EntityInterface $dependency */
+        $access = $access->andIf($dependency->access($operation, $account, TRUE));
+      }
+
     }
     return $access;
   }
