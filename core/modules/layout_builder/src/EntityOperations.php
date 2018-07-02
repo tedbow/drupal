@@ -2,7 +2,6 @@
 
 namespace Drupal\layout_builder;
 
-use Drupal\block_content\BlockContentInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -10,8 +9,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\RevisionableInterface;
-use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
-use Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -20,6 +17,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @internal
  */
 class EntityOperations implements ContainerInjectionInterface {
+
+  use LayoutEntityHelperTrait;
 
   /**
    * Inline block content usage tracking service.
@@ -43,6 +42,8 @@ class EntityOperations implements ContainerInjectionInterface {
   protected $entityTypeManager;
 
   /**
+   * The database connection.
+   *
    * @var \Drupal\Core\Database\Connection
    */
   protected $database;
@@ -54,6 +55,8 @@ class EntityOperations implements ContainerInjectionInterface {
    *   The entity type manager service.
    * @param \Drupal\layout_builder\InlineBlockContentUsage $usage
    *   Inline block content usage tracking service.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
@@ -133,27 +136,6 @@ class EntityOperations implements ContainerInjectionInterface {
   }
 
   /**
-   * Gets the sections for an entity if any.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity.
-   *
-   * @return \Drupal\layout_builder\Section[]|null
-   *   The entity layout sections if available.
-   *
-   * @internal
-   */
-  protected function getEntitySections(EntityInterface $entity) {
-    if ($entity->getEntityTypeId() === 'entity_view_display' && $entity instanceof LayoutBuilderEntityViewDisplay) {
-      return $entity->getSections();
-    }
-    elseif ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
-      return $entity->get('layout_builder__layout')->getSections();
-    }
-    return NULL;
-  }
-
-  /**
    * Handles saving a parent entity.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
@@ -212,44 +194,6 @@ class EntityOperations implements ContainerInjectionInterface {
   }
 
   /**
-   * Gets components that have Inline Block plugins.
-   *
-   * @param \Drupal\layout_builder\Section[] $sections
-   *   The layout sections.
-   *
-   * @return \Drupal\layout_builder\SectionComponent[]
-   *   The components that contain Inline Block plugins.
-   */
-  protected function getInlineBlockComponents(array $sections) {
-    $inline_components = [];
-    foreach ($sections as $section) {
-      $components = $section->getComponents();
-
-      foreach ($components as $component) {
-        $plugin = $component->getPlugin();
-        if ($plugin instanceof InlineBlockContentBlock) {
-          $inline_components[] = $component;
-        }
-      }
-    }
-    return $inline_components;
-  }
-
-  /**
-   * Determines if an entity can have a layout.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity to check.
-   *
-   * @return bool
-   *   TRUE if the entity can have a layout otherwise FALSE.
-   */
-  protected function isLayoutCompatibleEntity(EntityInterface $entity) {
-    return ($entity->getEntityTypeId() === 'entity_view_display' && $entity instanceof LayoutBuilderEntityViewDisplay) ||
-      ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout'));
-  }
-
-  /**
    * Gets a block ID for a inline block content plugin.
    *
    * @param \Drupal\Component\Plugin\PluginInspectionInterface $plugin
@@ -299,26 +243,6 @@ class EntityOperations implements ContainerInjectionInterface {
   }
 
   /**
-   * Gets revision IDs for layout sections.
-   *
-   * @param \Drupal\layout_builder\Section[] $sections
-   *   The layout sections.
-   *
-   * @return int[]
-   *   The revision IDs.
-   */
-  protected function getInBlockRevisionIdsInSection(array $sections) {
-    $revision_ids = [];
-    foreach ($this->getInlineBlockComponents($sections) as $component) {
-      $configuration = $component->getPlugin()->getConfiguration();
-      if (!empty($configuration['block_revision_id'])) {
-        $revision_ids[] = $configuration['block_revision_id'];
-      }
-    }
-    return $revision_ids;
-  }
-
-  /**
    * Gets blocks IDs for an array of revision IDs.
    *
    * @param int[] $revision_ids
@@ -333,64 +257,6 @@ class EntityOperations implements ContainerInjectionInterface {
       $query->condition('revision_id', $revision_ids, 'IN');
       $block_ids = $query->execute();
       return $block_ids;
-    }
-    return [];
-  }
-
-  /**
-   * Prepares a non-reusable block content entity for access checking.
-   *
-   * @param \Drupal\block_content\BlockContentInterface $block_content
-   *   The block content entity.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  public function handleAccessPrep(BlockContentInterface $block_content) {
-    if (!$block_content->isReusable() && empty($block_content->getAccessDependency())) {
-      /** @var \Drupal\layout_builder\InlineBlockContentUsage $usage */
-      if (($layout_entity_info = $this->usage->getUsage($block_content->id()))) {
-        $layout_entity_storage = $this->entityTypeManager->getStorage($layout_entity_info->layout_entity_type);
-        $layout_entity = $layout_entity_storage->load($layout_entity_info->layout_entity_id);
-        if ($this->isLayoutCompatibleEntity($layout_entity)) {
-          if (!$layout_entity->getEntityType()->isRevisionable()) {
-            $block_content->setAccessDependency($layout_entity);
-            return;
-          }
-          else {
-            foreach ($this->getLayoutEntityBlockContentRevisionIds($layout_entity) as $revision_id) {
-              $revision = $layout_entity_storage->loadRevision($revision_id);
-              $block_revision_ids = $this->getInBlockRevisionIdsInSection($this->getEntitySections($revision));
-              if (in_array($block_content->getRevisionId(), $block_revision_ids)) {
-                $block_content->setAccessDependency($revision);
-                return;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Gets the block_content entity revision IDs for layout entity.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $layout_entity
-   *   The entity with the layout.
-   *
-   * @return int[]
-   *   The revision IDs.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  protected function getLayoutEntityBlockContentRevisionIds(EntityInterface $layout_entity) {
-    $entity_type = $this->entityTypeManager->getDefinition($layout_entity->getEntityTypeId());
-    if ($revision_table = $entity_type->getRevisionTable()) {
-      $query = $this->database->select($revision_table);
-      $query->condition($entity_type->getKey('id'), $layout_entity->id());
-      $query->fields($revision_table, [$entity_type->getKey('revision')]);
-      $query->orderBy($entity_type->getKey('revision'), 'DESC');
-      return $query->execute()->fetchCol();
     }
     return [];
   }
