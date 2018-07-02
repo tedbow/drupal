@@ -23,6 +23,7 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
       'configure any layout',
       'administer node display',
       'administer node fields',
+      'access content',
     ]));
 
     $field_ui_prefix = 'admin/structure/types/manage/bundle_with_section_field';
@@ -44,9 +45,10 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
 
     // Confirm the block can be edited.
     $this->drupalGet('node/1/layout');
-    $this->configureInlineBlock('The DEFAULT block body', 'The NEW block body!');
+    $this->configureInlineBlock('The DEFAULT block body', 'The NEW block body');
     $this->assertSaveLayout();
     $this->drupalGet('node/1');
+    file_put_contents('/Users/ted.bowman/Sites/www/tt2.html', $this->getSession()->getPage()->getOuterHtml());
     $assert_session->pageTextContains('The NEW block body');
     $assert_session->pageTextNotContains('The DEFAULT block body');
     $this->drupalGet('node/2');
@@ -59,7 +61,7 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
     $this->addInlineBlockToLayout('2nd Block title', 'The 2nd block body');
     $this->assertSaveLayout();
     $this->drupalGet('node/1');
-    $assert_session->pageTextContains('The NEW block body!');
+    $assert_session->pageTextContains('The NEW block body');
     $assert_session->pageTextContains('The 2nd block body');
     $this->drupalGet('node/2');
     // Node 2 should use default layout.
@@ -73,20 +75,22 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
     $inline_block_2 = $page->findAll('css', static::INLINE_BLOCK_LOCATOR)[1];
     $uuid = $inline_block_2->getAttribute('data-layout-block-uuid');
     $block_css_locator = static::INLINE_BLOCK_LOCATOR . "[data-layout-block-uuid=\"$uuid\"]";
-    $this->configureInlineBlock('The 2nd block body', 'The 2nd NEW block body!', $block_css_locator);
+    $this->configureInlineBlock('The 2nd block body', 'The 2nd NEW block blody', $block_css_locator);
     $this->assertSaveLayout();
     $this->drupalGet('node/1');
-    $assert_session->pageTextContains('The NEW block body!');
-    $assert_session->pageTextContains('The 2nd NEW block body!');
+    $assert_session->pageTextContains('The NEW block body');
+    $assert_session->pageTextContains('The 2nd NEW block blody');
     $this->drupalGet('node/2');
     // Node 2 should use default layout.
     $assert_session->pageTextContains('The DEFAULT block body');
-    $assert_session->pageTextNotContains('The NEW block body!');
-    $assert_session->pageTextNotContains('The 2nd NEW block body!');
+    $assert_session->pageTextNotContains('The NEW block body');
+    $assert_session->pageTextNotContains('The 2nd NEW block blody');
 
     // The default layout entity block should be changed.
     $this->drupalGet("$field_ui_prefix/display-layout/default");
-    $assert_session->pageTextContains('The DEFAULT block body');
+    $this->getSession()->wait(1000);
+    file_put_contents('/Users/ted.bowman/Sites/www/bo.html', $page->getOuterHtml());
+    $this->assertPageContainsAfterWait('The DEFAULT block body');
     // Confirm default layout still only has 1 entity block.
     $assert_session->elementsCount('css', static::INLINE_BLOCK_LOCATOR, 1);
   }
@@ -102,6 +106,7 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
       'access contextual links',
       'configure any layout',
       'administer node display',
+      'access content',
     ]));
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
@@ -358,5 +363,6 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
     $this->assertEmpty($this->blockStorage->load($default_block2_id));
     $this->assertCount(0, $this->blockStorage->loadMultiple());
   }
+
 
 }

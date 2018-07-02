@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\block_content\BlockContentInterface;
+use Drupal\layout_builder\EntityOperations;
 use Drupal\user\UserInterface;
 
 /**
@@ -323,5 +324,16 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
     // Invalidate the block cache to update custom block-based derivatives.
     \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
   }
+
+  public function xgetAccessDependency() {
+    if (empty($this->accessDependency)) {
+      /** @var \Drupal\layout_builder\EntityOperations $entity_operations */
+      $entity_operations = \Drupal::classResolver(EntityOperations::class);
+      $entity_operations->handleAccessPrep($this);
+    }
+    return $this->accessDependency;
+
+  }
+
 
 }

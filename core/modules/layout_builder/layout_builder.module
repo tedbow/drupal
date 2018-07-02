@@ -136,7 +136,7 @@ function layout_builder_plugin_filter_block_alter(array &$definitions, array $ex
 /**
  * Implements hook_ENTITY_TYPE_access().
  */
-function layout_builder_block_content_access(EntityInterface $entity, $operation, AccountInterface $account) {
+function xlayout_builder_block_content_access(EntityInterface $entity, $operation, AccountInterface $account) {
   /** @var \Drupal\layout_builder\EntityOperations $entity_operations */
   $entity_operations = \Drupal::classResolver(EntityOperations::class);
   $entity_operations->handleAccessPrep($entity);
