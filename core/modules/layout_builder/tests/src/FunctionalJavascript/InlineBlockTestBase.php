@@ -85,7 +85,15 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $assert_session = $this->assertSession();
     $assert_session->linkExists('Save Layout');
     $this->clickLink('Save Layout');
-    $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
+    try {
+      $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
+    }
+    catch (\Exception $e) {
+      //file_put_contents('/Users/ted.bowman/Sites/www/no-message.html', $this->getSession()->getPage()->getOuterHtml());
+      throw  $e;
+    }
+
+
     if (stristr($this->getUrl(), 'admin/structure') === FALSE) {
       $assert_session->pageTextContains('The layout override has been saved.');
     }
@@ -156,7 +164,14 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
         break;
       }
     }
-    $this->assertNotEmpty($found_new_text, 'Found block text on page.');
+    try {
+      $this->assertNotEmpty($found_new_text, 'Found block text on page.');
+    }
+    catch (\Exception $e) {
+      //file_put_contents('/Users/ted.bowman/Sites/www/not-found.html', $page->getOuterHtml());
+      throw $e;
+    }
+
   }
 
   /**
