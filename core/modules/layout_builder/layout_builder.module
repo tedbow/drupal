@@ -15,6 +15,7 @@ use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplayStorage;
 use Drupal\layout_builder\Form\LayoutBuilderEntityViewDisplayForm;
 use Drupal\layout_builder\EntityOperations;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Access\AccessResult;
 
 /**
  * Implements hook_help().
@@ -140,5 +141,14 @@ function layout_builder_block_content_access(EntityInterface $entity, $operation
   /** @var \Drupal\layout_builder\EntityOperations $entity_operations */
   $entity_operations = \Drupal::classResolver(EntityOperations::class);
   $entity_operations->handleAccessPrep($entity);
+}
 
+/**
+ * Implements hook_entity_access().
+ */
+function xlayout_builder_entity_access(EntityInterface $entity, $operation, $account) {
+  $route = \Drupal::routeMatch();
+  if (strpos($route->getRouteName(), 'layout_builder.defaults') === 0 && !empty($entity->in_preview)) {
+    return AccessResult::allowed();
+  }
 }
