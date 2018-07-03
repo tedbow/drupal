@@ -250,7 +250,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   }
 
   /**
-   * Saves the "block_content" entity for this plugin.
+   * Saves the block_content entity for this plugin.
    *
    * @param bool $new_revision
    *   Whether to create new revision.
