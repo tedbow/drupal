@@ -87,13 +87,9 @@ class SetInlineBlockDependency implements EventSubscriberInterface, ContainerInj
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
-    if (\Drupal::moduleHandler()->moduleExists('block_content')) {
-      return [
-        BlockContentEvents::INLINE_BLOCK_GET_DEPENDENCY => 'onGetDependency',
-      ];
-    }
-    return [];
-
+    return [
+      BlockContentEvents::INLINE_BLOCK_GET_DEPENDENCY => 'onGetDependency',
+    ];
   }
 
   /**
