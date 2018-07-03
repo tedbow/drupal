@@ -135,7 +135,6 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
     // Confirm the block can be edited.
     $this->drupalGet('node/1/layout');
     $this->configureInlineBlock('The block body', 'The block updated body');
-    $assert_session->pageTextContains('The block updated body');
 
     $this->clickLink($no_save_link_text);
     if ($confirm_button_text) {
