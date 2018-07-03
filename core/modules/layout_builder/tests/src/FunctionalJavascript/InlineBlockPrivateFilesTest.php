@@ -138,6 +138,7 @@ class InlineBlockPrivateFilesTest extends InlineBlockTestBase {
    *   The file entity.
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
+   * @throws \Behat\Mink\Exception\ExpectationException
    */
   protected function replaceFileInBlock(FileInterface $file) {
     $assert_session = $this->assertSession();
@@ -146,7 +147,7 @@ class InlineBlockPrivateFilesTest extends InlineBlockTestBase {
     $assert_session->assertWaitOnAjaxRequest();
     $page->pressButton('Remove');
     $assert_session->assertWaitOnAjaxRequest();
-    $page->attachFileToField("files[settings_block_form_field_file_0]", $this->fileSystem->realpath($file->getFileUri()));
+    $this->attachFileToBlockForm($file);
     $page->pressButton('Update');
     $this->assertDialogClosedAndTextVisible($file->label(), static::INLINE_BLOCK_LOCATOR);
   }
@@ -172,7 +173,7 @@ class InlineBlockPrivateFilesTest extends InlineBlockTestBase {
     $assert_session->assertWaitOnAjaxRequest();
     $assert_session->fieldValueEquals('Title', '');
     $page->findField('Title')->setValue($title);
-    $page->attachFileToField("files[settings_block_form_field_file_0]", $this->fileSystem->realpath($file->getFileUri()));
+    $this->attachFileToBlockForm($file);
     $page->pressButton('Add Block');
     $this->assertDialogClosedAndTextVisible($file->label(), static::INLINE_BLOCK_LOCATOR);
   }
@@ -238,6 +239,22 @@ class InlineBlockPrivateFilesTest extends InlineBlockTestBase {
    */
   protected function getFileSecret(FileInterface $file) {
     return "The secret in {$file->label()}";
+  }
+
+  /**
+   * Attaches a file to the block edit form.
+   *
+   * @param \Drupal\file\FileInterface $file
+   *   The file to be attached.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   */
+  protected function attachFileToBlockForm(FileInterface $file) {
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    $page->attachFileToField("files[settings_block_form_field_file_0]", $this->fileSystem->realpath($file->getFileUri()));
+    $assert_session->assertWaitOnAjaxRequest();
+    $this->assertNotEmpty($assert_session->waitForLink($file->label()));
   }
 
 }
