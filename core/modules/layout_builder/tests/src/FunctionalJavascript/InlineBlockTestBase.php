@@ -177,7 +177,6 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $this->assertDialogClosedAndTextVisible($new_body);
   }
 
-
   /**
    * Waits for an element to be removed from the page.
    *
