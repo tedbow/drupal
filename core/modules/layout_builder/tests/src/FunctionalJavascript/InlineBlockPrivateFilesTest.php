@@ -148,7 +148,7 @@ class InlineBlockPrivateFilesTest extends InlineBlockTestBase {
     $assert_session->assertWaitOnAjaxRequest();
     $page->attachFileToField("files[settings_block_form_field_file_0]", $this->fileSystem->realpath($file->getFileUri()));
     $page->pressButton('Update');
-    $assert_session->assertWaitOnAjaxRequest();
+    $this->assertDialogClosedAndTextVisible($file->label(), static::INLINE_BLOCK_LOCATOR);
   }
 
   /**
@@ -174,19 +174,7 @@ class InlineBlockPrivateFilesTest extends InlineBlockTestBase {
     $page->findField('Title')->setValue($title);
     $page->attachFileToField("files[settings_block_form_field_file_0]", $this->fileSystem->realpath($file->getFileUri()));
     $page->pressButton('Add Block');
-    // @todo Replace with 'assertNoElementAfterWait()' after
-    // https://www.drupal.org/project/drupal/issues/2892440.
-    $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->elementNotExists('css', '#drupal-off-canvas');
-    $found_new_text = FALSE;
-    /** @var \Behat\Mink\Element\NodeElement $element */
-    foreach ($page->findAll('css', static::INLINE_BLOCK_LOCATOR) as $element) {
-      if (stristr($element->getText(), $file->label())) {
-        $found_new_text = TRUE;
-        break;
-      }
-    }
-    $this->assertNotEmpty($found_new_text, 'Found block text on page.');
+    $this->assertDialogClosedAndTextVisible($file->label(), static::INLINE_BLOCK_LOCATOR);
   }
 
   /**

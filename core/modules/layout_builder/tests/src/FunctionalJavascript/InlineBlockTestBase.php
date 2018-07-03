@@ -85,14 +85,7 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $assert_session = $this->assertSession();
     $assert_session->linkExists('Save Layout');
     $this->clickLink('Save Layout');
-    try {
-      $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
-    }
-    catch (\Exception $e) {
-      //file_put_contents('/Users/ted.bowman/Sites/www/no-message.html', $this->getSession()->getPage()->getOuterHtml());
-      throw  $e;
-    }
-
+    $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
 
     if (stristr($this->getUrl(), 'admin/structure') === FALSE) {
       $assert_session->pageTextContains('The layout override has been saved.');
@@ -118,14 +111,17 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
   protected function removeInlineBlockFromLayout() {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
-    $rendered_block = $page->find('css', static::INLINE_BLOCK_LOCATOR)->getText();
-    $this->assertNotEmpty($rendered_block);
-    $assert_session->pageTextContains($rendered_block);
+    $block_text = $page->find('css', static::INLINE_BLOCK_LOCATOR)->getText();
+    $this->assertNotEmpty($block_text);
+    $assert_session->pageTextContains($block_text);
     $this->clickContextualLink(static::INLINE_BLOCK_LOCATOR, 'Remove block');
+    $assert_session->waitForElement('css', "#drupal-off-canvas input[value='Remove']");
     $assert_session->assertWaitOnAjaxRequest();
     $page->find('css', '#drupal-off-canvas')->pressButton('Remove');
+    $this->waitForNoElement('#drupal-off-canvas');
+    $this->waitForNoElement(static::INLINE_BLOCK_LOCATOR);
     $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->pageTextNotContains($rendered_block);
+    $assert_session->pageTextNotContains($block_text);
   }
 
   /**
@@ -147,31 +143,13 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $this->assertNotEmpty($assert_session->waitForElementVisible('css', '.block-categories details:contains(Create new block)'));
     $this->clickLink('Basic block');
     $assert_session->assertWaitOnAjaxRequest();
+    $textarea = $assert_session->waitForElement('css', '[name="settings[block_form][body][0][value]"]');
+    $this->assertNotEmpty($textarea);
     $assert_session->fieldValueEquals('Title', '');
     $page->findField('Title')->setValue($title);
-    $textarea = $assert_session->elementExists('css', '[name="settings[block_form][body][0][value]"]');
     $textarea->setValue($body);
     $page->pressButton('Add Block');
-    // @todo Replace with 'assertNoElementAfterWait()' after
-    // https://www.drupal.org/project/drupal/issues/2892440.
-    $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->elementNotExists('css', '#drupal-off-canvas');
-    $found_new_text = FALSE;
-    /** @var \Behat\Mink\Element\NodeElement $element */
-    foreach ($page->findAll('css', static::INLINE_BLOCK_LOCATOR) as $element) {
-      if (stristr($element->getText(), $body)) {
-        $found_new_text = TRUE;
-        break;
-      }
-    }
-    try {
-      $this->assertNotEmpty($found_new_text, 'Found block text on page.');
-    }
-    catch (\Exception $e) {
-      //file_put_contents('/Users/ted.bowman/Sites/www/not-found.html', $page->getOuterHtml());
-      throw $e;
-    }
-
+    $this->assertDialogClosedAndTextVisible($body, static::INLINE_BLOCK_LOCATOR);
   }
 
   /**
@@ -194,7 +172,48 @@ abstract class InlineBlockTestBase extends JavascriptTestBase {
     $this->assertSame($old_body, $textarea->getValue());
     $textarea->setValue($new_body);
     $page->pressButton('Update');
+    $this->waitForNoElement('#drupal-off-canvas');
     $assert_session->assertWaitOnAjaxRequest();
+    $this->assertDialogClosedAndTextVisible($new_body);
+  }
+
+
+  /**
+   * Waits for an element to be removed from the page.
+   *
+   * @param string $selector
+   *   CSS selector.
+   * @param int $timeout
+   *   (optional) Timeout in milliseconds, defaults to 10000.
+   *
+   * @todo Remove in https://www.drupal.org/node/2892440.
+   */
+  protected function waitForNoElement($selector, $timeout = 10000) {
+    $condition = "(typeof jQuery !== 'undefined' && jQuery('$selector').length === 0)";
+    $this->assertJsCondition($condition, $timeout);
+  }
+
+  /**
+   * Asserts that the dialog closes and the new text appears on the main canvas.
+   *
+   * @param string $text
+   *   The text.
+   * @param string|null $css_locator
+   *   The css locator to use inside the main canvas if any.
+   *
+   * @throws \Behat\Mink\Exception\ExpectationException
+   */
+  protected function assertDialogClosedAndTextVisible($text, $css_locator = NULL) {
+    $assert_session = $this->assertSession();
+    $this->waitForNoElement('#drupal-off-canvas');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->elementNotExists('css', '#drupal-off-canvas');
+    if ($css_locator) {
+      $this->assertNotEmpty($assert_session->waitForElementVisible('css', ".dialog-off-canvas-main-canvas $css_locator:contains('$text')"));
+    }
+    else {
+      $this->assertNotEmpty($assert_session->waitForElementVisible('css', ".dialog-off-canvas-main-canvas:contains('$text')"));
+    }
   }
 
 }
