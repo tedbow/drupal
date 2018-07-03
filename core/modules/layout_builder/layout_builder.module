@@ -131,4 +131,3 @@ function layout_builder_plugin_filter_block_alter(array &$definitions, array $ex
     }
   }
 }
-
