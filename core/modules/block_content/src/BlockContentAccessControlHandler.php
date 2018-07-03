@@ -5,16 +5,50 @@ namespace Drupal\block_content;
 use Drupal\block_content\Event\BlockContentGetDependencyEvent;
 use Drupal\Core\Access\AccessDependentInterface;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Session\AccountInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Defines the access control handler for the custom block entity type.
  *
  * @see \Drupal\block_content\Entity\BlockContent
  */
-class BlockContentAccessControlHandler extends EntityAccessControlHandler {
+class BlockContentAccessControlHandler extends EntityAccessControlHandler implements EntityHandlerInterface {
+
+  /**
+   * The event dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
+   * BlockContentAccessControlHandler constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher
+   *   The event dispatcher.
+   */
+  public function __construct(EntityTypeInterface $entity_type, EventDispatcherInterface $dispatcher) {
+    parent::__construct($entity_type);
+    $this->eventDispatcher = $dispatcher;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+    return new static(
+      $entity_type,
+      $container->get('event_dispatcher')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -36,7 +70,7 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
       if (empty($dependency)) {
         // If an access dependency has not been set let modules set one.
         $event = new BlockContentGetDependencyEvent($entity);
-        $this->eventDispatcher()->dispatch(BlockContentEvents::INLINE_BLOCK_GET_DEPENDENCY, $event);
+        $this->eventDispatcher->dispatch(BlockContentEvents::INLINE_BLOCK_GET_DEPENDENCY, $event);
         $dependency = $entity->getAccessDependency();
         if (empty($dependency)) {
           return AccessResult::forbidden("Non-reusable blocks must set an access dependency for access control.");
@@ -49,16 +83,6 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler {
 
     }
     return $access;
-  }
-
-  /**
-   * Wraps the event dispatcher.
-   *
-   * @return \Symfony\Component\EventDispatcher\EventDispatcherInterface
-   *   The event dispatcher.
-   */
-  protected function eventDispatcher() {
-    return \Drupal::service('event_dispatcher');
   }
 
 }
