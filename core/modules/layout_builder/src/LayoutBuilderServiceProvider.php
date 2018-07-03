@@ -1,0 +1,35 @@
+<?php
+
+namespace Drupal\layout_builder;
+
+use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\DependencyInjection\ServiceProviderInterface;
+use Drupal\layout_builder\EventSubscriber\SetInlineBlockDependency;
+use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Reference;
+
+/**
+ * Provides a service that is dependent on block_content module.
+ *
+ * @see \Drupal\layout_builder\EventSubscriber\SetInlineBlockDependency
+ */
+class LayoutBuilderServiceProvider implements ServiceProviderInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function register(ContainerBuilder $container) {
+    $modules = $container->getParameter('container.modules');
+    if (isset($modules['block_content'])) {
+      $definition = new Definition(SetInlineBlockDependency::class);
+      $definition->setArguments([
+        new Reference('entity_type.manager'),
+        new Reference('database'),
+        new Reference('inline_block_content.usage'),
+      ]);
+      $definition->addTag('event_subscriber');
+      $container->setDefinition('layout_builder.get_block_dependency_subscriber', $definition);
+    }
+  }
+
+}
