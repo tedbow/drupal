@@ -159,6 +159,7 @@ class LayoutBuilderTest extends BrowserTestBase {
 
     // Reverting the override returns it to the defaults.
     $this->clickLink('Layout');
+    // Add a block before reverting to ensure it will also be removed.
     $assert_session->linkExists('Add Block');
     $this->clickLink('Add Block');
     $assert_session->linkExists('ID');

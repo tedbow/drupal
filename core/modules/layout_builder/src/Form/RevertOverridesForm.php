@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
+use Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface;
 use Drupal\layout_builder\SectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -37,16 +38,26 @@ class RevertOverridesForm extends ConfirmFormBase {
   protected $sectionStorage;
 
   /**
+   * The section storage manager.
+   *
+   * @var \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface
+   */
+  protected $sectionStorageManager;
+
+  /**
    * Constructs a new RevertOverridesForm.
    *
    * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layout_tempstore_repository
    *   The layout tempstore repository.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
+   * @param \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface $section_storage_manager
+   *   The section storage manager.
    */
-  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger) {
+  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger, SectionStorageManagerInterface $section_storage_manager) {
     $this->layoutTempstoreRepository = $layout_tempstore_repository;
     $this->messenger = $messenger;
+    $this->sectionStorageManager = $section_storage_manager;
   }
 
   /**
@@ -55,7 +66,8 @@ class RevertOverridesForm extends ConfirmFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('layout_builder.tempstore_repository'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('plugin.manager.layout_builder.section_storage')
     );
   }
 
@@ -103,13 +115,15 @@ class RevertOverridesForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->sectionStorage = \Drupal::service('plugin.manager.layout_builder.section_storage')->loadFromStorageId($this->sectionStorage->getStorageType(), $this->sectionStorage->getStorageId());
+    // Ensure we have the latest section storage in case components have been
+    // added.
+    $section_storage = $this->sectionStorageManager->loadFromStorageId($this->sectionStorage->getStorageType(), $this->sectionStorage->getStorageId());
     // Remove all sections.
-    while ($this->sectionStorage->count()) {
-      $this->sectionStorage->removeSection(0);
+    while ($section_storage->count()) {
+      $section_storage->removeSection(0);
     }
-    $this->sectionStorage->save();
-    $this->layoutTempstoreRepository->delete($this->sectionStorage);
+    $section_storage->save();
+    $this->layoutTempstoreRepository->delete($section_storage);
 
     $this->messenger->addMessage($this->t('The layout has been reverted back to defaults.'));
     $form_state->setRedirectUrl($this->getCancelUrl());
