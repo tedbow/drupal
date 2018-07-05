@@ -93,7 +93,7 @@ class InlineBlockPrivateFilesTest extends InlineBlockTestBase {
     $assert_session->pageTextNotContains($file->label());
     // Try to access file directly after it has been removed.
     $this->drupalGet($private_href1);
-    $assert_session->statusCodeEquals(403);
+    $assert_session->pageTextContains('You are not authorized to access this page');
     $assert_session->pageTextNotContains($this->getFileSecret($file));
     $this->assertFileExists($file_real_path);
 
@@ -120,15 +120,15 @@ class InlineBlockPrivateFilesTest extends InlineBlockTestBase {
     $private_href3 = $this->assertFileAccessibleOnNode($file3);
 
     $this->drupalGet($private_href2);
-    $assert_session->statusCodeEquals(403);
+    $assert_session->pageTextContains('You are not authorized to access this page');
 
     $node->setUnpublished();
     $node->save();
     $this->drupalGet('node/1');
-    $assert_session->statusCodeEquals('403');
+    $assert_session->pageTextContains('You are not authorized to access this page');
     $this->drupalGet($private_href3);
     $assert_session->pageTextNotContains($this->getFileSecret($file3));
-    $assert_session->statusCodeEquals(403);
+    $assert_session->pageTextContains('You are not authorized to access this page');
   }
 
   /**
