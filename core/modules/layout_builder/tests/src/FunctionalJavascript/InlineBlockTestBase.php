@@ -3,13 +3,13 @@
 namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
 use Drupal\block_content\Entity\BlockContentType;
-use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
+use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 use Drupal\Tests\contextual\FunctionalJavascript\ContextualLinkClickTrait;
 
 /**
  * Base class for testing inline blocks.
  */
-abstract class InlineBlockTestBase extends JavascriptTestBase {
+abstract class InlineBlockTestBase extends WebDriverTestBase {
 
   use ContextualLinkClickTrait;
 
