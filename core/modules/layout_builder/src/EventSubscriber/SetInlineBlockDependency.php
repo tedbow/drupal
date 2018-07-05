@@ -68,7 +68,6 @@ class SetInlineBlockDependency implements EventSubscriberInterface, ContainerInj
     $this->entityTypeManager = $entity_type_manager;
     $this->database = $database;
     $this->usage = $usage;
-
   }
 
   /**
@@ -79,7 +78,6 @@ class SetInlineBlockDependency implements EventSubscriberInterface, ContainerInj
       $container->get('entity_type.manager'),
       $container->get('database'),
       $container->get('inline_block_content.usage')
-
     );
   }
 
@@ -123,26 +121,32 @@ class SetInlineBlockDependency implements EventSubscriberInterface, ContainerInj
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function setLayoutDependency(BlockContentInterface $block_content) {
-    if (!$block_content->isReusable() && empty($block_content->getAccessDependency())) {
-      /** @var \Drupal\layout_builder\InlineBlockContentUsage $usage */
-      if ($layout_entity_info = $this->usage->getUsage($block_content->id())) {
-        $layout_entity_storage = $this->entityTypeManager->getStorage($layout_entity_info->layout_entity_type);
-        $layout_entity = $layout_entity_storage->load($layout_entity_info->layout_entity_id);
-        if ($this->isLayoutCompatibleEntity($layout_entity)) {
-          if (!$layout_entity->getEntityType()->isRevisionable()) {
-            $block_content->setAccessDependency($layout_entity);
-            return;
-          }
-          else {
-            foreach ($this->getEntityRevisionIds($layout_entity) as $revision_id) {
-              $revision = $layout_entity_storage->loadRevision($revision_id);
-              $block_revision_ids = $this->getInBlockRevisionIdsInSection($this->getEntitySections($revision));
-              if (in_array($block_content->getRevisionId(), $block_revision_ids)) {
-                $block_content->setAccessDependency($revision);
-                return;
-              }
-            }
-          }
+    if ($block_content->isReusable() || $block_content->getAccessDependency()) {
+      // If the block is reusable or if the block already has its dependency set
+      // then there is nothing to do here.
+      return;
+    }
+
+    $layout_entity_info = $this->usage->getUsage($block_content->id());
+    if (empty($layout_entity_info)) {
+      // If the block does not have usage information then we cannot set a
+      // dependency. It may be used by another module besides layout builder.
+      return;
+    }
+    /** @var \Drupal\layout_builder\InlineBlockContentUsage $usage */
+    $layout_entity_storage = $this->entityTypeManager->getStorage($layout_entity_info->layout_entity_type);
+    $layout_entity = $layout_entity_storage->load($layout_entity_info->layout_entity_id);
+    if ($this->isLayoutCompatibleEntity($layout_entity)) {
+      if (!$layout_entity->getEntityType()->isRevisionable()) {
+        $block_content->setAccessDependency($layout_entity);
+        return;
+      }
+      foreach ($this->getEntityRevisionIds($layout_entity) as $revision_id) {
+        $revision = $layout_entity_storage->loadRevision($revision_id);
+        $block_revision_ids = $this->getInBlockRevisionIdsInSection($this->getEntitySections($revision));
+        if (in_array($block_content->getRevisionId(), $block_revision_ids)) {
+          $block_content->setAccessDependency($revision);
+          return;
         }
       }
     }
