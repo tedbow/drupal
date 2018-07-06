@@ -7,19 +7,15 @@ use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\Core\Access\AccessibleInterface;
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Access\AccessResultInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\Tests\BrowserTestBase;
-use Drupal\Tests\UnitTestCase;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
-use Drupal\user\UserInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
+ * Tests the block content entity access handler.
+ *
  * @coversDefaultClass \Drupal\block_content\BlockContentAccessControlHandler
+ *
  * @group block_content
  */
 class BlockContentAccessHandlerTest extends KernelTestBase {
@@ -42,20 +38,22 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
   protected $accessControlHandler;
 
   /**
-   * The mock module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-
-  /**
    * The BlockContent entity used for testing.
    *
    * @var \Drupal\block_content\Entity\BlockContent
    */
   protected $blockEntity;
 
+  /**
+   * The test role.
+   *
+   * @var \Drupal\user\RoleInterface
+   */
+  protected $role;
+
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
     $this->installSchema('system', ['sequence']);
@@ -68,7 +66,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
     $block_content_type = BlockContentType::create([
       'id' => 'square',
       'label' => 'A square block type',
-      'description' => "Provides a block type that increases your site's spiffiness by up to 11%",
+      'description' => "Provides a block type that is square.",
     ]);
     $block_content_type->save();
 
@@ -77,25 +75,29 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
       'type' => 'square',
     ]);
     $this->blockEntity->save();
+
+    // Create user 1 test does not have all permissions.
     User::create([
       'name' => 'admin',
     ])->save();
+
+    $this->role = Role::create([
+      'id' => 'roly',
+      'label' => 'roly poly',
+    ]);
+    $this->role->save();
     $this->accessControlHandler = new BlockContentAccessControlHandler(\Drupal::entityTypeManager()->getDefinition('block_content'), \Drupal::service('event_dispatcher'));
   }
 
-
   /**
+   * @covers ::checkAccess
+   *
    * @dataProvider providerTestAccess
    */
   public function testAccess($published, $reusable, $permissions, $parent_access, $expected_access) {
     $published ? $this->blockEntity->setPublished() : $this->blockEntity->setUnpublished();
     $this->blockEntity->setReusable($reusable);
 
-    $role = Role::create([
-      'id' => 'roly',
-      'label' => 'roly poly',
-    ]);
-    $role->save();
     $user = User::create([
       'name' => 'Someone',
       'mail' => 'hi@example.com',
@@ -103,13 +105,13 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
     $user->save();
 
     if ($permissions) {
-
       foreach ($permissions as $permission) {
-        $role->grantPermission($permission);
+        $this->role->grantPermission($permission);
       }
-      $role->save();
+      $this->role->save();
     }
-    $user->addRole($role->id());
+    $user->addRole($this->role->id());
+    $user->save();
 
     if ($parent_access) {
       $parent_entity = $this->prophesize(AccessibleInterface::class);
@@ -137,9 +139,27 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
     $this->blockEntity->save();
 
     $result = $this->accessControlHandler->access($this->blockEntity, 'view', $user, TRUE);
-    $this->assertAccess($expected_access, $result);
+    switch ($expected_access) {
+      case 'allowed':
+        $this->assertTrue($result->isAllowed());
+        break;
+
+      case 'forbidden':
+        $this->assertTrue($result->isForbidden());
+        break;
+
+      case  'neutral':
+        $this->assertTrue($result->isNeutral());
+        break;
+
+      default:
+        $this->fail('Unexpected access type');
+    }
   }
 
+  /**
+   * Dataprovider for testAccess().
+   */
   public function providerTestAccess() {
     return [
       'published:reusable' => [
@@ -148,7 +168,6 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
         [],
         NULL,
         'allowed',
-
       ],
       'unpublished:reusable' => [
         FALSE,
@@ -202,26 +221,4 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
     ];
   }
 
-  /**
-   * @param $expected_access
-   * @param $result
-   */
-  protected function assertAccess($expected_access, AccessResultInterface $result) {
-    switch ($expected_access) {
-      case 'allowed':
-        $this->assertTrue($result->isAllowed());
-        break;
-
-      case 'forbidden':
-        $this->assertTrue($result->isForbidden());
-        break;
-
-      case  'neutral':
-        $this->assertTrue($result->isNeutral());
-        break;
-
-      default:
-        $this->fail('Unexpected access type');
-    }
-  }
 }
