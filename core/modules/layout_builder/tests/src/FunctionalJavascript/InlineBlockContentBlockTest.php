@@ -368,4 +368,55 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
     $this->assertCount(0, $this->blockStorage->loadMultiple());
   }
 
+  /**
+   * Tests access to the block edit form of inline blocks.
+   *
+   * This module does not provide links to these forms but in case the paths are
+   * accessed directly they should accessible by users with the
+   * 'configure any layout' permission.
+   *
+   * @see layout_builder_block_content_access()
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   * @throws \Behat\Mink\Exception\ExpectationException
+   * @throws \Behat\Mink\Exception\ResponseTextException
+   */
+  public function testAccess() {
+    $this->drupalLogin($this->drupalCreateUser([
+      'access contextual links',
+      'configure any layout',
+      'administer node display',
+      'administer node fields',
+    ]));
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+
+    // Add a block to default layout.
+    $field_ui_prefix = 'admin/structure/types/manage/bundle_with_section_field';
+    $this->drupalPostForm("$field_ui_prefix/display/default", ['layout[allow_custom]' => TRUE], 'Save');
+
+    // Ensure we have 2 copies of the block in node overrides.
+    $this->drupalGet('node/1/layout');
+    $this->addInlineBlockToLayout('Block title', 'Block body');
+    $this->assertSaveLayout();
+    $node_1_block_id = $this->getLatestBlockEntityId();
+
+    $this->drupalGet("block/$node_1_block_id");
+    $assert_session->pageTextNotContains('You are not authorized to access this page');
+
+    $this->drupalLogout();
+    $this->drupalLogin($this->drupalCreateUser([
+      'administer nodes',
+    ]));
+
+    $this->drupalGet("block/$node_1_block_id");
+    $assert_session->pageTextContains('You are not authorized to access this page');
+
+    $this->drupalLogin($this->drupalCreateUser([
+      'configure any layout',
+    ]));
+    $this->drupalGet("block/$node_1_block_id");
+    $assert_session->pageTextNotContains('You are not authorized to access this page');
+  }
+
 }
