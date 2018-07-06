@@ -255,6 +255,8 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
   public function testDeletion() {
     /** @var \Drupal\Core\Cron $cron */
     $cron = \Drupal::service('cron');
+    /** @var \Drupal\layout_builder\InlineBlockContentUsage $usage */
+    $usage = \Drupal::service('inline_block_content.usage');
     $this->drupalLogin($this->drupalCreateUser([
       'administer content types',
       'access contextual links',
@@ -302,6 +304,7 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
     $assert_session->addressEquals("$field_ui_prefix/display-layout/default");
 
     $this->assertNotEmpty($this->blockStorage->load($default_block_id));
+    $this->assertNotEmpty($usage->getUsage($default_block_id));
     // Remove block from default.
     $this->removeInlineBlockFromLayout();
     $this->assertSaveLayout();
@@ -310,6 +313,7 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
     $this->assertEmpty($this->blockStorage->load($default_block_id));
     // Ensure other blocks still exist.
     $this->assertCount(2, $this->blockStorage->loadMultiple());
+    $this->assertEmpty($usage->getUsage($default_block_id));
 
     $this->drupalGet('node/1/layout');
     $assert_session->pageTextContains('The DEFAULT block body');
@@ -321,12 +325,14 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
     $this->assertNotEmpty($this->blockStorage->load($node_1_block_id));
     $this->assertCount(2, $this->blockStorage->loadMultiple());
 
+    $this->assertNotEmpty($usage->getUsage($node_1_block_id));
     // Ensure entity block is deleted when node is deleted.
     $this->drupalGet('node/1/delete');
     $page->pressButton('Delete');
     $this->assertEmpty(Node::load(1));
     $cron->run();
     $this->assertEmpty($this->blockStorage->load($node_1_block_id));
+    $this->assertEmpty($usage->getUsage($node_1_block_id));
     $this->assertCount(1, $this->blockStorage->loadMultiple());
 
     // Add another block to the default.
@@ -340,21 +346,25 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
     $this->assertCount(2, $this->blockStorage->loadMultiple());
 
     // Delete the other node so bundle can be deleted.
+    $this->assertNotEmpty($usage->getUsage($node_2_block_id));
     $this->drupalGet('node/2/delete');
     $page->pressButton('Delete');
     $this->assertEmpty(Node::load(2));
     $cron->run();
     // Ensure entity block was deleted.
     $this->assertEmpty($this->blockStorage->load($node_2_block_id));
+    $this->assertEmpty($usage->getUsage($node_2_block_id));
     $this->assertCount(1, $this->blockStorage->loadMultiple());
 
     // Delete the bundle which has the default layout.
+    $this->assertNotEmpty($usage->getUsage($default_block2_id));
     $this->drupalGet("$field_ui_prefix/delete");
     $page->pressButton('Delete');
     $cron->run();
 
     // Ensure the entity block in default is deleted when bundle is deleted.
     $this->assertEmpty($this->blockStorage->load($default_block2_id));
+    $this->assertEmpty($usage->getUsage($default_block2_id));
     $this->assertCount(0, $this->blockStorage->loadMultiple());
   }
 
