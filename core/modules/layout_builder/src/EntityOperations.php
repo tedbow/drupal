@@ -114,11 +114,7 @@ class EntityOperations implements ContainerInjectionInterface {
     // some blocks that need to be removed.
     if ($original_revision_ids = array_diff($this->getInBlockRevisionIdsInSection($original_sections), $current_revision_ids)) {
       if ($removed_ids = array_diff($this->getBlockIdsForRevisionIds($original_revision_ids), $this->getBlockIdsForRevisionIds($current_revision_ids))) {
-        foreach ($removed_ids as $block_content_id) {
-          if ($block = $this->storage->load($block_content_id)) {
-            $block->delete();
-          }
-        }
+        $this->deleteBlocksAndUsage($removed_ids);
       }
     }
   }
