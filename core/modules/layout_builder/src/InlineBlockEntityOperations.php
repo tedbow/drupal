@@ -12,11 +12,11 @@ use Drupal\Core\Entity\RevisionableInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Defines a class for reacting to entity events.
+ * Defines a class for reacting to entity events related to Inline Blocks.
  *
  * @internal
  */
-class EntityOperations implements ContainerInjectionInterface {
+class InlineBlockEntityOperations implements ContainerInjectionInterface {
 
   use LayoutEntityHelperTrait;
 
