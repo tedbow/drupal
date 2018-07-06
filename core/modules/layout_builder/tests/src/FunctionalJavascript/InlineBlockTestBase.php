@@ -86,7 +86,8 @@ abstract class InlineBlockTestBase extends WebDriverTestBase {
   protected function assertSaveLayout() {
     $assert_session = $this->assertSession();
     $assert_session->linkExists('Save Layout');
-    $this->clickLink('Save Layout');
+    $link = $this->getSession()->getPage()->findLink('Save Layout');
+    $this->drupalGet($link->getAttribute('href'));
     $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
 
     if (stristr($this->getUrl(), 'admin/structure') === FALSE) {

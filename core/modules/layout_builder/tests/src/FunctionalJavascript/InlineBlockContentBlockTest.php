@@ -14,7 +14,7 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
   /**
    * Tests adding and editing of inline blocks.
    */
-  public function testInlineBlocks() {
+  public function xtestInlineBlocks() {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
 
@@ -96,7 +96,7 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
    *
    * @dataProvider layoutNoSaveProvider
    */
-  public function testNoLayoutSave($operation, $no_save_link_text, $confirm_button_text) {
+  public function xtestNoLayoutSave($operation, $no_save_link_text, $confirm_button_text) {
 
     $this->drupalLogin($this->drupalCreateUser([
       'access contextual links',
@@ -182,7 +182,7 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
   /**
    * Tests entity blocks revisioning.
    */
-  public function testInlineBlocksRevisioning() {
+  public function xtestInlineBlocksRevisioning() {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
 
