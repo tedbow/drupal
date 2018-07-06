@@ -14,6 +14,8 @@ use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplayStorage;
 use Drupal\layout_builder\Form\LayoutBuilderEntityViewDisplayForm;
 use Drupal\layout_builder\InlineBlockEntityOperations;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Access\AccessResult;
 
 /**
  * Implements hook_help().
@@ -130,4 +132,22 @@ function layout_builder_plugin_filter_block_alter(array &$definitions, array $ex
       }
     }
   }
+}
+
+
+/**
+ * Implements hook_ENTITY_TYPE_access().
+ */
+function layout_builder_block_content_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  /** @var \Drupal\block_content\BlockContentInterface $entity */
+  if ($operation === 'view' || $entity->isReusable() || empty(\Drupal::service('inline_block_content.usage')->getUsage($entity->id()))) {
+    // If the operation is 'view' or this is reusable block or if this is
+    // non-reusable that isn't used by this module then don't alter the access.
+    return AccessResult::Neutral();
+  }
+
+  if ($account->hasPermission('configure any layout')) {
+    return AccessResult::allowed();
+  }
+  return AccessResult::forbidden();
 }
