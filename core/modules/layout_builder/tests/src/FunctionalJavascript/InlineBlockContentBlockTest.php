@@ -419,4 +419,66 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
     $assert_session->pageTextNotContains('You are not authorized to access this page');
   }
 
+  /**
+   * Tests the workflow for adding an inline block depending on number of types.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   * @throws \Behat\Mink\Exception\ExpectationException
+   */
+  public function testAddWorkFlow() {
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    $type_storage = $this->container->get('entity_type.manager')->getStorage('block_content_type');
+    foreach ($type_storage->loadByProperties() as $type) {
+      $type->delete();
+    }
+
+    $this->drupalLogin($this->drupalCreateUser([
+      'access contextual links',
+      'configure any layout',
+      'administer node display',
+      'administer node fields',
+    ]));
+
+    $layout_default_path = 'admin/structure/types/manage/bundle_with_section_field/display-layout/default';
+    $this->drupalGet($layout_default_path);
+    // Add a basic block with the body field set.
+    $page->clickLink('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    // Confirm that with no block content types the link does not appear.
+    $assert_session->linkNotExists('Add new Block');
+
+    $this->createBlockContentType('basic', 'Basic block');
+
+    $this->drupalGet($layout_default_path);
+    // Add a basic block with the body field set.
+    $page->clickLink('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    // Confirm with only 1 type the "Add new Block" link goes directly to block
+    // add form.
+    $assert_session->linkNotExists('Basic block');
+    $this->clickLink('Add new Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->fieldExists('Title');
+
+    $this->createBlockContentType('advanced', 'Advanced block');
+
+    $this->drupalGet($layout_default_path);
+    // Add a basic block with the body field set.
+    $page->clickLink('Add Block');
+    // Confirm more than 1 type exists "Add new block" shows a list block types.
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->linkNotExists('Basic block');
+    $assert_session->linkNotExists('Advanced block');
+    $this->clickLink('Add new Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->fieldNotExists('Title');
+    $assert_session->linkExists('Basic block');
+    $assert_session->linkExists('Advanced block');
+
+    $this->clickLink('Advanced block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->fieldExists('Title');
+  }
+
 }

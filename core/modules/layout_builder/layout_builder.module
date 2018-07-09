@@ -125,7 +125,7 @@ function layout_builder_cron() {
 function layout_builder_plugin_filter_block_alter(array &$definitions, array $extra, $consumer) {
   // @todo Determine the 'inline_block_content' blocks should be allowed outside
   //   of layout_builder https://www.drupal.org/node/2979142.
-  if ($consumer !== 'layout_builder') {
+  if ($consumer !== 'layout_builder' || !isset($extra['list']) || $extra['list'] !== 'inline_blocks') {
     foreach ($definitions as $id => $definition) {
       if ($definition['id'] === 'inline_block_content') {
         unset($definitions[$id]);

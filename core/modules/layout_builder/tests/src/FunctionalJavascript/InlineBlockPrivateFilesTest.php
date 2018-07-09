@@ -168,8 +168,8 @@ class InlineBlockPrivateFilesTest extends InlineBlockTestBase {
     $page = $this->getSession()->getPage();
     $page->clickLink('Add Block');
     $assert_session->assertWaitOnAjaxRequest();
-    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '.block-categories details:contains(Create new block)'));
-    $this->clickLink('Basic block');
+    $this->assertNotEmpty($assert_session->waitForLink('Add new Block'));
+    $this->clickLink('Add new Block');
     $assert_session->assertWaitOnAjaxRequest();
     $assert_session->fieldValueEquals('Title', '');
     $page->findField('Title')->setValue($title);
