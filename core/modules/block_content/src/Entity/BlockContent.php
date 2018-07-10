@@ -2,7 +2,7 @@
 
 namespace Drupal\block_content\Entity;
 
-use Drupal\Core\Access\AccessDependentTrait;
+use Drupal\Core\Access\DependentAccessTrait;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -78,7 +78,7 @@ use Drupal\user\UserInterface;
  */
 class BlockContent extends EditorialContentEntityBase implements BlockContentInterface {
 
-  use AccessDependentTrait;
+  use DependentAccessTrait;
 
   /**
    * The theme the block is being created in.

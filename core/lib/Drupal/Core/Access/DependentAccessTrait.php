@@ -3,9 +3,9 @@
 namespace Drupal\Core\Access;
 
 /**
- * Implements \Drupal\Core\Access\AccessDependentInterface.
+ * Implements \Drupal\Core\Access\DependentAccessInterface.
  */
-trait AccessDependentTrait {
+trait DependentAccessTrait {
 
   /**
    * The access dependency.
