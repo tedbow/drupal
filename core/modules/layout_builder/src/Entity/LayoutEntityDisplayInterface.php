@@ -37,6 +37,9 @@ interface LayoutEntityDisplayInterface extends EntityDisplayInterface, SectionLi
   /**
    * Gets the runtime sections for a given entity.
    *
+   * If the display is overrideable and the entity has overridden sections these
+   * will be returned, otherwise the default sections will be returned.
+   *
    * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
    *   The entity.
    *

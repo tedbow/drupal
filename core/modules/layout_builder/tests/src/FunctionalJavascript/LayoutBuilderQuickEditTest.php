@@ -4,7 +4,7 @@ namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\editor\Entity\Editor;
-use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
+use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 
 /**
  * Tests that Layout Builder functions with Quick Edit.
@@ -14,7 +14,7 @@ use Drupal\FunctionalJavascriptTests\JavascriptTestBase;
  *
  * @group layout_builder
  */
-class LayoutBuilderQuickEditTest extends JavascriptTestBase {
+class LayoutBuilderQuickEditTest extends WebDriverTestBase {
 
   /**
    * {@inheritdoc}
