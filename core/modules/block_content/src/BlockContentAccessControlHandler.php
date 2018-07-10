@@ -3,7 +3,7 @@
 namespace Drupal\block_content;
 
 use Drupal\block_content\Event\BlockContentGetDependencyEvent;
-use Drupal\Core\Access\AccessDependentInterface;
+use Drupal\Core\Access\DependentAccessInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -63,7 +63,7 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler implem
     }
     /** @var \Drupal\block_content\BlockContentInterface $entity */
     if ($entity->isReusable() === FALSE) {
-      if (!$entity instanceof AccessDependentInterface) {
+      if (!$entity instanceof DependentAccessInterface) {
         throw new \LogicException("Non-reusable block entities must implement \Drupal\Core\Access\AccessDependentInterface for access control.");
       }
       $dependency = $entity->getAccessDependency();
