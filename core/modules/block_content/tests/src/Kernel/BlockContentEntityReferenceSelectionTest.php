@@ -92,7 +92,6 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
       'type' => 'spiffy',
       'reusable' => FALSE,
     ]);
-    $this->blockNonReusable->setReusable(FALSE);
     $this->blockNonReusable->save();
 
     $configuration = [
@@ -146,7 +145,7 @@ class BlockContentEntityReferenceSelectionTest extends KernelTestBase {
       $this->selectionHandler->getReferenceableEntities()
     );
 
-    $this->blockNonReusable->setReusable(TRUE);
+    $this->blockNonReusable->setReusable();
     $this->blockNonReusable->save();
 
     // Ensure that the block is now returned as a referenceable entity.

@@ -23,6 +23,6 @@ final class BlockContentEvents {
    *
    * @var string
    */
-  const INLINE_BLOCK_GET_DEPENDENCY = 'block_content.get_dependency';
+  const BLOCK_CONTENT_GET_DEPENDENCY = 'block_content.get_dependency';
 
 }

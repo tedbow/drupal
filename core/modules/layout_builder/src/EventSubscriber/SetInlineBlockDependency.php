@@ -86,7 +86,7 @@ class SetInlineBlockDependency implements EventSubscriberInterface, ContainerInj
    */
   public static function getSubscribedEvents() {
     return [
-      BlockContentEvents::INLINE_BLOCK_GET_DEPENDENCY => 'onGetDependency',
+      BlockContentEvents::BLOCK_CONTENT_GET_DEPENDENCY => 'onGetDependency',
     ];
   }
 

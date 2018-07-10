@@ -8,7 +8,7 @@
 use Drupal\Core\Config\Entity\ConfigEntityUpdater;
 
 /**
- * Adds a 'reusable' filter to Custom Block views.
+ * Adds a 'reusable' filter to all Custom Block views.
  */
 function block_content_post_update_add_views_reusable_filter(&$sandbox = NULL) {
   $data_table = \Drupal::entityTypeManager()

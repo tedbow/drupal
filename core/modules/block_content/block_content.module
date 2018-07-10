@@ -119,11 +119,10 @@ function block_content_add_body_field($block_type_id, $label = 'Body') {
  * 'reusable' is explicitly set.
  *
  * Block_content entities that are reusable should by default not be selectable
- * as entity reference values. A module can still
- * create an instance of
+ * as entity reference values. A module can still create an instance of
  * \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface
- * that will will allow selection of non-reusable blocks by explicitly setting
- * a condition on either the 'reusable' field.
+ * that will allow selection of non-reusable blocks by explicitly setting
+ * a condition on the 'reusable' field.
  *
  * @see \Drupal\block_content\BlockContentAccessControlHandler
  */
@@ -131,7 +130,6 @@ function block_content_query_entity_reference_alter(AlterableInterface $query) {
   if ($query instanceof SelectInterface && $query->getMetaData('entity_type') === 'block_content' && $query->hasTag('block_content_access')) {
     $data_table = \Drupal::entityTypeManager()->getDefinition('block_content')->getDataTable();
     if (array_key_exists($data_table, $query->getTables()) && !_block_content_has_reusable_condition($query->conditions(), $query->getTables())) {
-      // If no reusable condition create a condition set to TRUE.
       $query->condition("$data_table.reusable", TRUE);
     }
   }
@@ -139,6 +137,9 @@ function block_content_query_entity_reference_alter(AlterableInterface $query) {
 
 /**
  * Utility function to find nested conditions using the reusable field.
+ *
+ * @todo Replace this a function to a call to the API in
+ *   https://www.drupal.org/project/drupal/issues/2984930
  *
  * @param array $condition
  *   The condition or condition group to check.
