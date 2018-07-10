@@ -2,7 +2,7 @@
 
 namespace Drupal\block_content;
 
-use Drupal\block_content\Event\BlockContentGetDependencyEvent;
+use Drupal\block_content\Event\BlockContentGetDependenciesEvent;
 use Drupal\Core\Access\DependentAccessInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityHandlerInterface;
@@ -66,21 +66,21 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler implem
       if (!$entity instanceof DependentAccessInterface) {
         throw new \LogicException("Non-reusable block entities must implement \Drupal\Core\Access\DependentAccessInterface for access control.");
       }
-      $dependency = $entity->getAccessDependency();
-      if (empty($dependency)) {
-        // If an access dependency has not been set let modules set one.
-        $event = new BlockContentGetDependencyEvent($entity);
-        $this->eventDispatcher->dispatch(BlockContentEvents::BLOCK_CONTENT_GET_DEPENDENCY, $event);
-        $dependency = $entity->getAccessDependency();
-        if (empty($dependency)) {
+      $dependencies = $entity->getAccessDependencies();
+      if (empty($dependencies)) {
+        // If access dependencies have not been set let modules set them.
+        $event = new BlockContentGetDependenciesEvent($entity);
+        $this->eventDispatcher->dispatch(BlockContentEvents::BLOCK_CONTENT_GET_DEPENDENCIES, $event);
+        $dependencies = $entity->getAccessDependencies();
+        if (empty($dependencies)) {
           return AccessResult::forbidden("Non-reusable blocks must set an access dependency for access control.");
         }
       }
-      if (empty($dependency->in_preview)) {
-        /** @var \Drupal\Core\Entity\EntityInterface $dependency */
-        $access = $access->andIf($dependency->access($operation, $account, TRUE));
+      foreach ($dependencies as $dependency) {
+        if (empty($dependency->in_preview)) {
+          $access = $access->andIf($dependency->access($operation, $account, TRUE));
+        }
       }
-
     }
     return $access;
   }

@@ -132,7 +132,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
         ->willReturn($expected_parent_result)
         ->shouldBeCalled();
 
-      $this->blockEntity->setAccessDependency($parent_entity->reveal());
+      $this->blockEntity->setAccessDependencies([$parent_entity->reveal()]);
 
     }
     $this->blockEntity->save();
