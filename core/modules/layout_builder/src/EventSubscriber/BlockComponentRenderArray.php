@@ -58,7 +58,7 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
     }
 
     // Set block access dependency even if we are not checking access on
-    // this level. The block itself may render another AccessDependentInterface
+    // this level. The block itself may render another DependentAccessInterface
     // object and need to pass on this value.
     if ($block instanceof DependentAccessInterface) {
       $contexts = $event->getContexts();
