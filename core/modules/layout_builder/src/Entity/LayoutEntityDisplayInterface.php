@@ -3,6 +3,7 @@
 namespace Drupal\layout_builder\Entity;
 
 use Drupal\Core\Entity\Display\EntityDisplayInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\layout_builder\SectionListInterface;
 
 /**
@@ -32,5 +33,16 @@ interface LayoutEntityDisplayInterface extends EntityDisplayInterface, SectionLi
    * @return $this
    */
   public function setOverridable($overridable = TRUE);
+
+  /**
+   * Gets the runtime sections for a given entity.
+   *
+   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
+   *   The entity.
+   *
+   * @return \Drupal\layout_builder\Section[]
+   *   The sections.
+   */
+  public function getRuntimeSections(FieldableEntityInterface $entity);
 
 }

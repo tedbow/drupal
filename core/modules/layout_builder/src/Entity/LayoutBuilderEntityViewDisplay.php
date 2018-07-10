@@ -163,15 +163,9 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   }
 
   /**
-   * Gets the runtime sections for a given entity.
-   *
-   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
-   *   The entity.
-   *
-   * @return \Drupal\layout_builder\Section[]
-   *   The sections.
+   * {@inheritdoc}
    */
-  protected function getRuntimeSections(FieldableEntityInterface $entity) {
+  public function getRuntimeSections(FieldableEntityInterface $entity) {
     if ($this->isOverridable() && !$entity->get('layout_builder__layout')->isEmpty()) {
       return $entity->get('layout_builder__layout')->getSections();
     }
