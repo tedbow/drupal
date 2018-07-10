@@ -3,7 +3,7 @@
 namespace Drupal\layout_builder\Plugin\Block;
 
 use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\Access\AccessDependentInterface;
+use Drupal\Core\Access\DependentAccessInterface;
 use Drupal\Core\Access\AccessDependentTrait;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
@@ -26,7 +26,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  deriver = "Drupal\layout_builder\Plugin\Derivative\InlineBlockContentDeriver",
  * )
  */
-class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface, AccessDependentInterface {
+class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface, DependentAccessInterface {
 
   use AccessDependentTrait;
 
@@ -228,7 +228,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
         ]);
       }
     }
-    if ($this->blockContent instanceof AccessDependentInterface && $dependee = $this->getAccessDependency()) {
+    if ($this->blockContent instanceof DependentAccessInterface && $dependee = $this->getAccessDependency()) {
       $this->blockContent->setAccessDependency($dependee);
     }
     return $this->blockContent;
