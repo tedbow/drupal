@@ -4,7 +4,7 @@ namespace Drupal\layout_builder\EventSubscriber;
 
 use Drupal\block_content\BlockContentEvents;
 use Drupal\block_content\BlockContentInterface;
-use Drupal\block_content\Event\BlockContentGetDependencyEvent;
+use Drupal\block_content\Event\BlockContentGetDependenciesEvent;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -86,20 +86,20 @@ class SetInlineBlockDependency implements EventSubscriberInterface, ContainerInj
    */
   public static function getSubscribedEvents() {
     return [
-      BlockContentEvents::BLOCK_CONTENT_GET_DEPENDENCY => 'onGetDependency',
+      BlockContentEvents::BLOCK_CONTENT_GET_DEPENDENCIES => 'onGetDependency',
     ];
   }
 
   /**
    * Handles the BlockContentEvents::INLINE_BLOCK_GET_DEPENDENCY event.
    *
-   * @param \Drupal\block_content\Event\BlockContentGetDependencyEvent $event
+   * @param \Drupal\block_content\Event\BlockContentGetDependenciesEvent $event
    *   The event.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function onGetDependency(BlockContentGetDependencyEvent $event) {
+  public function onGetDependency(BlockContentGetDependenciesEvent $event) {
     $this->setLayoutDependency($event->getBlockContent());
   }
 
@@ -121,7 +121,7 @@ class SetInlineBlockDependency implements EventSubscriberInterface, ContainerInj
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function setLayoutDependency(BlockContentInterface $block_content) {
-    if ($block_content->isReusable() || $block_content->getAccessDependency()) {
+    if ($block_content->isReusable() || $block_content->getAccessDependencies()) {
       // If the block is reusable or if the block already has its dependency set
       // then there is nothing to do here.
       return;
@@ -138,14 +138,14 @@ class SetInlineBlockDependency implements EventSubscriberInterface, ContainerInj
     $layout_entity = $layout_entity_storage->load($layout_entity_info->layout_entity_id);
     if ($this->isLayoutCompatibleEntity($layout_entity)) {
       if (!$layout_entity->getEntityType()->isRevisionable()) {
-        $block_content->setAccessDependency($layout_entity);
+        $block_content->setAccessDependencies([$layout_entity]);
         return;
       }
       foreach ($this->getEntityRevisionIds($layout_entity) as $revision_id) {
         $revision = $layout_entity_storage->loadRevision($revision_id);
         $block_revision_ids = $this->getInBlockRevisionIdsInSection($this->getEntitySections($revision));
         if (in_array($block_content->getRevisionId(), $block_revision_ids)) {
-          $block_content->setAccessDependency($revision);
+          $block_content->setAccessDependencies([$revision]);
           return;
         }
       }

@@ -6,9 +6,9 @@ use Drupal\block_content\BlockContentInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Block content event to allow setting an access dependency.
+ * Block content event to allow setting access dependencies.
  */
-class BlockContentGetDependencyEvent extends Event {
+class BlockContentGetDependenciesEvent extends Event {
 
   /**
    * The block content entity.
@@ -16,13 +16,6 @@ class BlockContentGetDependencyEvent extends Event {
    * @var \Drupal\block_content\BlockContentInterface
    */
   protected $blockContent;
-
-  /**
-   * The dependency.
-   *
-   * @var \Drupal\Core\Access\AccessibleInterface
-   */
-  protected $dependency;
 
   /**
    * BlockContentGetDependencyEvent constructor.

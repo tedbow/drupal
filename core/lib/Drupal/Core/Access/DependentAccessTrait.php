@@ -8,25 +8,25 @@ namespace Drupal\Core\Access;
 trait DependentAccessTrait {
 
   /**
-   * The access dependency.
+   * The access dependencies.
    *
-   * @var \Drupal\Core\Access\AccessibleInterface
+   * @var \Drupal\Core\Access\AccessibleInterface[]
    */
-  protected $accessDependency;
+  protected $accessDependencies = [];
 
   /**
    * {@inheritdoc}
    */
-  public function setAccessDependency(AccessibleInterface $access_dependency) {
-    $this->accessDependency = $access_dependency;
+  public function setAccessDependencies(array $access_dependencies) {
+    $this->accessDependencies = $access_dependencies;
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAccessDependency() {
-    return $this->accessDependency;
+  public function getAccessDependencies() {
+    return $this->accessDependencies;
   }
 
 }
