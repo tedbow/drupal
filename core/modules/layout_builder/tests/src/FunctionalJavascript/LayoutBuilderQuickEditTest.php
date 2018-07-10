@@ -77,8 +77,7 @@ class LayoutBuilderQuickEditTest extends WebDriverTestBase {
     /** @var \Drupal\layout_builder\Entity\LayoutEntityDisplayInterface $view_display */
     $view_display = EntityViewDisplay::collectRenderDisplay($node, 'default');
     $sections = $view_display->getRuntimeSections($node);
-    $section = reset($sections);
-    $component_uuid = array_keys($section->getComponents())[0];
+    $component_uuid = key(reset($sections)->getComponents());
     $field_id = 'node/' . $node->id() . '/body/' . $node->language()->getId() . '/layout_builder-0-' . $component_uuid;
 
     // Assemble common CSS selectors.
@@ -104,9 +103,6 @@ class LayoutBuilderQuickEditTest extends WebDriverTestBase {
 
     // Trigger an edit with Javascript (this is a "contenteditable" element).
     $this->getSession()->executeScript("jQuery('" . $field_selector . "').text('Hello world').trigger('keyup');");
-
-    // To prevent 403s on save, we re-set our request (cookie) state.
-    $this->prepareRequest();
 
     // Save the change.
     $this->getSession()->executeScript("jQuery('.quickedit-button.action-save').click()");
