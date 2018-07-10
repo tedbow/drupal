@@ -94,7 +94,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
    *
    * @dataProvider providerTestAccess
    */
-  public function testAccess($published, $reusable, $permissions, $parent_access, $expected_access) {
+  public function testAccess($operation, $published, $reusable, $permissions, $parent_access, $expected_access) {
     $published ? $this->blockEntity->setPublished() : $this->blockEntity->setUnpublished();
     $this->blockEntity->setReusable($reusable);
 
@@ -102,7 +102,6 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
       'name' => 'Someone',
       'mail' => 'hi@example.com',
     ]);
-    $user->save();
 
     if ($permissions) {
       foreach ($permissions as $permission) {
@@ -129,7 +128,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
           $expected_parent_result = AccessResult::forbidden();
           break;
       }
-      $parent_entity->access('view', $user, TRUE)
+      $parent_entity->access($operation, $user, TRUE)
         ->willReturn($expected_parent_result)
         ->shouldBeCalled();
 
@@ -138,7 +137,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
     }
     $this->blockEntity->save();
 
-    $result = $this->accessControlHandler->access($this->blockEntity, 'view', $user, TRUE);
+    $result = $this->accessControlHandler->access($this->blockEntity, $operation, $user, TRUE);
     switch ($expected_access) {
       case 'allowed':
         $this->assertTrue($result->isAllowed());
@@ -161,57 +160,65 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
    * Dataprovider for testAccess().
    */
   public function providerTestAccess() {
-    return [
-      'published:reusable' => [
+    $cases = [
+      'view:published:reusable' => [
+        'view',
         TRUE,
         TRUE,
         [],
         NULL,
         'allowed',
       ],
-      'unpublished:reusable' => [
+      'view:unpublished:reusable' => [
+        'view',
         FALSE,
         TRUE,
         [],
         NULL,
         'neutral',
       ],
-      'unpublished:reusable:admin' => [
+      'view:unpublished:reusable:admin' => [
+        'view',
         FALSE,
         TRUE,
         ['administer blocks'],
         NULL,
         'allowed',
       ],
-      'published:reusable:admin' => [
+      'view:published:reusable:admin' => [
+        'view',
         TRUE,
         TRUE,
         ['administer blocks'],
         NULL,
         'allowed',
       ],
-      'published:non_reusable' => [
+      'view:published:non_reusable' => [
+        'view',
         TRUE,
         FALSE,
         [],
         NULL,
         'forbidden',
       ],
-      'published:non_reusable:parent_allowed' => [
+      'view:published:non_reusable:parent_allowed' => [
+        'view',
         TRUE,
         FALSE,
         [],
         'allowed',
         'allowed',
       ],
-      'published:non_reusable:parent_neutral' => [
+      'view:published:non_reusable:parent_neutral' => [
+        'view',
         TRUE,
         FALSE,
         [],
         'neutral',
         'neutral',
       ],
-      'published:non_reusable:parent_forbidden' => [
+      'view:published:non_reusable:parent_forbidden' => [
+        'view',
         TRUE,
         FALSE,
         [],
@@ -219,6 +226,75 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
         'forbidden',
       ],
     ];
+    foreach (['update', 'delete'] as $operation) {
+      $cases += [
+        $operation . ':published:reusable' => [
+          $operation,
+          TRUE,
+          TRUE,
+          [],
+          NULL,
+          'neutral',
+        ],
+        $operation . ':unpublished:reusable' => [
+          $operation,
+          FALSE,
+          TRUE,
+          [],
+          NULL,
+          'neutral',
+        ],
+        $operation . ':unpublished:reusable:admin' => [
+          $operation,
+          FALSE,
+          TRUE,
+          ['administer blocks'],
+          NULL,
+          'allowed',
+        ],
+        $operation . ':published:reusable:admin' => [
+          $operation,
+          TRUE,
+          TRUE,
+          ['administer blocks'],
+          NULL,
+          'allowed',
+        ],
+        $operation . ':published:non_reusable' => [
+          $operation,
+          TRUE,
+          FALSE,
+          [],
+          NULL,
+          'forbidden',
+        ],
+        $operation . ':published:non_reusable:parent_allowed' => [
+          $operation,
+          TRUE,
+          FALSE,
+          [],
+          'allowed',
+          'neutral',
+        ],
+        $operation . ':published:non_reusable:parent_neutral' => [
+          $operation,
+          TRUE,
+          FALSE,
+          [],
+          'neutral',
+          'neutral',
+        ],
+        $operation . ':published:non_reusable:parent_forbidden' => [
+          $operation,
+          TRUE,
+          FALSE,
+          [],
+          'forbidden',
+          'forbidden',
+        ],
+      ];
+      return $cases;
+    }
   }
 
 }
