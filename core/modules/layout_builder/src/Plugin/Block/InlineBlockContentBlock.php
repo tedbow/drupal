@@ -4,7 +4,7 @@ namespace Drupal\layout_builder\Plugin\Block;
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Access\DependentAccessInterface;
-use Drupal\Core\Access\AccessDependentTrait;
+use Drupal\Core\Access\DependentAccessTrait;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
@@ -28,7 +28,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface, DependentAccessInterface {
 
-  use AccessDependentTrait;
+  use DependentAccessTrait;
 
   /**
    * The entity type manager service.
