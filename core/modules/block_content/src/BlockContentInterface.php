@@ -60,12 +60,16 @@ interface BlockContentInterface extends ContentEntityInterface, EntityChangedInt
   /**
    * Sets the block to be reusable.
    *
-   * @param bool $reusable
-   *   Whether the block should be reusable, defaults to TRUE.
+   * @return $this
+   */
+  public function setReusable();
+
+  /**
+   * Sets the block to be non-reusable.
    *
    * @return $this
    */
-  public function setReusable($reusable = TRUE);
+  public function setNonreusable();
 
   /**
    * Sets the theme value.
