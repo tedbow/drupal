@@ -118,6 +118,11 @@ class FieldBlockDeriver extends DeriverBase implements ContainerDeriverInterface
           // unavailable to place in the block UI.
           $derivative['_block_ui_hidden'] = !$field_definition->isDisplayConfigurable('view');
 
+          // Mark as view configurable or not to enable highlighting of view
+          // configurable fields in the 'Add Block' listing of the layout
+          // builder.
+          $derivative['_is_view_configurable'] = $field_definition->isDisplayConfigurable('view');
+
           // @todo Use EntityContextDefinition after resolving
           //   https://www.drupal.org/node/2932462.
           $context_definition = new ContextDefinition('entity:' . $entity_type_id, $entity_type_labels[$entity_type_id], TRUE);
