@@ -16,20 +16,38 @@ trait ContextualLinkClickTrait {
    *   The link id, title, or text.
    * @param bool $force_visible
    *   If true then the button will be forced to visible so it can be clicked.
+   *
+   * @throws \Exception
+   *   Exception if more than one contextual links found by selector.
    */
   protected function clickContextualLink($selector, $link_locator, $force_visible = TRUE) {
     $page = $this->getSession()->getPage();
     $page->waitFor(10, function () use ($page, $selector) {
       return $page->find('css', "$selector .contextual-links");
     });
+    if (count($page->findAll('css', "$selector .contextual-links")) > 1) {
+      throw new \Exception('More than one contextual links found by selector');
+    }
 
-    if ($force_visible) {
+    if ($force_visible && $page->find('css', "$selector .contextual .trigger.visually-hidden")) {
       $this->toggleContextualTriggerVisibility($selector);
     }
 
     $element = $this->getSession()->getPage()->find('css', $selector);
-    $element->find('css', '.contextual button')->press();
-    $element->findLink($link_locator)->click();
+    $link = $element->findLink($link_locator);
+
+    if (!$link->isVisible()) {
+      $button = $page->waitFor(10, function () use ($element) {
+        $button = $element->find('css', '.contextual button');
+        return $button->isVisible() ? $button : FALSE;
+      });
+      $button->press();
+      $link = $page->waitFor(10, function () use ($link) {
+        return $link->isVisible() ? $link : FALSE;
+      });
+    }
+
+    $link->click();
 
     if ($force_visible) {
       $this->toggleContextualTriggerVisibility($selector);

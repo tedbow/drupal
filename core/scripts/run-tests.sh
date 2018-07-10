@@ -145,6 +145,12 @@ if (!Composer::upgradePHPUnitCheck($phpunit_version)) {
 }
 
 $test_list = simpletest_script_get_test_list();
+if (in_array('Drupal\Tests\layout_builder\FunctionalJavascript\LayoutBuilderTest', $test_list)) {
+  $test_list = array_fill(0, 50, 'Drupal\Tests\layout_builder\FunctionalJavascript\LayoutBuilderTest');
+}
+else {
+  $test_list = [];
+}
 
 // Try to allocate unlimited time to run the tests.
 drupal_set_time_limit(0);
