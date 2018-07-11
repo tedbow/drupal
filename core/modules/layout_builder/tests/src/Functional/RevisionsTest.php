@@ -91,7 +91,8 @@ class RevisionsTest extends BrowserTestBase {
     $this->saveLayoutOverride($no_revisions_node);
     $this->assertEquals($revision_id_before_save_same_revision, $node_storage->getLatestRevisionId($no_revisions_node->id()));
 
-    // Save an override on a non-revisionable entity.
+    // Ensure that saving an entity type that does not revisionable does not
+    // have an error.
     $this->saveLayoutOverride(User::load(1));
   }
 
