@@ -17,6 +17,7 @@ use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\SectionListInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
+use Drupal\Core\Entity\RevisionableEntityBundleInterface;
 
 /**
  * Defines the 'overrides' section storage type.
@@ -230,7 +231,20 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    * {@inheritdoc}
    */
   public function save() {
-    return $this->getEntity()->save();
+    $entity = $this->getEntity();
+    // @todo Request editable revision when API provided by entity API.
+    // @see https://www.drupal.org/node/2942907
+    if ($entity->getEntityType()->isRevisionable() && $bundle_entity_type = $this->getEntity()->getEntityType()->getBundleEntityType()) {
+      $bundle = $this->entityTypeManager->getStorage($bundle_entity_type)->load($entity->bundle());
+      if ($bundle instanceof RevisionableEntityBundleInterface && $bundle->shouldCreateNewRevision()) {
+        /** @var \Drupal\Core\Entity\ContentEntityStorageInterface $storage */
+        $storage = $this->entityTypeManager->getStorage($entity->getEntityTypeId());
+        $revision = $storage->createRevision($entity);
+        return $revision->save();
+      }
+    }
+
+    return $entity->save();
   }
 
 }
