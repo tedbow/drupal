@@ -55,7 +55,7 @@ class BlockContentDeriverTest extends KernelTestBase {
     $this->assertTrue($block_manager->hasDefinition($plugin_id));
 
     // Set the block not to be reusable.
-    $block_content->setNonreusable();
+    $block_content->setNotReusable();
     $block_content->save();
 
     // Ensure the non-reusable block content is not provided a derivative block

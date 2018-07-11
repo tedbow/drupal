@@ -69,7 +69,7 @@ interface BlockContentInterface extends ContentEntityInterface, EntityChangedInt
    *
    * @return $this
    */
-  public function setNonreusable();
+  public function setNotReusable();
 
   /**
    * Sets the theme value.

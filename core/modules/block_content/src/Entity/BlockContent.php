@@ -319,7 +319,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   /**
    * {@inheritdoc}
    */
-  public function setNonreusable() {
+  public function setNotReusable() {
     return $this->set('reusable', FALSE);
   }
 
