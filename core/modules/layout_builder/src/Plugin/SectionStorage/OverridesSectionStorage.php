@@ -232,13 +232,14 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    */
   public function save() {
     $entity = $this->getEntity();
-    // @todo Request editable revision when API provided by entity API.
-    // @see https://www.drupal.org/node/2942907
-    if ($entity->getEntityType()->isRevisionable() && $bundle_entity_type = $this->getEntity()->getEntityType()->getBundleEntityType()) {
+    $entity_type = $entity->getEntityType();
+    // @todo Replace this specific implementation with calls to the generic API
+    // from https://www.drupal.org/node/2942907.
+    if ($entity_type->isRevisionable() && $bundle_entity_type = $entity_type->getBundleEntityType()) {
       $bundle = $this->entityTypeManager->getStorage($bundle_entity_type)->load($entity->bundle());
       if ($bundle instanceof RevisionableEntityBundleInterface && $bundle->shouldCreateNewRevision()) {
         /** @var \Drupal\Core\Entity\ContentEntityStorageInterface $storage */
-        $storage = $this->entityTypeManager->getStorage($entity->getEntityTypeId());
+        $storage = $this->entityTypeManager->getStorage($entity_type->id());
         $revision = $storage->createRevision($entity);
         return $revision->save();
       }
