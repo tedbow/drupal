@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\RevisionableInterface;
+use Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -109,10 +110,10 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
       return;
     }
     $original_sections = $this->getEntitySections($entity->original);
-    $current_revision_ids = $this->getInBlockRevisionIdsInSection($sections);
+    $current_revision_ids = $this->getInlineBlockRevisionIdsInSections($sections);
     // If there are any revisions in the original that aren't current there may
     // some blocks that need to be removed.
-    if ($original_revision_ids = array_diff($this->getInBlockRevisionIdsInSection($original_sections), $current_revision_ids)) {
+    if ($original_revision_ids = array_diff($this->getInlineBlockRevisionIdsInSections($original_sections), $current_revision_ids)) {
       if ($removed_ids = array_diff($this->getBlockIdsForRevisionIds($original_revision_ids), $this->getBlockIdsForRevisionIds($current_revision_ids))) {
         $this->deleteBlocksAndUsage($removed_ids);
       }
@@ -154,10 +155,9 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
           /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $original_sections_field */
           $original_sections_field = $entity->original->get('layout_builder__layout');
           if ($original_sections_field->isEmpty()) {
-            // @todo Is there a better way to tell if Layout Override is new?
-            // what if is overridden and all sections removed. Currently if you
-            // remove all sections from an override it reverts to the default.
-            // Is that a feature or a bug?
+            // If there were no sections in the original
+            // 'layout_builder__layout' field then this is a new override from a
+            // default and the blocks need to be duplicated.
             $duplicate_blocks = TRUE;
           }
         }
@@ -183,7 +183,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
         if ($duplicate_blocks || (empty($pre_save_configuration['block_revision_id']) && !empty($post_save_configuration['block_revision_id']))) {
           $this->usage->addUsage($this->getPluginBlockId($plugin), $entity->getEntityTypeId(), $entity->id());
         }
-        $component->setConfiguration($plugin->getConfiguration());
+        $component->setConfiguration($post_save_configuration);
       }
     }
     $this->removeUnusedForEntityOnSave($entity);
@@ -192,15 +192,14 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
   /**
    * Gets a block ID for a inline block content plugin.
    *
-   * @param \Drupal\Component\Plugin\PluginInspectionInterface $plugin
-   *   The inline block content plugin.
+   * @param \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $block_plugin
+   *   The inline block plugin.
    *
    * @return int
    *   The block content ID or null none available.
    */
-  protected function getPluginBlockId(PluginInspectionInterface $plugin) {
-    /** @var \Drupal\Component\Plugin\ConfigurablePluginInterface $plugin */
-    $configuration = $plugin->getConfiguration();
+  protected function getPluginBlockId(InlineBlockContentBlock $block_plugin) {
+    $configuration = $block_plugin->getConfiguration();
     if (!empty($configuration['block_revision_id'])) {
       $query = $this->storage->getQuery();
       $query->condition('revision_id', $configuration['block_revision_id']);

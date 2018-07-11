@@ -6,7 +6,6 @@ use Drupal\block_content\BlockContentEvents;
 use Drupal\block_content\BlockContentInterface;
 use Drupal\block_content\Event\BlockContentGetDependencyEvent;
 use Drupal\Core\Database\Connection;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\layout_builder\InlineBlockContentUsage;
@@ -29,7 +28,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * @see \Drupal\file\FileAccessControlHandler::checkAccess()
  * @see \Drupal\block_content\BlockContentAccessControlHandler::checkAccess()
  */
-class SetInlineBlockDependency implements EventSubscriberInterface, ContainerInjectionInterface {
+class SetInlineBlockDependency implements EventSubscriberInterface {
 
   use LayoutEntityHelperTrait;
 
@@ -68,17 +67,6 @@ class SetInlineBlockDependency implements EventSubscriberInterface, ContainerInj
     $this->entityTypeManager = $entity_type_manager;
     $this->database = $database;
     $this->usage = $usage;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager'),
-      $container->get('database'),
-      $container->get('inline_block_content.usage')
-    );
   }
 
   /**
@@ -123,7 +111,7 @@ class SetInlineBlockDependency implements EventSubscriberInterface, ContainerInj
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function getInlineBlockDependency(BlockContentInterface $block_content) {
+  protected function getInlineBlockDependency(BlockContentInterface $block_content) {
     $layout_entity_info = $this->usage->getUsage($block_content->id());
     if (empty($layout_entity_info)) {
       // If the block does not have usage information then we cannot set a
@@ -139,12 +127,13 @@ class SetInlineBlockDependency implements EventSubscriberInterface, ContainerInj
       }
       foreach ($this->getEntityRevisionIds($layout_entity) as $revision_id) {
         $revision = $layout_entity_storage->loadRevision($revision_id);
-        $block_revision_ids = $this->getInBlockRevisionIdsInSection($this->getEntitySections($revision));
+        $block_revision_ids = $this->getInlineBlockRevisionIdsInSections($this->getEntitySections($revision));
         if (in_array($block_content->getRevisionId(), $block_revision_ids)) {
           return $revision;
         }
       }
     }
+    return NULL;
   }
 
   /**
