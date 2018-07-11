@@ -25,19 +25,19 @@ interface DependentAccessInterface {
   /**
    * Sets the access dependency.
    *
-   * @param \Drupal\Core\Access\AccessibleInterface[] $access_dependencies
-   *   The access dependencies.
+   * @param \Drupal\Core\Access\AccessibleInterface $access_dependency
+   *   The object upon which access depends.
    *
    * @return $this
    */
-  public function setAccessDependencies(array $access_dependencies);
+  public function setAccessDependency(AccessibleInterface $access_dependency);
 
   /**
-   * Gets the access dependencies.
+   * Gets the access dependency.
    *
-   * @return \Drupal\Core\Access\AccessibleInterface[]
+   * @return \Drupal\Core\Access\AccessibleInterface|null
    *   The access dependency or NULL if none has been set.
    */
-  public function getAccessDependencies();
+  public function getAccessDependency();
 
 }
