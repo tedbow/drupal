@@ -227,9 +227,9 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
           'reusable' => FALSE,
         ]);
       }
-    }
-    if ($this->blockContent instanceof DependentAccessInterface && $dependee = $this->getAccessDependency()) {
-      $this->blockContent->setAccessDependency($dependee);
+      if ($this->blockContent instanceof DependentAccessInterface && $dependee = $this->getAccessDependency()) {
+        $this->blockContent->setAccessDependency($dependee);
+      }
     }
     return $this->blockContent;
   }
@@ -264,16 +264,18 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   public function saveBlockContent($new_revision = FALSE, $duplicate_block = FALSE) {
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = NULL;
-    if ($duplicate_block && !empty($this->configuration['block_revision_id']) && empty($this->configuration['block_serialized'])) {
-      $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($this->configuration['block_revision_id']);
-      $block = $entity->createDuplicate();
-    }
-    elseif (isset($this->configuration['block_serialized'])) {
+    if (!empty($this->configuration['block_serialized'])) {
       $block = unserialize($this->configuration['block_serialized']);
-      if (!empty($this->configuration['block_revision_id']) && $duplicate_block) {
+    }
+    if ($duplicate_block) {
+      if (empty($block) && !empty($this->configuration['block_revision_id'])) {
+        $block = $this->entityTypeManager->getStorage('block_content')->loadRevision($this->configuration['block_revision_id']);
+      }
+      if ($block) {
         $block = $block->createDuplicate();
       }
     }
+
     if ($block) {
       if ($new_revision) {
         $block->setNewRevision();

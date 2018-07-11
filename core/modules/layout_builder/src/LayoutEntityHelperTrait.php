@@ -35,7 +35,7 @@ trait LayoutEntityHelperTrait {
    * @return int[]
    *   The revision IDs.
    */
-  protected function getInBlockRevisionIdsInSection(array $sections) {
+  protected function getInlineBlockRevisionIdsInSections(array $sections) {
     $revision_ids = [];
     foreach ($this->getInlineBlockComponents($sections) as $component) {
       $configuration = $component->getPlugin()->getConfiguration();
