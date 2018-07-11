@@ -32,7 +32,7 @@ class RevisionsTest extends BrowserTestBase {
     //   https://www.drupal.org/project/drupal/issues/2917777.
     $this->drupalPlaceBlock('local_tasks_block');
 
-    // Create two nodes.
+    // Create two content types.
     $this->createContentType(['type' => 'bundle_with_revisions', 'new_revision' => TRUE]);
     $this->createContentType(['type' => 'bundle_without_revisions', 'new_revision' => FALSE]);
   }
@@ -41,7 +41,6 @@ class RevisionsTest extends BrowserTestBase {
    * Tests that default revision settings are respected.
    */
   public function testRevisions() {
-
     $this->drupalLogin($this->drupalCreateUser([
       'configure any layout',
       'administer node display',
@@ -49,8 +48,6 @@ class RevisionsTest extends BrowserTestBase {
       'administer user display',
       'administer user fields',
     ]));
-    /** @var \Drupal\node\NodeStorageInterface $node_storage */
-    $node_storage = $this->container->get('entity_type.manager')->getStorage('node');
     $bundle_field_ui_prefixes = [
       'admin/structure/types/manage/bundle_with_revisions',
       'admin/structure/types/manage/bundle_without_revisions',
@@ -59,6 +56,7 @@ class RevisionsTest extends BrowserTestBase {
     foreach ($bundle_field_ui_prefixes as $prefix) {
       $this->drupalPostForm("$prefix/display/default", ['layout[allow_custom]' => TRUE], 'Save');
     }
+    // Create a node of the bundle that will have new revisions by default.
     $revision_node = $this->createNode([
       'type' => 'bundle_with_revisions',
       'title' => 'The first node title',
@@ -68,6 +66,7 @@ class RevisionsTest extends BrowserTestBase {
         ],
       ],
     ]);
+    // Create a node of the bundle that will NOT have new revisions by default.
     $no_revisions_node = $this->createNode([
       'type' => 'bundle_without_revisions',
       'title' => 'The second node title',
@@ -77,13 +76,20 @@ class RevisionsTest extends BrowserTestBase {
         ],
       ],
     ]);
-    $revision_id = $node_storage->getLatestRevisionId($revision_node->id());
-    $this->saveLayoutOverride($revision_node);
-    $this->assertGreaterThan($revision_id, $node_storage->getLatestRevisionId($revision_node->id()));
+    /** @var \Drupal\node\NodeStorageInterface $node_storage */
+    $node_storage = $this->container->get('entity_type.manager')->getStorage('node');
 
-    $revision_id = $node_storage->getLatestRevisionId($no_revisions_node->id());
+    // Ensure that saving a layout for a node of the bundle that does save a new
+    // revision by default does create a new revision.
+    $revision_id_before_new_revision = $node_storage->getLatestRevisionId($revision_node->id());
     $this->saveLayoutOverride($revision_node);
-    $this->assertEquals($revision_id, $node_storage->getLatestRevisionId($no_revisions_node->id()));
+    $this->assertGreaterThan($revision_id_before_new_revision, $node_storage->getLatestRevisionId($revision_node->id()));
+
+    // Ensure that saving a layout for a node of the bundle that does NOT save a
+    // new revision by default does NOT create a new revision.
+    $revision_id_before_save_same_revision = $node_storage->getLatestRevisionId($no_revisions_node->id());
+    $this->saveLayoutOverride($no_revisions_node);
+    $this->assertEquals($revision_id_before_save_same_revision, $node_storage->getLatestRevisionId($no_revisions_node->id()));
 
     // Save an override on a non-revisionable entity.
     $this->saveLayoutOverride(User::load(1));
