@@ -64,7 +64,7 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
       $contexts = $event->getContexts();
       if (isset($contexts['layout_builder.entity'])) {
         if ($entity = $contexts['layout_builder.entity']->getContextValue()) {
-          $block->setAccessDependencies([$entity]);
+          $block->setAccessDependency($entity);
         }
       }
     }
