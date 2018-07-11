@@ -71,12 +71,12 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler implem
         // If an access dependency has not been set let modules set one.
         $event = new BlockContentGetDependencyEvent($entity);
         $this->eventDispatcher->dispatch(BlockContentEvents::BLOCK_CONTENT_GET_DEPENDENCY, $event);
-        $dependency = $entity->getAccessDependency();
+        $dependency = $event->getAccessDependency();
         if (empty($dependency)) {
           return AccessResult::forbidden("Non-reusable blocks must set an access dependency for access control.");
         }
       }
-      if (empty($dependency->in_preview)) {
+      if (!$dependency instanceof EntityInterface || empty($dependency->in_preview)) {
         /** @var \Drupal\Core\Entity\EntityInterface $dependency */
         $access = $access->andIf($dependency->access($operation, $account, TRUE));
       }

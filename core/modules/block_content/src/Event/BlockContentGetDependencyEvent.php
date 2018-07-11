@@ -3,6 +3,7 @@
 namespace Drupal\block_content\Event;
 
 use Drupal\block_content\BlockContentInterface;
+use Drupal\Core\Access\AccessibleInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -22,7 +23,7 @@ class BlockContentGetDependencyEvent extends Event {
    *
    * @var \Drupal\Core\Access\AccessibleInterface
    */
-  protected $dependency;
+  protected $accessDependency;
 
   /**
    * BlockContentGetDependencyEvent constructor.
@@ -40,8 +41,28 @@ class BlockContentGetDependencyEvent extends Event {
    * @return \Drupal\block_content\BlockContentInterface
    *   The block content entity.
    */
-  public function getBlockContent() {
+  public function getBlockContentEntity() {
     return $this->blockContent;
+  }
+
+  /**
+   * Gets the access dependency.
+   *
+   * @return \Drupal\Core\Access\AccessibleInterface
+   *   The access dependency.
+   */
+  public function getAccessDependency() {
+    return $this->accessDependency;
+  }
+
+  /**
+   * Sets the access dependency.
+   *
+   * @param \Drupal\Core\Access\AccessibleInterface $access_dependency
+   *   The access dependency.
+   */
+  public function setAccessDependency(AccessibleInterface $access_dependency) {
+    $this->accessDependency = $access_dependency;
   }
 
 }
