@@ -100,53 +100,48 @@ class SetInlineBlockDependency implements EventSubscriberInterface, ContainerInj
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function onGetDependency(BlockContentGetDependencyEvent $event) {
-    $this->setLayoutDependency($event->getBlockContent());
+    if ($dependency = $this->getInlineBlockDependency($event->getBlockContentEntity())) {
+      $event->setAccessDependency($dependency);
+    }
   }
 
   /**
-   * Sets the access dependency on a non-reusable block content entity.
+   * Get the access dependency of a inline block content entity.
    *
    * If the content block is used in a layout for a non-revisionable entity the
-   * entity will be set.
+   * entity will returned.
    *
    * If the content block is used in a layout for a revisionable entity the
-   * first revision that uses the block will be set as the access dependency. A
-   * module can override this behavior by creating an event subscriber that sets
-   * a different revision as the access dependency.
+   * first revision that uses the block will returned.
    *
    * @param \Drupal\block_content\BlockContentInterface $block_content
    *   The block content entity.
    *
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   Returns the layout dependency
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function setLayoutDependency(BlockContentInterface $block_content) {
-    if ($block_content->isReusable() || $block_content->getAccessDependency()) {
-      // If the block is reusable or if the block already has its dependency set
-      // then there is nothing to do here.
-      return;
-    }
-
+  public function getInlineBlockDependency(BlockContentInterface $block_content) {
     $layout_entity_info = $this->usage->getUsage($block_content->id());
     if (empty($layout_entity_info)) {
       // If the block does not have usage information then we cannot set a
       // dependency. It may be used by another module besides layout builder.
-      return;
+      return NULL;
     }
     /** @var \Drupal\layout_builder\InlineBlockContentUsage $usage */
     $layout_entity_storage = $this->entityTypeManager->getStorage($layout_entity_info->layout_entity_type);
     $layout_entity = $layout_entity_storage->load($layout_entity_info->layout_entity_id);
     if ($this->isLayoutCompatibleEntity($layout_entity)) {
       if (!$layout_entity->getEntityType()->isRevisionable()) {
-        $block_content->setAccessDependency($layout_entity);
-        return;
+        return $layout_entity;
       }
       foreach ($this->getEntityRevisionIds($layout_entity) as $revision_id) {
         $revision = $layout_entity_storage->loadRevision($revision_id);
         $block_revision_ids = $this->getInBlockRevisionIdsInSection($this->getEntitySections($revision));
         if (in_array($block_content->getRevisionId(), $block_revision_ids)) {
-          $block_content->setAccessDependency($revision);
-          return;
+          return $revision;
         }
       }
     }

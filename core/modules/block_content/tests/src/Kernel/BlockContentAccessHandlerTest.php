@@ -96,7 +96,7 @@ class BlockContentAccessHandlerTest extends KernelTestBase {
    */
   public function testAccess($operation, $published, $reusable, $permissions, $parent_access, $expected_access) {
     $published ? $this->blockEntity->setPublished() : $this->blockEntity->setUnpublished();
-    $reusable ? $this->blockEntity->setReusable() : $this->blockEntity->setNonreusable();
+    $reusable ? $this->blockEntity->setReusable() : $this->blockEntity->setNotReusable();
 
     $user = User::create([
       'name' => 'Someone',
