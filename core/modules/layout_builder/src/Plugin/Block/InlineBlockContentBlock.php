@@ -3,9 +3,9 @@
 namespace Drupal\layout_builder\Plugin\Block;
 
 use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\Access\DependentAccessInterface;
-use Drupal\Core\Access\DependentAccessTrait;
+use Drupal\Core\Access\RefinableDependentAccessTrait;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\RefinableDependentAccessInterface;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
@@ -26,9 +26,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  deriver = "Drupal\layout_builder\Plugin\Derivative\InlineBlockContentDeriver",
  * )
  */
-class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface, DependentAccessInterface {
+class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPluginInterface, RefinableDependentAccessInterface {
 
-  use DependentAccessTrait;
+  use RefinableDependentAccessTrait;
 
   /**
    * The entity type manager service.
@@ -227,7 +227,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
           'reusable' => FALSE,
         ]);
       }
-      if ($this->blockContent instanceof DependentAccessInterface && $dependee = $this->getAccessDependency()) {
+      if ($this->blockContent instanceof RefinableDependentAccessInterface && $dependee = $this->getAccessDependency()) {
         $this->blockContent->setAccessDependency($dependee);
       }
     }

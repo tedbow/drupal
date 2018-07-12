@@ -7,7 +7,7 @@ namespace Drupal\Core\Access;
  *
  * Objects should implement this interface when their access depends on access
  * to another object that implements \Drupal\Core\Access\AccessibleInterface.
- * This interface simply provides the getter and setter methods for the access
+ * This interface simply provides the getter method for the access
  * dependency object. Objects that implement this interface are responsible for
  * checking access of the access dependency because the dependency may not take
  * effect in all cases. For instance an entity may only need the access
@@ -21,16 +21,6 @@ namespace Drupal\Core\Access;
  * @endcode
  */
 interface DependentAccessInterface {
-
-  /**
-   * Sets the access dependency.
-   *
-   * @param \Drupal\Core\Access\AccessibleInterface $access_dependency
-   *   The object upon which access depends.
-   *
-   * @return $this
-   */
-  public function setAccessDependency(AccessibleInterface $access_dependency);
 
   /**
    * Gets the access dependency.
