@@ -9,9 +9,13 @@ namespace Drupal\Core\Access;
 interface AccessibleGroupInterface extends AccessibleInterface {
 
   /**
+   * Adds an access dependency.
+   *
    * @param \Drupal\Core\Access\AccessibleInterface $dependency
+   *   The access dependency.
    *
    * @return $this
    */
   public function addDependency(AccessibleInterface $dependency);
+
 }
