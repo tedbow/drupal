@@ -4,8 +4,7 @@
  */
 
 /* Set some global attributes. */
-#drupal-off-canvas *,
-#drupal-off-canvas *:not(div) {
+#drupal-off-canvas {
   background: #444;
   font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
   color: #ddd;
