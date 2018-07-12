@@ -24,25 +24,22 @@ class AccessGroupTest extends UnitTestCase {
 
 
   public function testGroups() {
-    $allowed1 = $this->makeAccessbileProh(AccessResult::allowed());
-    $allowed2 = $this->makeAccessbileProh(AccessResult::allowed());
-    $forbidden1 = $this->makeAccessbileProh(AccessResult::forbidden());
-    $forbidden2 = $this->makeAccessbileProh(AccessResult::forbidden());
-    $neutral1 = $this->makeAccessbileProh(AccessResult::neutral());
-    $neutral2 = $this->makeAccessbileProh(AccessResult::neutral());
+    $allowedAccessible = $this->makeAccessbileProh(AccessResult::allowed());
+    $forbiddenAccessible = $this->makeAccessbileProh(AccessResult::forbidden());
+    $neutralAccessible = $this->makeAccessbileProh(AccessResult::neutral());
 
 
 
     $orForbidden = new AccessGroupOr();
-    $orForbidden->addDependency($allowed1)->addDependency($forbidden1);
+    $orForbidden->addDependency($allowedAccessible)->addDependency($forbiddenAccessible);
     $this->assertTrue($orForbidden->access('view', $this->account, TRUE)->isForbidden());
 
     $orAllowed = new AccessGroupOr();
-    $orAllowed->addDependency($allowed1)->addDependency($neutral1);
+    $orAllowed->addDependency($allowedAccessible)->addDependency($neutralAccessible);
     $this->assertTrue($orAllowed->access('view', $this->account, TRUE)->isAllowed());
 
     $andNeutral = new AccessGroupAnd();
-    $andNeutral->addDependency($allowed1)->addDependency($neutral1);
+    $andNeutral->addDependency($allowedAccessible)->addDependency($neutralAccessible);
     $this->assertTrue($andNeutral->access('view', $this->account, TRUE)->isNeutral());
 
     // We can also add groups and dependencies!!!!! Nested!!!!!
@@ -50,7 +47,7 @@ class AccessGroupTest extends UnitTestCase {
     $this->assertTrue($andNeutral->access('view', $this->account, TRUE)->isNeutral());
 
     $andForbidden = $andNeutral;
-    $andForbidden->addDependency($forbidden1);
+    $andForbidden->addDependency($forbiddenAccessible);
     $this->assertTrue($andForbidden->access('view', $this->account, TRUE)->isForbidden());
 
     // We can make groups from other groups!
@@ -58,7 +55,7 @@ class AccessGroupTest extends UnitTestCase {
     $andGroupsForbidden->addDependency($andNeutral)->addDependency($andForbidden)->addDependency($orForbidden);
     $this->assertTrue($andGroupsForbidden->access('view', $this->account, TRUE)->isForbidden());
     // But then would could also add a non-group accessible.
-    $andGroupsForbidden->addDependency($allowed2);
+    $andGroupsForbidden->addDependency($allowedAccessible);
     $this->assertTrue($andGroupsForbidden->access('view', $this->account, TRUE)->isForbidden());
 
   }
