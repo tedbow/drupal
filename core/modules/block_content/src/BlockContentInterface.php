@@ -2,7 +2,7 @@
 
 namespace Drupal\block_content;
 
-use Drupal\Core\Access\DependentAccessInterface;
+use Drupal\Core\Access\RefinableDependentAccessInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
@@ -11,7 +11,7 @@ use Drupal\Core\Entity\RevisionLogInterface;
 /**
  * Provides an interface defining a custom block entity.
  */
-interface BlockContentInterface extends ContentEntityInterface, EntityChangedInterface, RevisionLogInterface, EntityPublishedInterface, DependentAccessInterface {
+interface BlockContentInterface extends ContentEntityInterface, EntityChangedInterface, RevisionLogInterface, EntityPublishedInterface, RefinableDependentAccessInterface {
 
   /**
    * Returns the block revision log message.
