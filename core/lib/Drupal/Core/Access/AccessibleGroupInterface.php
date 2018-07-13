@@ -18,4 +18,12 @@ interface AccessibleGroupInterface extends AccessibleInterface {
    */
   public function addDependency(AccessibleInterface $dependency);
 
+  /**
+   * Gets the access dependencies.
+   *
+   * @return \Drupal\Core\Access\AccessibleInterface[]
+   *   The access dependencies.
+   */
+  public function getDependencies();
+
 }

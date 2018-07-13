@@ -42,6 +42,13 @@ abstract class AccessibleGroupBase implements AccessibleGroupInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function getDependencies() {
+    return $this->dependencies;
+  }
+
+  /**
    * Combines the access result of one dependency to previous dependencies.
    *
    * @param \Drupal\Core\Access\AccessResultInterface $accumulatedAccess
