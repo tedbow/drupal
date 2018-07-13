@@ -9,6 +9,7 @@ use Drupal\FunctionalTests\Update\UpdatePathTestBase;
  * Tests 'reusable' field related update functions for the Block Content module.
  *
  * @group Update
+ * @group legacy
  */
 class BlockContentReusableUpdateTest extends UpdatePathTestBase {
 
