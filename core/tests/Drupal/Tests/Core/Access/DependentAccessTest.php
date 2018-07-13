@@ -13,6 +13,8 @@ use Drupal\Tests\UnitTestCase;
 
 /**
  * @coversDefaultClass  \Drupal\Core\Access\RefinableDependentAccessTrait
+ *
+ * @group Access
  */
 class DependentAccessTest extends UnitTestCase {
   use AccessibleTestingTrait;

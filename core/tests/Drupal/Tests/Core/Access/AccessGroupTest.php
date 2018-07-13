@@ -10,6 +10,8 @@ use Drupal\Tests\UnitTestCase;
 
 /**
  * Tests accessible groups.
+ *
+ * @group Access
  */
 class AccessGroupTest extends UnitTestCase {
 
