@@ -32,7 +32,7 @@ trait RefinableDependentAccessTrait {
   /**
    * {@inheritdoc}
    */
-  public function mergeAccessDependency(AccessibleInterface $access_dependency) {
+  public function addAccessDependency(AccessibleInterface $access_dependency) {
     if (empty($this->accessDependency)) {
       $this->accessDependency = $access_dependency;
       return $this;
