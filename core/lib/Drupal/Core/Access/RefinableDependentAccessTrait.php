@@ -3,7 +3,7 @@
 namespace Drupal\Core\Access;
 
 /**
- * Implements \Drupal\Core\Access\RefinableDependentAccessInterface.
+ * Trait for \Drupal\Core\Access\RefinableDependentAccessInterface.
  */
 trait RefinableDependentAccessTrait {
 
@@ -37,7 +37,7 @@ trait RefinableDependentAccessTrait {
       $this->accessDependency = $access_dependency;
       return $this;
     }
-    if (!$this->accessDependency instanceof AccessibleGroupInterface) {
+    elseif (!$this->accessDependency instanceof AccessibleGroupInterface) {
       $accessGroup = new AccessGroupAnd();
       $this->accessDependency = $accessGroup->addDependency($this->accessDependency);
     }

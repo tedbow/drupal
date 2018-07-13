@@ -35,7 +35,7 @@ abstract class AccessibleGroupBase implements AccessibleGroupInterface {
         $access_result = $dependency_access_result;
       }
       else {
-        $access_result = $this->doCombineAccess($access_result, $dependency_access_result);
+        $access_result = $this->combineAccess($access_result, $dependency_access_result);
       }
     }
     return $return_as_object ? $access_result : $access_result->isAllowed();
@@ -51,14 +51,14 @@ abstract class AccessibleGroupBase implements AccessibleGroupInterface {
   /**
    * Combines the access result of one dependency to previous dependencies.
    *
-   * @param \Drupal\Core\Access\AccessResultInterface $accumulatedAccess
-   *   The combine access result of previous dependencies.
-   * @param \Drupal\Core\Access\AccessResultInterface $dependencyAccess
+   * @param \Drupal\Core\Access\AccessResultInterface $accumulated_access
+   *   The combined access result of previous dependencies.
+   * @param \Drupal\Core\Access\AccessResultInterface $dependency_access
    *   The access result of the current dependency.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The combined access result.
    */
-  abstract protected function doCombineAccess(AccessResultInterface $accumulatedAccess, AccessResultInterface $dependencyAccess);
+  abstract protected function combineAccess(AccessResultInterface $accumulated_access, AccessResultInterface $dependency_access);
 
 }
