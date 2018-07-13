@@ -12,9 +12,10 @@ final class BlockContentEvents {
   /**
    * Name of the event when getting the dependency of a non-reusable block.
    *
-   * This event allows modules to set a dependency of non-reusable block if
-   * \Drupal\Core\Access\AccessDependentTrait::getAccessDependency has not been
-   * called.
+   * This event allows modules to provide a dependency for non-reusable block
+   * access if
+   * \Drupal\Core\Access\DependentAccessInterface::getAccessDependency() did not
+   * return a dependency during access checking.
    *
    * @Event
    *

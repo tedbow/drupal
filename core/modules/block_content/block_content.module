@@ -138,7 +138,7 @@ function block_content_query_entity_reference_alter(AlterableInterface $query) {
 /**
  * Utility function to find nested conditions using the reusable field.
  *
- * @todo Replace this a function to a call to the API in
+ * @todo Replace this function with a call to the API in
  *   https://www.drupal.org/project/drupal/issues/2984930
  *
  * @param array $condition
