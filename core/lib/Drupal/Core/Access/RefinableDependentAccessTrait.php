@@ -29,4 +29,20 @@ trait RefinableDependentAccessTrait {
     return $this->accessDependency;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function mergeAccessDependency(AccessibleInterface $access_dependency) {
+    if (empty($this->accessDependency)) {
+      $this->accessDependency = $access_dependency;
+      return $this;
+    }
+    if (!$this->accessDependency instanceof AccessibleGroupInterface) {
+      $accessGroup = new AccessGroupAnd();
+      $this->accessDependency = $accessGroup->addDependency($this->accessDependency);
+    }
+    $this->accessDependency->addDependency($access_dependency);
+    return $this;
+  }
+
 }
