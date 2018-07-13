@@ -21,7 +21,7 @@ interface RefinableDependentAccessInterface extends DependentAccessInterface {
   public function setAccessDependency(AccessibleInterface $access_dependency);
 
   /**
-   * Merges an access dependency into the existing access dependency.
+   * Adds an access dependency into the existing access dependency.
    *
    * If no existing dependency is currently set this will set the dependency
    * will be set to the new value.
@@ -40,6 +40,6 @@ interface RefinableDependentAccessInterface extends DependentAccessInterface {
    *
    * @return $this
    */
-  public function mergeAccessDependency(AccessibleInterface $access_dependency);
+  public function addAccessDependency(AccessibleInterface $access_dependency);
 
 }
