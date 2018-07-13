@@ -57,7 +57,7 @@ class DependentAccessTest extends UnitTestCase {
       $testRefinable->setAccessDependency($this->forbidden);
     }
     else {
-      $testRefinable->mergeAccessDependency($this->forbidden);
+      $testRefinable->addAccessDependency($this->forbidden);
     }
     $accessResult = $testRefinable->getAccessDependency()->access('view', $this->account, TRUE);
     $this->assertTrue($accessResult->isForbidden());
@@ -83,14 +83,14 @@ class DependentAccessTest extends UnitTestCase {
       $testRefinable->setAccessDependency($this->forbidden);
     }
     else {
-      $testRefinable->mergeAccessDependency($this->forbidden);
+      $testRefinable->addAccessDependency($this->forbidden);
     }
 
     $accessResult = $testRefinable->getAccessDependency()->access('view', $this->account, TRUE);
     $this->assertTrue($accessResult->isForbidden());
     $this->assertEquals('Because I said so', $accessResult->getReason());
 
-    $testRefinable->mergeAccessDependency($this->neutral);
+    $testRefinable->addAccessDependency($this->neutral);
     /** @var \Drupal\Core\Access\AccessGroupAnd $dependency */
     $dependency = $testRefinable->getAccessDependency();
     // Ensure the new dependency create a new AND group when merged.
@@ -118,10 +118,10 @@ class DependentAccessTest extends UnitTestCase {
       $testRefinable->setAccessDependency($orGroup);
     }
     else {
-      $testRefinable->mergeAccessDependency($orGroup);
+      $testRefinable->addAccessDependency($orGroup);
     }
 
-    $testRefinable->mergeAccessDependency($this->neutral);
+    $testRefinable->addAccessDependency($this->neutral);
     /** @var \Drupal\Core\Access\AccessGroupOr $dependency */
     $dependency = $testRefinable->getAccessDependency();
 
