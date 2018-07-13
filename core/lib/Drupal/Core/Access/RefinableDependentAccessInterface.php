@@ -32,8 +32,8 @@ interface RefinableDependentAccessInterface extends DependentAccessInterface {
    * group.
    *
    * If there is an existing dependency and it does implement
-   * AccessibleGroupInterface the dependency well added to the existing access
-   * group.
+   * AccessibleGroupInterface the dependency will be added to the existing
+   * access group.
    *
    * @param \Drupal\Core\Access\AccessibleInterface $access_dependency
    *   The access dependency to merge.

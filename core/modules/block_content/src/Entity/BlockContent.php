@@ -306,7 +306,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
    * {@inheritdoc}
    */
   public function isReusable() {
-    return (bool) $this->get('reusable')->value;
+    return $this->get('reusable')->first()->get('value')->getCastedValue();
   }
 
   /**
@@ -319,7 +319,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   /**
    * {@inheritdoc}
    */
-  public function setNotReusable() {
+  public function setNonReusable() {
     return $this->set('reusable', FALSE);
   }
 
