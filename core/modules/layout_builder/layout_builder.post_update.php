@@ -5,6 +5,9 @@
  * Post update functions for Layout Builder.
  */
 
+use Drupal\Core\Config\Entity\ConfigEntityUpdater;
+use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
+
 /**
  * Rebuild plugin dependencies for all entity view displays.
  */
@@ -23,4 +26,18 @@ function layout_builder_post_update_rebuild_plugin_dependencies(&$sandbox = NULL
   }
 
   $sandbox['#finished'] = empty($sandbox['ids']) ? 1 : ($sandbox['count'] - count($sandbox['ids'])) / $sandbox['count'];
+}
+
+/**
+ * Enable Layout Builder for existing entity displays.
+ */
+function layout_builder_post_update_enable_existing(&$sandbox = NULL) {
+  $config_entity_updater = \Drupal::classResolver(ConfigEntityUpdater::class);
+  $config_entity_updater->update($sandbox, 'entity_view_display', function (LayoutEntityDisplayInterface $display) {
+    if ($display->getThirdPartySettings('layout_builder')) {
+      $display->enableLayoutBuilder();
+      return TRUE;
+    }
+    return FALSE;
+  });
 }
