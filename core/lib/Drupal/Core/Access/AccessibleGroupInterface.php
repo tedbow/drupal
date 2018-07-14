@@ -4,6 +4,8 @@ namespace Drupal\Core\Access;
 
 /**
  * Provides an interface for accessible objects that have multiple dependencies.
+ *
+ * @internal
  */
 interface AccessibleGroupInterface extends AccessibleInterface {
 

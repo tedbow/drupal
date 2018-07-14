@@ -28,15 +28,12 @@ abstract class AccessibleGroupBase implements AccessibleGroupInterface {
    * {@inheritdoc}
    */
   public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $access_result = NULL;
+    if (empty($this->dependencies)) {
+      return AccessResult::forbidden();
+    }
+    $access_result = array_shift($this->dependencies)->access($operation, $account, TRUE);
     foreach ($this->dependencies as $dependency) {
-      $dependency_access_result = $dependency->access($operation, $account, TRUE);
-      if ($access_result === NULL) {
-        $access_result = $dependency_access_result;
-      }
-      else {
-        $access_result = $this->combineAccess($access_result, $dependency_access_result);
-      }
+      $access_result = $this->combineAccess($access_result, $dependency->access($operation, $account, TRUE));
     }
     return $return_as_object ? $access_result : $access_result->isAllowed();
   }
