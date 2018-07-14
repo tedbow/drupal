@@ -77,15 +77,8 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler implem
           return AccessResult::forbidden("Non-reusable blocks must set an access dependency for access control.");
         }
       }
-      // If we are previewing an entity then we can not check access on the
-      // entity because random generation of entity field values may cause
-      // access to be denied. If the system is displaying a preview of an entity
-      // it has already determined that the user has access to view the preview.
-      if (!$dependency instanceof EntityInterface || empty($dependency->in_preview)) {
-        /** @var \Drupal\Core\Entity\EntityInterface $dependency */
-        $access = $access->andIf($dependency->access($operation, $account, TRUE));
-      }
-
+      /** @var \Drupal\Core\Entity\EntityInterface $dependency */
+      $access = $access->andIf($dependency->access($operation, $account, TRUE));
     }
     return $access;
   }

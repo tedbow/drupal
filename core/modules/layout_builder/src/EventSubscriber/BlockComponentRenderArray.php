@@ -6,6 +6,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\RefinableDependentAccessInterface;
 use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\layout_builder\Access\LayoutPreviewAccessAllowed;
 use Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent;
 use Drupal\layout_builder\LayoutBuilderEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -64,7 +65,14 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
       $contexts = $event->getContexts();
       if (isset($contexts['layout_builder.entity'])) {
         if ($entity = $contexts['layout_builder.entity']->getContextValue()) {
-          $block->setAccessDependency($entity);
+          $event->getContexts();
+          if ($event->inPreview() && !empty($entity->in_preview)) {
+            // If previewing in Layout Builder allow access.
+            $block->setAccessDependency(new LayoutPreviewAccessAllowed());
+          }
+          else {
+            $block->setAccessDependency($entity);
+          }
         }
       }
     }
