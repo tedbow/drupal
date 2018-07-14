@@ -4,6 +4,8 @@ namespace Drupal\Core\Access;
 
 /**
  * An interface to allow adding an access dependency.
+ *
+ * @internal
  */
 interface RefinableDependentAccessInterface extends DependentAccessInterface {
 

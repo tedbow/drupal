@@ -37,7 +37,7 @@ trait RefinableDependentAccessTrait {
       $this->accessDependency = $access_dependency;
       return $this;
     }
-    elseif (!$this->accessDependency instanceof AccessibleGroupInterface) {
+    if (!$this->accessDependency instanceof AccessibleGroupInterface) {
       $accessGroup = new AccessGroupAnd();
       $this->accessDependency = $accessGroup->addDependency($this->accessDependency);
     }

@@ -19,6 +19,8 @@ namespace Drupal\Core\Access;
  * @code
  * $accessible->getAccessDependency()->access($op, $account, TRUE);
  * @endcode
+ *
+ * @internal
  */
 interface DependentAccessInterface {
 
