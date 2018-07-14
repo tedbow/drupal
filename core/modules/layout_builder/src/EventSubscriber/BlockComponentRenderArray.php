@@ -2,6 +2,7 @@
 
 namespace Drupal\layout_builder\EventSubscriber;
 
+use Drupal\Core\Access\DependentAccessInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -54,6 +55,18 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
     $block = $event->getPlugin();
     if (!$block instanceof BlockPluginInterface) {
       return;
+    }
+
+    // Set block access dependency even if we are not checking access on
+    // this level. The block itself may render another DependentAccessInterface
+    // object and need to pass on this value.
+    if ($block instanceof DependentAccessInterface) {
+      $contexts = $event->getContexts();
+      if (isset($contexts['layout_builder.entity'])) {
+        if ($entity = $contexts['layout_builder.entity']->getContextValue()) {
+          $block->setAccessDependency($entity);
+        }
+      }
     }
 
     // Only check access if the component is not being previewed.
