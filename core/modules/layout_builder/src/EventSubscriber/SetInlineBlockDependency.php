@@ -10,20 +10,20 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\layout_builder\InlineBlockContentUsage;
 use Drupal\layout_builder\LayoutEntityHelperTrait;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * An event subscriber class that sets the access dependency on inline blocks.
+ * An event subscriber that returns an access dependency for inline blocks.
  *
  * When used within the layout builder the access dependency for inline blocks
- * will be explicitly set but if access evaluated outside of the layout builder
- * then the dependency may not have been set.
+ * will be explicitly set but if access is evaluated outside of the layout
+ * builder then the dependency may not have been set.
  *
- * For determining 'view' or 'download' access to a file entity that is attached
- * to a content block via a field that is using the private file system the file
- * access handler will evaluate access on the content block without setting the
- * dependency.
+ * A known example of when the access dependency will not have been is when
+ * determining 'view' or 'download' access to a file entity that is attached
+ * to a content block via a field that is using the private file system. The
+ * file access handler will evaluate access on the content block without setting
+ * the dependency.
  *
  * @see \Drupal\file\FileAccessControlHandler::checkAccess()
  * @see \Drupal\block_content\BlockContentAccessControlHandler::checkAccess()
@@ -138,6 +138,9 @@ class SetInlineBlockDependency implements EventSubscriberInterface {
 
   /**
    * Gets the revision IDs for an entity.
+   *
+   * @todo Move this logic to \Drupal\Core\Entity\Sql\SqlContentEntityStorage in
+   * https://www.drupal.org/project/drupal/issues/2986027.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity.
