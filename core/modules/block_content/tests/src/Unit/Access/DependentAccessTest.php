@@ -3,8 +3,6 @@
 namespace Drupal\Tests\block_content\Unit\Access;
 
 use Drupal\block_content\Access\AccessGroupAnd;
-use Drupal\block_content\Access\AccessGroupOr;
-use Drupal\block_content\Access\AccessibleGroupInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\block_content\Access\RefinableDependentAccessInterface;
 use Drupal\block_content\Access\RefinableDependentAccessTrait;
@@ -14,7 +12,7 @@ use Drupal\Tests\UnitTestCase;
 /**
  * @coversDefaultClass  \Drupal\block_content\Access\RefinableDependentAccessTrait
  *
- * @group Access
+ * @group block_content
  */
 class DependentAccessTest extends UnitTestCase {
   use AccessibleTestingTrait;
@@ -66,7 +64,7 @@ class DependentAccessTest extends UnitTestCase {
     // Calling setAccessDependency() replaces the existing dependency.
     $testRefinable->setAccessDependency($this->neutral);
     $dependency = $testRefinable->getAccessDependency();
-    $this->assertFalse($dependency instanceof AccessibleGroupInterface);
+    $this->assertFalse($dependency instanceof AccessGroupAnd);
     $accessResult = $dependency->access('view', $this->account, TRUE);
     $this->assertTrue($accessResult->isNeutral());
     $this->assertEquals('I have no opinion', $accessResult->getReason());
@@ -111,22 +109,22 @@ class DependentAccessTest extends UnitTestCase {
    * @dataProvider providerTestSetFirst
    */
   public function testMergeGroup($use_set_first) {
-    $orGroup = new AccessGroupOr();
-    $orGroup->addDependency($this->forbidden);
+    $andGroup = new AccessGroupAnd();
+    $andGroup->addDependency($this->forbidden);
     $testRefinable = new RefinableDependentAccessTraitTestClass();
     if ($use_set_first) {
-      $testRefinable->setAccessDependency($orGroup);
+      $testRefinable->setAccessDependency($andGroup);
     }
     else {
-      $testRefinable->addAccessDependency($orGroup);
+      $testRefinable->addAccessDependency($andGroup);
     }
 
     $testRefinable->addAccessDependency($this->neutral);
-    /** @var \Drupal\block_content\Access\AccessGroupOr $dependency */
+    /** @var \Drupal\block_content\Access\AccessGroupAnd $dependency */
     $dependency = $testRefinable->getAccessDependency();
 
     // Ensure the new dependency is merged with the existing group.
-    $this->assertTrue($dependency instanceof AccessGroupOr);
+    $this->assertTrue($dependency instanceof AccessGroupAnd);
     $dependencies = $dependency->getDependencies();
     $accessResultForbidden = $dependencies[0]->access('view', $this->account, TRUE);
     $this->assertTrue($accessResultForbidden->isForbidden());
