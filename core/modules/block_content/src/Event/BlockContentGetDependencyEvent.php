@@ -8,6 +8,8 @@ use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Block content event to allow setting an access dependency.
+ *
+ * @internal
  */
 class BlockContentGetDependencyEvent extends Event {
 

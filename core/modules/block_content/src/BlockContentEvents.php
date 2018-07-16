@@ -6,6 +6,8 @@ namespace Drupal\block_content;
  * Defines events for the block_content module.
  *
  * @see \Drupal\block_content\Event\BlockContentGetDependencyEvent
+ *
+ * @internal
  */
 final class BlockContentEvents {
 
