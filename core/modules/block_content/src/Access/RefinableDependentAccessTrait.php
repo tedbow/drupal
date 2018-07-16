@@ -6,6 +6,8 @@ use Drupal\Core\Access\AccessibleInterface;
 
 /**
  * Trait for \Drupal\block_content\Access\RefinableDependentAccessInterface.
+ *
+ * @internal
  */
 trait RefinableDependentAccessTrait {
 

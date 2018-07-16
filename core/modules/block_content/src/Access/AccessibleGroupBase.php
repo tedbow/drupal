@@ -9,6 +9,8 @@ use Drupal\Core\Session\AccountInterface;
 
 /**
  * A base class for accessible groups classes.
+ *
+ * @internal
  */
 abstract class AccessibleGroupBase implements AccessibleGroupInterface {
 

@@ -6,6 +6,8 @@ use Drupal\Core\Access\AccessResultInterface;
 
 /**
  * An access group where at least one dependencies must be allowed.
+ *
+ * @internal
  */
 class AccessGroupOr extends AccessibleGroupBase {
 
