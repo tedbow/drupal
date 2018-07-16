@@ -23,7 +23,7 @@ trait LayoutEntityHelperTrait {
    */
   protected function isLayoutCompatibleEntity(EntityInterface $entity) {
     return ($entity->getEntityTypeId() === 'entity_view_display' && $entity instanceof LayoutBuilderEntityViewDisplay) ||
-      ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout'));
+      ($this->isEntityUsingFieldOverride($entity));
   }
 
   /**
@@ -59,7 +59,7 @@ trait LayoutEntityHelperTrait {
     if ($entity->getEntityTypeId() === 'entity_view_display' && $entity instanceof LayoutBuilderEntityViewDisplay) {
       return $entity->getSections();
     }
-    elseif ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
+    elseif ($this->isEntityUsingFieldOverride($entity)) {
       return $entity->get('layout_builder__layout')->getSections();
     }
     return NULL;
@@ -87,6 +87,19 @@ trait LayoutEntityHelperTrait {
       }
     }
     return $inline_components;
+  }
+
+  /**
+   * Determines if an entity is using a field for the layout override.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   *
+   * @return bool
+   *   TRUE if the entity is using a field for a layout override.
+   */
+  protected function isEntityUsingFieldOverride(EntityInterface $entity) {
+    return $entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout');
   }
 
 }

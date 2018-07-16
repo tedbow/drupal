@@ -2,12 +2,10 @@
 
 namespace Drupal\layout_builder;
 
-use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -100,7 +98,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
     $sections = $this->getEntitySections($entity);
     // If this is a layout override and there are no sections then it is a new
     // override.
-    if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout') && empty($sections)) {
+    if ($this->isEntityUsingFieldOverride($entity) && empty($sections)) {
       return;
     }
     // If this is a revisionable entity then do not remove block_content
@@ -169,7 +167,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
     $duplicate_blocks = FALSE;
 
     if ($sections = $this->getEntitySections($entity)) {
-      if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
+      if ($this->isEntityUsingFieldOverride($entity)) {
         if (!$entity->isNew() && isset($entity->original)) {
           /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $original_sections_field */
           $original_sections_field = $entity->original->get('layout_builder__layout');
