@@ -1,7 +1,10 @@
 <?php
 
-namespace Drupal\Core\Access;
+namespace Drupal\block_content\Access;
 
+use Drupal\Core\Access\AccessibleInterface;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Session\AccountInterface;
 
 /**

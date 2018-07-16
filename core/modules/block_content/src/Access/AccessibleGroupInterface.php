@@ -1,6 +1,8 @@
 <?php
 
-namespace Drupal\Core\Access;
+namespace Drupal\block_content\Access;
+
+use Drupal\Core\Access\AccessibleInterface;
 
 /**
  * Provides an interface for accessible objects that have multiple dependencies.

@@ -2,7 +2,7 @@
 
 namespace Drupal\block_content\Entity;
 
-use Drupal\Core\Access\RefinableDependentAccessTrait;
+use Drupal\block_content\Access\RefinableDependentAccessTrait;
 use Drupal\Core\Entity\EditorialContentEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;

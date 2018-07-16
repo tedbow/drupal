@@ -1,7 +1,8 @@
 <?php
 
-namespace Drupal\Core\Access;
+namespace Drupal\block_content\Access;
 
+use Drupal\Core\Access\AccessResultInterface;
 
 /**
  * An access group where at least one dependencies must be allowed.

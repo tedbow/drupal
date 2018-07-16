@@ -1,18 +1,18 @@
 <?php
 
-namespace Drupal\Tests\Core\Access;
+namespace Drupal\Tests\block_content\Unit\Access;
 
-use Drupal\Core\Access\AccessGroupAnd;
-use Drupal\Core\Access\AccessGroupOr;
-use Drupal\Core\Access\AccessibleGroupInterface;
+use Drupal\block_content\Access\AccessGroupAnd;
+use Drupal\block_content\Access\AccessGroupOr;
+use Drupal\block_content\Access\AccessibleGroupInterface;
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Access\RefinableDependentAccessInterface;
-use Drupal\Core\Access\RefinableDependentAccessTrait;
+use Drupal\block_content\Access\RefinableDependentAccessInterface;
+use Drupal\block_content\Access\RefinableDependentAccessTrait;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Tests\UnitTestCase;
 
 /**
- * @coversDefaultClass  \Drupal\Core\Access\RefinableDependentAccessTrait
+ * @coversDefaultClass  \Drupal\block_content\Access\RefinableDependentAccessTrait
  *
  * @group Access
  */
@@ -91,7 +91,7 @@ class DependentAccessTest extends UnitTestCase {
     $this->assertEquals('Because I said so', $accessResult->getReason());
 
     $testRefinable->addAccessDependency($this->neutral);
-    /** @var \Drupal\Core\Access\AccessGroupAnd $dependency */
+    /** @var \Drupal\block_content\Access\AccessGroupAnd $dependency */
     $dependency = $testRefinable->getAccessDependency();
     // Ensure the new dependency create a new AND group when merged.
     $this->assertTrue($dependency instanceof AccessGroupAnd);
@@ -122,7 +122,7 @@ class DependentAccessTest extends UnitTestCase {
     }
 
     $testRefinable->addAccessDependency($this->neutral);
-    /** @var \Drupal\Core\Access\AccessGroupOr $dependency */
+    /** @var \Drupal\block_content\Access\AccessGroupOr $dependency */
     $dependency = $testRefinable->getAccessDependency();
 
     // Ensure the new dependency is merged with the existing group.

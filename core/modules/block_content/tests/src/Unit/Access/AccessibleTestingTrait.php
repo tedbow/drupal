@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\Core\Access;
+namespace Drupal\Tests\block_content\Unit\Access;
 
 use Drupal\Core\Access\AccessibleInterface;
 use Drupal\Core\Access\AccessResultInterface;
