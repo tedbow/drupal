@@ -109,7 +109,10 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
     if ($entity instanceof RevisionableInterface) {
       return;
     }
-    $this->deleteBlocksAndUsage($this->getRemovedBlockIds($entity));
+    // Delete and remove the usage for inline blocks that were removed.
+    if ($removed_block_ids = $this->getRemovedBlockIds($entity)) {
+      $this->deleteBlocksAndUsage($removed_block_ids);
+    }
   }
 
   /**
