@@ -109,15 +109,31 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
     if ($entity instanceof RevisionableInterface) {
       return;
     }
+    $this->deleteBlocksAndUsage($this->getRemovedBlockIds($entity));
+  }
+
+  /**
+   * Gets the IDs of the block content entities that were removed.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The layout entity.
+   *
+   * @return int[]
+   *   The block content IDs that were removed.
+   */
+  protected function getRemovedBlockIds(EntityInterface $entity) {
     $original_sections = $this->getEntitySections($entity->original);
-    $current_revision_ids = $this->getInlineBlockRevisionIdsInSections($sections);
+    $sections = $this->getEntitySections($entity);
+    $current_block_content_revision_ids = $this->getInlineBlockRevisionIdsInSections($sections);
+    $original_block_content_revision_ids = $this->getInlineBlockRevisionIdsInSections($original_sections);
     // If there are any revisions in the original that aren't current there may
     // some blocks that need to be removed.
-    if ($original_revision_ids = array_diff($this->getInlineBlockRevisionIdsInSections($original_sections), $current_revision_ids)) {
-      if ($removed_ids = array_diff($this->getBlockIdsForRevisionIds($original_revision_ids), $this->getBlockIdsForRevisionIds($current_revision_ids))) {
-        $this->deleteBlocksAndUsage($removed_ids);
-      }
+    if ($unused_original_revision_ids = array_diff($original_block_content_revision_ids, $current_block_content_revision_ids)) {
+      $current_block_content_ids = $this->getBlockIdsForRevisionIds($current_block_content_revision_ids);
+      $original_block_content_ids = $this->getBlockIdsForRevisionIds($unused_original_revision_ids);
+      return array_diff($original_block_content_ids, $current_block_content_ids);
     }
+    return [];
   }
 
   /**
@@ -254,6 +270,34 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
       return $block_ids;
     }
     return [];
+  }
+
+  /**
+   * Saves an inline block component.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity with the layout.
+   * @param \Drupal\layout_builder\SectionComponent $component
+   *   The section component with a inline block.
+   * @param bool $new_revision
+   *   Whether a new revision of the block should be created.
+   * @param bool $duplicate_blocks
+   *   Whether the blocks should be duplicated.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  protected function saveInlineBlockComponent(EntityInterface $entity, SectionComponent $component, $new_revision, $duplicate_blocks) {
+    /** @var \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin */
+    $plugin = $component->getPlugin();
+    $pre_save_configuration = $plugin->getConfiguration();
+    $plugin->saveBlockContent($new_revision, $duplicate_blocks);
+    $post_save_configuration = $plugin->getConfiguration();
+    if ($duplicate_blocks || (empty($pre_save_configuration['block_revision_id']) && !empty($post_save_configuration['block_revision_id']))) {
+      $this->usage->addUsage($this->getPluginBlockId($plugin), $entity->getEntityTypeId(), $entity->id());
+    }
+    $component->setConfiguration($post_save_configuration);
   }
 
 }
