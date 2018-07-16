@@ -35,8 +35,8 @@ class AccessGroupTest extends UnitTestCase {
     $neutralAccessible = $this->createAccessibleDouble(AccessResult::neutral());
 
     // Ensure that groups with no dependencies return a forbidden access result.
-    $this->assertTrue((new AccessGroupOr())->access('view', $this->account, TRUE)->isForbidden());
-    $this->assertTrue((new AccessGroupAnd())->access('view', $this->account, TRUE)->isForbidden());
+    $this->assertTrue((new AccessGroupOr())->access('view', $this->account, TRUE)->isNeutral());
+    $this->assertTrue((new AccessGroupAnd())->access('view', $this->account, TRUE)->isNeutral());
 
     $orForbidden = new AccessGroupOr();
     $orForbidden->addDependency($allowedAccessible)->addDependency($forbiddenAccessible);
