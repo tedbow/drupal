@@ -15,11 +15,11 @@ class LayoutPreviewAccessAllowed implements AccessibleInterface {
    * {@inheritdoc}
    */
   public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
-    if ($operation === 'view' && $return_as_object) {
-      return AccessResult::allowed();
+    if ($operation === 'view') {
+      return $return_as_object ? AccessResult::allowed() : TRUE;
     }
-    // If expected arguments return forbidden access.
-    return AccessResult::forbidden();
+    // If unexpected arguments forbid access.
+    return $return_as_object ? AccessResult::forbidden() : FALSE;
   }
 
 }
