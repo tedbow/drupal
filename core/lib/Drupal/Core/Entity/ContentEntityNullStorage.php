@@ -146,4 +146,11 @@ class ContentEntityNullStorage extends ContentEntityStorageBase {
     return FALSE;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function revisionIds(EntityInterface $entity, $order = 'ASC') {
+    return NULL;
+  }
+
 }
