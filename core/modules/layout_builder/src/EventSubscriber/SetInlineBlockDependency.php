@@ -123,17 +123,45 @@ class SetInlineBlockDependency implements EventSubscriberInterface {
     $layout_entity = $layout_entity_storage->load($layout_entity_info->layout_entity_id);
     if ($this->isLayoutCompatibleEntity($layout_entity)) {
       if (!$layout_entity->getEntityType()->isRevisionable()) {
-        return $layout_entity;
-      }
-      foreach ($this->getEntityRevisionIds($layout_entity) as $revision_id) {
-        $revision = $layout_entity_storage->loadRevision($revision_id);
-        $block_revision_ids = $this->getInlineBlockRevisionIdsInSections($this->getEntitySections($revision));
-        if (in_array($block_content->getRevisionId(), $block_revision_ids)) {
-          return $revision;
+        // Check to see if this revision of the block was used in this entity.
+        // Although the layout builder does not create new block revisions when
+        // the layout entity does not support revisions another module may
+        // have created new revisions for this block.
+        if ($this->isBlockRevisionUsedInEntity($layout_entity, $block_content)) {
+          return $layout_entity;
         }
       }
+      else {
+        foreach ($this->getEntityRevisionIds($layout_entity) as $revision_id) {
+          $revision = $layout_entity_storage->loadRevision($revision_id);
+          if ($this->isBlockRevisionUsedInEntity($revision, $block_content)) {
+            return $revision;
+          }
+        }
+      }
+
     }
     return NULL;
+  }
+
+  /**
+   * Determines if a block content revision is used in an entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $layout_entity
+   *   The layout entity.
+   * @param \Drupal\block_content\BlockContentInterface $block_content
+   *   The block content revision.
+   *
+   * @return bool
+   *   TRUE if the block content revision is used as an inline block in the
+   *   layout entity.
+   */
+  protected function isBlockRevisionUsedInEntity(EntityInterface $layout_entity, BlockContentInterface $block_content) {
+    $sections_blocks_revision_ids = $this->getInlineBlockRevisionIdsInSections($this->getEntitySections($layout_entity));
+    if (in_array($block_content->getRevisionId(), $sections_blocks_revision_ids)) {
+      return TRUE;
+    }
+    return FALSE;
   }
 
   /**
