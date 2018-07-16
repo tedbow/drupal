@@ -98,9 +98,7 @@ class EntityOperationsTest extends KernelTestBase {
     $this->assertEquals('B', $page->getTitle());
 
     // Verify we can load the pending revision, even if the mechanism is kind
-    // of gross. Note: revisionIds() is only available on NodeStorageInterface,
-    // so this won't work for non-nodes. We'd need to use entity queries. This
-    // is a core bug that should get fixed.
+    // of gross.
     $storage = \Drupal::entityTypeManager()->getStorage('node');
     $revision_ids = $storage->revisionIds($page);
     sort($revision_ids);

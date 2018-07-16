@@ -65,4 +65,17 @@ interface RevisionableStorageInterface {
    */
   public function getLatestRevisionId($entity_id);
 
+  /**
+   * Gets a list of entity revision IDs for a specific entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   * @param string $order
+   *   The order, defaults to 'ASC'.
+   *
+   * @return int[]
+   *   Entity revision IDs.
+   */
+  public function revisionIds(EntityInterface $entity, $order = 'ASC');
+
 }

@@ -12,17 +12,6 @@ use Drupal\Core\Session\AccountInterface;
 interface NodeStorageInterface extends ContentEntityStorageInterface {
 
   /**
-   * Gets a list of node revision IDs for a specific node.
-   *
-   * @param \Drupal\node\NodeInterface $node
-   *   The node entity.
-   *
-   * @return int[]
-   *   Node revision IDs (in ascending order).
-   */
-  public function revisionIds(NodeInterface $node);
-
-  /**
    * Gets a list of revision IDs having a given user as node author.
    *
    * @param \Drupal\Core\Session\AccountInterface $account

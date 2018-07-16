@@ -1692,4 +1692,18 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
     return $storage_definition->isDeleted();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function revisionIds(EntityInterface $entity, $order = 'ASC') {
+    if ($revision_table = $this->entityType->getRevisionTable()) {
+      $query = $this->database->select($revision_table);
+      $query->condition($this->entityType->getKey('id'), $entity->id());
+      $query->fields($revision_table, [$this->entityType->getKey('revision')]);
+      $query->orderBy($this->entityType->getKey('revision'), $order);
+      return $query->execute()->fetchCol();
+    }
+    return NULL;
+  }
+
 }
