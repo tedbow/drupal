@@ -18,7 +18,7 @@ class LayoutPreviewAccessAllowed implements AccessibleInterface {
     if ($operation === 'view') {
       return $return_as_object ? AccessResult::allowed() : TRUE;
     }
-    // If unexpected arguments forbid access.
+    // The layout builder preview should only need 'view' access.
     return $return_as_object ? AccessResult::forbidden() : FALSE;
   }
 
