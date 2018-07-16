@@ -1,9 +1,11 @@
 <?php
 
-namespace Drupal\Core\Access;
+namespace Drupal\block_content\Access;
+
+use Drupal\Core\Access\AccessibleInterface;
 
 /**
- * Trait for \Drupal\Core\Access\RefinableDependentAccessInterface.
+ * Trait for \Drupal\block_content\Access\RefinableDependentAccessInterface.
  */
 trait RefinableDependentAccessTrait {
 
@@ -37,7 +39,7 @@ trait RefinableDependentAccessTrait {
       $this->accessDependency = $access_dependency;
       return $this;
     }
-    if (!$this->accessDependency instanceof AccessibleGroupInterface) {
+    if (!$this->accessDependency instanceof AccessGroupAnd) {
       $accessGroup = new AccessGroupAnd();
       $this->accessDependency = $accessGroup->addDependency($this->accessDependency);
     }

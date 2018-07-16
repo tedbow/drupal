@@ -1,9 +1,13 @@
 <?php
 
-namespace Drupal\Core\Access;
+namespace Drupal\block_content\Access;
+
+use Drupal\Core\Access\AccessResultInterface;
 
 /**
  * An access group where all the dependencies must be allowed.
+ *
+ * @internal
  */
 class AccessGroupAnd extends AccessibleGroupBase {
 

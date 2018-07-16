@@ -14,8 +14,8 @@ final class BlockContentEvents {
    *
    * This event allows modules to provide a dependency for non-reusable block
    * access if
-   * \Drupal\Core\Access\DependentAccessInterface::getAccessDependency() did not
-   * return a dependency during access checking.
+   * \Drupal\block_content\Access\DependentAccessInterface::getAccessDependency()
+   * did not return a dependency during access checking.
    *
    * @Event
    *
