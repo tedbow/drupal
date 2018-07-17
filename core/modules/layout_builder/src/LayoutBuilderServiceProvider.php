@@ -11,7 +11,7 @@ use Symfony\Component\DependencyInjection\Reference;
 /**
  * Provides the inline block usage service.
  *
- * This service is dependent on the block_content module so it be provided
+ * This service is dependent on the block_content module so it must be provided
  * dynamically.
  *
  * @see \Drupal\layout_builder\EventSubscriber\SetInlineBlockDependency
