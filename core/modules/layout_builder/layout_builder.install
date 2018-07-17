@@ -82,7 +82,7 @@ function layout_builder_schema() {
  */
 function layout_builder_update_8001() {
   $inline_block_content_usage = [
-    'description' => 'Track where a entity is used.',
+    'description' => 'Track where a block_content entity is used.',
     'fields' => [
       'block_content_id' => [
         'description' => 'The block_content entity ID.',

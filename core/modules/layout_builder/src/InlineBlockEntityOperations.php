@@ -20,7 +20,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
   use LayoutEntityHelperTrait;
 
   /**
-   * Inline block content usage tracking service.
+   * Inline block usage tracking service.
    *
    * @var \Drupal\layout_builder\InlineBlockContentUsage
    */
@@ -53,7 +53,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
    * @param \Drupal\layout_builder\InlineBlockContentUsage $usage
-   *   Inline block content usage tracking service.
+   *   Inline block usage tracking service.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
    *
@@ -207,7 +207,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
   }
 
   /**
-   * Gets a block ID for a inline block content plugin.
+   * Gets a block ID for a inline block plugin.
    *
    * @param \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $block_plugin
    *   The inline block plugin.
@@ -243,10 +243,10 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
   }
 
   /**
-   * Removes unused block content entities.
+   * Removes unused inline blocks.
    *
    * @param int $limit
-   *   The maximum number of block content entities to remove.
+   *   The maximum number of inline blocks to remove.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */

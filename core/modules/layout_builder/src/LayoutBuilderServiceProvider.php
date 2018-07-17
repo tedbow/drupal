@@ -9,7 +9,10 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
- * Provides a service that is dependent on block_content module.
+ * Provides the inline block usage service.
+ *
+ * This service is dependent on the block_content module so it be provided
+ * dynamically.
  *
  * @see \Drupal\layout_builder\EventSubscriber\SetInlineBlockDependency
  */

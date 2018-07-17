@@ -65,7 +65,6 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
       $contexts = $event->getContexts();
       if (isset($contexts['layout_builder.entity'])) {
         if ($entity = $contexts['layout_builder.entity']->getContextValue()) {
-          $event->getContexts();
           if ($event->inPreview() && !empty($entity->in_preview)) {
             // If previewing in Layout Builder allow access.
             $block->setAccessDependency(new LayoutPreviewAccessAllowed());

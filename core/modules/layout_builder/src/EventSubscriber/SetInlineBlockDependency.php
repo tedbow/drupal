@@ -47,7 +47,7 @@ class SetInlineBlockDependency implements EventSubscriberInterface {
   protected $database;
 
   /**
-   * The inline block content usage service.
+   * The inline block usage service.
    *
    * @var \Drupal\layout_builder\InlineBlockContentUsage
    */
@@ -61,7 +61,7 @@ class SetInlineBlockDependency implements EventSubscriberInterface {
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
    * @param \Drupal\layout_builder\InlineBlockContentUsage $usage
-   *   The inline block content usage service.
+   *   The inline block usage service.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, Connection $database, InlineBlockContentUsage $usage) {
     $this->entityTypeManager = $entity_type_manager;
@@ -94,19 +94,19 @@ class SetInlineBlockDependency implements EventSubscriberInterface {
   }
 
   /**
-   * Get the access dependency of a inline block content entity.
+   * Get the access dependency of a inline block.
    *
    * If the content block is used in a layout for a non-revisionable entity the
-   * entity will returned.
+   * entity will be returned.
    *
    * If the content block is used in a layout for a revisionable entity the
-   * first revision that uses the block will returned.
+   * first revision that uses the block will be returned.
    *
    * @param \Drupal\block_content\BlockContentInterface $block_content
    *   The block content entity.
    *
    * @return \Drupal\Core\Entity\EntityInterface|null
-   *   Returns the layout dependency
+   *   Returns the layout dependency.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
@@ -158,10 +158,7 @@ class SetInlineBlockDependency implements EventSubscriberInterface {
    */
   protected function isBlockRevisionUsedInEntity(EntityInterface $layout_entity, BlockContentInterface $block_content) {
     $sections_blocks_revision_ids = $this->getInlineBlockRevisionIdsInSections($this->getEntitySections($layout_entity));
-    if (in_array($block_content->getRevisionId(), $sections_blocks_revision_ids)) {
-      return TRUE;
-    }
-    return FALSE;
+    return in_array($block_content->getRevisionId(), $sections_blocks_revision_ids);
   }
 
   /**

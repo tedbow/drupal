@@ -143,7 +143,7 @@ function layout_builder_block_content_access(EntityInterface $entity, $operation
   if ($operation === 'view' || $entity->isReusable() || empty(\Drupal::service('inline_block_content.usage')->getUsage($entity->id()))) {
     // If the operation is 'view' or this is reusable block or if this is
     // non-reusable that isn't used by this module then don't alter the access.
-    return AccessResult::Neutral();
+    return AccessResult::neutral();
   }
 
   if ($account->hasPermission('configure any layout')) {

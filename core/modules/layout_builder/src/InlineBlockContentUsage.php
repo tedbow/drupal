@@ -6,7 +6,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityInterface;
 
 /**
- * Service class to track non-reusable Blocks entities usage.
+ * Service class to track inline block usage.
  */
 class InlineBlockContentUsage {
 
@@ -49,7 +49,7 @@ class InlineBlockContentUsage {
   }
 
   /**
-   * Gets unused inline block content IDs.
+   * Gets unused inline block IDs.
    *
    * @param int $limit
    *   The maximum number of block content entity IDs to return.
@@ -83,7 +83,7 @@ class InlineBlockContentUsage {
   }
 
   /**
-   * Delete the content blocks and delete the usage records.
+   * Delete the inline blocks' the usage records.
    *
    * @param int[] $block_content_ids
    *   The block content entity IDs.
@@ -94,7 +94,7 @@ class InlineBlockContentUsage {
   }
 
   /**
-   * Gets usage record for block content by ID.
+   * Gets usage record for inline block by ID.
    *
    * @param int $block_content_id
    *   The block content entity ID.
@@ -107,7 +107,7 @@ class InlineBlockContentUsage {
     $query->condition('block_content_id', $block_content_id);
     $query->fields('inline_block_content_usage', ['layout_entity_id', 'layout_entity_type']);
     $query->range(0, 1);
-    return $query->execute()->fetch();
+    return $query->execute()->fetchObject();
   }
 
 }
