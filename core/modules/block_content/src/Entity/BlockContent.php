@@ -217,8 +217,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
       ->setDescription(t('A boolean indicating whether this block is reusable.'))
       ->setTranslatable(FALSE)
       ->setRevisionable(FALSE)
-      ->setDefaultValue(TRUE)
-      ->setInitialValue(TRUE);
+      ->setDefaultValue(TRUE);
 
     return $fields;
   }
