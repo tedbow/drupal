@@ -68,12 +68,12 @@ function block_content_post_update_add_views_reusable_filter(&$sandbox = NULL) {
             'multiple' => FALSE,
             'remember' => FALSE,
             'default_group' => 'All',
-            'default_group_multiple' => '{  }',
-            'group_items' => '{  }',
-            'entity_type' => 'block_content',
-            'entity_field' => 'reusable',
-            'plugin_id' => 'boolean',
+            'default_group_multiple' => [],
+            'group_items' => [],
           ],
+          'entity_type' => 'block_content',
+          'entity_field' => 'reusable',
+          'plugin_id' => 'boolean',
         ];
         $save_view = TRUE;
       }
