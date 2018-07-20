@@ -2,6 +2,10 @@
 
 namespace Drupal\Tests\system\Functional\Entity\EntityReferenceSelection;
 
+use Drupal\block_content\Entity\BlockContent;
+use Drupal\block_content\Entity\BlockContentType;
+use Drupal\block_content\Plugin\EntityReferenceSelection\BlockContentSelection;
+use Drupal\block_content_test\Plugin\EntityReferenceSelection\TestSelection;
 use Drupal\comment\Tests\CommentTestTrait;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Language\LanguageInterface;
@@ -26,7 +30,7 @@ class EntityReferenceSelectionAccessTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['node', 'comment'];
+  public static $modules = ['node', 'comment', 'block_content', 'block_content_test'];
 
   protected function setUp() {
     parent::setUp();
@@ -505,6 +509,102 @@ class EntityReferenceSelectionAccessTest extends BrowserTestBase {
       ],
     ];
     $this->assertReferenceable($selection_options, $referenceable_tests, 'Comment handler (comment + node admin)');
+  }
+
+  /**
+   * Test the comment-specific overrides of the entity handler.
+   *
+   * @dataProvider blockContentProvider
+   *
+   * @throws \Exception
+   */
+  public function testBlockContentHandlers($custom_selection_plugin, $condition_type, $is_reusable, $expectation) {
+    // Create a block content type.
+    $block_content_type = BlockContentType::create([
+      'id' => 'spiffy',
+      'label' => 'Mucho spiffy',
+      'description' => "Provides a block type that increases your site's spiffiness by up to 11%",
+    ]);
+    $block_content_type->save();
+
+    // And reusable block content entities.
+    $block_reusable = BlockContent::create([
+      'info' => 'Reusable Block',
+      'type' => 'spiffy',
+    ]);
+    $block_reusable->save();
+    $block_non_reusable = BlockContent::create([
+      'info' => 'Non-reusable Block',
+      'type' => 'spiffy',
+      'reusable' => FALSE,
+    ]);
+    $block_non_reusable->save();
+
+
+    // Setup the 3 expectation cases.
+    $expectations = [
+      'both_blocks' => [
+        'spiffy' => [
+          $block_reusable->id() => $block_reusable->label(),
+          $block_non_reusable->id() => $block_non_reusable->label(),
+        ],
+      ],
+      'block_reusable' => ['spiffy' => [$block_reusable->id() => $block_reusable->label()]],
+      'block_non_reusable' => ['spiffy' => [$block_non_reusable->id() => $block_non_reusable->label()]],
+    ];
+    $configuration = [
+      'target_type' => 'block_content',
+      'target_bundles' => ['spiffy' => 'spiffy'],
+      'sort' => ['field' => '_none'],
+    ];
+
+    if ($custom_selection_plugin) {
+      // For selection plugins besides BlockContentSelection the queries will be
+      // altered to not include non-reusable blocks unless a condition on the
+      // 'reusable' field is explicitly set.
+      // @see block_content_query_entity_reference_alter()
+      $selectionHandler = new TestSelection($configuration, '', '', $this->container->get('entity.manager'), $this->container->get('module_handler'), \Drupal::currentUser());
+      // Set the test mode so that the conditions will be set at different
+      // nested levels and with different values.
+      $selectionHandler->setTestMode($condition_type, $is_reusable);
+    }
+    else {
+      $selectionHandler = new BlockContentSelection($configuration, '', '', $this->container->get('entity.manager'), $this->container->get('module_handler'), \Drupal::currentUser());
+    }
+
+    $this->assertEquals(
+      $expectations[$expectation],
+      $selectionHandler->getReferenceableEntities()
+    );
+  }
+
+  /**
+   * Dataprovider for blockContentProvider().
+   */
+  public function blockContentProvider() {
+    $cases['block_content_selection_plugin'] = [
+      FALSE,
+      NULL,
+      NULL,
+      'block_reusable',
+    ];
+    $cases['custom_selection_plugin:no_condition'] = [
+      TRUE,
+      NULL,
+      NULL,
+      'block_reusable',
+    ];
+    foreach (['base', 'group', 'nested_group'] as $condition_type) {
+      foreach ([TRUE, FALSE] as $reusable) {
+        $cases["custom_selection_plugin:$condition_type:" . ($reusable ? 'reusable' : 'non-reusable')] = [
+          TRUE,
+          $condition_type,
+          $reusable,
+          $reusable ? 'block_reusable' : 'block_non_reusable',
+        ];
+      }
+    }
+    return $cases;
   }
 
 }
