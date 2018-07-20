@@ -11,6 +11,7 @@ use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Database\Query\AlterableInterface;
 use Drupal\Core\Database\Query\ConditionInterface;
+use Drupal\block_content\Plugin\EntityReferenceSelection\BlockContentSelection;
 
 /**
  * Implements hook_help().
@@ -127,6 +128,12 @@ function block_content_add_body_field($block_type_id, $label = 'Body') {
  * @see \Drupal\block_content\BlockContentAccessControlHandler
  */
 function block_content_query_entity_reference_alter(AlterableInterface $query) {
+  if (!empty($query->alterMetaData["entity_reference_selection_handler"]) && $query->alterMetaData["entity_reference_selection_handler"] instanceof BlockContentSelection) {
+    // The entity reference selection plugin module provided by this module
+    // already filters out non-reusable blocks so now altering of the query is
+    // needed.
+    return;
+  }
   if ($query instanceof SelectInterface && $query->getMetaData('entity_type') === 'block_content' && $query->hasTag('block_content_access')) {
     $data_table = \Drupal::entityTypeManager()->getDefinition('block_content')->getDataTable();
     if (array_key_exists($data_table, $query->getTables()) && !_block_content_has_reusable_condition($query->conditions(), $query->getTables())) {

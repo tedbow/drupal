@@ -45,6 +45,9 @@ class TestSelection extends DefaultSelection {
       /** @var \Drupal\Core\Database\Query\ConditionInterface $add_condition */
       $add_condition = NULL;
       switch ($this->conditionType) {
+        case 'none':
+          break;
+
         case 'base':
           $add_condition = $query;
           break;
