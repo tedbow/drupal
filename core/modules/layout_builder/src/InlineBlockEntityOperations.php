@@ -207,7 +207,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
   }
 
   /**
-   * Gets a block ID for a inline block plugin.
+   * Gets a block ID for an inline block plugin.
    *
    * @param \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $block_plugin
    *   The inline block plugin.
@@ -279,7 +279,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity with the layout.
    * @param \Drupal\layout_builder\SectionComponent $component
-   *   The section component with a inline block.
+   *   The section component with an inline block.
    * @param bool $new_revision
    *   Whether a new revision of the block should be created.
    * @param bool $duplicate_blocks

@@ -94,7 +94,7 @@ class SetInlineBlockDependency implements EventSubscriberInterface {
   }
 
   /**
-   * Get the access dependency of a inline block.
+   * Get the access dependency of an inline block.
    *
    * If the content block is used in a layout for a non-revisionable entity the
    * entity will be returned.

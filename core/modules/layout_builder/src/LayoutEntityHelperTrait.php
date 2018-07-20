@@ -49,6 +49,10 @@ trait LayoutEntityHelperTrait {
   /**
    * Gets the sections for an entity if any.
    *
+   * @todo Replace this method with calls to the SectionStorageManagerInterface
+   * method for getting sections from an entity in
+   * https://www.drupal.org/node/2986403.
+   *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity.
    *

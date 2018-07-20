@@ -200,7 +200,7 @@ class InlineBlockContentBlockTest extends InlineBlockTestBase {
     $this->drupalPostForm("$field_ui_prefix/display/default", ['layout[allow_custom]' => TRUE], 'Save');
     $this->drupalGet('node/1/layout');
 
-    // Add a entity block.
+    // Add an inline block.
     $this->addInlineBlockToLayout('Block title', 'The DEFAULT block body');
     $this->assertSaveLayout();
     $this->drupalGet('node/1');
