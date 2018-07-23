@@ -39,3 +39,7 @@ services:
   logger.channel.layout_builder:
     parent: logger.channel_base
     arguments: ['layout_builder']
+  layout_builder.page_display_variant_subscriber:
+    class: Drupal\layout_builder\EventSubscriber\SectionDisplayVariantSubscriber
+    tags:
+      - { name: event_subscriber }
