@@ -138,7 +138,6 @@ function layout_builder_module_implements_alter(&$implementations, $hook) {
   }
 }
 
-
 /**
  * Implements hook_entity_presave().
  */

@@ -42,7 +42,7 @@ class InlineBlockContentUsage {
       ->keys([
         'block_content_id' => $block_content_id,
         'layout_entity_id' => $entity->id(),
-        'layout_entity_type' => $entity->getEntityType(),
+        'layout_entity_type' => $entity->getEntityTypeId(),
       ])->execute();
   }
 

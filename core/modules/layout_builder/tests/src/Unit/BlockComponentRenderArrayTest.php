@@ -72,8 +72,6 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
     $contexts = [];
     if ($refinable_dependent_access) {
       $block = $this->prophesize(TestBlockPluginWithRefinableDependentAccessInterface::class);
-
-
       $layout_entity = $this->prophesize(EntityInterface::class);
       $layout_entity = $layout_entity->reveal();
       $context = $this->prophesize(ContextInterface::class);
