@@ -276,6 +276,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Exception
    */
   protected function saveInlineBlockComponent(EntityInterface $entity, SectionComponent $component, $new_revision, $duplicate_blocks) {
     /** @var \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin */
@@ -284,7 +285,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
     $plugin->saveBlockContent($new_revision, $duplicate_blocks);
     $post_save_configuration = $plugin->getConfiguration();
     if ($duplicate_blocks || (empty($pre_save_configuration['block_revision_id']) && !empty($post_save_configuration['block_revision_id']))) {
-      $this->usage->addUsage($this->getPluginBlockId($plugin), $entity->getEntityTypeId(), $entity->id());
+      $this->usage->addUsage($this->getPluginBlockId($plugin), $entity);
     }
     $component->setConfiguration($post_save_configuration);
   }

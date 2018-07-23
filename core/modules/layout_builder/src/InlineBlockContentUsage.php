@@ -28,23 +28,21 @@ class InlineBlockContentUsage {
   }
 
   /**
-   * Add a usage record.
+   * Adds a usage record.
    *
    * @param int $block_content_id
    *   The block content id.
-   * @param string $layout_entity_type
-   *   The layout entity type.
-   * @param string $layout_entity_id
-   *   The layout entity id.
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The layout entity.
    *
    * @throws \Exception
    */
-  public function addUsage($block_content_id, $layout_entity_type, $layout_entity_id) {
+  public function addUsage($block_content_id, EntityInterface $entity) {
     $this->database->merge('inline_block_content_usage')
       ->keys([
         'block_content_id' => $block_content_id,
-        'layout_entity_id' => $layout_entity_id,
-        'layout_entity_type' => $layout_entity_type,
+        'layout_entity_id' => $entity->id(),
+        'layout_entity_type' => $entity->getEntityType(),
       ])->execute();
   }
 
