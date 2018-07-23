@@ -31,7 +31,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   use RefinableDependentAccessTrait;
 
   /**
-   * The entity type manager service.
+   * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
@@ -52,7 +52,7 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
   protected $entityDisplayRepository;
 
   /**
-   * Whether a new serialized block is being created.
+   * Whether a new block is being created.
    *
    * @var bool
    */
@@ -189,8 +189,8 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
    * {@inheritdoc}
    */
   protected function blockAccess(AccountInterface $account) {
-    if ($this->getEntity()) {
-      return $this->getEntity()->access('view', $account, TRUE);
+    if ($entity = $this->getEntity()) {
+      return $entity->access('view', $account, TRUE);
     }
     return AccessResult::forbidden();
   }
@@ -241,8 +241,6 @@ class InlineBlockContentBlock extends BlockBase implements ContainerFactoryPlugi
     $form = parent::buildConfigurationForm($form, $form_state);
     if ($this->isNew) {
       // If the Content Block is new then don't provide a default label.
-      // @todo Blocks may be serialized before the layout is saved so we
-      // can't check $this->getEntity()->isNew().
       unset($form['label']['#default_value']);
     }
     $form['label']['#description'] = $this->t('The title of the block as shown to the user.');
