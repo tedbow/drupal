@@ -27,11 +27,11 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
   protected $usage;
 
   /**
-   * The block storage.
+   * The block content storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected $storage;
+  protected $blockContentStorage;
 
   /**
    * The entity type manager.
@@ -62,7 +62,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    */
   public function __construct(EntityTypeManagerInterface $entityTypeManager, InlineBlockContentUsage $usage, Connection $database) {
     $this->entityTypeManager = $entityTypeManager;
-    $this->storage = $entityTypeManager->getStorage('block_content');
+    $this->blockContentStorage = $entityTypeManager->getStorage('block_content');
     $this->usage = $usage;
     $this->database = $database;
   }
@@ -79,7 +79,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
   }
 
   /**
-   * Remove all unused entities on save.
+   * Remove all unused inline blocks on save.
    *
    * Entities that were used in prevision revisions will be removed if not
    * saving a new revision.
@@ -92,7 +92,10 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
   protected function removeUnusedForEntityOnSave(EntityInterface $entity) {
     // If the entity is new or '$entity->original' is not set then there will
     // not be any unused inline blocks to remove.
-    if ($entity->isNew() || !isset($entity->original)) {
+    // If this is a revisionable entity then do not remove inline blocks. They
+    // could be referenced in previous revisions even if this is not a new
+    // revision.
+    if ($entity->isNew() || !isset($entity->original) || $entity instanceof RevisionableInterface) {
       return;
     }
     $sections = $this->getEntitySections($entity);
@@ -101,12 +104,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
     if ($this->isEntityUsingFieldOverride($entity) && empty($sections)) {
       return;
     }
-    // If this is a revisionable entity then do not remove block_content
-    // entities. They could be referenced in previous revisions even if this is
-    // not a new revision.
-    if ($entity instanceof RevisionableInterface) {
-      return;
-    }
+
     // Delete and remove the usage for inline blocks that were removed.
     if ($removed_block_ids = $this->getRemovedBlockIds($entity)) {
       $this->deleteBlocksAndUsage($removed_block_ids);
@@ -114,7 +112,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
   }
 
   /**
-   * Gets the IDs of the block content entities that were removed.
+   * Gets the IDs of the inline blocks that were removed.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The layout entity.
@@ -124,15 +122,18 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    */
   protected function getRemovedBlockIds(EntityInterface $entity) {
     $original_sections = $this->getEntitySections($entity->original);
-    $sections = $this->getEntitySections($entity);
-    $current_block_content_revision_ids = $this->getInlineBlockRevisionIdsInSections($sections);
+    $current_sections = $this->getEntitySections($entity);
+    // Avoid un-needed conversion from revision IDs to block content IDs by
+    // first determining if there are any revisions in the original that are not
+    // also in the current sections.
+    $current_block_content_revision_ids = $this->getInlineBlockRevisionIdsInSections($current_sections);
     $original_block_content_revision_ids = $this->getInlineBlockRevisionIdsInSections($original_sections);
-    // If there are any revisions in the original that aren't current there may
-    // some blocks that need to be removed.
     if ($unused_original_revision_ids = array_diff($original_block_content_revision_ids, $current_block_content_revision_ids)) {
+      // If there are any revisions in the original that aren't in the current
+      // there may some blocks that need to be removed.
       $current_block_content_ids = $this->getBlockIdsForRevisionIds($current_block_content_revision_ids);
-      $original_block_content_ids = $this->getBlockIdsForRevisionIds($unused_original_revision_ids);
-      return array_diff($original_block_content_ids, $current_block_content_ids);
+      $unused_original_block_content_ids = $this->getBlockIdsForRevisionIds($unused_original_revision_ids);
+      return array_diff($unused_original_block_content_ids, $current_block_content_ids);
     }
     return [];
   }
@@ -169,12 +170,9 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
     if ($sections = $this->getEntitySections($entity)) {
       if ($this->isEntityUsingFieldOverride($entity)) {
         if (!$entity->isNew() && isset($entity->original)) {
-          /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $original_sections_field */
-          $original_sections_field = $entity->original->get('layout_builder__layout');
-          if ($original_sections_field->isEmpty()) {
-            // If there were no sections in the original
-            // 'layout_builder__layout' field then this is a new override from a
-            // default and the blocks need to be duplicated.
+          if (empty($this->getEntitySections($entity->original))) {
+            // If there were no sections in the original entity then this is a
+            // new override from a default and the blocks need to be duplicated.
             $duplicate_blocks = TRUE;
           }
         }
@@ -183,24 +181,16 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
       if ($entity instanceof RevisionableInterface) {
         // If the parent entity will have a new revision create a new revision
         // of the block.
-        // @todo Currently revisions are not actually created.
-        // @see https://www.drupal.org/node/2937199
-        // To bypass this always make a revision because the parent entity is
-        // instance of RevisionableInterface. After the issue is fixed only
+        // @todo Currently revisions are never created for the parent entity.
+        // This will be fixed in https://www.drupal.org/node/2937199.
+        // To work around this always make a revision when the parent entity is
+        // an instance of RevisionableInterface. After the issue is fixed only
         // create a new revision if '$entity->isNewRevision()'.
         $new_revision = TRUE;
       }
 
       foreach ($this->getInlineBlockComponents($sections) as $component) {
-        /** @var \Drupal\layout_builder\Plugin\Block\InlineBlockContentBlock $plugin */
-        $plugin = $component->getPlugin();
-        $pre_save_configuration = $plugin->getConfiguration();
-        $plugin->saveBlockContent($new_revision, $duplicate_blocks);
-        $post_save_configuration = $plugin->getConfiguration();
-        if ($duplicate_blocks || (empty($pre_save_configuration['block_revision_id']) && !empty($post_save_configuration['block_revision_id']))) {
-          $this->usage->addUsage($this->getPluginBlockId($plugin), $entity->getEntityTypeId(), $entity->id());
-        }
-        $component->setConfiguration($post_save_configuration);
+        $this->saveInlineBlockComponent($entity, $component, $new_revision, $duplicate_blocks);
       }
     }
     $this->removeUnusedForEntityOnSave($entity);
@@ -218,15 +208,13 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
   protected function getPluginBlockId(InlineBlockContentBlock $block_plugin) {
     $configuration = $block_plugin->getConfiguration();
     if (!empty($configuration['block_revision_id'])) {
-      $query = $this->storage->getQuery();
-      $query->condition('revision_id', $configuration['block_revision_id']);
-      return array_values($query->execute())[0];
+      return array_pop($this->getBlockIdsForRevisionIds([$configuration['block_revision_id']]));
     }
     return NULL;
   }
 
   /**
-   * Delete the content blocks and delete the usage records.
+   * Delete the inline blocks and the usage records.
    *
    * @param int[] $block_content_ids
    *   The block content entity IDs.
@@ -235,7 +223,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    */
   protected function deleteBlocksAndUsage(array $block_content_ids) {
     foreach ($block_content_ids as $block_content_id) {
-      if ($block = $this->storage->load($block_content_id)) {
+      if ($block = $this->blockContentStorage->load($block_content_id)) {
         $block->delete();
       }
     }
@@ -265,7 +253,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    */
   protected function getBlockIdsForRevisionIds(array $revision_ids) {
     if ($revision_ids) {
-      $query = $this->storage->getQuery();
+      $query = $this->blockContentStorage->getQuery();
       $query->condition('revision_id', $revision_ids, 'IN');
       $block_ids = $query->execute();
       return $block_ids;

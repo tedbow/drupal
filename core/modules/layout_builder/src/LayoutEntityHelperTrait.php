@@ -79,18 +79,16 @@ trait LayoutEntityHelperTrait {
    *   The components that contain Inline Block plugins.
    */
   protected function getInlineBlockComponents(array $sections) {
-    $inline_components = [];
+    $inline_block_components = [];
     foreach ($sections as $section) {
-      $components = $section->getComponents();
-
-      foreach ($components as $component) {
+      foreach ($section->getComponents() as $component) {
         $plugin = $component->getPlugin();
         if ($plugin instanceof InlineBlockContentBlock) {
-          $inline_components[] = $component;
+          $inline_block_components[] = $component;
         }
       }
     }
-    return $inline_components;
+    return $inline_block_components;
   }
 
   /**
