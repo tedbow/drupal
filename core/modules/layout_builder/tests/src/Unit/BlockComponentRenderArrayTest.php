@@ -41,7 +41,7 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
   /**
    * Dataprovider for test functions that should test block types.
    */
-  public function providerOnBuildRender() {
+  public function providerBlockTypes() {
     return [
       [TRUE],
       [FALSE],
@@ -66,7 +66,7 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
   /**
    * @covers ::onBuildRender
    *
-   * @dataProvider providerOnBuildRender
+   * @dataProvider providerBlockTypes
    */
   public function testOnBuildRender($refinable_dependent_access) {
     $contexts = [];
@@ -133,7 +133,7 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
   /**
    * @covers ::onBuildRender
    *
-   * @dataProvider providerOnBuildRender
+   * @dataProvider providerBlockTypes
    */
   public function testOnBuildRenderDenied($refinable_dependent_access) {
     $contexts = [];
@@ -191,7 +191,7 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
   /**
    * @covers ::onBuildRender
    *
-   * @dataProvider providerOnBuildRender
+   * @dataProvider providerBlockTypes
    */
   public function testOnBuildRenderInPreview($refinable_dependent_access) {
     $contexts = [];

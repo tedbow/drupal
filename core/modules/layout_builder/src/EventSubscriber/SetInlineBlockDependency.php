@@ -19,7 +19,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * will be explicitly set but if access is evaluated outside of the layout
  * builder then the dependency may not have been set.
  *
- * A known example of when the access dependency will not have been is when
+ * A known example of when the access dependency will not have been set is when
  * determining 'view' or 'download' access to a file entity that is attached
  * to a content block via a field that is using the private file system. The
  * file access handler will evaluate access on the content block without setting

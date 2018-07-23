@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class InlineBlockContentDeriver extends DeriverBase implements ContainerDeriverInterface {
 
   /**
-   * The entity type manager service.
+   * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
