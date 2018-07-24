@@ -3,6 +3,8 @@
 namespace Drupal\layout_builder\SectionStorage;
 
 use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Plugin\Context\ContextAwarePluginManagerInterface;
 
 /**
  * Provides the interface for a plugin manager of section storage types.
@@ -12,7 +14,7 @@ use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
  *   experimental modules and development releases of contributed modules.
  *   See https://www.drupal.org/core/experimental for more information.
  */
-interface SectionStorageManagerInterface extends DiscoveryInterface {
+interface SectionStorageManagerInterface extends DiscoveryInterface, ContextAwarePluginManagerInterface {
 
   /**
    * Loads a section storage with no associated section list.
@@ -61,5 +63,12 @@ interface SectionStorageManagerInterface extends DiscoveryInterface {
    * @see \Drupal\Core\ParamConverter\ParamConverterInterface::convert()
    */
   public function loadFromRoute($type, $value, $definition, $name, array $defaults);
+
+  /**
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *
+   * @return mixed
+   */
+  public function loadFromEntity(EntityInterface $entity);
 
 }

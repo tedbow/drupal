@@ -3,7 +3,10 @@
 namespace Drupal\layout_builder\SectionStorage;
 
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Plugin\Context\ContextAwarePluginManagerTrait;
+use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\layout_builder\Annotation\SectionStorage;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -17,6 +20,8 @@ use Drupal\layout_builder\SectionStorageInterface;
  *   See https://www.drupal.org/core/experimental for more information.
  */
 class SectionStorageManager extends DefaultPluginManager implements SectionStorageManagerInterface {
+
+  use ContextAwarePluginManagerTrait;
 
   /**
    * Constructs a new SectionStorageManager object.
@@ -68,4 +73,20 @@ class SectionStorageManager extends DefaultPluginManager implements SectionStora
     }
   }
 
+  /**
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *
+   * @return mixed
+   */
+  public function loadFromEntity(EntityInterface $entity) {
+    $contexts = [
+      'entity' => EntityContext::fromEntity($entity),
+    ];
+    $plugin_definitions = $this->getDefinitionsForContexts($contexts);
+    $plugin_id = key($plugin_definitions);
+    $plugin = $this->createInstance($plugin_id);
+    //$plugin->setContexts($contexts);
+
+    $section_list = $plugin->getSectionListFromContext();
+  }
 }
