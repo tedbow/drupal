@@ -49,12 +49,24 @@ class EntityContextDefinition extends ContextDefinition {
    * {@inheritdoc}
    */
   protected function getConstraintObjects() {
-    if ($entity_type_id = $this->getEntityTypeId() && !$this->getConstraint('EntityType')) {
+    if ($this->getEntityTypeId() && !$this->getConstraint('EntityType')) {
       $this->addConstraint('EntityType', [
-        'type' => $entity_type_id,
+        'type' => $this->getEntityTypeId(),
       ]);
     }
     return parent::getConstraintObjects();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function addConstraint($constraint_name, $options = NULL) {
+    // If an EntityType constraint is added we must also update the datatype or
+    // else getEntityTypeId() will not return this entity type.
+    if ($constraint_name === 'EntityType' && !empty($options['type'])) {
+      $this->setDataType('entity:' . $options['type']);
+    }
+    return parent::addConstraint($constraint_name, $options);
   }
 
   /**
