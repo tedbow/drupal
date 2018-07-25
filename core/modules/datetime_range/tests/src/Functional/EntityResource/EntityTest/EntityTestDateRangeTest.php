@@ -1,10 +1,10 @@
 <?php
 
-namespace Drupal\Tests\datetime\Functional\EntityResource\EntityTest;
+namespace Drupal\Tests\datetime_range\Functional\EntityResource\EntityTest;
 
 use Drupal\Core\Url;
+use Drupal\datetime_range\Plugin\Field\FieldType\DateRangeItem;
 use Drupal\entity_test\Entity\EntityTest;
-use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Tests\entity_test\Functional\Rest\EntityTestResourceTestBase;
@@ -12,11 +12,11 @@ use Drupal\Tests\rest\Functional\AnonResourceTestTrait;
 use GuzzleHttp\RequestOptions;
 
 /**
- * Tests the datetime field constraint with 'datetime' items.
+ * Tests the 'daterange' field's normalization.
  *
- * @group datetime
+ * @group datetime_range
  */
-class EntityTestDatetimeTest extends EntityTestResourceTestBase {
+class EntityTestDateRangeTest extends EntityTestResourceTestBase {
 
   use AnonResourceTestTrait;
 
@@ -28,16 +28,16 @@ class EntityTestDatetimeTest extends EntityTestResourceTestBase {
   protected static $dateString = '2017-03-01T20:02:00';
 
   /**
-   * Datetime test field name.
+   * Datetime Range test field name.
    *
    * @var string
    */
-  protected static $fieldName = 'field_datetime';
+  protected static $fieldName = 'field_daterange';
 
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['datetime', 'entity_test'];
+  public static $modules = ['datetime_range', 'entity_test'];
 
   /**
    * {@inheritdoc}
@@ -45,26 +45,26 @@ class EntityTestDatetimeTest extends EntityTestResourceTestBase {
   public function setUp() {
     parent::setUp();
 
-    // Add datetime field.
+    // Add datetime_range field.
     FieldStorageConfig::create([
       'field_name' => static::$fieldName,
-      'type' => 'datetime',
+      'type' => 'daterange',
       'entity_type' => static::$entityTypeId,
-      'settings' => ['datetime_type' => DateTimeItem::DATETIME_TYPE_DATETIME],
-    ])
-      ->save();
+      'settings' => ['datetime_type' => DateRangeItem::DATETIME_TYPE_ALLDAY],
+    ])->save();
 
     FieldConfig::create([
       'field_name' => static::$fieldName,
       'entity_type' => static::$entityTypeId,
       'bundle' => $this->entity->bundle(),
-      'settings' => ['default_value' => static::$dateString],
-    ])
-      ->save();
+    ])->save();
 
     // Reload entity so that it has the new field.
     $this->entity = $this->entityStorage->load($this->entity->id());
-    $this->entity->set(static::$fieldName, ['value' => static::$dateString]);
+    $this->entity->set(static::$fieldName, [
+      'value' => static::$dateString,
+      'end_value' => static::$dateString,
+    ]);
     $this->entity->save();
   }
 
@@ -75,7 +75,6 @@ class EntityTestDatetimeTest extends EntityTestResourceTestBase {
     $entity_test = EntityTest::create([
       'name' => 'Llama',
       'type' => static::$entityTypeId,
-      static::$fieldName => static::$dateString,
     ]);
     $entity_test->setOwnerId(0);
     $entity_test->save();
@@ -90,12 +89,8 @@ class EntityTestDatetimeTest extends EntityTestResourceTestBase {
     return parent::getExpectedNormalizedEntity() + [
       static::$fieldName => [
         [
-          // static::$dateString is in the format specified by the DB storage
-          // format: \Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface::DATETIME_STORAGE_FORMAT,
-          // which happens to be RFC3339 minus the timezone information.
-          // But the normalized value is an RFC3339 datetime string, and so we
-          // must still append the timezone information.
-          'value' => static::$dateString . '+11:00',
+          'value' => '2017-03-01T20:02:00+11:00',
+          'end_value' => '2017-03-01T20:02:00+11:00',
         ],
       ],
     ];
@@ -108,9 +103,8 @@ class EntityTestDatetimeTest extends EntityTestResourceTestBase {
     return parent::getNormalizedPostEntity() + [
       static::$fieldName => [
         [
-          // Omitting the timezone is allowed, this should result in the site's
-          // timezone being used automatically.
-          'value' => static::$dateString,
+          'value' => '2017-03-01T20:02:00',
+          'end_value' => '2017-03-01T20:02:00',
         ],
       ],
     ];
@@ -125,36 +119,35 @@ class EntityTestDatetimeTest extends EntityTestResourceTestBase {
     if ($this->entity->getEntityType()->hasKey('bundle')) {
       $fieldName = static::$fieldName;
 
-      // DX: 422 when date type is incorrect.
+      // DX: 422 when 'value' data type is incorrect.
       $normalization = $this->getNormalizedPostEntity();
       $normalization[static::$fieldName][0]['value'] = [
         '2017', '03', '01', '21', '53', '00',
       ];
-
       $request_options[RequestOptions::BODY] = $this->serializer->encode($normalization, static::$format);
       $response = $this->request($method, $url, $request_options);
-      $message = "Unprocessable Entity: validation failed.\n{$fieldName}.0: The datetime value must be a string.\n{$fieldName}.0.value: This value should be of the correct primitive type.\n";
+      $message = "Unprocessable Entity: validation failed.\n{$fieldName}.0.value: This value should be of the correct primitive type.\n";
       $this->assertResourceErrorResponse(422, $message, $response);
 
-      // DX: 422 when date format is incorrect.
+      // DX: 422 when 'end_value' is not specified.
       $normalization = $this->getNormalizedPostEntity();
-      $value = '2017-03-01';
-      $normalization[static::$fieldName][0]['value'] = $value;
-
+      unset($normalization[static::$fieldName][0]['end_value']);
       $request_options[RequestOptions::BODY] = $this->serializer->encode($normalization, static::$format);
       $response = $this->request($method, $url, $request_options);
-      $message = "Unprocessable Entity: validation failed.\n{$fieldName}.0: The datetime value '{$value}' is invalid for the format 'Y-m-d\\TH:i:s'\n";
+      $message = "Unprocessable Entity: validation failed.\n{$fieldName}.0.end_value: This value should not be null.\n";
       $this->assertResourceErrorResponse(422, $message, $response);
 
-      // DX: 422 when date format is incorrect.
+      // DX: 422 when 'end_value' data type is incorrect.
       $normalization = $this->getNormalizedPostEntity();
-      $value = '2017-13-55T20:02:00';
-      $normalization[static::$fieldName][0]['value'] = $value;
-
+      $normalization[static::$fieldName][0]['end_value'] = [
+        '2017', '03', '01', '21', '53', '00',
+      ];
       $request_options[RequestOptions::BODY] = $this->serializer->encode($normalization, static::$format);
       $response = $this->request($method, $url, $request_options);
-      $message = "Unprocessable Entity: validation failed.\n{$fieldName}.0: The datetime value '{$value}' did not parse properly for the format 'Y-m-d\\TH:i:s'\n{$fieldName}.0.value: This value should be of the correct primitive type.\n";
+      $message = "Unprocessable Entity: validation failed.\n{$fieldName}.0.end_value: This value should be of the correct primitive type.\n";
       $this->assertResourceErrorResponse(422, $message, $response);
+
+      // @todo Expand in https://www.drupal.org/project/drupal/issues/2847041.
     }
   }
 
