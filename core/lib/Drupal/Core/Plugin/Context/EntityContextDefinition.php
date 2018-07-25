@@ -17,7 +17,12 @@ class EntityContextDefinition extends ContextDefinition {
   /**
    * {@inheritdoc}
    */
-  public function __construct($data_type = 'any', $label = NULL, $required = TRUE, $multiple = FALSE, $description = NULL, $default_value = NULL) {
+  protected $wildcardDataType = 'entity:*';
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct($data_type = '*', $label = NULL, $required = TRUE, $multiple = FALSE, $description = NULL, $default_value = NULL) {
     // Prefix the data type with 'entity:' so that this class can be constructed
     // like so: new EntityContextDefinition('node')
     if (strpos($data_type, 'entity:') !== 0) {
@@ -33,6 +38,9 @@ class EntityContextDefinition extends ContextDefinition {
    *   The entity type ID.
    */
   protected function getEntityTypeId() {
+    if ($this->getDataType() === $this->wildcardDataType) {
+      return NULL;
+    }
     // The data type is the entity type ID prefixed by 'entity:' (7 characters).
     return substr($this->getDataType(), 7);
   }
@@ -41,9 +49,9 @@ class EntityContextDefinition extends ContextDefinition {
    * {@inheritdoc}
    */
   protected function getConstraintObjects() {
-    if (!$this->getConstraint('EntityType')) {
+    if ($entity_type_id = $this->getEntityTypeId() && !$this->getConstraint('EntityType')) {
       $this->addConstraint('EntityType', [
-        'type' => $this->getEntityTypeId(),
+        'type' => $entity_type_id,
       ]);
     }
     return parent::getConstraintObjects();
@@ -56,22 +64,23 @@ class EntityContextDefinition extends ContextDefinition {
     // Get the constraints from the context's definition.
     $constraints = $this->getConstraintObjects();
     $entity_type_manager = \Drupal::entityTypeManager();
-    $entity_type_id = $this->getEntityTypeId();
-    $storage = $entity_type_manager->getStorage($entity_type_id);
-    // If the storage can generate a sample entity we might delegate to that.
-    if ($storage instanceof ContentEntityStorageInterface) {
-      if (!empty($constraints['Bundle']) && $constraints['Bundle'] instanceof BundleConstraint) {
-        foreach ($constraints['Bundle']->getBundleOption() as $bundle) {
-          // We have a bundle, we are bundleable and we can generate a sample.
-          yield EntityAdapter::createFromEntity($storage->createWithSampleValues($bundle));
+    if ($entity_type_id = $this->getEntityTypeId()) {
+      $storage = $entity_type_manager->getStorage($entity_type_id);
+      // If the storage can generate a sample entity we might delegate to that.
+      if ($storage instanceof ContentEntityStorageInterface) {
+        if (!empty($constraints['Bundle']) && $constraints['Bundle'] instanceof BundleConstraint) {
+          foreach ($constraints['Bundle']->getBundleOption() as $bundle) {
+            // We have a bundle, we are bundleable and we can generate a sample.
+            yield EntityAdapter::createFromEntity($storage->createWithSampleValues($bundle));
+          }
+          return;
         }
-        return;
       }
-    }
 
-    // Either no bundle, or not bundleable, so generate an entity adapter.
-    $definition = EntityDataDefinition::create($entity_type_id);
-    yield new EntityAdapter($definition);
+      // Either no bundle, or not bundleable, so generate an entity adapter.
+      $definition = EntityDataDefinition::create($entity_type_id);
+      yield new EntityAdapter($definition);
+    }
   }
 
   /**

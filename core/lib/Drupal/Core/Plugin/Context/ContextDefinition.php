@@ -26,6 +26,13 @@ class ContextDefinition implements ContextDefinitionInterface {
   protected $dataType;
 
   /**
+   * The wildcard data type.
+   *
+   * @var string
+   */
+  protected $wildcardDataType = 'any';
+
+  /**
    * The human-readable label.
    *
    * @var string
@@ -319,7 +326,7 @@ class ContextDefinition implements ContextDefinitionInterface {
     $definition = $context->getContextDefinition();
     // If the data types do not match, this context is invalid unless the
     // expected data type is any, which means all data types are supported.
-    if ($this->getDataType() != 'any' && $definition->getDataType() != $this->getDataType()) {
+    if ($this->getDataType() != $this->wildcardDataType && $definition->getDataType() != $this->getDataType()) {
       return FALSE;
     }
 

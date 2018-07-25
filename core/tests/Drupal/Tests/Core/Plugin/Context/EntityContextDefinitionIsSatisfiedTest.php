@@ -163,6 +163,16 @@ class EntityContextDefinitionIsSatisfiedTest extends UnitTestCase {
       EntityContextDefinition::fromEntityType($config),
       EntityContextDefinition::fromEntityType($config),
     ];
+    $data['content entity, generic requirement'] = [
+      TRUE,
+      new EntityContextDefinition(),
+      EntityContextDefinition::fromEntityType($content),
+    ];
+    $data['config entity, generic requirement'] = [
+      TRUE,
+      new EntityContextDefinition(),
+      EntityContextDefinition::fromEntityType($config),
+    ];
 
     return $data;
   }
