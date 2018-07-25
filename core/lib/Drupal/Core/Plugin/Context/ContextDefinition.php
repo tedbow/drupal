@@ -30,7 +30,7 @@ class ContextDefinition implements ContextDefinitionInterface {
    *
    * @var string
    */
-  protected $wildcardDataType = 'any';
+  const WILDCARD_DATA_TYPE = 'any';
 
   /**
    * The human-readable label.
@@ -149,7 +149,7 @@ class ContextDefinition implements ContextDefinitionInterface {
     $this->description = $description;
     $this->defaultValue = $default_value;
 
-    if (strpos($data_type, 'entity:') === 0 && !($this instanceof EntityContextDefinition)) {
+    if ((strpos($data_type, 'entity:') === 0 || $data_type === EntityContextDefinition::WILDCARD_DATA_TYPE) && !($this instanceof EntityContextDefinition)) {
       @trigger_error('Constructing a ContextDefinition object for an entity type is deprecated in Drupal 8.6.0. Use ' . __NAMESPACE__ . '\EntityContextDefinition instead. See https://www.drupal.org/node/2976400 for more information.', E_USER_DEPRECATED);
       $this->initializeEntityContextDefinition();
     }
@@ -326,7 +326,7 @@ class ContextDefinition implements ContextDefinitionInterface {
     $definition = $context->getContextDefinition();
     // If the data types do not match, this context is invalid unless the
     // expected data type is any, which means all data types are supported.
-    if ($this->getDataType() != $this->wildcardDataType && $definition->getDataType() != $this->getDataType()) {
+    if ($this->getDataType() != static::WILDCARD_DATA_TYPE && $definition->getDataType() != $this->getDataType()) {
       return FALSE;
     }
 

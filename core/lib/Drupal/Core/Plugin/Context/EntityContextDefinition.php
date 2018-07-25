@@ -17,15 +17,15 @@ class EntityContextDefinition extends ContextDefinition {
   /**
    * {@inheritdoc}
    */
-  protected $wildcardDataType = 'entity:*';
+  const WILDCARD_DATA_TYPE = 'entity';
 
   /**
    * {@inheritdoc}
    */
-  public function __construct($data_type = '*', $label = NULL, $required = TRUE, $multiple = FALSE, $description = NULL, $default_value = NULL) {
+  public function __construct($data_type = 'entity', $label = NULL, $required = TRUE, $multiple = FALSE, $description = NULL, $default_value = NULL) {
     // Prefix the data type with 'entity:' so that this class can be constructed
     // like so: new EntityContextDefinition('node')
-    if (strpos($data_type, 'entity:') !== 0) {
+    if ($data_type !== static::WILDCARD_DATA_TYPE && strpos($data_type, 'entity:') !== 0) {
       $data_type = "entity:$data_type";
     }
     parent::__construct($data_type, $label, $required, $multiple, $description, $default_value);
@@ -38,7 +38,7 @@ class EntityContextDefinition extends ContextDefinition {
    *   The entity type ID.
    */
   protected function getEntityTypeId() {
-    if ($this->getDataType() === $this->wildcardDataType) {
+    if ($this->getDataType() === static::WILDCARD_DATA_TYPE) {
       return NULL;
     }
     // The data type is the entity type ID prefixed by 'entity:' (7 characters).
