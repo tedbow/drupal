@@ -3,6 +3,7 @@
 namespace Drupal\layout_builder\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
+use Drupal\Core\Plugin\Context\EntityContextDefinition;
 use Drupal\layout_builder\SectionStorage\SectionStorageDefinition;
 
 /**
@@ -26,7 +27,9 @@ class SectionStorage extends Plugin {
    * {@inheritdoc}
    */
   public function get() {
-    return new SectionStorageDefinition($this->definition);
+    $definition = new SectionStorageDefinition($this->definition);
+    $definition->addContextDefinition('entity', new EntityContextDefinition());
+    return $definition;
   }
 
 }

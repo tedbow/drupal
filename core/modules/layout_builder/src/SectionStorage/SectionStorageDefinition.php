@@ -2,6 +2,8 @@
 
 namespace Drupal\layout_builder\SectionStorage;
 
+use Drupal\Component\Plugin\Definition\ContextAwarePluginDefinitionInterface;
+use Drupal\Component\Plugin\Definition\ContextAwarePluginDefinitionTrait;
 use Drupal\Component\Plugin\Definition\PluginDefinition;
 
 /**
@@ -12,7 +14,9 @@ use Drupal\Component\Plugin\Definition\PluginDefinition;
  *   experimental modules and development releases of contributed modules.
  *   See https://www.drupal.org/core/experimental for more information.
  */
-class SectionStorageDefinition extends PluginDefinition {
+class SectionStorageDefinition extends PluginDefinition implements ContextAwarePluginDefinitionInterface {
+
+  use ContextAwarePluginDefinitionTrait;
 
   /**
    * Any additional properties and values.
