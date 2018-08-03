@@ -250,14 +250,6 @@ class UpdateCoreTest extends UpdateTestBase {
         'expected_security_release' => '1.2',
         'fixture' => '0.2_1.2-sec',
       ],
-      // Site on latest security release for minor. Next minor has security
-      // release.
-      '0.2, 0.2 1.2' => [
-        'site_patch_version' => '0.2',
-        'security_releases' => ['0.2', '1.2'],
-        'expected_security_release' => NULL,
-        'fixture' => '0.2_1.2-sec',
-      ],
       // Site on latest security release for minor. Previous minor has security
       // release.
       '1.2, 0.2 1.2' => [
@@ -273,15 +265,6 @@ class UpdateCoreTest extends UpdateTestBase {
         'security_releases' => ['1.2'],
         'expected_security_release' => '1.2',
         'fixture' => '1.2_insecure-sec',
-      ],
-      // No security release available for site minor release 0 but release not
-      // marked as insecure.
-      // Security release available for next minor.
-      '0.0, 1.2, not insecure' => [
-        'site_patch_version' => '0.0',
-        'security_releases' => ['1.2'],
-        'expected_security_release' => NULL,
-        'fixture' => '1.2-sec',
       ],
     ];
   }
