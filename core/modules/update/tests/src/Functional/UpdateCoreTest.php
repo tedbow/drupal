@@ -267,8 +267,8 @@ class UpdateCoreTest extends UpdateTestBase {
         'fixture' => '1.2_insecure-sec',
       ],
       // Site on 2.0-beta1 and 2.0-beta2 is a security release but because
-      // beta/alpha/RC releases are not supported the latest security previous
-      // minor is the expected security release.
+      // beta/alpha/RC releases are not supported the latest security from the
+      // previous minor is the expected security release.
       '2.0-beta1, 0.2 1.2 2.0-beta2' => [
         'site_patch_version' => '2.0-beta1',
         'security_releases' => ['0.2', '1.2', '2.0-beta2'],

@@ -533,19 +533,19 @@ class UpdateContribTest extends UpdateTestBase {
         'expected_security_release' => NULL,
         'fixture' => '8.x-2.2-sec',
       ],
-      // Security release available for module major release 2.
-      // Security release also available for previous minor.
-      '8.x-2.0-beta1, 8.x-1.2 8.x-2.2' => [
+      // Site on 8.x-2.0-beta1 and 8.x-2.0-beta2 is a security release but
+      // because beta/alpha/RC releases are not supported the latest security
+      // from previous minor is the expected security release.
+      '8.x-2.0-beta1, 8.x-1.2 8.x-2.2 8.x-2.0-beta2' => [
         'module_patch_version' => '8.x-2.0-beta1',
         'security_releases' => ['8.x-1.2', '8.x-2.2', '8.x-2.0-beta2'],
         'expected_security_release' => '8.x-2.2',
         'fixture' => '8.x-1.2_8.x-2.2-sec',
       ],
-      // No security release available for module major release 1 but release
-      // not marked as insecure.
-      // Security release available for next major.
-      '8.x-2.0-beta2, 8.x-2.2, not insecure' => [
-        'module_patch_version' => '8.x-2.2',
+      // Site on 8.x-2.0-beta2 which is a security release.
+      // Previous minor has a security release.
+      '8.x-2.0-beta2, , 8.x-1.2 8.x-2.2 8.x-2.0-beta2' => [
+        'module_patch_version' => '8.x-2.0-beta2',
         'security_releases' => ['8.x-1.2', '8.x-2.2', '8.x-2.0-beta2'],
         'expected_security_release' => NULL,
         'fixture' => '8.x-1.2_8.x-2.2-sec',
