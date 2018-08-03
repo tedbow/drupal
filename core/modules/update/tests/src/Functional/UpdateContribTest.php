@@ -458,7 +458,6 @@ class UpdateContribTest extends UpdateTestBase {
     $this->config('update_test.settings')->set('system_info', $system_info)->save();
     $this->refreshUpdateStatus(['drupal' => '0.0', 'aaa_update_test' => $fixture]);
     $this->standardTests();
-    file_put_contents('/Users/ted.bowman/Sites/www/contrib' . $module_version . implode('__', $security_releases) . "__$expected_security_release---$fixture.html", $this->getSession()->getPage()->getOuterHtml());
 
     $update_element_css_locator = 'table.update:nth-of-type(2)';
     if ($expected_security_release) {
