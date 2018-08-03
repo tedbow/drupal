@@ -542,14 +542,6 @@ class UpdateContribTest extends UpdateTestBase {
         'expected_security_release' => '8.x-2.2',
         'fixture' => '8.x-1.2_8.x-2.2-sec',
       ],
-      // Site on 8.x-2.0-beta2 which is a security release.
-      // Previous minor has a security release.
-      '8.x-2.0-beta2, , 8.x-1.2 8.x-2.2 8.x-2.0-beta2' => [
-        'module_patch_version' => '8.x-2.0-beta2',
-        'security_releases' => ['8.x-1.2', '8.x-2.2', '8.x-2.0-beta2'],
-        'expected_security_release' => NULL,
-        'fixture' => '8.x-1.2_8.x-2.2-sec',
-      ],
     ];
   }
 
