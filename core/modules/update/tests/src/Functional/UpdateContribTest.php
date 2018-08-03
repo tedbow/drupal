@@ -462,7 +462,6 @@ class UpdateContribTest extends UpdateTestBase {
 
     $update_element_css_locator = 'table.update:nth-of-type(2)';
     if ($expected_security_release) {
-      file_put_contents('/Users/ted.bowman/Sites/www/page.html', $page->getOuterHtml());
       $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Up to date');
       $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Update available');
       $assert_session->elementTextContains('css', $update_element_css_locator, 'Security update required!');
