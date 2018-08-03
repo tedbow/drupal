@@ -160,20 +160,130 @@ class UpdateCoreTest extends UpdateTestBase {
 
   /**
    * Tests the Update Manager module when a security update is available.
+   *
+   * @param string $site_patch_version
+   *   The patch version to set the site to for testing.
+   * @param array $security_releases
+   *   The security release that will be returned in the test XML.
+   * @param string $expected_security_release
+   *   The expected security release that should be required for the site. If
+   *   NULL then no security release is required.
+   * @param string $fixture
+   *   The test fixture that contains the test XML.
+   *
+   * @dataProvider securityUpdateAvailabilityProvider
    */
-  public function testSecurityUpdateAvailable() {
-    foreach ([0, 1] as $minor_version) {
-      $this->setSystemInfo("8.$minor_version.0");
-      $this->refreshUpdateStatus(['drupal' => "$minor_version.2-sec"]);
-      $this->standardTests();
+  public function testSecurityUpdateAvailability($site_patch_version, array $security_releases, $expected_security_release, $fixture) {
+    $assert_session = $this->assertSession();
+    $this->setSystemInfo("8.$site_patch_version");
+    $this->refreshUpdateStatus(['drupal' => $fixture]);
+    $this->standardTests();
+    if ($expected_security_release) {
       $this->assertNoText(t('Up to date'));
       $this->assertNoText(t('Update available'));
       $this->assertText(t('Security update required!'));
-      $this->assertRaw(\Drupal::l("8.$minor_version.2", Url::fromUri("http://example.com/drupal-8-$minor_version-2-release")), 'Link to release appears.');
-      $this->assertRaw(\Drupal::l(t('Download'), Url::fromUri("http://example.com/drupal-8-$minor_version-2.tar.gz")), 'Link to download appears.');
-      $this->assertRaw(\Drupal::l(t('Release notes'), Url::fromUri("http://example.com/drupal-8-$minor_version-2-release")), 'Link to release notes appears.');
+      $expected_url_version = str_replace('.', '-', $expected_security_release);
+      $this->assertRaw(\Drupal::l("8.$expected_security_release", Url::fromUri("http://example.com/drupal-8-$expected_url_version-release")), 'Link to release appears.');
+      $this->assertRaw(\Drupal::l(t('Download'), Url::fromUri("http://example.com/drupal-8-$expected_url_version.tar.gz")), 'Link to download appears.');
+      $this->assertRaw(\Drupal::l(t('Release notes'), Url::fromUri("http://example.com/drupal-8-$expected_url_version-release")), 'Link to release notes appears.');
       $this->assertRaw('error.svg', 'Error icon was found.');
     }
+    else {
+      if ($site_patch_version === $security_releases[count($security_releases) - 1]) {
+        // If the site patch version is the same as last security release there
+        // there is not update available.
+        $assert_session->pageTextNotContains('Update available');
+        $assert_session->pageTextContains('Up to date');
+      }
+      else {
+        $assert_session->pageTextContains('Update available');
+        $assert_session->pageTextNotContains('Up to date');
+      }
+      $assert_session->pageTextNotContains('Security update required!');
+    }
+  }
+
+  /**
+   * Data provider method for testSecurityUpdateAvailability().
+   */
+  public function securityUpdateAvailabilityProvider() {
+    return [
+      // Security release available for site minor release 0.
+      // No future releases for next minor.
+      '0.0, 0.2' => [
+        'site_patch_version' => '0.0',
+        'security_releases' => ['0.2'],
+        'expected_security_release' => '0.2',
+        'fixture' => '0.2-sec',
+      ],
+      // 2 security releases available for site minor release 0.
+      // 0.1 security release marked as insecure.
+      // No future releases for next minor.
+      '0.0, 0.1 0.2' => [
+        'site_patch_version' => '0.0',
+        'security_releases' => ['0.1', '0.2'],
+        'expected_security_release' => '0.2',
+        'fixture' => '0.1_0.2-sec',
+      ],
+      // Security release available for site minor release 1.
+      // No releases for next minor.
+      '1.0, 1.2' => [
+        'site_patch_version' => '1.0',
+        'security_releases' => ['1.2'],
+        'expected_security_release' => '1.2',
+        'fixture' => '1.2-sec',
+      ],
+      // Security release available for site minor release 0.
+      // Security release also available for next minor.
+      '0.0, 0.2 1.2' => [
+        'site_patch_version' => '0.0',
+        'security_releases' => ['0.2', '1.2'],
+        'expected_security_release' => '0.2',
+        'fixture' => '0.2_1.2-sec',
+
+      ],
+      // Security release available for site minor release 1.
+      // Security release also available for previous minor.
+      '1.0, 0.2 1.2' => [
+        'site_patch_version' => '1.0',
+        'security_releases' => ['0.2', '1.2'],
+        'expected_security_release' => '1.2',
+        'fixture' => '0.2_1.2-sec',
+      ],
+      // Site on latest security release for minor. Next minor has security
+      // release.
+      '0.2, 0.2 1.2' => [
+        'site_patch_version' => '0.2',
+        'security_releases' => ['0.2', '1.2'],
+        'expected_security_release' => NULL,
+        'fixture' => '0.2_1.2-sec',
+      ],
+      // Site on latest security release for minor. Previous minor has security
+      // release.
+      '1.2, 0.2 1.2' => [
+        'site_patch_version' => '1.2',
+        'security_releases' => ['0.2', '1.2'],
+        'expected_security_release' => NULL,
+        'fixture' => '0.2_1.2-sec',
+      ],
+      // No security release available for site minor release 0.
+      // Security release available for next minor.
+      '0.0, 1.2, insecure' => [
+        'site_patch_version' => '0.0',
+        'security_releases' => ['1.2'],
+        'expected_security_release' => '1.2',
+        'fixture' => '1.2_insecure-sec',
+      ],
+      // No security release available for site minor release 0 but release not
+      // marked as insecure.
+      // Security release available for next minor.
+      '0.0, 1.2, not insecure' => [
+        'site_patch_version' => '0.0',
+        'security_releases' => ['1.2'],
+        'expected_security_release' => NULL,
+        'fixture' => '1.2-sec',
+      ],
+    ];
   }
 
   /**

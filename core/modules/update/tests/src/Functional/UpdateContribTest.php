@@ -438,4 +438,135 @@ class UpdateContribTest extends UpdateTestBase {
     $this->assertNoText(t('Security update'));
   }
 
+  /**
+   * Tests update status of security releases.
+   *
+   * @dataProvider securityUpdateAvailabilityProvider
+   */
+  public function testSecurityUpdateAvailability($module_version, $security_releases, $expected_security_release, $fixture) {
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    $system_info = [
+      '#all' => [
+        'version' => '8.0.0',
+      ],
+      'aaa_update_test' => [
+        'project' => 'aaa_update_test',
+        'version' => $module_version,
+        'hidden' => FALSE,
+      ],
+    ];
+    $this->config('update_test.settings')->set('system_info', $system_info)->save();
+    $this->refreshUpdateStatus(['drupal' => '0.0', 'aaa_update_test' => $fixture]);
+    $this->standardTests();
+
+    $update_element_css_locator = 'table.update:nth-of-type(2)';
+    if ($expected_security_release) {
+      file_put_contents('/Users/ted.bowman/Sites/www/page.html', $page->getOuterHtml());
+      $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Up to date');
+      $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Update available');
+      $assert_session->elementTextContains('css', $update_element_css_locator, 'Security update required!');
+      $expected_url_version = str_replace('.', '-', $expected_security_release);
+      $assert_session->linkByHrefExists("http://example.com/aaa_update_test-$expected_url_version-release");
+      $assert_session->linkByHrefExists("http://example.com/aaa_update_test-$expected_security_release.tar.gz");
+      $assert_session->linkByHrefExists("http://example.com/aaa_update_test-$expected_url_version-release");
+      $assert_session->responseContains('error.svg', 'Error icon was found.');
+    }
+    else {
+      if ($module_version === $security_releases[count($security_releases) - 1]) {
+        // If the module version is the same as last security release there
+        // there is not update available.
+        $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Update available');
+        $assert_session->elementTextContains('css', $update_element_css_locator, 'Up to date');
+      }
+      else {
+        $assert_session->elementTextContains('css', $update_element_css_locator, 'Update available');
+        $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Up to date');
+      }
+      $assert_session->pageTextNotContains('Security update required!');
+    }
+  }
+
+  /**
+   * Data provider method for testSecurityUpdateAvailability().
+   */
+  public function securityUpdateAvailabilityProvider() {
+    return [
+      // Security release available for module major release 1.
+      // No future releases for next major.
+      '8.x-1.0, 8.x-1.2' => [
+        'module_patch_version' => '8.x-1.0',
+        'security_releases' => ['8.x-1.2'],
+        'expected_security_release' => '8.x-1.2',
+        'fixture' => '8.x-1.2-sec',
+      ],
+      // 2 security releases available for module major release 1.
+      // 8.x-1.1 security release marked as insecure.
+      // No future releases for next major.
+      '8.x-1.0, 8.x-1.1 8.x-1.2' => [
+        'module_patch_version' => '8.x-1.0',
+        'security_releases' => ['8.x-1.1', '8.x-1.2'],
+        'expected_security_release' => '8.x-1.2',
+        'fixture' => '8.x-1.1_8.x-1.2-sec',
+      ],
+      // Security release available for module major release 2.
+      // No releases for next major.
+      '8.x-2.0, 8.x-2.2' => [
+        'module_patch_version' => '8.x-2.0',
+        'security_releases' => ['8.x-2.2'],
+        'expected_security_release' => '8.x-2.2',
+        'fixture' => '8.x-2.2-sec',
+      ],
+      // Security release available for module major release 1.
+      // Security release also available for next major.
+      '8.x-1.0, 8.x-1.2 8.x-2.2' => [
+        'module_patch_version' => '8.x-1.0',
+        'security_releases' => ['8.x-1.2', '8.x-2.2'],
+        'expected_security_release' => '8.x-1.2',
+        'fixture' => '8.x-1.2_8.x-2.2-sec',
+      ],
+      // Security release available for module major release 2.
+      // Security release also available for previous minor.
+      '8.x-2.0, 8.x-1.2 8.x-2.2' => [
+        'module_patch_version' => '8.x-2.0',
+        'security_releases' => ['8.x-1.2', '8.x-2.2'],
+        'expected_security_release' => '8.x-2.2',
+        'fixture' => '8.x-1.2_8.x-2.2-sec',
+      ],
+      // Site on latest security release for minor. Next minor has security
+      // release.
+      '8.x-1.2, 8.x-1.2 8.x-2.2' => [
+        'module_patch_version' => '8.x-1.2',
+        'security_releases' => ['8.x-1.2', '8.x-2.2'],
+        'expected_security_release' => NULL,
+        'fixture' => '8.x-1.2_8.x-2.2-sec',
+      ],
+      // Site on latest security release for minor. Previous minor has security
+      // release.
+      '8.x-2.2, 8.x-1.2 8.x-2.2' => [
+        'module_patch_version' => '8.x-2.2',
+        'security_releases' => ['8.x-1.2', '8.x-2.2'],
+        'expected_security_release' => NULL,
+        'fixture' => '8.x-1.2_8.x-2.2-sec',
+      ],
+      // No security release available for module major release 1.
+      // Security release available for next major.
+      '8.x-1.0, 8.x-1.2, insecure' => [
+        'module_patch_version' => '8.x-1.0',
+        'security_releases' => ['8.x-2.2'],
+        'expected_security_release' => '8.x-2.2',
+        'fixture' => '8.x-2.2_insecure-sec',
+      ],
+      // No security release available for module major release 1 but release
+      // not marked as insecure.
+      // Security release available for next major.
+      '8.x-1.0, 8.x-2.2, not insecure' => [
+        'module_patch_version' => '8.x-1.0',
+        'security_releases' => ['8.x-2.2'],
+        'expected_security_release' => NULL,
+        'fixture' => '8.x-2.2-sec',
+      ],
+    ];
+  }
+
 }
