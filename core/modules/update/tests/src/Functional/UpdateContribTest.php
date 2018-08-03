@@ -458,6 +458,7 @@ class UpdateContribTest extends UpdateTestBase {
     $this->config('update_test.settings')->set('system_info', $system_info)->save();
     $this->refreshUpdateStatus(['drupal' => '0.0', 'aaa_update_test' => $fixture]);
     $this->standardTests();
+    file_put_contents('/Users/ted.bowman/Sites/www/contrib' . $module_version . implode('__', $security_releases) . "__$expected_security_release---$fixture.html", $this->getSession()->getPage()->getOuterHtml());
 
     $update_element_css_locator = 'table.update:nth-of-type(2)';
     if ($expected_security_release) {
@@ -531,6 +532,23 @@ class UpdateContribTest extends UpdateTestBase {
         'security_releases' => ['8.x-2.2'],
         'expected_security_release' => NULL,
         'fixture' => '8.x-2.2-sec',
+      ],
+      // Security release available for module major release 2.
+      // Security release also available for previous minor.
+      '8.x-2.0-beta1, 8.x-1.2 8.x-2.2' => [
+        'module_patch_version' => '8.x-2.0-beta1',
+        'security_releases' => ['8.x-1.2', '8.x-2.2', '8.x-2.0-beta2'],
+        'expected_security_release' => '8.x-2.2',
+        'fixture' => '8.x-1.2_8.x-2.2-sec',
+      ],
+      // No security release available for module major release 1 but release
+      // not marked as insecure.
+      // Security release available for next major.
+      '8.x-2.0-beta2, 8.x-2.2, not insecure' => [
+        'module_patch_version' => '8.x-2.2',
+        'security_releases' => ['8.x-1.2', '8.x-2.2', '8.x-2.0-beta2'],
+        'expected_security_release' => NULL,
+        'fixture' => '8.x-1.2_8.x-2.2-sec',
       ],
     ];
   }

@@ -266,6 +266,23 @@ class UpdateCoreTest extends UpdateTestBase {
         'expected_security_release' => '1.2',
         'fixture' => '1.2_insecure-sec',
       ],
+      // Site on 2.0-beta1 and 2.0-beta2 is a security release but because
+      // beta/alpha/RC releases are not supported the latest security previous
+      // minor is the expected security release.
+      '2.0-beta1, 0.2 1.2 2.0-beta2' => [
+        'site_patch_version' => '2.0-beta1',
+        'security_releases' => ['0.2', '1.2', '2.0-beta2'],
+        'expected_security_release' => '1.2',
+        'fixture' => '0.2_1.2-sec',
+      ],
+      // Site on 2.0-beta2 which is a security release.
+      // Previous minor has a security release.
+      '2.0-beta2, 0.2 1.2 2.0-beta2' => [
+        'site_patch_version' => '2.0-beta2',
+        'security_releases' => ['0.2', '1.2', '2.0-beta2'],
+        'expected_security_release' => NULL,
+        'fixture' => '0.2_1.2-sec',
+      ],
     ];
   }
 
