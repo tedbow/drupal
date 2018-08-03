@@ -445,7 +445,6 @@ class UpdateContribTest extends UpdateTestBase {
    */
   public function testSecurityUpdateAvailability($module_version, $security_releases, $expected_security_release, $fixture) {
     $assert_session = $this->assertSession();
-    $page = $this->getSession()->getPage();
     $system_info = [
       '#all' => [
         'version' => '8.0.0',
@@ -459,6 +458,7 @@ class UpdateContribTest extends UpdateTestBase {
     $this->config('update_test.settings')->set('system_info', $system_info)->save();
     $this->refreshUpdateStatus(['drupal' => '0.0', 'aaa_update_test' => $fixture]);
     $this->standardTests();
+    file_put_contents('/Users/ted.bowman/Sites/www/contrib' . $module_version . implode('__', $security_releases) . "__$expected_security_release---$fixture", $this->getSession()->getPage()->getOuterHtml());
 
     $update_element_css_locator = 'table.update:nth-of-type(2)';
     if ($expected_security_release) {
@@ -491,14 +491,6 @@ class UpdateContribTest extends UpdateTestBase {
    */
   public function securityUpdateAvailabilityProvider() {
     return [
-      // Security release available for module major release 1.
-      // No future releases for next major.
-      '8.x-1.0, 8.x-1.2' => [
-        'module_patch_version' => '8.x-1.0',
-        'security_releases' => ['8.x-1.2'],
-        'expected_security_release' => '8.x-1.2',
-        'fixture' => '8.x-1.2-sec',
-      ],
       // 2 security releases available for module major release 1.
       // 8.x-1.1 security release marked as insecure.
       // No future releases for next major.
@@ -531,30 +523,6 @@ class UpdateContribTest extends UpdateTestBase {
         'security_releases' => ['8.x-1.2', '8.x-2.2'],
         'expected_security_release' => '8.x-2.2',
         'fixture' => '8.x-1.2_8.x-2.2-sec',
-      ],
-      // Site on latest security release for minor. Next minor has security
-      // release.
-      '8.x-1.2, 8.x-1.2 8.x-2.2' => [
-        'module_patch_version' => '8.x-1.2',
-        'security_releases' => ['8.x-1.2', '8.x-2.2'],
-        'expected_security_release' => NULL,
-        'fixture' => '8.x-1.2_8.x-2.2-sec',
-      ],
-      // Site on latest security release for minor. Previous minor has security
-      // release.
-      '8.x-2.2, 8.x-1.2 8.x-2.2' => [
-        'module_patch_version' => '8.x-2.2',
-        'security_releases' => ['8.x-1.2', '8.x-2.2'],
-        'expected_security_release' => NULL,
-        'fixture' => '8.x-1.2_8.x-2.2-sec',
-      ],
-      // No security release available for module major release 1.
-      // Security release available for next major.
-      '8.x-1.0, 8.x-1.2, insecure' => [
-        'module_patch_version' => '8.x-1.0',
-        'security_releases' => ['8.x-2.2'],
-        'expected_security_release' => '8.x-2.2',
-        'fixture' => '8.x-2.2_insecure-sec',
       ],
       // No security release available for module major release 1 but release
       // not marked as insecure.
