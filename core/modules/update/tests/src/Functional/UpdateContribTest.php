@@ -487,6 +487,30 @@ class UpdateContribTest extends UpdateTestBase {
 
   /**
    * Data provider method for testSecurityUpdateAvailability().
+   *
+   * These test cases rely on the following fixture files.
+   * - aaa_update_test.sec.8.x-1.1_8.x-1.2.xml
+   *   Contains releases
+   *     8.x-1.2 Security Update
+   *     8.x-1.1, 8.x-1.2 insecure
+   * - aaa_update_test.sec.8.x-1.2_8.x-2.2.xml
+   *   Contains releases
+   *     8.x-3.0-beta2
+   *     8.x-3.0-beta1 1nsecure
+   *     8.x-2.2 Security update
+   *     8.x-2.1 Security update, Insecure
+   *     8.x-2.0 insecure
+   *     8.x-1.2 Security update
+   *     8.x-1.1 Insecure
+   *     8.x-1.0 Insecure
+   * - aaa_update_test.sec.8.x-2.2_1.x_secure.xml
+   *   Contains releases
+   *     8.x-2.2 Security update
+   *     8.x-2.1 Security update, Insecure
+   *     8.x-2.0 insecure
+   *     8.x-1.2
+   *     8.x-1.1
+   *     8.x-1.0
    */
   public function securityUpdateAvailabilityProvider() {
     return [
@@ -498,7 +522,7 @@ class UpdateContribTest extends UpdateTestBase {
         'security_releases' => ['8.x-1.1', '8.x-1.2'],
         'expected_security_release' => '8.x-1.2',
         'update_available' => FALSE,
-        'fixture' => '8.x-1.1_8.x-1.2-sec',
+        'fixture' => 'sec.8.x-1.1_8.x-1.2',
       ],
       // Security release available for module major release 2.
       // No releases for next major.
@@ -507,7 +531,7 @@ class UpdateContribTest extends UpdateTestBase {
         'security_releases' => ['8.x-2.2'],
         'expected_security_release' => '8.x-2.2',
         'update_available' => FALSE,
-        'fixture' => '8.x-2.2-sec',
+        'fixture' => 'sec.8.x-2.2_1.x_secure',
       ],
       // Security release available for module major release 1.
       // Security release also available for next major.
@@ -516,26 +540,26 @@ class UpdateContribTest extends UpdateTestBase {
         'security_releases' => ['8.x-1.2', '8.x-2.2'],
         'expected_security_release' => '8.x-1.2',
         'update_available' => FALSE,
-        'fixture' => '8.x-1.2_8.x-2.2-sec',
+        'fixture' => 'sec.8.x-1.2_8.x-2.2',
       ],
       // Security release available for module major release 2.
-      // Security release also available for previous minor.
+      // Security release also available for previous major.
       '8.x-2.0, 8.x-1.2 8.x-2.2' => [
         'module_patch_version' => '8.x-2.0',
         'security_releases' => ['8.x-1.2', '8.x-2.2'],
         'expected_security_release' => '8.x-2.2',
         'update_available' => FALSE,
-        'fixture' => '8.x-1.2_8.x-2.2-sec',
+        'fixture' => 'sec.8.x-1.2_8.x-2.2',
       ],
-      // No security release available for module major release 1 but release
-      // not marked as insecure.
+      // No security release available for module major release 1 but 1.x
+      // releases are not marked as insecure.
       // Security release available for next major.
       '8.x-1.0, 8.x-2.2, not insecure' => [
         'module_patch_version' => '8.x-1.0',
         'security_releases' => ['8.x-2.2'],
         'expected_security_release' => NULL,
         'update_available' => TRUE,
-        'fixture' => '8.x-2.2-sec',
+        'fixture' => 'sec.8.x-2.2_1.x_secure',
       ],
       // Site on 8.x-2.0-beta1 and 8.x-2.0-beta2 is a security release but
       // because beta/alpha/RC releases are not supported the latest security
@@ -545,16 +569,7 @@ class UpdateContribTest extends UpdateTestBase {
         'security_releases' => ['8.x-1.2', '8.x-2.2', '8.x-2.0-beta2'],
         'expected_security_release' => '8.x-2.2',
         'update_available' => FALSE,
-        'fixture' => '8.x-1.2_8.x-2.2-sec',
-      ],
-      // Security release available for module major release 1.
-      // Security release also available for next major.
-      '8.x-2.2, 8.x-1.2' => [
-        'module_patch_version' => '8.x-2.2',
-        'security_releases' => ['8.x-1.2'],
-        'expected_security_release' => NULL,
-        'update_available' => FALSE,
-        'fixture' => '8.x-1.2_previous_major-sec',
+        'fixture' => 'sec.8.x-1.2_8.x-2.2',
       ],
     ];
   }

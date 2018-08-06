@@ -205,6 +205,44 @@ class UpdateCoreTest extends UpdateTestBase {
 
   /**
    * Data provider method for testSecurityUpdateAvailability().
+   *
+   * These test cases rely on the following fixture files.
+   * - drupal.sec.0.1_0.2.xml
+   *   Contains releases:
+   *     8.0.2 Security Update
+   *     8.0.1 Security Update, Insecure
+   *     8.0.0 Insecure
+   * - drupal.sec.0.2.xml
+   *   Contains releases:
+   *     8.0.2 Security Update
+   *     8.0.1 Insecure
+   *     8.0.0 Insecure
+   * - drupal.sec.0.2_1.2.xml
+   *   Contains releases:
+   *     8.2.0-beta2
+   *     8.2.0-beta1 Insecure
+   *     8.1.2 Security Update
+   *     8.1.1 Insecure
+   *     8.1.0 Insecure
+   *     8.0.2 Security Update
+   *     8.0.1 Insecure
+   *     8.0.0 Insecure
+   * - drupal.sec.1.2.xml
+   *   Contains releases:
+   *     8.1.2 Security Update
+   *     8.1.1 Insecure
+   *     8.1.0 Insecure
+   *     8.0.2
+   *     8.0.1
+   *     8.0.0
+   * - drupal.sec.1.2_insecure.xml
+   *   Contains releases:
+   *     8.1.2 Security Update
+   *     8.1.1 Insecure
+   *     8.1.0 Insecure
+   *     8.0.2 Insecure
+   *     8.0.1 Insecure
+   *     8.0.0 Insecure
    */
   public function securityUpdateAvailabilityProvider() {
     return [
@@ -214,7 +252,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'site_patch_version' => '0.0',
         'security_releases' => ['0.2'],
         'expected_security_release' => '0.2',
-        'fixture' => '0.2-sec',
+        'fixture' => 'sec.0.2',
       ],
       // 2 security releases available for site minor release 0.
       // 0.1 security release marked as insecure.
@@ -223,7 +261,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'site_patch_version' => '0.0',
         'security_releases' => ['0.1', '0.2'],
         'expected_security_release' => '0.2',
-        'fixture' => '0.1_0.2-sec',
+        'fixture' => 'sec.0.1_0.2',
       ],
       // Security release available for site minor release 1.
       // No releases for next minor.
@@ -231,7 +269,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'site_patch_version' => '1.0',
         'security_releases' => ['1.2'],
         'expected_security_release' => '1.2',
-        'fixture' => '1.2-sec',
+        'fixture' => 'sec.1.2',
       ],
       // Security release available for site minor release 0.
       // Security release also available for next minor.
@@ -239,7 +277,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'site_patch_version' => '0.0',
         'security_releases' => ['0.2', '1.2'],
         'expected_security_release' => '0.2',
-        'fixture' => '0.2_1.2-sec',
+        'fixture' => 'sec.0.2_1.2',
 
       ],
       // Security release available for site minor release 1.
@@ -248,7 +286,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'site_patch_version' => '1.0',
         'security_releases' => ['0.2', '1.2'],
         'expected_security_release' => '1.2',
-        'fixture' => '0.2_1.2-sec',
+        'fixture' => 'sec.0.2_1.2',
       ],
       // Site on latest security release for minor. Previous minor has security
       // release.
@@ -256,7 +294,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'site_patch_version' => '1.2',
         'security_releases' => ['0.2', '1.2'],
         'expected_security_release' => NULL,
-        'fixture' => '0.2_1.2-sec',
+        'fixture' => 'sec.0.2_1.2',
       ],
       // No security release available for site minor release 0.
       // Security release available for next minor.
@@ -264,7 +302,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'site_patch_version' => '0.0',
         'security_releases' => ['1.2'],
         'expected_security_release' => '1.2',
-        'fixture' => '1.2_insecure-sec',
+        'fixture' => 'sec.1.2_insecure',
       ],
       // Site on 2.0-beta1 and 2.0-beta2 is a security release but because
       // beta/alpha/RC releases are not supported the latest security from the
@@ -273,7 +311,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'site_patch_version' => '2.0-beta1',
         'security_releases' => ['0.2', '1.2', '2.0-beta2'],
         'expected_security_release' => '1.2',
-        'fixture' => '0.2_1.2-sec',
+        'fixture' => 'sec.0.2_1.2',
       ],
       // Site on 2.0-beta2 which is a security release.
       // Previous minor has a security release.
@@ -281,7 +319,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'site_patch_version' => '2.0-beta2',
         'security_releases' => ['0.2', '1.2', '2.0-beta2'],
         'expected_security_release' => NULL,
-        'fixture' => '0.2_1.2-sec',
+        'fixture' => 'sec.0.2_1.2',
       ],
     ];
   }
@@ -380,7 +418,7 @@ class UpdateCoreTest extends UpdateTestBase {
       ->set('fetch.url', Url::fromRoute('update_test.update_test')->setAbsolute()->toString())
       ->save();
     $this->config('update_test.settings')
-      ->set('xml_map', ['drupal' => '0.2-sec'])
+      ->set('xml_map', ['drupal' => 'sec.0.2'])
       ->save();
 
     $this->drupalGet('admin/reports/updates');
