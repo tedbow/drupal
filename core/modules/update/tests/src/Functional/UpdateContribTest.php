@@ -443,7 +443,7 @@ class UpdateContribTest extends UpdateTestBase {
    *
    * @dataProvider securityUpdateAvailabilityProvider
    */
-  public function testSecurityUpdateAvailability($module_version, $security_releases, $expected_security_release, $fixture) {
+  public function testSecurityUpdateAvailability($module_version, $security_releases, $expected_security_release, $update_available, $fixture) {
     $assert_session = $this->assertSession();
     $system_info = [
       '#all' => [
@@ -471,7 +471,7 @@ class UpdateContribTest extends UpdateTestBase {
       $assert_session->responseContains('error.svg', 'Error icon was found.');
     }
     else {
-      if ($module_version === $security_releases[count($security_releases) - 1]) {
+      if (!$update_available) {
         // If the module version is the same as last security release there
         // there is not update available.
         $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Update available');
@@ -497,6 +497,7 @@ class UpdateContribTest extends UpdateTestBase {
         'module_patch_version' => '8.x-1.0',
         'security_releases' => ['8.x-1.1', '8.x-1.2'],
         'expected_security_release' => '8.x-1.2',
+        'update_available' => FALSE,
         'fixture' => '8.x-1.1_8.x-1.2-sec',
       ],
       // Security release available for module major release 2.
@@ -505,6 +506,7 @@ class UpdateContribTest extends UpdateTestBase {
         'module_patch_version' => '8.x-2.0',
         'security_releases' => ['8.x-2.2'],
         'expected_security_release' => '8.x-2.2',
+        'update_available' => FALSE,
         'fixture' => '8.x-2.2-sec',
       ],
       // Security release available for module major release 1.
@@ -513,6 +515,7 @@ class UpdateContribTest extends UpdateTestBase {
         'module_patch_version' => '8.x-1.0',
         'security_releases' => ['8.x-1.2', '8.x-2.2'],
         'expected_security_release' => '8.x-1.2',
+        'update_available' => FALSE,
         'fixture' => '8.x-1.2_8.x-2.2-sec',
       ],
       // Security release available for module major release 2.
@@ -521,6 +524,7 @@ class UpdateContribTest extends UpdateTestBase {
         'module_patch_version' => '8.x-2.0',
         'security_releases' => ['8.x-1.2', '8.x-2.2'],
         'expected_security_release' => '8.x-2.2',
+        'update_available' => FALSE,
         'fixture' => '8.x-1.2_8.x-2.2-sec',
       ],
       // No security release available for module major release 1 but release
@@ -530,6 +534,7 @@ class UpdateContribTest extends UpdateTestBase {
         'module_patch_version' => '8.x-1.0',
         'security_releases' => ['8.x-2.2'],
         'expected_security_release' => NULL,
+        'update_available' => TRUE,
         'fixture' => '8.x-2.2-sec',
       ],
       // Site on 8.x-2.0-beta1 and 8.x-2.0-beta2 is a security release but
@@ -539,7 +544,17 @@ class UpdateContribTest extends UpdateTestBase {
         'module_patch_version' => '8.x-2.0-beta1',
         'security_releases' => ['8.x-1.2', '8.x-2.2', '8.x-2.0-beta2'],
         'expected_security_release' => '8.x-2.2',
+        'update_available' => FALSE,
         'fixture' => '8.x-1.2_8.x-2.2-sec',
+      ],
+      // Security release available for module major release 1.
+      // Security release also available for next major.
+      '8.x-2.2, 8.x-1.2' => [
+        'module_patch_version' => '8.x-2.2',
+        'security_releases' => ['8.x-1.2'],
+        'expected_security_release' => NULL,
+        'update_available' => FALSE,
+        'fixture' => '8.x-1.2_previous_major-sec',
       ],
     ];
   }
