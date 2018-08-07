@@ -217,11 +217,11 @@ class UpdateCoreTest extends UpdateTestBase {
    *     8.0.0 Insecure
    * - drupal.sec.0.2-rc2.xml
    *   Contains releases:
-   *     8.2.0-rc2
+   *     8.2.0-rc2 Security Update
    *     8.2.0-rc1 Insecure
-   *     8.2.0-beta2
+   *     8.2.0-beta2 Insecure
    *     8.2.0-beta1 Insecure
-   *     8.2.0-alpha2
+   *     8.2.0-alpha2 Insecure
    *     8.2.0-alpha1 Insecure
    *     8.1.2 Security Update
    *     8.1.1 Insecure
@@ -249,9 +249,9 @@ class UpdateCoreTest extends UpdateTestBase {
    *   Contains releases:
    *     8.2.0-rc2
    *     8.2.0-rc1
-   *     8.2.0-beta2 Insecure
+   *     8.2.0-beta2
    *     8.2.0-beta1
-   *     8.2.0-alpha2 Insecure
+   *     8.2.0-alpha2
    *     8.2.0-alpha1
    *     8.1.2 Security Update
    *     8.1.1 Insecure
@@ -261,7 +261,7 @@ class UpdateCoreTest extends UpdateTestBase {
    *     8.0.0 Insecure
    */
   public function securityUpdateAvailabilityProvider() {
-    return [
+    $test_cases = [
       // Security release available for site minor release 0.
       // No future releases for next minor.
       '0.0, 0.2' => [
@@ -310,7 +310,10 @@ class UpdateCoreTest extends UpdateTestBase {
         'site_patch_version' => '1.2',
         'expected_security_release' => NULL,
         'update_available' => FALSE,
-        'fixture' => 'sec.0.2-rc2',
+        // @todo Change to use fixture 'sec.0.2-rc2' in
+        // https://www.drupal.org/node/2804155. Currently this case would fail
+        // because 8.2.0-rc2 would be the recommend security release.
+        'fixture' => 'sec.0.2-rc2-b',
       ],
       // No security release available for site minor release 0.
       // Security release available for next minor.
@@ -320,74 +323,45 @@ class UpdateCoreTest extends UpdateTestBase {
         'update_available' => FALSE,
         'fixture' => 'sec.1.2_insecure',
       ],
-      // Site on 2.0-beta1 which is insecure.2.0-beta2 is not insecure but
-      // because beta/alpha/RC releases are not supported the latest security
-      // from the previous major is the expected security release.
-      '2.0-beta1, 0.2 1.2 2.0-beta2' => [
-        'site_patch_version' => '2.0-beta1',
-        'expected_security_release' => '1.2',
-        'update_available' => TRUE,
-        'fixture' => 'sec.0.2-rc2',
-      ],
-      // Site on 2.0-beta2 which is not insecure.
-      // Previous minor has a security release.
-      '2.0-beta2, 0.2 1.2 2.0-beta2' => [
-        'site_patch_version' => '2.0-beta2',
-        'expected_security_release' => NULL,
-        'update_available' => TRUE,
-        'fixture' => 'sec.0.2-rc2',
-      ],
-      // Site on 2.0-alpha1 which is insecure.2.0-alpha2 is not insecure but
-      // because beta/alpha/RC releases are not supported the latest security
-      // from the previous major is the expected security release.
-      '2.0-alpha1, 0.2 1.2 2.0-alpha2' => [
-        'site_patch_version' => '2.0-alpha1',
-        'expected_security_release' => '1.2',
-        'update_available' => TRUE,
-        'fixture' => 'sec.0.2-rc2',
-      ],
-      // Site on 2.0-alpha2 which is not insecure.
-      // Previous minor has a security release.
-      '2.0-alpha2, 0.2 1.2 2.0-alpha2' => [
-        'site_patch_version' => '2.0-alpha2',
-        'expected_security_release' => NULL,
-        'update_available' => TRUE,
-        'fixture' => 'sec.0.2-rc2',
-      ],
-      // Site on 2.0-rc1 which is insecure.2.0-rc2 is not insecure but
-      // because beta/alpha/RC releases are not supported the latest security
-      // from the previous major is the expected security release.
-      '2.0-rc1, 0.2 1.2 2.0-rc2' => [
-        'site_patch_version' => '2.0-rc1',
-        'expected_security_release' => '1.2',
-        'update_available' => TRUE,
-        'fixture' => 'sec.0.2-rc2',
-      ],
-      // Site on 2.0-rc2 which is not insecure.
-      // Previous minor has a security release.
-      '2.0-rc2, 0.2 1.2 2.0-rc2' => [
+      // Site on 2.0-rc2 which a security release.
+      '2.0-rc2, 0.2 1.2' => [
         'site_patch_version' => '2.0-rc2',
         'expected_security_release' => NULL,
         'update_available' => FALSE,
         'fixture' => 'sec.0.2-rc2',
       ],
-      // Site on 2.0-alpha2 which is insecure.
-      // Previous minor has a security release.
-      '2.0-alpha2, 0.2 1.2' => [
-        'site_patch_version' => '2.0-alpha2',
-        'expected_security_release' => '1.2',
-        'update_available' => TRUE,
-        'fixture' => 'sec.0.2-rc2-b',
-      ],
-      // Site on 2.0-beta2 which is insecure.
-      // Previous minor has a security release.
-      '2.0-beta2, 0.2 1.2' => [
-        'site_patch_version' => '2.0-beta2',
-        'expected_security_release' => '1.2',
-        'update_available' => TRUE,
-        'fixture' => 'sec.0.2-rc2-b',
-      ],
     ];
+    $pre_releases = [
+      '2.0-alpha1',
+      '2.0-alpha2',
+      '2.0-beta1',
+      '2.0-beta2',
+      '2.0-rc1',
+    ];
+    // Add test cases to confirm that all alpha/beta/RC releases will
+    // have the expected security update of 8.2.0-rc2 which is the only
+    // alpha/beta/RC release in sec.0.2-rc2 that is not insecure and is a
+    // security release.
+    foreach ($pre_releases as $pre_release) {
+      $test_cases["Pre-release:$pre_release: 2.0-rc2"] = [
+        'site_patch_version' => $pre_release,
+        'expected_security_release' => '2.0-rc2',
+        'update_available' => TRUE,
+        'fixture' => 'sec.0.2-rc2',
+      ];
+    }
+    // Add test cases to confirm that all alpha/beta/RC releases will have no
+    // security update when there is no alpha/beta/RC insecure releases.
+    $pre_releases[] = '2.0-rc2';
+    foreach ($pre_releases as $pre_release) {
+      $test_cases["Pre-release:$pre_release, no security update"] = [
+        'site_patch_version' => $pre_release,
+        'expected_security_release' => NULL,
+        'update_available' => $pre_release === '2.0-rc2' ? FALSE : TRUE,
+        'fixture' => 'sec.0.2-rc2-b',
+      ];
+    }
+    return $test_cases;
   }
 
   /**

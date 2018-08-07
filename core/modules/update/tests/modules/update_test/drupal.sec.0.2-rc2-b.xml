@@ -22,9 +22,9 @@
   <version_patch>0</version_patch>
   <version_extra>rc2</version_extra>
   <status>published</status>
-  <release_link>https://www.drupal.org/project/drupal/releases/8.2.0-rc2</release_link>
-  <download_link>https://ftp.drupal.org/files/projects/drupal-8.2.0-rc2.tar.gz</download_link>
-  <date>1250424532</date>
+  <release_link>http://example.com/drupal-8-2-0-rc2-release</release_link>
+  <download_link>http://example.com/drupal-8-2-0-rc2.tar.gz</download_link>
+  <date>1533298080</date>
   <mdhash>2387284145e34a19fc45e03c258a2831</mdhash>
   <filesize>16209911</filesize>
   <terms>
@@ -44,9 +44,9 @@
   <version_patch>0</version_patch>
   <version_extra>rc1</version_extra>
   <status>published</status>
-  <release_link>https://www.drupal.org/project/drupal/releases/8.2.0-rc1</release_link>
-  <download_link>https://ftp.drupal.org/files/projects/drupal-8.2.0-rc1.tar.gz</download_link>
-  <date>1250424531</date>
+  <release_link>http://example.com/drupal-8-2-0-rc1-release</release_link>
+  <download_link>http://example.com/drupal-8-2-0-rc1.tar.gz</download_link>
+  <date>1533270485</date>
   <mdhash>3d70ae568dd8f7100082b8c58bc8d1fe</mdhash>
   <filesize>16209123</filesize>
   <terms>
@@ -56,51 +56,50 @@
   <security>
    Beta releases are not covered by Drupal security advisories.
   </security>
-  <release>
-   <name>drupal 8.2.0-beta2</name>
-   <version>8.2.0-beta2</version>
-   <tag>8.2.0-beta2</tag>
-   <version_major>8</version_major>
-   <version_minor>2</version_minor>
-   <version_patch>0</version_patch>
-   <version_extra>beta2</version_extra>
-   <status>published</status>
-   <release_link>https://www.drupal.org/project/drupal/releases/8.2.0-beta2</release_link>
-   <download_link>https://ftp.drupal.org/files/projects/drupal-8.2.0-beta2.tar.gz</download_link>
-   <date>1250424530</date>
-   <mdhash>2387284145e34a19fc45e03c258a2831</mdhash>
-   <filesize>16209911</filesize>
-   <terms>
-    <term><name>Release type</name><value>Bug fixes</value></term>
-    <term><name>Release type</name><value>New features</value></term>
-    <term><name>Release type</name><value>Insecure</value></term>
-   </terms>
-   <security>
-    Beta releases are not covered by Drupal security advisories.
-   </security>
-  </release>
-  <release>
-   <name>drupal 8.2.0-beta1</name>
-   <version>8.2.0-beta1</version>
-   <tag>8.2.0-beta1</tag>
-   <version_major>8</version_major>
-   <version_minor>2</version_minor>
-   <version_patch>0</version_patch>
-   <version_extra>beta1</version_extra>
-   <status>published</status>
-   <release_link>https://www.drupal.org/project/drupal/releases/8.2.0-beta1</release_link>
-   <download_link>https://ftp.drupal.org/files/projects/drupal-8.2.0-beta1.tar.gz</download_link>
-   <date>1250424529</date>
-   <mdhash>3d70ae568dd8f7100082b8c58bc8d1fe</mdhash>
-   <filesize>16209123</filesize>
-   <terms>
-    <term><name>Release type</name><value>Bug fixes</value></term>
-    <term><name>Release type</name><value>New features</value></term>
-   </terms>
-   <security>
-    Beta releases are not covered by Drupal security advisories.
-   </security>
-  </release>
+ </release>
+ <release>
+  <name>drupal 8.2.0-beta2</name>
+  <version>8.2.0-beta2</version>
+  <tag>8.2.0-beta2</tag>
+  <version_major>8</version_major>
+  <version_minor>2</version_minor>
+  <version_patch>0</version_patch>
+  <version_extra>beta2</version_extra>
+  <status>published</status>
+  <release_link>http://example.com/drupal-8-2-0-beta2-release</release_link>
+  <download_link>http://example.com/drupal-8-2-0-beta2.tar.gz</download_link>
+  <date>1533298080</date>
+  <mdhash>2387284145e34a19fc45e03c258a2831</mdhash>
+  <filesize>16209911</filesize>
+  <terms>
+   <term><name>Release type</name><value>Bug fixes</value></term>
+   <term><name>Release type</name><value>New features</value></term>
+  </terms>
+  <security>
+   Beta releases are not covered by Drupal security advisories.
+  </security>
+ </release>
+ <release>
+  <name>drupal 8.2.0-beta1</name>
+  <version>8.2.0-beta1</version>
+  <tag>8.2.0-beta1</tag>
+  <version_major>8</version_major>
+  <version_minor>2</version_minor>
+  <version_patch>0</version_patch>
+  <version_extra>beta1</version_extra>
+  <status>published</status>
+  <release_link>http://example.com/drupal-8-2-0-beta1-release</release_link>
+  <download_link>http://example.com/drupal-8-2-0-beta1.tar.gz</download_link>
+  <date>1533270485</date>
+  <mdhash>3d70ae568dd8f7100082b8c58bc8d1fe</mdhash>
+  <filesize>16209123</filesize>
+  <terms>
+   <term><name>Release type</name><value>Bug fixes</value></term>
+   <term><name>Release type</name><value>New features</value></term>
+  </terms>
+  <security>
+   Beta releases are not covered by Drupal security advisories.
+  </security>
  </release>
  <release>
   <name>drupal 8.2.0-alpha2</name>
@@ -111,15 +110,14 @@
   <version_patch>0</version_patch>
   <version_extra>alpha2</version_extra>
   <status>published</status>
-  <release_link>https://www.drupal.org/project/drupal/releases/8.2.0-alpha2</release_link>
-  <download_link>https://ftp.drupal.org/files/projects/drupal-8.2.0-alpha2.tar.gz</download_link>
-  <date>1250424528</date>
+  <release_link>http://example.com/drupal-8-2-0-alpha2-release</release_link>
+  <download_link>http://example.com/drupal-8-2-0-alpha2.tar.gz</download_link>
+  <date>1533298080</date>
   <mdhash>2387284145e34a19fc45e03c258a2831</mdhash>
   <filesize>16209911</filesize>
   <terms>
    <term><name>Release type</name><value>Bug fixes</value></term>
    <term><name>Release type</name><value>New features</value></term>
-   <term><name>Release type</name><value>Insecure</value></term>
   </terms>
   <security>
    Beta releases are not covered by Drupal security advisories.
@@ -134,15 +132,14 @@
   <version_patch>0</version_patch>
   <version_extra>alpha1</version_extra>
   <status>published</status>
-  <release_link>https://www.drupal.org/project/drupal/releases/8.2.0-alpha1</release_link>
-  <download_link>https://ftp.drupal.org/files/projects/drupal-8.2.0-alpha1.tar.gz</download_link>
-  <date>1250424527</date>
+  <release_link>http://example.com/drupal-8.2.0-alpha1</release_link>
+  <download_link>http://example.com/drupal-8-2-0-alpha1.tar.gz</download_link>
+  <date>1533270485</date>
   <mdhash>3d70ae568dd8f7100082b8c58bc8d1fe</mdhash>
   <filesize>16209123</filesize>
   <terms>
    <term><name>Release type</name><value>Bug fixes</value></term>
    <term><name>Release type</name><value>New features</value></term>
-   <term><name>Release type</name><value>Insecure</value></term>
   </terms>
   <security>
    Beta releases are not covered by Drupal security advisories.
