@@ -443,7 +443,7 @@ class UpdateContribTest extends UpdateTestBase {
    *
    * @dataProvider securityUpdateAvailabilityProvider
    */
-  public function testSecurityUpdateAvailability($module_version, $security_releases, $expected_security_release, $update_available, $fixture) {
+  public function testSecurityUpdateAvailability($module_version, $expected_security_release, $update_available, $fixture) {
     $assert_session = $this->assertSession();
     $system_info = [
       '#all' => [
@@ -458,8 +458,8 @@ class UpdateContribTest extends UpdateTestBase {
     $this->config('update_test.settings')->set('system_info', $system_info)->save();
     $this->refreshUpdateStatus(['drupal' => '0.0', 'aaa_update_test' => $fixture]);
     $this->standardTests();
-
     $update_element_css_locator = 'table.update:nth-of-type(2)';
+    $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Not supported');
     if ($expected_security_release) {
       $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Up to date');
       $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Update available');
@@ -471,17 +471,17 @@ class UpdateContribTest extends UpdateTestBase {
       $assert_session->responseContains('error.svg', 'Error icon was found.');
     }
     else {
-      if (!$update_available) {
-        // If the module version is the same as last security release there
-        // there is not update available.
-        $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Update available');
-        $assert_session->elementTextContains('css', $update_element_css_locator, 'Up to date');
-      }
-      else {
+      $assert_session->pageTextNotContains('Security update required!');
+      if ($update_available) {
         $assert_session->elementTextContains('css', $update_element_css_locator, 'Update available');
         $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Up to date');
       }
-      $assert_session->pageTextNotContains('Security update required!');
+      else {
+
+        $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Update available');
+        $assert_session->elementTextContains('css', $update_element_css_locator, 'Up to date');
+      }
+
     }
   }
 
@@ -511,6 +511,16 @@ class UpdateContribTest extends UpdateTestBase {
    *     8.x-1.2
    *     8.x-1.1
    *     8.x-1.0
+   * - aaa_update_test.sec.8.x-1.2_8.x-2.0.xml
+   *   Contains releases
+   *     8.x-3.0-beta2
+   *     8.x-3.0-beta1 1nsecure
+   *     8.x-2.2
+   *     8.x-2.1
+   *     8.x-2.0
+   *     8.x-1.2 Security update
+   *     8.x-1.1 Insecure
+   *     8.x-1.0 Insecure
    */
   public function securityUpdateAvailabilityProvider() {
     return [
@@ -519,7 +529,6 @@ class UpdateContribTest extends UpdateTestBase {
       // No future releases for next major.
       '8.x-1.0, 8.x-1.1 8.x-1.2' => [
         'module_patch_version' => '8.x-1.0',
-        'security_releases' => ['8.x-1.1', '8.x-1.2'],
         'expected_security_release' => '8.x-1.2',
         'update_available' => FALSE,
         'fixture' => 'sec.8.x-1.1_8.x-1.2',
@@ -528,7 +537,6 @@ class UpdateContribTest extends UpdateTestBase {
       // No releases for next major.
       '8.x-2.0, 8.x-2.2' => [
         'module_patch_version' => '8.x-2.0',
-        'security_releases' => ['8.x-2.2'],
         'expected_security_release' => '8.x-2.2',
         'update_available' => FALSE,
         'fixture' => 'sec.8.x-2.2_1.x_secure',
@@ -537,7 +545,6 @@ class UpdateContribTest extends UpdateTestBase {
       // Security release also available for next major.
       '8.x-1.0, 8.x-1.2 8.x-2.2' => [
         'module_patch_version' => '8.x-1.0',
-        'security_releases' => ['8.x-1.2', '8.x-2.2'],
         'expected_security_release' => '8.x-1.2',
         'update_available' => FALSE,
         'fixture' => 'sec.8.x-1.2_8.x-2.2',
@@ -546,7 +553,6 @@ class UpdateContribTest extends UpdateTestBase {
       // Security release also available for previous major.
       '8.x-2.0, 8.x-1.2 8.x-2.2' => [
         'module_patch_version' => '8.x-2.0',
-        'security_releases' => ['8.x-1.2', '8.x-2.2'],
         'expected_security_release' => '8.x-2.2',
         'update_available' => FALSE,
         'fixture' => 'sec.8.x-1.2_8.x-2.2',
@@ -556,19 +562,24 @@ class UpdateContribTest extends UpdateTestBase {
       // Security release available for next major.
       '8.x-1.0, 8.x-2.2, not insecure' => [
         'module_patch_version' => '8.x-1.0',
-        'security_releases' => ['8.x-2.2'],
         'expected_security_release' => NULL,
         'update_available' => TRUE,
         'fixture' => 'sec.8.x-2.2_1.x_secure',
+      ],
+
+      '8.x-2.0, 8.x-1.2' => [
+        'module_patch_version' => '8.x-2.0',
+        'expected_security_release' => NULL,
+        'update_available' => TRUE,
+        'fixture' => 'sec.8.x-1.2_8.x-2.0',
       ],
       // Site on 8.x-2.0-beta1 and 8.x-2.0-beta2 is a security release but
       // because beta/alpha/RC releases are not supported the latest security
       // from previous minor is the expected security release.
       '8.x-2.0-beta1, 8.x-1.2 8.x-2.2 8.x-2.0-beta2' => [
         'module_patch_version' => '8.x-2.0-beta1',
-        'security_releases' => ['8.x-1.2', '8.x-2.2', '8.x-2.0-beta2'],
         'expected_security_release' => '8.x-2.2',
-        'update_available' => FALSE,
+        'update_available' => TRUE,
         'fixture' => 'sec.8.x-1.2_8.x-2.2',
       ],
     ];

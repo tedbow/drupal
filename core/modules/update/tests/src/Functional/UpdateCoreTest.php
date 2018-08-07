@@ -163,21 +163,23 @@ class UpdateCoreTest extends UpdateTestBase {
    *
    * @param string $site_patch_version
    *   The patch version to set the site to for testing.
-   * @param array $security_releases
-   *   The security release that will be returned in the test XML.
    * @param string $expected_security_release
-   *   The expected security release that should be required for the site. If
-   *   NULL then no security release is required.
+   *   The expected security release.
+   * @param bool $update_available
+   *   Whether an update is available.
    * @param string $fixture
    *   The test fixture that contains the test XML.
    *
+   * @throws \Behat\Mink\Exception\ResponseTextException
    * @dataProvider securityUpdateAvailabilityProvider
    */
-  public function testSecurityUpdateAvailability($site_patch_version, array $security_releases, $expected_security_release, $fixture) {
+  public function testSecurityUpdateAvailability($site_patch_version, $expected_security_release, $update_available, $fixture) {
+
     $assert_session = $this->assertSession();
     $this->setSystemInfo("8.$site_patch_version");
     $this->refreshUpdateStatus(['drupal' => $fixture]);
     $this->standardTests();
+    $assert_session->pageTextNotContains('Not supported');
     if ($expected_security_release) {
       $this->assertNoText(t('Up to date'));
       $this->assertNoText(t('Update available'));
@@ -189,7 +191,7 @@ class UpdateCoreTest extends UpdateTestBase {
       $this->assertRaw('error.svg', 'Error icon was found.');
     }
     else {
-      if ($site_patch_version === $security_releases[count($security_releases) - 1]) {
+      if (!$update_available) {
         // If the site patch version is the same as last security release there
         // there is not update available.
         $assert_session->pageTextNotContains('Update available');
@@ -217,10 +219,14 @@ class UpdateCoreTest extends UpdateTestBase {
    *     8.0.2 Security Update
    *     8.0.1 Insecure
    *     8.0.0 Insecure
-   * - drupal.sec.0.2_1.2.xml
+   * - drupal.sec.0.2-rc2.xml
    *   Contains releases:
+   *     8.2.0-rc2
+   *     8.2.0-rc1 Insecure
    *     8.2.0-beta2
    *     8.2.0-beta1 Insecure
+   *     8.2.0-alpha2
+   *     8.2.0-alpha1 Insecure
    *     8.1.2 Security Update
    *     8.1.1 Insecure
    *     8.1.0 Insecure
@@ -243,6 +249,20 @@ class UpdateCoreTest extends UpdateTestBase {
    *     8.0.2 Insecure
    *     8.0.1 Insecure
    *     8.0.0 Insecure
+   * - drupal.sec.0.2-rc2-b.xml
+   *   Contains releases:
+   *     8.2.0-rc2
+   *     8.2.0-rc1
+   *     8.2.0-beta2 Insecure
+   *     8.2.0-beta1
+   *     8.2.0-alpha2 Insecure
+   *     8.2.0-alpha1
+   *     8.1.2 Security Update
+   *     8.1.1 Insecure
+   *     8.1.0 Insecure
+   *     8.0.2 Security Update
+   *     8.0.1 Insecure
+   *     8.0.0 Insecure
    */
   public function securityUpdateAvailabilityProvider() {
     return [
@@ -250,8 +270,8 @@ class UpdateCoreTest extends UpdateTestBase {
       // No future releases for next minor.
       '0.0, 0.2' => [
         'site_patch_version' => '0.0',
-        'security_releases' => ['0.2'],
         'expected_security_release' => '0.2',
+        'update_available' => FALSE,
         'fixture' => 'sec.0.2',
       ],
       // 2 security releases available for site minor release 0.
@@ -259,67 +279,117 @@ class UpdateCoreTest extends UpdateTestBase {
       // No future releases for next minor.
       '0.0, 0.1 0.2' => [
         'site_patch_version' => '0.0',
-        'security_releases' => ['0.1', '0.2'],
         'expected_security_release' => '0.2',
+        'update_available' => FALSE,
         'fixture' => 'sec.0.1_0.2',
       ],
       // Security release available for site minor release 1.
       // No releases for next minor.
       '1.0, 1.2' => [
         'site_patch_version' => '1.0',
-        'security_releases' => ['1.2'],
         'expected_security_release' => '1.2',
+        'update_available' => FALSE,
         'fixture' => 'sec.1.2',
       ],
       // Security release available for site minor release 0.
       // Security release also available for next minor.
       '0.0, 0.2 1.2' => [
         'site_patch_version' => '0.0',
-        'security_releases' => ['0.2', '1.2'],
         'expected_security_release' => '0.2',
-        'fixture' => 'sec.0.2_1.2',
+        'update_available' => TRUE,
+        'fixture' => 'sec.0.2-rc2',
 
       ],
       // Security release available for site minor release 1.
       // Security release also available for previous minor.
       '1.0, 0.2 1.2' => [
         'site_patch_version' => '1.0',
-        'security_releases' => ['0.2', '1.2'],
         'expected_security_release' => '1.2',
-        'fixture' => 'sec.0.2_1.2',
+        'update_available' => FALSE,
+        'fixture' => 'sec.0.2-rc2',
       ],
       // Site on latest security release for minor. Previous minor has security
       // release.
       '1.2, 0.2 1.2' => [
         'site_patch_version' => '1.2',
-        'security_releases' => ['0.2', '1.2'],
         'expected_security_release' => NULL,
-        'fixture' => 'sec.0.2_1.2',
+        'update_available' => FALSE,
+        'fixture' => 'sec.0.2-rc2',
       ],
       // No security release available for site minor release 0.
       // Security release available for next minor.
       '0.0, 1.2, insecure' => [
         'site_patch_version' => '0.0',
-        'security_releases' => ['1.2'],
         'expected_security_release' => '1.2',
+        'update_available' => FALSE,
         'fixture' => 'sec.1.2_insecure',
       ],
-      // Site on 2.0-beta1 and 2.0-beta2 is a security release but because
-      // beta/alpha/RC releases are not supported the latest security from the
-      // previous minor is the expected security release.
+      // Site on 2.0-beta1 which is insecure.2.0-beta2 is not insecure but
+      // because beta/alpha/RC releases are not supported the latest security
+      // from the previous major is the expected security release.
       '2.0-beta1, 0.2 1.2 2.0-beta2' => [
         'site_patch_version' => '2.0-beta1',
-        'security_releases' => ['0.2', '1.2', '2.0-beta2'],
         'expected_security_release' => '1.2',
-        'fixture' => 'sec.0.2_1.2',
+        'update_available' => TRUE,
+        'fixture' => 'sec.0.2-rc2',
       ],
-      // Site on 2.0-beta2 which is a security release.
+      // Site on 2.0-beta2 which is not insecure.
       // Previous minor has a security release.
       '2.0-beta2, 0.2 1.2 2.0-beta2' => [
         'site_patch_version' => '2.0-beta2',
-        'security_releases' => ['0.2', '1.2', '2.0-beta2'],
         'expected_security_release' => NULL,
-        'fixture' => 'sec.0.2_1.2',
+        'update_available' => TRUE,
+        'fixture' => 'sec.0.2-rc2',
+      ],
+      // Site on 2.0-alpha1 which is insecure.2.0-alpha2 is not insecure but
+      // because beta/alpha/RC releases are not supported the latest security
+      // from the previous major is the expected security release.
+      '2.0-alpha1, 0.2 1.2 2.0-alpha2' => [
+        'site_patch_version' => '2.0-alpha1',
+        'expected_security_release' => '1.2',
+        'update_available' => TRUE,
+        'fixture' => 'sec.0.2-rc2',
+      ],
+      // Site on 2.0-alpha2 which is not insecure.
+      // Previous minor has a security release.
+      '2.0-alpha2, 0.2 1.2 2.0-alpha2' => [
+        'site_patch_version' => '2.0-alpha2',
+        'expected_security_release' => NULL,
+        'update_available' => TRUE,
+        'fixture' => 'sec.0.2-rc2',
+      ],
+      // Site on 2.0-rc1 which is insecure.2.0-rc2 is not insecure but
+      // because beta/alpha/RC releases are not supported the latest security
+      // from the previous major is the expected security release.
+      '2.0-rc1, 0.2 1.2 2.0-rc2' => [
+        'site_patch_version' => '2.0-rc1',
+        'expected_security_release' => '1.2',
+        'update_available' => TRUE,
+        'fixture' => 'sec.0.2-rc2',
+      ],
+      // Site on 2.0-rc2 which is not insecure.
+      // Previous minor has a security release.
+      '2.0-rc2, 0.2 1.2 2.0-rc2' => [
+        'site_patch_version' => '2.0-rc2',
+        'expected_security_release' => NULL,
+        'update_available' => FALSE,
+        'fixture' => 'sec.0.2-rc2',
+      ],
+      // Site on 2.0-alpha2 which is insecure.
+      // Previous minor has a security release.
+      '2.0-alpha2, 0.2 1.2' => [
+        'site_patch_version' => '2.0-alpha2',
+        'expected_security_release' => '1.2',
+        'update_available' => TRUE,
+        'fixture' => 'sec.0.2-rc2-b',
+      ],
+      // Site on 2.0-beta2 which is insecure.
+      // Previous minor has a security release.
+      '2.0-beta2, 0.2 1.2' => [
+        'site_patch_version' => '2.0-beta2',
+        'expected_security_release' => '1.2',
+        'update_available' => TRUE,
+        'fixture' => 'sec.0.2-rc2-b',
       ],
     ];
   }
