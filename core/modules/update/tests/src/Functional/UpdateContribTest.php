@@ -441,6 +441,16 @@ class UpdateContribTest extends UpdateTestBase {
   /**
    * Tests update status of security releases.
    *
+   * @param string $module_version
+   *   The module version the site is using.
+   * @param string $expected_security_release
+   *   The expected security release. If NULL then no security release is
+   *   expected.
+   * @param bool $update_available
+   *   Whether an update should be available.
+   * @param string $fixture
+   *   The fixture file to use.
+   *
    * @dataProvider securityUpdateAvailabilityProvider
    */
   public function testSecurityUpdateAvailability($module_version, $expected_security_release, $update_available, $fixture) {
@@ -511,16 +521,6 @@ class UpdateContribTest extends UpdateTestBase {
    *     8.x-1.2
    *     8.x-1.1
    *     8.x-1.0
-   * - aaa_update_test.sec.8.x-1.2_8.x-2.0.xml
-   *   Contains releases
-   *     8.x-3.0-beta2
-   *     8.x-3.0-beta1 1nsecure
-   *     8.x-2.2
-   *     8.x-2.1
-   *     8.x-2.0
-   *     8.x-1.2 Security update
-   *     8.x-1.1 Insecure
-   *     8.x-1.0 Insecure
    */
   public function securityUpdateAvailabilityProvider() {
     return [
@@ -565,13 +565,6 @@ class UpdateContribTest extends UpdateTestBase {
         'expected_security_release' => NULL,
         'update_available' => TRUE,
         'fixture' => 'sec.8.x-2.2_1.x_secure',
-      ],
-
-      '8.x-2.0, 8.x-1.2' => [
-        'module_patch_version' => '8.x-2.0',
-        'expected_security_release' => NULL,
-        'update_available' => TRUE,
-        'fixture' => 'sec.8.x-1.2_8.x-2.0',
       ],
       // Site on 8.x-2.0-beta1 and 8.x-2.0-beta2 is a security release but
       // because beta/alpha/RC releases are not supported the latest security

@@ -170,11 +170,9 @@ class UpdateCoreTest extends UpdateTestBase {
    * @param string $fixture
    *   The test fixture that contains the test XML.
    *
-   * @throws \Behat\Mink\Exception\ResponseTextException
    * @dataProvider securityUpdateAvailabilityProvider
    */
   public function testSecurityUpdateAvailability($site_patch_version, $expected_security_release, $update_available, $fixture) {
-
     $assert_session = $this->assertSession();
     $this->setSystemInfo("8.$site_patch_version");
     $this->refreshUpdateStatus(['drupal' => $fixture]);
@@ -191,17 +189,15 @@ class UpdateCoreTest extends UpdateTestBase {
       $this->assertRaw('error.svg', 'Error icon was found.');
     }
     else {
-      if (!$update_available) {
-        // If the site patch version is the same as last security release there
-        // there is not update available.
-        $assert_session->pageTextNotContains('Update available');
-        $assert_session->pageTextContains('Up to date');
-      }
-      else {
+      $assert_session->pageTextNotContains('Security update required!');
+      if ($update_available) {
         $assert_session->pageTextContains('Update available');
         $assert_session->pageTextNotContains('Up to date');
       }
-      $assert_session->pageTextNotContains('Security update required!');
+      else {
+        $assert_session->pageTextNotContains('Update available');
+        $assert_session->pageTextContains('Up to date');
+      }
     }
   }
 
