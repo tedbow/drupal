@@ -502,14 +502,15 @@ class UpdateContribTest extends UpdateTestBase {
    * - aaa_update_test.sec.8.x-1.1_8.x-1.2.xml
    *   Contains releases
    *     8.x-1.2 Security Update
-   *     8.x-1.1, 8.x-1.2 insecure
+   *     8.x-1.1 Security Update, Insecure
+   *     8.x-1.2 Insecure
    * - aaa_update_test.sec.8.x-1.2_8.x-2.2.xml
    *   Contains releases
    *     8.x-3.0-beta2
-   *     8.x-3.0-beta1 1nsecure
+   *     8.x-3.0-beta1 Insecure
    *     8.x-2.2 Security update
    *     8.x-2.1 Security update, Insecure
-   *     8.x-2.0 insecure
+   *     8.x-2.0 Insecure
    *     8.x-1.2 Security update
    *     8.x-1.1 Insecure
    *     8.x-1.0 Insecure
@@ -517,7 +518,7 @@ class UpdateContribTest extends UpdateTestBase {
    *   Contains releases
    *     8.x-2.2 Security update
    *     8.x-2.1 Security update, Insecure
-   *     8.x-2.0 insecure
+   *     8.x-2.0 Insecure
    *     8.x-1.2
    *     8.x-1.1
    *     8.x-1.0
