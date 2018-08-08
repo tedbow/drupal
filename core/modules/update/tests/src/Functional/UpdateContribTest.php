@@ -525,6 +525,14 @@ class UpdateContribTest extends UpdateTestBase {
    */
   public function securityUpdateAvailabilityProvider() {
     return [
+      // Security releases available for module major release 1.
+      // No future releases for next major.
+      '8.x-1.0, 8.x-1.2' => [
+        'module_patch_version' => '8.x-1.0',
+        'expected_security_release' => '8.x-1.2',
+        'update_available' => FALSE,
+        'fixture' => 'sec.8.x-1.2',
+      ],
       // 2 security releases available for module major release 1.
       // 8.x-1.1 security release marked as insecure.
       // No future releases for next major.
