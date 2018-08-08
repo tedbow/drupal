@@ -477,7 +477,6 @@ class UpdateContribTest extends UpdateTestBase {
       $expected_url_version = str_replace('.', '-', $expected_security_release);
       $assert_session->linkByHrefExists("http://example.com/aaa_update_test-$expected_url_version-release");
       $assert_session->linkByHrefExists("http://example.com/aaa_update_test-$expected_security_release.tar.gz");
-      $assert_session->linkByHrefExists("http://example.com/aaa_update_test-$expected_url_version-release");
       $assert_session->responseContains('error.svg', 'Error icon was found.');
     }
     else {
@@ -487,11 +486,9 @@ class UpdateContribTest extends UpdateTestBase {
         $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Up to date');
       }
       else {
-
         $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Update available');
         $assert_session->elementTextContains('css', $update_element_css_locator, 'Up to date');
       }
-
     }
   }
 
