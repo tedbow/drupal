@@ -38,10 +38,8 @@
       };
 
       var observer = new MutationObserver(function () {
-        $('.off-canvas-ignore-parent:not(.js-off-canvas-ignore), .cke_reset:not(.js-off-canvas-ignore)', $element).each(function (index, element) {
-          var $this = $(element);
-          $this.addClass('js-off-canvas-ignore');
-          $this.find('*:not(.js-off-canvas-ignore)').addClass('js-off-canvas-ignore');
+        $('.off-canvas-ignore-parent:not(.js-off-canvas-ignore)', $element).each(function (index, element) {
+          $(element).addClass('js-off-canvas-ignore').find('*:not(.js-off-canvas-ignore)').addClass('js-off-canvas-ignore');
         });
       });
 

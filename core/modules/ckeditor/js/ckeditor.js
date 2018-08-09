@@ -19,6 +19,7 @@
         '!label': label
       });
 
+      CKEDITOR.env.cssClass += ' off-canvas-ignore-parent';
       return !!CKEDITOR.replace(element, format.editorSettings);
     },
     detach: function detach(element, format, trigger) {
