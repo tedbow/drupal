@@ -9,10 +9,11 @@
  * Do not include div in then initial overrides because including div will
  * cause the need for many more overrides in this file.
  */
-#drupal-off-canvas *:not(div),
-#drupal-off-canvas *:not(svg *),
-#drupal-off-canvas *:after,
-#drupal-off-canvas *:before {
+
+#drupal-off-canvas *:not(.js-off-canvas-ignore):not(div),
+#drupal-off-canvas *:not(.js-off-canvas-ignore):not(svg *),
+#drupal-off-canvas *:not(.js-off-canvas-ignore):after,
+#drupal-off-canvas *:not(.js-off-canvas-ignore):before {
   all: initial;
   box-sizing: border-box;
   text-shadow: none;
@@ -21,90 +22,91 @@
 }
 
 /* Reset size and position on elements. */
-#drupal-off-canvas a,
-#drupal-off-canvas abbr,
-#drupal-off-canvas acronym,
-#drupal-off-canvas address,
-#drupal-off-canvas applet,
-#drupal-off-canvas article,
-#drupal-off-canvas aside,
-#drupal-off-canvas audio,
-#drupal-off-canvas b,
-#drupal-off-canvas big,
-#drupal-off-canvas blockquote,
-#drupal-off-canvas body,
-#drupal-off-canvas canvas,
-#drupal-off-canvas caption,
-#drupal-off-canvas cite,
-#drupal-off-canvas code,
-#drupal-off-canvas dd,
-#drupal-off-canvas del,
-#drupal-off-canvas dfn,
-#drupal-off-canvas dialog,
-#drupal-off-canvas dl,
-#drupal-off-canvas dt,
-#drupal-off-canvas em,
-#drupal-off-canvas embed,
-#drupal-off-canvas fieldset,
-#drupal-off-canvas figcaption,
-#drupal-off-canvas figure,
-#drupal-off-canvas footer,
-#drupal-off-canvas form,
-#drupal-off-canvas h1,
-#drupal-off-canvas h2,
-#drupal-off-canvas h3,
-#drupal-off-canvas h4,
-#drupal-off-canvas h5,
-#drupal-off-canvas h6,
-#drupal-off-canvas header,
-#drupal-off-canvas hgroup,
-#drupal-off-canvas hr,
-#drupal-off-canvas html,
-#drupal-off-canvas i,
-#drupal-off-canvas iframe,
-#drupal-off-canvas img,
-#drupal-off-canvas ins,
-#drupal-off-canvas kbd,
-#drupal-off-canvas label,
-#drupal-off-canvas legend,
-#drupal-off-canvas li,
-#drupal-off-canvas main,
-#drupal-off-canvas mark,
-#drupal-off-canvas menu,
-#drupal-off-canvas meter,
-#drupal-off-canvas nav,
-#drupal-off-canvas object,
-#drupal-off-canvas ol,
-#drupal-off-canvas output,
-#drupal-off-canvas p,
-#drupal-off-canvas pre,
-#drupal-off-canvas progress,
-#drupal-off-canvas q,
-#drupal-off-canvas rp,
-#drupal-off-canvas rt,
-#drupal-off-canvas s,
-#drupal-off-canvas samp,
-#drupal-off-canvas section,
-#drupal-off-canvas small,
-#drupal-off-canvas span,
-#drupal-off-canvas strike,
-#drupal-off-canvas strong,
-#drupal-off-canvas sub,
-#drupal-off-canvas sup,
-#drupal-off-canvas table,
-#drupal-off-canvas tbody,
-#drupal-off-canvas td,
-#drupal-off-canvas tfoot,
-#drupal-off-canvas th,
-#drupal-off-canvas thead,
-#drupal-off-canvas time,
-#drupal-off-canvas tr,
-#drupal-off-canvas tt,
-#drupal-off-canvas u,
-#drupal-off-canvas ul,
-#drupal-off-canvas var,
-#drupal-off-canvas video,
-#drupal-off-canvas xmp {
+
+#drupal-off-canvas a:not(.js-off-canvas-ignore),
+#drupal-off-canvas abbr:not(.js-off-canvas-ignore),
+#drupal-off-canvas acronym:not(.js-off-canvas-ignore),
+#drupal-off-canvas address:not(.js-off-canvas-ignore),
+#drupal-off-canvas applet:not(.js-off-canvas-ignore),
+#drupal-off-canvas article:not(.js-off-canvas-ignore),
+#drupal-off-canvas aside:not(.js-off-canvas-ignore),
+#drupal-off-canvas audio:not(.js-off-canvas-ignore),
+#drupal-off-canvas b:not(.js-off-canvas-ignore),
+#drupal-off-canvas big:not(.js-off-canvas-ignore),
+#drupal-off-canvas blockquote:not(.js-off-canvas-ignore),
+#drupal-off-canvas body:not(.js-off-canvas-ignore),
+#drupal-off-canvas canvas:not(.js-off-canvas-ignore),
+#drupal-off-canvas caption:not(.js-off-canvas-ignore),
+#drupal-off-canvas cite:not(.js-off-canvas-ignore),
+#drupal-off-canvas code:not(.js-off-canvas-ignore),
+#drupal-off-canvas dd:not(.js-off-canvas-ignore),
+#drupal-off-canvas del:not(.js-off-canvas-ignore),
+#drupal-off-canvas dfn:not(.js-off-canvas-ignore),
+#drupal-off-canvas dialog:not(.js-off-canvas-ignore),
+#drupal-off-canvas dl:not(.js-off-canvas-ignore),
+#drupal-off-canvas dt:not(.js-off-canvas-ignore),
+#drupal-off-canvas em:not(.js-off-canvas-ignore),
+#drupal-off-canvas embed:not(.js-off-canvas-ignore),
+#drupal-off-canvas fieldset:not(.js-off-canvas-ignore),
+#drupal-off-canvas figcaption:not(.js-off-canvas-ignore),
+#drupal-off-canvas figure:not(.js-off-canvas-ignore),
+#drupal-off-canvas footer:not(.js-off-canvas-ignore),
+#drupal-off-canvas form:not(.js-off-canvas-ignore),
+#drupal-off-canvas h1:not(.js-off-canvas-ignore),
+#drupal-off-canvas h2:not(.js-off-canvas-ignore),
+#drupal-off-canvas h3:not(.js-off-canvas-ignore),
+#drupal-off-canvas h4:not(.js-off-canvas-ignore),
+#drupal-off-canvas h5:not(.js-off-canvas-ignore),
+#drupal-off-canvas h6:not(.js-off-canvas-ignore),
+#drupal-off-canvas header:not(.js-off-canvas-ignore),
+#drupal-off-canvas hgroup:not(.js-off-canvas-ignore),
+#drupal-off-canvas hr:not(.js-off-canvas-ignore),
+#drupal-off-canvas html:not(.js-off-canvas-ignore),
+#drupal-off-canvas i:not(.js-off-canvas-ignore),
+#drupal-off-canvas iframe:not(.js-off-canvas-ignore),
+#drupal-off-canvas img:not(.js-off-canvas-ignore),
+#drupal-off-canvas ins:not(.js-off-canvas-ignore),
+#drupal-off-canvas kbd:not(.js-off-canvas-ignore),
+#drupal-off-canvas label:not(.js-off-canvas-ignore),
+#drupal-off-canvas legend:not(.js-off-canvas-ignore),
+#drupal-off-canvas li:not(.js-off-canvas-ignore),
+#drupal-off-canvas main:not(.js-off-canvas-ignore),
+#drupal-off-canvas mark:not(.js-off-canvas-ignore),
+#drupal-off-canvas menu:not(.js-off-canvas-ignore),
+#drupal-off-canvas meter:not(.js-off-canvas-ignore),
+#drupal-off-canvas nav:not(.js-off-canvas-ignore),
+#drupal-off-canvas object:not(.js-off-canvas-ignore),
+#drupal-off-canvas ol:not(.js-off-canvas-ignore),
+#drupal-off-canvas output:not(.js-off-canvas-ignore),
+#drupal-off-canvas p:not(.js-off-canvas-ignore),
+#drupal-off-canvas pre:not(.js-off-canvas-ignore),
+#drupal-off-canvas progress:not(.js-off-canvas-ignore),
+#drupal-off-canvas q:not(.js-off-canvas-ignore),
+#drupal-off-canvas rp:not(.js-off-canvas-ignore),
+#drupal-off-canvas rt:not(.js-off-canvas-ignore),
+#drupal-off-canvas s:not(.js-off-canvas-ignore),
+#drupal-off-canvas samp:not(.js-off-canvas-ignore),
+#drupal-off-canvas section:not(.js-off-canvas-ignore),
+#drupal-off-canvas small:not(.js-off-canvas-ignore),
+#drupal-off-canvas span:not(.js-off-canvas-ignore),
+#drupal-off-canvas strike:not(.js-off-canvas-ignore),
+#drupal-off-canvas strong:not(.js-off-canvas-ignore),
+#drupal-off-canvas sub:not(.js-off-canvas-ignore),
+#drupal-off-canvas sup:not(.js-off-canvas-ignore),
+#drupal-off-canvas table:not(.js-off-canvas-ignore),
+#drupal-off-canvas tbody:not(.js-off-canvas-ignore),
+#drupal-off-canvas td:not(.js-off-canvas-ignore),
+#drupal-off-canvas tfoot:not(.js-off-canvas-ignore),
+#drupal-off-canvas th:not(.js-off-canvas-ignore),
+#drupal-off-canvas thead:not(.js-off-canvas-ignore),
+#drupal-off-canvas time:not(.js-off-canvas-ignore),
+#drupal-off-canvas tr:not(.js-off-canvas-ignore),
+#drupal-off-canvas tt:not(.js-off-canvas-ignore),
+#drupal-off-canvas u:not(.js-off-canvas-ignore),
+#drupal-off-canvas ul:not(.js-off-canvas-ignore),
+#drupal-off-canvas var:not(.js-off-canvas-ignore),
+#drupal-off-canvas video:not(.js-off-canvas-ignore),
+#drupal-off-canvas xmp:not(.js-off-canvas-ignore) {
   border: 0;
   margin: 0;
   padding: 0;
@@ -115,17 +117,18 @@
  * Override the default (display: inline) for browsers that do not recognize HTML5 tags.
  * IE8 (and lower) requires a shiv: http://ejohn.org/blog/html5-shiv
  */
-#drupal-off-canvas article,
-#drupal-off-canvas aside,
-#drupal-off-canvas figcaption,
-#drupal-off-canvas figure,
-#drupal-off-canvas footer,
-#drupal-off-canvas header,
-#drupal-off-canvas hgroup,
-#drupal-off-canvas main,
-#drupal-off-canvas menu,
-#drupal-off-canvas nav,
-#drupal-off-canvas section {
+
+#drupal-off-canvas article:not(.js-off-canvas-ignore),
+#drupal-off-canvas aside:not(.js-off-canvas-ignore),
+#drupal-off-canvas figcaption:not(.js-off-canvas-ignore),
+#drupal-off-canvas figure:not(.js-off-canvas-ignore),
+#drupal-off-canvas footer:not(.js-off-canvas-ignore),
+#drupal-off-canvas header:not(.js-off-canvas-ignore),
+#drupal-off-canvas hgroup:not(.js-off-canvas-ignore),
+#drupal-off-canvas main:not(.js-off-canvas-ignore),
+#drupal-off-canvas menu:not(.js-off-canvas-ignore),
+#drupal-off-canvas nav:not(.js-off-canvas-ignore),
+#drupal-off-canvas section:not(.js-off-canvas-ignore) {
   display: block;
   line-height: normal;
   border-radius: 0;
@@ -136,67 +139,77 @@
  * IE + Opera = font-weight: bold.
  * Gecko + WebKit = font-weight: bolder.
  */
-#drupal-off-canvas b,
-#drupal-off-canvas strong {
+
+#drupal-off-canvas b:not(.js-off-canvas-ignore),
+#drupal-off-canvas strong:not(.js-off-canvas-ignore) {
   font-weight: bold;
 }
 
-#drupal-off-canvas em,
-#drupal-off-canvas i {
+#drupal-off-canvas em:not(.js-off-canvas-ignore),
+#drupal-off-canvas i:not(.js-off-canvas-ignore) {
   font-style: italic;
 }
 
-#drupal-off-canvas img {
+#drupal-off-canvas img:not(.js-off-canvas-ignore) {
   color: transparent;
   font-size: 0;
   vertical-align: middle;
 }
 
-#drupal-off-canvas ul,
-#drupal-off-canvas ol {
+#drupal-off-canvas ul:not(.js-off-canvas-ignore),
+#drupal-off-canvas ol:not(.js-off-canvas-ignore) {
   list-style: none;
 }
 
 /* reset table styling. */
-#drupal-off-canvas table {
+
+#drupal-off-canvas table:not(.js-off-canvas-ignore) {
   border-collapse: collapse;
   border-spacing: 0;
 }
-#drupal-off-canvas table thead,
-#drupal-off-canvas table tbody,
-#drupal-off-canvas table tbody tr:nth-child(even),
-#drupal-off-canvas table tbody tr:nth-child(odd),
-#drupal-off-canvas table tfoot {
+
+#drupal-off-canvas table thead:not(.js-off-canvas-ignore),
+#drupal-off-canvas table tbody:not(.js-off-canvas-ignore),
+#drupal-off-canvas table tbody tr:not(.js-off-canvas-ignore):nth-child(even),
+#drupal-off-canvas table tbody tr:not(.js-off-canvas-ignore):nth-child(odd),
+#drupal-off-canvas table tfoot:not(.js-off-canvas-ignore) {
   border: 0;
   background: transparent none;
 }
-#drupal-off-canvas th,
-#drupal-off-canvas td,
-#drupal-off-canvas caption {
+
+#drupal-off-canvas th:not(.js-off-canvas-ignore),
+#drupal-off-canvas td:not(.js-off-canvas-ignore),
+#drupal-off-canvas caption:not(.js-off-canvas-ignore) {
   font-weight: normal;
 }
-#drupal-off-canvas q {
+
+#drupal-off-canvas q:not(.js-off-canvas-ignore) {
   quotes: none;
 }
-#drupal-off-canvas q:before,
-#drupal-off-canvas q:after {
+
+#drupal-off-canvas q:not(.js-off-canvas-ignore):before,
+#drupal-off-canvas q:not(.js-off-canvas-ignore):after {
   content: none;
 }
-#drupal-off-canvas sub,
-#drupal-off-canvas sup,
-#drupal-off-canvas small {
+
+#drupal-off-canvas sub:not(.js-off-canvas-ignore),
+#drupal-off-canvas sup:not(.js-off-canvas-ignore),
+#drupal-off-canvas small:not(.js-off-canvas-ignore) {
   font-size: 75%;
 }
-#drupal-off-canvas sub,
-#drupal-off-canvas sup {
+
+#drupal-off-canvas sub:not(.js-off-canvas-ignore),
+#drupal-off-canvas sup:not(.js-off-canvas-ignore) {
   line-height: 0;
   position: relative;
   vertical-align: baseline;
 }
-#drupal-off-canvas sub {
+
+#drupal-off-canvas sub:not(.js-off-canvas-ignore) {
   bottom: -0.25em;
 }
-#drupal-off-canvas sup {
+
+#drupal-off-canvas sup:not(.js-off-canvas-ignore) {
   top: -0.5em;
 }
 
@@ -204,47 +217,54 @@
  * For IE9. Without, occasionally draws shapes
  * outside the boundaries of <svg> rectangle.
  */
-#drupal-off-canvas svg {
+
+#drupal-off-canvas svg:not(.js-off-canvas-ignore) {
   overflow: hidden;
 }
 
 /* Specific resets for inputs. */
-#drupal-off-canvas input[type="search"]::-webkit-search-decoration {
+
+#drupal-off-canvas input[type="search"]:not(.js-off-canvas-ignore)::-webkit-search-decoration {
   display: none;
 }
-#drupal-off-canvas input {
+
+#drupal-off-canvas input:not(.js-off-canvas-ignore) {
   margin: 0;
   padding: 0;
 }
-#drupal-off-canvas input[type="checkbox"],
-#drupal-off-canvas input[type="radio"] {
+
+#drupal-off-canvas input[type="checkbox"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="radio"]:not(.js-off-canvas-ignore) {
   position: static;
   margin: 0;
 }
-#drupal-off-canvas input:invalid,
-#drupal-off-canvas button:invalid,
-#drupal-off-canvas select:invalid,
-#drupal-off-canvas textarea:invalid,
-#drupal-off-canvas input:focus,
-#drupal-off-canvas button:focus,
-#drupal-off-canvas select:focus,
-#drupal-off-canvas textarea:focus,
-#drupal-off-canvas input[type="file"]:focus,
-#drupal-off-canvas input[type="file"]:active,
-#drupal-off-canvas input[type="radio"]:focus,
-#drupal-off-canvas input[type="radio"]:active,
-#drupal-off-canvas input[type="checkbox"]:focus,
-#drupal-off-canvas input[type="checkbox"]:active {
+
+#drupal-off-canvas input:not(.js-off-canvas-ignore):invalid,
+#drupal-off-canvas button:not(.js-off-canvas-ignore):invalid,
+#drupal-off-canvas select:not(.js-off-canvas-ignore):invalid,
+#drupal-off-canvas textarea:not(.js-off-canvas-ignore):invalid,
+#drupal-off-canvas input:not(.js-off-canvas-ignore):focus,
+#drupal-off-canvas button:not(.js-off-canvas-ignore):focus,
+#drupal-off-canvas select:not(.js-off-canvas-ignore):focus,
+#drupal-off-canvas textarea:not(.js-off-canvas-ignore):focus,
+#drupal-off-canvas input[type="file"]:not(.js-off-canvas-ignore):focus,
+#drupal-off-canvas input[type="file"]:not(.js-off-canvas-ignore):active,
+#drupal-off-canvas input[type="radio"]:not(.js-off-canvas-ignore):focus,
+#drupal-off-canvas input[type="radio"]:not(.js-off-canvas-ignore):active,
+#drupal-off-canvas input[type="checkbox"]:not(.js-off-canvas-ignore):focus,
+#drupal-off-canvas input[type="checkbox"]:not(.js-off-canvas-ignore):active {
   box-shadow: none;
   z-index: 1;
 }
-#drupal-off-canvas input[role="button"] {
+
+#drupal-off-canvas input[role="button"]:not(.js-off-canvas-ignore) {
   cursor: pointer;
 }
-#drupal-off-canvas button,
-#drupal-off-canvas input[type="reset"],
-#drupal-off-canvas input[type="submit"],
-#drupal-off-canvas input[type="button"] {
+
+#drupal-off-canvas button:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="reset"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="submit"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="button"]:not(.js-off-canvas-ignore) {
   -webkit-appearance: none;
   -moz-appearance: none;
   display: inline-block;
@@ -257,73 +277,80 @@
   vertical-align: middle;
   cursor: pointer;
 }
-#drupal-off-canvas button:hover,
-#drupal-off-canvas input[type="reset"]:hover,
-#drupal-off-canvas input[type="submit"]:hover,
-#drupal-off-canvas input[type="button"]:hover {
+
+#drupal-off-canvas button:not(.js-off-canvas-ignore):hover,
+#drupal-off-canvas input[type="reset"]:not(.js-off-canvas-ignore):hover,
+#drupal-off-canvas input[type="submit"]:not(.js-off-canvas-ignore):hover,
+#drupal-off-canvas input[type="button"]:not(.js-off-canvas-ignore):hover {
   background-image: none;
   text-decoration: none;
 }
-#drupal-off-canvas button:active,
-#drupal-off-canvas input[type="reset"]:active,
-#drupal-off-canvas input[type="submit"]:active,
-#drupal-off-canvas input[type="button"]:active {
+
+#drupal-off-canvas button:not(.js-off-canvas-ignore):active,
+#drupal-off-canvas input[type="reset"]:not(.js-off-canvas-ignore):active,
+#drupal-off-canvas input[type="submit"]:not(.js-off-canvas-ignore):active,
+#drupal-off-canvas input[type="button"]:not(.js-off-canvas-ignore):active {
   background-image: none;
   box-shadow: none;
   border-color: grey;
 }
-#drupal-off-canvas button::-moz-focus-inner,
-#drupal-off-canvas input[type="reset"]::-moz-focus-inner,
-#drupal-off-canvas input[type="submit"]::-moz-focus-inner,
-#drupal-off-canvas input[type="button"]::-moz-focus-inner {
+
+#drupal-off-canvas button:not(.js-off-canvas-ignore)::-moz-focus-inner,
+#drupal-off-canvas input[type="reset"]:not(.js-off-canvas-ignore)::-moz-focus-inner,
+#drupal-off-canvas input[type="submit"]:not(.js-off-canvas-ignore)::-moz-focus-inner,
+#drupal-off-canvas input[type="button"]:not(.js-off-canvas-ignore)::-moz-focus-inner {
   border: 0;
   padding: 0;
 }
-#drupal-off-canvas textarea,
-#drupal-off-canvas select,
-#drupal-off-canvas input[type="date"],
-#drupal-off-canvas input[type="datetime"],
-#drupal-off-canvas input[type="datetime-local"],
-#drupal-off-canvas input[type="email"],
-#drupal-off-canvas input[type="month"],
-#drupal-off-canvas input[type="number"],
-#drupal-off-canvas input[type="password"],
-#drupal-off-canvas input[type="search"],
-#drupal-off-canvas input[type="tel"],
-#drupal-off-canvas input[type="text"],
-#drupal-off-canvas input[type="time"],
-#drupal-off-canvas input[type="url"],
-#drupal-off-canvas input[type="week"] {
+
+#drupal-off-canvas textarea:not(.js-off-canvas-ignore),
+#drupal-off-canvas select:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="date"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="datetime"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="datetime-local"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="email"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="month"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="number"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="password"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="search"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="tel"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="text"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="time"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="url"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="week"]:not(.js-off-canvas-ignore) {
   height: auto;
   vertical-align: middle;
   border-radius: 0;
 }
-#drupal-off-canvas textarea[disabled],
-#drupal-off-canvas select[disabled],
-#drupal-off-canvas input[type="date"][disabled],
-#drupal-off-canvas input[type="datetime"][disabled],
-#drupal-off-canvas input[type="datetime-local"][disabled],
-#drupal-off-canvas input[type="email"][disabled],
-#drupal-off-canvas input[type="month"][disabled],
-#drupal-off-canvas input[type="number"][disabled],
-#drupal-off-canvas input[type="password"][disabled],
-#drupal-off-canvas input[type="search"][disabled],
-#drupal-off-canvas input[type="tel"][disabled],
-#drupal-off-canvas input[type="text"][disabled],
-#drupal-off-canvas input[type="time"][disabled],
-#drupal-off-canvas input[type="url"][disabled],
-#drupal-off-canvas input[type="week"][disabled] {
+
+#drupal-off-canvas textarea[disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas select[disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="date"][disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="datetime"][disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="datetime-local"][disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="email"][disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="month"][disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="number"][disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="password"][disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="search"][disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="tel"][disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="text"][disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="time"][disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="url"][disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[type="week"][disabled]:not(.js-off-canvas-ignore) {
   background-color: grey;
 }
-#drupal-off-canvas input[type="hidden"] {
+
+#drupal-off-canvas input[type="hidden"]:not(.js-off-canvas-ignore) {
   visibility: hidden;
 }
-#drupal-off-canvas button[disabled],
-#drupal-off-canvas input[disabled],
-#drupal-off-canvas select[disabled],
-#drupal-off-canvas select[disabled] option,
-#drupal-off-canvas select[disabled] optgroup,
-#drupal-off-canvas textarea[disabled] {
+
+#drupal-off-canvas button[disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas input[disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas select[disabled]:not(.js-off-canvas-ignore),
+#drupal-off-canvas select[disabled] option:not(.js-off-canvas-ignore),
+#drupal-off-canvas select[disabled] optgroup:not(.js-off-canvas-ignore),
+#drupal-off-canvas textarea[disabled]:not(.js-off-canvas-ignore) {
   box-shadow: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -331,35 +358,42 @@
   user-select: none;
   cursor: default;
 }
-#drupal-off-canvas input:placeholder,
-#drupal-off-canvas textarea:placeholder {
+
+#drupal-off-canvas input:not(.js-off-canvas-ignore):placeholder,
+#drupal-off-canvas textarea:not(.js-off-canvas-ignore):placeholder {
   color: grey;
 }
-#drupal-off-canvas textarea,
-#drupal-off-canvas select[size],
-#drupal-off-canvas select[multiple] {
+
+#drupal-off-canvas textarea:not(.js-off-canvas-ignore),
+#drupal-off-canvas select[size]:not(.js-off-canvas-ignore),
+#drupal-off-canvas select[multiple]:not(.js-off-canvas-ignore) {
   height: auto;
 }
-#drupal-off-canvas select[size="0"],
-#drupal-off-canvas select[size="1"] {
+
+#drupal-off-canvas select[size="0"]:not(.js-off-canvas-ignore),
+#drupal-off-canvas select[size="1"]:not(.js-off-canvas-ignore) {
   height: auto;
 }
-#drupal-off-canvas textarea {
+
+#drupal-off-canvas textarea:not(.js-off-canvas-ignore) {
   min-height: 40px;
   overflow: auto;
   resize: vertical;
   width: 100%;
 }
-#drupal-off-canvas optgroup {
+
+#drupal-off-canvas optgroup:not(.js-off-canvas-ignore) {
   color: black;
   font-style: normal;
   font-weight: normal;
 }
-#drupal-off-canvas optgroup::-moz-focus-inner {
+
+#drupal-off-canvas optgroup:not(.js-off-canvas-ignore)::-moz-focus-inner {
   border: 0;
   padding: 0;
 }
-#drupal-off-canvas * button {
+
+#drupal-off-canvas * button:not(.js-off-canvas-ignore) {
   background: none;
   border: 1px solid grey;
   color: black;
@@ -369,10 +403,11 @@
   vertical-align: middle;
   width: auto;
 }
-#drupal-off-canvas * textarea,
-#drupal-off-canvas * select,
-#drupal-off-canvas *:not(div) textarea,
-#drupal-off-canvas *:not(div) select {
+
+#drupal-off-canvas * textarea:not(.js-off-canvas-ignore),
+#drupal-off-canvas * select:not(.js-off-canvas-ignore),
+#drupal-off-canvas *:not(.js-off-canvas-ignore):not(div) textarea,
+#drupal-off-canvas *:not(.js-off-canvas-ignore):not(div) select {
   background: white;
   border: 1px solid grey;
   color: black;
@@ -381,8 +416,9 @@
 }
 
 /* To standardize off-canvas selection color. */
-#drupal-off-canvas ::-moz-selection,
-#drupal-off-canvas ::selection {
+
+#drupal-off-canvas :not(.js-off-canvas-ignore)::-moz-selection,
+#drupal-off-canvas :not(.js-off-canvas-ignore)::selection {
   background-color: rgba(175, 175, 175, 0.5);
   color: inherit;
 }

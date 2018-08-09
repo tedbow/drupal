@@ -3,10 +3,11 @@
  * Visual styling for tables in the off-canvas dialog.
  */
 
-#drupal-off-canvas table * {
+#drupal-off-canvas table *:not(.js-off-canvas-ignore) {
   font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
 }
-#drupal-off-canvas table {
+
+#drupal-off-canvas table:not(.js-off-canvas-ignore) {
   display: table;
   width: 100%;
   min-width: calc(100% + 40px);
@@ -17,21 +18,25 @@
   font-size: 12px;
   color: #ddd;
 }
-#drupal-off-canvas table thead {
+
+#drupal-off-canvas table thead:not(.js-off-canvas-ignore) {
   display: table-header-group;
 }
-#drupal-off-canvas table tbody {
+
+#drupal-off-canvas table tbody:not(.js-off-canvas-ignore) {
   display: table-row-group;
 }
-#drupal-off-canvas tr {
+
+#drupal-off-canvas tr:not(.js-off-canvas-ignore) {
   display: table-row;
 }
-#drupal-off-canvas tr:hover td {
+
+#drupal-off-canvas tr:not(.js-off-canvas-ignore):hover td {
   background-color: transparent;
 }
 
-#drupal-off-canvas td,
-#drupal-off-canvas th {
+#drupal-off-canvas td:not(.js-off-canvas-ignore),
+#drupal-off-canvas th:not(.js-off-canvas-ignore) {
   display: table-cell;
   height: auto;
   width: auto;
@@ -40,50 +45,63 @@
   border-bottom: 1px solid #777;
   background-color: transparent;
 }
-[dir="rtl"] #drupal-off-canvas th,
-[dir="rtl"] #drupal-off-canvas td {
+
+[dir="rtl"] #drupal-off-canvas th:not(.js-off-canvas-ignore),
+[dir="rtl"] #drupal-off-canvas td:not(.js-off-canvas-ignore) {
   text-align: right;
 }
-#drupal-off-canvas th {
+
+#drupal-off-canvas th:not(.js-off-canvas-ignore) {
   font-weight: bold;
 }
-#drupal-off-canvas th.checkbox,
-#drupal-off-canvas td.checkbox {
+
+#drupal-off-canvas th.checkbox:not(.js-off-canvas-ignore),
+#drupal-off-canvas td.checkbox:not(.js-off-canvas-ignore) {
   width: 20px;
   padding: 0;
   text-align: center;
 }
-#drupal-off-canvas div.checkbox.menu-enabled {
+
+#drupal-off-canvas div.checkbox.menu-enabled:not(.js-off-canvas-ignore) {
   position: static;
   display: inline;
   width: auto;
 }
-#drupal-off-canvas th:first-child,
-#drupal-off-canvas td:first-child {
+
+#drupal-off-canvas th:not(.js-off-canvas-ignore):first-child,
+#drupal-off-canvas td:not(.js-off-canvas-ignore):first-child {
   width: 150px;
 }
+
 /* For lack of a better class, using this to grab the operations th. */
-#drupal-off-canvas .tabledrag-has-colspan {
+
+#drupal-off-canvas .tabledrag-has-colspan:not(.js-off-canvas-ignore) {
   text-align: right;
   padding-right: 20px;
 }
-#drupal-off-canvas td {
+
+#drupal-off-canvas td:not(.js-off-canvas-ignore) {
   padding: 6px 8px;
   color: #ddd;
 }
+
 /* Hide overflow with ellipsis for links. */
-#drupal-off-canvas td a {
+
+#drupal-off-canvas td a:not(.js-off-canvas-ignore) {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   background: transparent;
 }
-#drupal-off-canvas tr td:first-child,
-#drupal-off-canvas tr th:first-child {
-  padding-left: 20px; /* LTR */
+
+#drupal-off-canvas tr td:not(.js-off-canvas-ignore):first-child,
+#drupal-off-canvas tr th:not(.js-off-canvas-ignore):first-child {
+  padding-left: 20px;
+  /* LTR */
 }
-[dir="rtl"] #drupal-off-canvas tr td:first-child,
-[dir="rtl"] #drupal-off-canvas tr th:first-child {
+
+[dir="rtl"] #drupal-off-canvas tr td:not(.js-off-canvas-ignore):first-child,
+[dir="rtl"] #drupal-off-canvas tr th:not(.js-off-canvas-ignore):first-child {
   padding-right: 20px;
 }

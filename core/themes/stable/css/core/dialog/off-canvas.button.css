@@ -5,8 +5,8 @@
  * @see seven/css/components/buttons.css
  */
 
-#drupal-off-canvas button,
-#drupal-off-canvas .button {
+#drupal-off-canvas button:not(.js-off-canvas-ignore),
+#drupal-off-canvas .button:not(.js-off-canvas-ignore) {
   -webkit-appearance: none;
   -moz-appearance: none;
   margin: 0 0 10px;
@@ -19,19 +19,22 @@
   text-decoration: none;
   cursor: pointer;
 }
-#drupal-off-canvas button.link {
+
+#drupal-off-canvas button.link:not(.js-off-canvas-ignore) {
   display: inline;
   background: transparent;
   font-size: 14px;
   color: #85bef4;
   transition: color 0.5s ease;
 }
-#drupal-off-canvas button.link:hover,
-#drupal-off-canvas button.link:focus {
+
+#drupal-off-canvas button.link:not(.js-off-canvas-ignore):hover,
+#drupal-off-canvas button.link:not(.js-off-canvas-ignore):focus {
   color: #46a0f5;
   text-decoration: none;
 }
-#drupal-off-canvas input[type="submit"].button {
+
+#drupal-off-canvas input[type="submit"].button:not(.js-off-canvas-ignore) {
   display: inline-block;
   position: relative;
   width: 100%;
@@ -47,72 +50,85 @@
   cursor: pointer;
   transition: background 0.5s ease;
 }
-#drupal-off-canvas input[type="submit"].button:hover,
-#drupal-off-canvas input[type="submit"].button:focus,
-#drupal-off-canvas input[type="submit"].button:active {
+
+#drupal-off-canvas input[type="submit"].button:not(.js-off-canvas-ignore):hover,
+#drupal-off-canvas input[type="submit"].button:not(.js-off-canvas-ignore):focus,
+#drupal-off-canvas input[type="submit"].button:not(.js-off-canvas-ignore):active {
   border: 0;
   color: #fff;
   text-decoration: none;
   outline: none;
   z-index: 10;
 }
-#drupal-off-canvas input[type="submit"].button:focus,
-#drupal-off-canvas input[type="submit"].button:active {
+
+#drupal-off-canvas input[type="submit"].button:not(.js-off-canvas-ignore):focus,
+#drupal-off-canvas input[type="submit"].button:not(.js-off-canvas-ignore):active {
   box-shadow: 0 3px 3px 2px rgba(0, 0, 0, 0.1);
 }
-#drupal-off-canvas input[type="submit"].button--primary {
+
+#drupal-off-canvas input[type="submit"].button--primary:not(.js-off-canvas-ignore) {
   border: 0;
   background: #277abd;
   color: #fff;
   margin-top: 15px;
 }
-#drupal-off-canvas input[type="submit"].button--primary:hover,
-#drupal-off-canvas input[type="submit"].button--primary:focus,
-#drupal-off-canvas input[type="submit"].button--primary:active {
+
+#drupal-off-canvas input[type="submit"].button--primary:not(.js-off-canvas-ignore):hover,
+#drupal-off-canvas input[type="submit"].button--primary:not(.js-off-canvas-ignore):focus,
+#drupal-off-canvas input[type="submit"].button--primary:not(.js-off-canvas-ignore):active {
   background: #236aaf;
   outline: none;
 }
-#drupal-off-canvas .button-action:before {
-  margin-left: -0.2em; /* LTR */
-  padding-right: 0.2em; /* LTR */
+
+#drupal-off-canvas .button-action:not(.js-off-canvas-ignore):before {
+  margin-left: -0.2em;
+  /* LTR */
+  padding-right: 0.2em;
+  /* LTR */
   font-size: 14px;
   line-height: 16px;
 }
-[dir="rtl"] #drupal-off-canvas .button-action:before {
+
+[dir="rtl"] #drupal-off-canvas .button-action:not(.js-off-canvas-ignore):before {
   margin-right: -0.2em;
   margin-left: 0;
   padding-right: 0;
   padding-left: 0.2em;
 }
-#drupal-off-canvas .no-touchevents .button--small {
+
+#drupal-off-canvas .no-touchevents .button--small:not(.js-off-canvas-ignore) {
   font-size: 13px;
   padding: 2px 1em;
 }
-#drupal-off-canvas .button:disabled,
-#drupal-off-canvas .button:disabled:active,
-#drupal-off-canvas .button.is-disabled,
-#drupal-off-canvas .button.is-disabled:active {
+
+#drupal-off-canvas .button:not(.js-off-canvas-ignore):disabled,
+#drupal-off-canvas .button:not(.js-off-canvas-ignore):disabled:active,
+#drupal-off-canvas .button.is-disabled:not(.js-off-canvas-ignore),
+#drupal-off-canvas .button.is-disabled:not(.js-off-canvas-ignore):active {
   border: 0;
   background: #555;
   color: #5c5c5c;
   font-weight: normal;
   cursor: default;
 }
-#drupal-off-canvas .button--danger {
+
+#drupal-off-canvas .button--danger:not(.js-off-canvas-ignore) {
   border-radius: 0;
   color: #c72100;
   font-weight: 400;
   text-decoration: none;
 }
-#drupal-off-canvas .button--danger:hover,
-#drupal-off-canvas .button--danger:focus,
-#drupal-off-canvas .button--danger:active {
+
+#drupal-off-canvas .button--danger:not(.js-off-canvas-ignore):hover,
+#drupal-off-canvas .button--danger:not(.js-off-canvas-ignore):focus,
+#drupal-off-canvas .button--danger:not(.js-off-canvas-ignore):active {
   color: #ff2a00;
   text-decoration: none;
   text-shadow: none;
 }
-#drupal-off-canvas .button--danger:disabled,
-#drupal-off-canvas .button--danger.is-disabled {
+
+#drupal-off-canvas .button--danger:not(.js-off-canvas-ignore):disabled,
+#drupal-off-canvas .button--danger.is-disabled:not(.js-off-canvas-ignore) {
   color: #737373;
   cursor: default;
 }

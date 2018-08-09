@@ -4,7 +4,7 @@
  */
 
 /* Style the dialog-off-canvas container. */
-.ui-dialog.ui-dialog-off-canvas {
+.ui-dialog.ui-dialog-off-canvas:not(.js-off-canvas-ignore) {
   background: #444;
   border-radius: 0;
   box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.3333);
@@ -18,7 +18,8 @@
 }
 
 /* Style the off-canvas dialog header. */
-.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar {
+
+.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar:not(.js-off-canvas-ignore) {
   padding: 1em;
   background: #2d2d2d;
   border: 0;
@@ -27,11 +28,14 @@
   font-weight: normal;
   color: #fff;
 }
+
 /* Hide the default jQuery UI dialog close button. */
-.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar-close .ui-icon {
+
+.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar-close .ui-icon:not(.js-off-canvas-ignore) {
   visibility: hidden;
 }
-.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar-close {
+
+.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar-close:not(.js-off-canvas-ignore) {
   background-image: url(../icons/bebebe/ex.svg);
   background-position: center center;
   background-repeat: no-repeat;
@@ -44,57 +48,69 @@
   right: 1em;
   transition: all 0.5s ease;
 }
-.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar-close:hover,
-.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar-close:focus {
+
+.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar-close:not(.js-off-canvas-ignore):hover,
+.ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar-close:not(.js-off-canvas-ignore):focus {
   background-image: url(../icons/ffffff/ex.svg);
   border: 3px solid #fff;
 }
-[dir="rtl"] .ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar-close {
+
+[dir="rtl"] .ui-dialog.ui-dialog-off-canvas .ui-dialog-titlebar-close:not(.js-off-canvas-ignore) {
   left: 1em;
   right: auto;
 }
-.ui-dialog.ui-dialog-off-canvas .ui-dialog-title {
+
+.ui-dialog.ui-dialog-off-canvas .ui-dialog-title:not(.js-off-canvas-ignore) {
   margin: 0;
   /* Push the text away from the icon. */
-  padding-left: 30px; /* LTR */
-  padding-right: 0; /* LTR */
+  padding-left: 30px;
+  /* LTR */
+  padding-right: 0;
+  /* LTR */
   /* Ensure that long titles do not overlap the close button. */
   max-width: 210px;
   font-size: 16px;
   font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
-  text-align: left; /* LTR */
+  text-align: left;
+  /* LTR */
 }
-[dir="rtl"] .ui-dialog.ui-dialog-off-canvas .ui-dialog-title {
+
+[dir="rtl"] .ui-dialog.ui-dialog-off-canvas .ui-dialog-title:not(.js-off-canvas-ignore) {
   float: right;
   text-align: right;
   padding-left: 0;
   padding-right: 30px;
 }
-.ui-dialog.ui-dialog-off-canvas .ui-dialog-title:before {
+
+.ui-dialog.ui-dialog-off-canvas .ui-dialog-title:not(.js-off-canvas-ignore):before {
   background: transparent url(../icons/ffffff/pencil.svg) no-repeat scroll center center;
   background-size: 100% auto;
   content: '';
   display: block;
   height: 100%;
   position: absolute;
-  left: 1em; /* LTR */
+  left: 1em;
+  /* LTR */
   top: 0;
   width: 20px;
 }
-[dir="rtl"] .ui-dialog.ui-dialog-off-canvas .ui-dialog-title:before {
+
+[dir="rtl"] .ui-dialog.ui-dialog-off-canvas .ui-dialog-title:not(.js-off-canvas-ignore):before {
   left: auto;
   right: 1em;
 }
 
 /* Override default styling from jQuery UI. */
-#drupal-off-canvas .ui-state-default,
-#drupal-off-canvas .ui-widget-content .ui-state-default,
-#drupal-off-canvas .ui-widget-header .ui-state-default {
+
+#drupal-off-canvas .ui-state-default:not(.js-off-canvas-ignore),
+#drupal-off-canvas .ui-widget-content .ui-state-default:not(.js-off-canvas-ignore),
+#drupal-off-canvas .ui-widget-header .ui-state-default:not(.js-off-canvas-ignore) {
   border: 0;
   font-weight: normal;
   font-size: 14px;
   color: #333;
 }
-#drupal-off-canvas .ui-widget-content a {
+
+#drupal-off-canvas .ui-widget-content a:not(.js-off-canvas-ignore) {
   color: #85bef4;
 }

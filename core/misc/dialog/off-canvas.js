@@ -37,6 +37,19 @@
         of: window
       };
 
+      var observer = new MutationObserver(function () {
+        $('.off-canvas-ignore-parent:not(.js-off-canvas-ignore), .cke_reset:not(.js-off-canvas-ignore)', $element).each(function (index, element) {
+          var $this = $(element);
+          $this.addClass('js-off-canvas-ignore');
+          $this.find('*:not(.js-off-canvas-ignore)').addClass('js-off-canvas-ignore');
+        });
+      });
+
+      observer.observe($element[0], {
+        childList: true,
+        subtree: true
+      });
+
       var position = settings.drupalOffCanvasPosition;
       var height = position === 'side' ? $(window).height() : settings.height;
       var width = position === 'side' ? settings.width : '100%';

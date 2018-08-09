@@ -87,6 +87,21 @@
         of: window,
       };
 
+      // Add a class to elements that should ignore off-canvas' styling.
+      const observer = new MutationObserver(() => {
+        $('.off-canvas-ignore-parent:not(.js-off-canvas-ignore), .cke_reset:not(.js-off-canvas-ignore)', $element)
+          .each((index, element) => {
+            $(element)
+              .addClass('js-off-canvas-ignore')
+              .find('*:not(.js-off-canvas-ignore)').addClass('js-off-canvas-ignore');
+          });
+      });
+
+      observer.observe($element[0], {
+        childList: true,
+        subtree: true,
+      });
+
       /**
        * Applies initial height and with to dialog based depending on position.
        * @see http://api.jqueryui.com/dialog for all dialog options.
