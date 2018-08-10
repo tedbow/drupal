@@ -34,9 +34,11 @@
         '!label': label,
       });
 
-      // The off-canvas CSS reset inteferes with the CKEditor's own CSS reset.
-      // Add a class so that off-canvas reset does not apply to the editor.
-      CKEDITOR.env.cssClass += ' js-off-canvas-ignore';
+      /**
+       * The off-canvas CSS reset inteferes with the CKEditor's own CSS reset.
+       * Add a class so that off-canvas reset does not apply to the editor.
+       */
+      CKEDITOR.env.cssClass = `${CKEDITOR.env.cssClass} js-off-canvas-ignore`;
       return !!CKEDITOR.replace(element, format.editorSettings);
     },
 
