@@ -5,7 +5,7 @@
  * See seven/css/layout/layout.css
  */
 
-.layout-icon__region:not(.js-off-canvas-ignore) {
+.layout-icon__region:not(.js-off-canvas-computed-ignore) {
   fill: #f5f5f2;
   stroke: #666;
 }

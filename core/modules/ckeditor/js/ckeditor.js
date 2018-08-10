@@ -19,7 +19,7 @@
         '!label': label
       });
 
-      CKEDITOR.env.cssClass += ' off-canvas-ignore-parent';
+      CKEDITOR.env.cssClass += ' js-off-canvas-ignore';
       return !!CKEDITOR.replace(element, format.editorSettings);
     },
     detach: function detach(element, format, trigger) {

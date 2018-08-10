@@ -3,11 +3,11 @@
  * Visual styling for tables in the off-canvas dialog.
  */
 
-#drupal-off-canvas table *:not(.js-off-canvas-ignore) {
+#drupal-off-canvas table *:not(.js-off-canvas-computed-ignore) {
   font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
 }
 
-#drupal-off-canvas table:not(.js-off-canvas-ignore) {
+#drupal-off-canvas table:not(.js-off-canvas-computed-ignore) {
   display: table;
   width: 100%;
   min-width: calc(100% + 40px);
@@ -19,24 +19,24 @@
   color: #ddd;
 }
 
-#drupal-off-canvas table thead:not(.js-off-canvas-ignore) {
+#drupal-off-canvas table thead:not(.js-off-canvas-computed-ignore) {
   display: table-header-group;
 }
 
-#drupal-off-canvas table tbody:not(.js-off-canvas-ignore) {
+#drupal-off-canvas table tbody:not(.js-off-canvas-computed-ignore) {
   display: table-row-group;
 }
 
-#drupal-off-canvas tr:not(.js-off-canvas-ignore) {
+#drupal-off-canvas tr:not(.js-off-canvas-computed-ignore) {
   display: table-row;
 }
 
-#drupal-off-canvas tr:not(.js-off-canvas-ignore):hover td {
+#drupal-off-canvas tr:not(.js-off-canvas-computed-ignore):hover td {
   background-color: transparent;
 }
 
-#drupal-off-canvas td:not(.js-off-canvas-ignore),
-#drupal-off-canvas th:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas th:not(.js-off-canvas-computed-ignore) {
   display: table-cell;
   height: auto;
   width: auto;
@@ -46,48 +46,48 @@
   background-color: transparent;
 }
 
-[dir="rtl"] #drupal-off-canvas th:not(.js-off-canvas-ignore),
-[dir="rtl"] #drupal-off-canvas td:not(.js-off-canvas-ignore) {
+[dir="rtl"] #drupal-off-canvas th:not(.js-off-canvas-computed-ignore),
+[dir="rtl"] #drupal-off-canvas td:not(.js-off-canvas-computed-ignore) {
   text-align: right;
 }
 
-#drupal-off-canvas th:not(.js-off-canvas-ignore) {
+#drupal-off-canvas th:not(.js-off-canvas-computed-ignore) {
   font-weight: bold;
 }
 
-#drupal-off-canvas th.checkbox:not(.js-off-canvas-ignore),
-#drupal-off-canvas td.checkbox:not(.js-off-canvas-ignore) {
+#drupal-off-canvas th.checkbox:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas td.checkbox:not(.js-off-canvas-computed-ignore) {
   width: 20px;
   padding: 0;
   text-align: center;
 }
 
-#drupal-off-canvas div.checkbox.menu-enabled:not(.js-off-canvas-ignore) {
+#drupal-off-canvas div.checkbox.menu-enabled:not(.js-off-canvas-computed-ignore) {
   position: static;
   display: inline;
   width: auto;
 }
 
-#drupal-off-canvas th:not(.js-off-canvas-ignore):first-child,
-#drupal-off-canvas td:not(.js-off-canvas-ignore):first-child {
+#drupal-off-canvas th:not(.js-off-canvas-computed-ignore):first-child,
+#drupal-off-canvas td:not(.js-off-canvas-computed-ignore):first-child {
   width: 150px;
 }
 
 /* For lack of a better class, using this to grab the operations th. */
 
-#drupal-off-canvas .tabledrag-has-colspan:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .tabledrag-has-colspan:not(.js-off-canvas-computed-ignore) {
   text-align: right;
   padding-right: 20px;
 }
 
-#drupal-off-canvas td:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td:not(.js-off-canvas-computed-ignore) {
   padding: 6px 8px;
   color: #ddd;
 }
 
 /* Hide overflow with ellipsis for links. */
 
-#drupal-off-canvas td a:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td a:not(.js-off-canvas-computed-ignore) {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -95,13 +95,13 @@
   background: transparent;
 }
 
-#drupal-off-canvas tr td:not(.js-off-canvas-ignore):first-child,
-#drupal-off-canvas tr th:not(.js-off-canvas-ignore):first-child {
+#drupal-off-canvas tr td:not(.js-off-canvas-computed-ignore):first-child,
+#drupal-off-canvas tr th:not(.js-off-canvas-computed-ignore):first-child {
   padding-left: 20px;
   /* LTR */
 }
 
-[dir="rtl"] #drupal-off-canvas tr td:not(.js-off-canvas-ignore):first-child,
-[dir="rtl"] #drupal-off-canvas tr th:not(.js-off-canvas-ignore):first-child {
+[dir="rtl"] #drupal-off-canvas tr td:not(.js-off-canvas-computed-ignore):first-child,
+[dir="rtl"] #drupal-off-canvas tr th:not(.js-off-canvas-computed-ignore):first-child {
   padding-right: 20px;
 }

@@ -3,8 +3,8 @@
  * Styles for dropbuttons in the off-canvas dialog.
  */
 
-#drupal-off-canvas .dropbutton-wrapper:not(.js-off-canvas-ignore),
-#drupal-off-canvas .dropbutton-widget:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-wrapper:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .dropbutton-widget:not(.js-off-canvas-computed-ignore) {
   -webkit-appearance: none;
   -moz-appearance: none;
   display: block;
@@ -12,7 +12,7 @@
   transition: none;
 }
 
-#drupal-off-canvas .dropbutton-widget:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-widget:not(.js-off-canvas-computed-ignore) {
   margin: 0;
   padding: 0;
   border: 0;
@@ -28,7 +28,7 @@
   transition: background 0.5s ease;
 }
 
-#drupal-off-canvas .dropbutton-widget:not(.js-off-canvas-ignore):hover {
+#drupal-off-canvas .dropbutton-widget:not(.js-off-canvas-computed-ignore):hover {
   background: #2b8bd8;
 }
 
@@ -36,7 +36,7 @@
  * Style dropbutton single.
  */
 
-#drupal-off-canvas .dropbutton-single .dropbutton-action a:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-single .dropbutton-action a:not(.js-off-canvas-computed-ignore) {
   padding: 0;
   /* Overlap icon for trigger. */
   margin-top: -2em;
@@ -44,22 +44,22 @@
   cursor: pointer;
 }
 
-#drupal-off-canvas .dropbutton-single .dropbutton-action:not(.js-off-canvas-ignore):hover,
-#drupal-off-canvas .dropbutton-single .dropbutton-action:not(.js-off-canvas-ignore):focus,
-#drupal-off-canvas .dropbutton-single .dropbutton-action a:not(.js-off-canvas-ignore):hover,
-#drupal-off-canvas .dropbutton-single .dropbutton-action a:not(.js-off-canvas-ignore):focus {
+#drupal-off-canvas .dropbutton-single .dropbutton-action:not(.js-off-canvas-computed-ignore):hover,
+#drupal-off-canvas .dropbutton-single .dropbutton-action:not(.js-off-canvas-computed-ignore):focus,
+#drupal-off-canvas .dropbutton-single .dropbutton-action a:not(.js-off-canvas-computed-ignore):hover,
+#drupal-off-canvas .dropbutton-single .dropbutton-action a:not(.js-off-canvas-computed-ignore):focus {
   text-decoration: none;
   outline: none;
 }
 
-#drupal-off-canvas .dropbutton-widget .dropbutton:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-widget .dropbutton:not(.js-off-canvas-computed-ignore) {
   margin: 0;
   overflow: hidden;
   padding: 0;
 }
 
-#drupal-off-canvas .dropbutton li:not(.js-off-canvas-ignore),
-#drupal-off-canvas .dropbutton a:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton li:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .dropbutton a:not(.js-off-canvas-computed-ignore) {
   display: block;
   width: auto;
   padding: 4px 0;
@@ -68,10 +68,10 @@
   outline: none;
 }
 
-#drupal-off-canvas .dropbutton li:not(.js-off-canvas-ignore):hover,
-#drupal-off-canvas .dropbutton li:not(.js-off-canvas-ignore):focus,
-#drupal-off-canvas .dropbutton a:not(.js-off-canvas-ignore):hover,
-#drupal-off-canvas .dropbutton a:not(.js-off-canvas-ignore):focus {
+#drupal-off-canvas .dropbutton li:not(.js-off-canvas-computed-ignore):hover,
+#drupal-off-canvas .dropbutton li:not(.js-off-canvas-computed-ignore):focus,
+#drupal-off-canvas .dropbutton a:not(.js-off-canvas-computed-ignore):hover,
+#drupal-off-canvas .dropbutton a:not(.js-off-canvas-computed-ignore):focus {
   background: transparent;
   color: #333;
   outline: none;
@@ -81,24 +81,24 @@
  * Style dropbutton multiple.
  */
 
-#drupal-off-canvas .dropbutton-multiple .dropbutton-widget:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-multiple .dropbutton-widget:not(.js-off-canvas-computed-ignore) {
   width: 2em;
   height: 2em;
 }
 
-#drupal-off-canvas .dropbutton-multiple .dropbutton-widget:not(.js-off-canvas-ignore):hover {
+#drupal-off-canvas .dropbutton-multiple .dropbutton-widget:not(.js-off-canvas-computed-ignore):hover {
   background-color: #2b8bd8;
 }
 
 /* Hide the other actions until the dropbutton is triggered. */
 
-#drupal-off-canvas .dropbutton-multiple .dropbutton .secondary-action:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-multiple .dropbutton .secondary-action:not(.js-off-canvas-computed-ignore) {
   display: none;
 }
 
 /* The toggle to expand the button. */
 
-#drupal-off-canvas .dropbutton-toggle:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-toggle:not(.js-off-canvas-computed-ignore) {
   position: absolute;
   top: 0;
   right: 0;
@@ -111,7 +111,7 @@
   white-space: nowrap;
 }
 
-#drupal-off-canvas .dropbutton-toggle button:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-toggle button:not(.js-off-canvas-computed-ignore) {
   display: block;
   height: 100%;
   width: 100%;
@@ -125,14 +125,14 @@
   cursor: pointer;
 }
 
-#drupal-off-canvas .dropbutton-toggle button:not(.js-off-canvas-ignore):hover,
-#drupal-off-canvas .dropbutton-toggle button:not(.js-off-canvas-ignore):focus {
+#drupal-off-canvas .dropbutton-toggle button:not(.js-off-canvas-computed-ignore):hover,
+#drupal-off-canvas .dropbutton-toggle button:not(.js-off-canvas-computed-ignore):focus {
   outline: none;
 }
 
 /* The toggle arrow. */
 
-#drupal-off-canvas .dropbutton-arrow:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-arrow:not(.js-off-canvas-computed-ignore) {
   position: absolute;
   display: block;
   height: 0;
@@ -148,19 +148,19 @@
   overflow: hidden;
 }
 
-#drupal-off-canvas span.dropbutton-arrow:not(.js-off-canvas-ignore) {
+#drupal-off-canvas span.dropbutton-arrow:not(.js-off-canvas-computed-ignore) {
   top: 7px;
   right: 7px;
   /* LTR */
   background: transparent;
 }
 
-#drupal-off-canvas span.dropbutton-arrow:not(.js-off-canvas-ignore):hover {
+#drupal-off-canvas span.dropbutton-arrow:not(.js-off-canvas-computed-ignore):hover {
   background: transparent;
 }
 
-#drupal-off-canvas .dropbutton-action > .js-form-submit.form-submit:not(.js-off-canvas-ignore),
-#drupal-off-canvas .dropbutton-toggle button:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-action > .js-form-submit.form-submit:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .dropbutton-toggle button:not(.js-off-canvas-computed-ignore) {
   position: relative;
   text-shadow: none;
 }
@@ -171,11 +171,11 @@
 
 /* Make sure table cell doesn't collapse around absolute positioned dropbutton. */
 
-#drupal-off-canvas td .dropbutton-single:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .dropbutton-single:not(.js-off-canvas-computed-ignore) {
   min-width: 2em;
 }
 
-#drupal-off-canvas td .dropbutton-multiple:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .dropbutton-multiple:not(.js-off-canvas-computed-ignore) {
   min-width: 2em;
   padding-right: 0;
   padding-left: 0;
@@ -184,21 +184,21 @@
   border: 0;
 }
 
-#drupal-off-canvas td .dropbutton-multiple .dropbutton-action a:not(.js-off-canvas-ignore),
-#drupal-off-canvas td .dropbutton-multiple .dropbutton-action input:not(.js-off-canvas-ignore),
-#drupal-off-canvas td .dropbutton-multiple .dropbutton-action button:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .dropbutton-multiple .dropbutton-action a:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas td .dropbutton-multiple .dropbutton-action input:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas td .dropbutton-multiple .dropbutton-action button:not(.js-off-canvas-computed-ignore) {
   width: auto;
   padding: 0;
   font-size: inherit;
 }
 
-#drupal-off-canvas td .dropbutton-wrapper:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .dropbutton-wrapper:not(.js-off-canvas-computed-ignore) {
   margin-bottom: 0;
 }
 
 /* Push the widget to the right so text expands left. */
 
-#drupal-off-canvas td .dropbutton-widget:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .dropbutton-widget:not(.js-off-canvas-computed-ignore) {
   position: absolute;
   right: 12px;
   /* LTR */
@@ -208,8 +208,8 @@
 
 /* Push the wrapper to the right edge of the td. */
 
-#drupal-off-canvas td .dropbutton-single:not(.js-off-canvas-ignore),
-#drupal-off-canvas td .dropbutton-multiple:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .dropbutton-single:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas td .dropbutton-multiple:not(.js-off-canvas-computed-ignore) {
   float: right;
   /* LTR */
   padding-right: 0;
@@ -219,7 +219,7 @@
   position: relative;
 }
 
-#drupal-off-canvas td .dropbutton-widget .dropbutton:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .dropbutton-widget .dropbutton:not(.js-off-canvas-computed-ignore) {
   margin: 0;
   width: 2em;
   height: 2em;
@@ -229,14 +229,14 @@
 
 /* Push text out of the way. */
 
-#drupal-off-canvas td .dropbutton-multiple li:not(.js-off-canvas-ignore),
-#drupal-off-canvas td .dropbutton-multiple a:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .dropbutton-multiple li:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas td .dropbutton-multiple a:not(.js-off-canvas-computed-ignore) {
   margin-left: -9999px;
   background: transparent;
 }
 
-#drupal-off-canvas td .dropbutton-multiple.open .dropbutton li:not(.js-off-canvas-ignore),
-#drupal-off-canvas td .dropbutton-multiple.open .dropbutton a:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .dropbutton-multiple.open .dropbutton li:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas td .dropbutton-multiple.open .dropbutton a:not(.js-off-canvas-computed-ignore) {
   margin-left: 0;
   width: auto;
   color: #fff;
@@ -244,34 +244,34 @@
 
 /* Collapse the button to a circle. */
 
-#drupal-off-canvas td .dropbutton-toggle:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .dropbutton-toggle:not(.js-off-canvas-computed-ignore) {
   width: 2em;
   height: 2em;
   border-radius: 1em;
 }
 
-#drupal-off-canvas td .dropbutton-wrapper .dropbutton-widget .dropbutton-toggle button:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .dropbutton-wrapper .dropbutton-widget .dropbutton-toggle button:not(.js-off-canvas-computed-ignore) {
   border: 0;
   background: transparent;
 }
 
 /* Prevent list item from expanding its container. */
 
-#drupal-off-canvas td ul.dropbutton li.edit:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td ul.dropbutton li.edit:not(.js-off-canvas-computed-ignore) {
   width: 2em;
   height: 2em;
 }
 
 /* Make li text transparent above icon so it's clickable. */
 
-#drupal-off-canvas td .dropbutton-single li.edit.dropbutton-action > a:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .dropbutton-single li.edit.dropbutton-action > a:not(.js-off-canvas-computed-ignore) {
   color: transparent;
   z-index: 1;
 }
 
 /* Put pencil icon in place of hidden 'edit' text on single buttons. */
 
-#drupal-off-canvas td .dropbutton-single .edit:not(.js-off-canvas-ignore):before {
+#drupal-off-canvas td .dropbutton-single .edit:not(.js-off-canvas-computed-ignore):before {
   content: '.';
   display: block;
   color: transparent;
@@ -281,20 +281,20 @@
 
 /* Dropbutton when triggered expands to show secondary items. */
 
-#drupal-off-canvas .dropbutton-multiple.open:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-multiple.open:not(.js-off-canvas-computed-ignore) {
   z-index: 100;
 }
 
 /* Create visual separation if there is an adjacent button. */
 
-#drupal-off-canvas .dropbutton-multiple.open .dropbutton-widget:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-multiple.open .dropbutton-widget:not(.js-off-canvas-computed-ignore) {
   box-shadow: 0 3px 3px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* Triggered dropbutton expands to show secondary items. */
 
-#drupal-off-canvas .dropbutton-multiple.open:not(.js-off-canvas-ignore),
-#drupal-off-canvas .dropbutton-multiple.open .dropbutton-widget:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-multiple.open:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .dropbutton-multiple.open .dropbutton-widget:not(.js-off-canvas-computed-ignore) {
   display: block;
   width: auto;
   height: auto;
@@ -306,8 +306,8 @@
 
 /* Triggered dropbutton in td expands to show secondary items. */
 
-#drupal-off-canvas td .dropbutton-multiple.open .dropbutton:not(.js-off-canvas-ignore),
-#drupal-off-canvas .dropbutton-multiple.open .dropbutton .secondary-action:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .dropbutton-multiple.open .dropbutton:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .dropbutton-multiple.open .dropbutton .secondary-action:not(.js-off-canvas-computed-ignore) {
   display: block;
   width: auto;
   height: auto;
@@ -315,18 +315,18 @@
   /* LTR */
 }
 
-[dir="rtl"] #drupal-off-canvas td .dropbutton-multiple.open .dropbutton:not(.js-off-canvas-ignore) {
+[dir="rtl"] #drupal-off-canvas td .dropbutton-multiple.open .dropbutton:not(.js-off-canvas-computed-ignore) {
   padding-left: 1em;
   padding-right: inherit;
 }
 
-#drupal-off-canvas .dropbutton-multiple.open .dropbutton li a:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-multiple.open .dropbutton li a:not(.js-off-canvas-computed-ignore) {
   padding: 2px 1em;
 }
 
 /* When open, the toggle arrow points upward. */
 
-#drupal-off-canvas .dropbutton-multiple.open span.dropbutton-arrow:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .dropbutton-multiple.open span.dropbutton-arrow:not(.js-off-canvas-computed-ignore) {
   border-bottom: 0.3333em solid;
   border-top-color: transparent;
   top: 2px;

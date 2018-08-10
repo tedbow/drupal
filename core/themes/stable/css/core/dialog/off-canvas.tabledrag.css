@@ -5,27 +5,27 @@
  * @see tabledrag.js
  */
 
-#drupal-off-canvas .drag:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .drag:not(.js-off-canvas-computed-ignore) {
   cursor: move;
 }
 
-#drupal-off-canvas tr.region-title:not(.js-off-canvas-ignore) {
+#drupal-off-canvas tr.region-title:not(.js-off-canvas-computed-ignore) {
   font-weight: normal;
 }
 
-#drupal-off-canvas table .region-message:not(.js-off-canvas-ignore) {
+#drupal-off-canvas table .region-message:not(.js-off-canvas-computed-ignore) {
   color: #fff;
 }
 
-#drupal-off-canvas table .region-populated:not(.js-off-canvas-ignore) {
+#drupal-off-canvas table .region-populated:not(.js-off-canvas-computed-ignore) {
   display: none;
 }
 
-#drupal-off-canvas .add-new .tabledrag-changed:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .add-new .tabledrag-changed:not(.js-off-canvas-computed-ignore) {
   display: none;
 }
 
-#drupal-off-canvas .draggable a.tabledrag-handle:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .draggable a.tabledrag-handle:not(.js-off-canvas-computed-ignore) {
   background-image: none;
   margin: 0 5px 0 0;
   height: auto;
@@ -38,13 +38,13 @@
   cursor: move;
 }
 
-[dir="rtl"] #drupal-off-canvas .draggable a.tabledrag-handle:not(.js-off-canvas-ignore) {
+[dir="rtl"] #drupal-off-canvas .draggable a.tabledrag-handle:not(.js-off-canvas-computed-ignore) {
   float: right;
   margin-right: 0;
   margin-left: 5px;
 }
 
-#drupal-off-canvas a.tabledrag-handle .handle:not(.js-off-canvas-ignore) {
+#drupal-off-canvas a.tabledrag-handle .handle:not(.js-off-canvas-computed-ignore) {
   /* Use lighter drag icon against dark background. */
   background-image: url(../../../images/core/icons/bebebe/move.svg);
   background-color: transparent;
@@ -56,86 +56,86 @@
   width: auto;
 }
 
-#drupal-off-canvas .draggable a.tabledrag-handle:not(.js-off-canvas-ignore):hover .handle,
-#drupal-off-canvas .draggable a.tabledrag-handle:not(.js-off-canvas-ignore):focus .handle {
+#drupal-off-canvas .draggable a.tabledrag-handle:not(.js-off-canvas-computed-ignore):hover .handle,
+#drupal-off-canvas .draggable a.tabledrag-handle:not(.js-off-canvas-computed-ignore):focus .handle {
   background-image: url(../../../images/core/icons/787878/move.svg);
   text-decoration: none;
 }
 
-#drupal-off-canvas tr td:not(.js-off-canvas-ignore) {
+#drupal-off-canvas tr td:not(.js-off-canvas-computed-ignore) {
   transition: background 0.3s ease;
 }
 
-#drupal-off-canvas tr td abbr:not(.js-off-canvas-ignore) {
+#drupal-off-canvas tr td abbr:not(.js-off-canvas-computed-ignore) {
   margin-left: 5px;
   /* LTR */
 }
 
-[dir="rtl"] #drupal-off-canvas tr td abbr:not(.js-off-canvas-ignore) {
+[dir="rtl"] #drupal-off-canvas tr td abbr:not(.js-off-canvas-computed-ignore) {
   margin-left: 0;
   margin-right: 5px;
 }
 
-#drupal-off-canvas tr:not(.js-off-canvas-ignore):hover td {
+#drupal-off-canvas tr:not(.js-off-canvas-computed-ignore):hover td {
   background: #222;
 }
 
-#drupal-off-canvas tr.drag td:not(.js-off-canvas-ignore) {
+#drupal-off-canvas tr.drag td:not(.js-off-canvas-computed-ignore) {
   background: #111;
 }
 
-#drupal-off-canvas tr.drag-previous td:not(.js-off-canvas-ignore) {
+#drupal-off-canvas tr.drag-previous td:not(.js-off-canvas-computed-ignore) {
   background: #000;
 }
 
-#drupal-off-canvas tr.drag-previous:not(.js-off-canvas-ignore):hover td {
+#drupal-off-canvas tr.drag-previous:not(.js-off-canvas-computed-ignore):hover td {
   background: #222;
 }
 
-body div.tabledrag-changed-warning:not(.js-off-canvas-ignore) {
+body div.tabledrag-changed-warning:not(.js-off-canvas-computed-ignore) {
   margin-bottom: 0.5em;
   font-size: 14px;
 }
 
-#drupal-off-canvas .touchevents .draggable td:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .touchevents .draggable td:not(.js-off-canvas-computed-ignore) {
   padding: 0 10px;
 }
 
-#drupal-off-canvas .touchevents .draggable .menu-item__link:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .touchevents .draggable .menu-item__link:not(.js-off-canvas-computed-ignore) {
   display: inline-block;
   padding: 10px 0;
 }
 
-#drupal-off-canvas .touchevents a.tabledrag-handle:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .touchevents a.tabledrag-handle:not(.js-off-canvas-computed-ignore) {
   height: 44px;
   width: 40px;
 }
 
-#drupal-off-canvas .touchevents a.tabledrag-handle .handle:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .touchevents a.tabledrag-handle .handle:not(.js-off-canvas-computed-ignore) {
   background-position: 40% 19px;
   /* LTR */
   height: 21px;
 }
 
-[dir="rtl"] #drupal-off-canvas .touch a.tabledrag-handle .handle:not(.js-off-canvas-ignore) {
+[dir="rtl"] #drupal-off-canvas .touch a.tabledrag-handle .handle:not(.js-off-canvas-computed-ignore) {
   background-position: right 40% top 19px;
 }
 
-#drupal-off-canvas .touchevents .draggable.drag a.tabledrag-handle .handle:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .touchevents .draggable.drag a.tabledrag-handle .handle:not(.js-off-canvas-computed-ignore) {
   background-position: 50% -32px;
 }
 
-#drupal-off-canvas .tabledrag-toggle-weight-wrapper:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .tabledrag-toggle-weight-wrapper:not(.js-off-canvas-computed-ignore) {
   padding-top: 10px;
   text-align: right;
   /* LTR */
 }
 
-[dir="rtl"] #drupal-off-canvas .tabledrag-toggle-weight-wrapper:not(.js-off-canvas-ignore) {
+[dir="rtl"] #drupal-off-canvas .tabledrag-toggle-weight-wrapper:not(.js-off-canvas-computed-ignore) {
   text-align: left;
 }
 
-#drupal-off-canvas .indentation:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .indentation:not(.js-off-canvas-computed-ignore) {
   float: left;
   /* LTR */
   height: auto;
@@ -146,7 +146,7 @@ body div.tabledrag-changed-warning:not(.js-off-canvas-ignore) {
   width: auto;
 }
 
-[dir="rtl"] #drupal-off-canvas .indentation:not(.js-off-canvas-ignore) {
+[dir="rtl"] #drupal-off-canvas .indentation:not(.js-off-canvas-computed-ignore) {
   float: right;
   margin: 0 -10px 0 3px;
   padding: 0 10px 0 0;

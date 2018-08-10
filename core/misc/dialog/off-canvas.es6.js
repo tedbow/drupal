@@ -90,13 +90,13 @@
       // Add a class to elements that should ignore off-canvas' styling.
       const observer = new MutationObserver(() => {
         $(
-          '.off-canvas-ignore-parent:not(.js-off-canvas-ignore)',
+          '.js-off-canvas-ignore:not(.js-off-canvas-computed-ignore)',
           $element,
         ).each((index, element) => {
           $(element)
-            .addClass('js-off-canvas-ignore')
-            .find('*:not(.js-off-canvas-ignore)')
-            .addClass('js-off-canvas-ignore');
+            .addClass('js-off-canvas-computed-ignore')
+            .find('*:not(.js-off-canvas-computed-ignore)')
+            .addClass('js-off-canvas-computed-ignore');
         });
       });
 

@@ -5,7 +5,7 @@
 
 /* Position the off-canvas dialog container outside the right of the viewport. */
 
-.ui-dialog-off-canvas:not(.js-off-canvas-ignore) {
+.ui-dialog-off-canvas:not(.js-off-canvas-computed-ignore) {
   box-sizing: border-box;
   height: 100%;
   overflow: visible;
@@ -13,20 +13,20 @@
 
 /* Wrap the form that's inside the off-canvas dialog. */
 
-.ui-dialog-off-canvas .ui-dialog-content:not(.js-off-canvas-ignore) {
+.ui-dialog-off-canvas .ui-dialog-content:not(.js-off-canvas-computed-ignore) {
   padding: 0 20px;
   /* Prevent horizontal scrollbar. */
   overflow-x: hidden;
   overflow-y: auto;
 }
 
-[dir="rtl"] .ui-dialog-off-canvas .ui-dialog-content:not(.js-off-canvas-ignore) {
+[dir="rtl"] .ui-dialog-off-canvas .ui-dialog-content:not(.js-off-canvas-computed-ignore) {
   text-align: right;
 }
 
 /* Position the off-canvas dialog container outside the right of the viewport. */
 
-.ui-dialog-off-canvas:not(.js-off-canvas-ignore) {
+.ui-dialog-off-canvas:not(.js-off-canvas-computed-ignore) {
   box-sizing: border-box;
   height: 100%;
   overflow: visible;
@@ -34,14 +34,14 @@
 
 /* Wrap the form that's inside the off-canvas dialog. */
 
-.ui-dialog-off-canvas #drupal-off-canvas:not(.js-off-canvas-ignore) {
+.ui-dialog-off-canvas #drupal-off-canvas:not(.js-off-canvas-computed-ignore) {
   padding: 0 20px 20px;
   /* Prevent horizontal scrollbar. */
   overflow-x: hidden;
   overflow-y: auto;
 }
 
-[dir="rtl"] .ui-dialog-off-canvas #drupal-off-canvas:not(.js-off-canvas-ignore) {
+[dir="rtl"] .ui-dialog-off-canvas #drupal-off-canvas:not(.js-off-canvas-computed-ignore) {
   text-align: right;
 }
 
@@ -53,13 +53,13 @@
 @media all and (max-width: 48em) {
   /* 768px */
 
-  .ui-dialog.ui-dialog-off-canvas:not(.js-off-canvas-ignore) {
+  .ui-dialog.ui-dialog-off-canvas:not(.js-off-canvas-computed-ignore) {
     width: 100% !important;
   }
 
   /* When off-canvas dialog is at 100% width stop the body from scrolling */
 
-  .js-off-canvas-dialog-open:not(.js-off-canvas-ignore) {
+  .js-off-canvas-dialog-open:not(.js-off-canvas-computed-ignore) {
     height: 100%;
     overflow-y: hidden;
   }

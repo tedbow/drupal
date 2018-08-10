@@ -3,30 +3,30 @@
  * Visual styling for forms in the off-canvas dialog.
  */
 
-#drupal-off-canvas form:not(.js-off-canvas-ignore) {
+#drupal-off-canvas form:not(.js-off-canvas-computed-ignore) {
   font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
   color: #ddd;
 }
 
-#drupal-off-canvas input[type="checkbox"]:not(.js-off-canvas-ignore) {
+#drupal-off-canvas input[type="checkbox"]:not(.js-off-canvas-computed-ignore) {
   -webkit-appearance: checkbox;
 }
 
-#drupal-off-canvas input[type="radio"]:not(.js-off-canvas-ignore) {
+#drupal-off-canvas input[type="radio"]:not(.js-off-canvas-computed-ignore) {
   -webkit-appearance: radio;
 }
 
-#drupal-off-canvas select:not(.js-off-canvas-ignore) {
+#drupal-off-canvas select:not(.js-off-canvas-computed-ignore) {
   -webkit-appearance: menulist;
   -moz-appearance: menulist;
 }
 
-#drupal-off-canvas option:not(.js-off-canvas-ignore) {
+#drupal-off-canvas option:not(.js-off-canvas-computed-ignore) {
   display: block;
   font-family: "Lucida Grande", 'Lucida Sans Unicode', 'liberation sans', sans-serif;
 }
 
-#drupal-off-canvas label:not(.js-off-canvas-ignore) {
+#drupal-off-canvas label:not(.js-off-canvas-computed-ignore) {
   line-height: normal;
   font-family: inherit;
   font-size: 12px;
@@ -34,16 +34,16 @@
   color: #ddd;
 }
 
-#drupal-off-canvas .visually-hidden:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .visually-hidden:not(.js-off-canvas-computed-ignore) {
   opacity: 0;
   height: 0;
   width: 0;
   letter-spacing: -2em;
 }
 
-#drupal-off-canvas .description:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-item .description:not(.js-off-canvas-ignore),
-#drupal-off-canvas .details-description:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .description:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-item .description:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .details-description:not(.js-off-canvas-computed-ignore) {
   color: #ddd;
   margin-top: 5px;
   font-family: inherit;
@@ -51,25 +51,25 @@
   font-style: normal;
 }
 
-#drupal-off-canvas .form-item:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .form-item:not(.js-off-canvas-computed-ignore) {
   margin-bottom: 10px;
   margin-top: 10px;
 }
 
 /* Set size and position for all inputs. */
 
-#drupal-off-canvas .form-select:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-text:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-tel:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-email:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-url:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-search:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-number:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-color:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-file:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-textarea:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-date:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-time:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .form-select:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-text:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-tel:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-email:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-url:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-search:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-number:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-color:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-file:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-textarea:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-date:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-time:not(.js-off-canvas-computed-ignore) {
   box-sizing: border-box;
   max-width: 100%;
   padding: 6px;
@@ -85,55 +85,55 @@
 
 /* Reduce contrast for fields against dark background. */
 
-#drupal-off-canvas .form-text:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-tel:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-email:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-url:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-search:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-number:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-color:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-file:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-textarea:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-date:not(.js-off-canvas-ignore),
-#drupal-off-canvas .form-time:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .form-text:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-tel:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-email:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-url:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-search:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-number:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-color:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-file:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-textarea:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-date:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas .form-time:not(.js-off-canvas-computed-ignore) {
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.125);
   background-color: #eee;
   border-color: #333;
   color: #595959;
 }
 
-#drupal-off-canvas .form-text:not(.js-off-canvas-ignore):focus,
-#drupal-off-canvas .form-tel:not(.js-off-canvas-ignore):focus,
-#drupal-off-canvas .form-email:not(.js-off-canvas-ignore):focus,
-#drupal-off-canvas .form-url:not(.js-off-canvas-ignore):focus,
-#drupal-off-canvas .form-search:not(.js-off-canvas-ignore):focus,
-#drupal-off-canvas .form-number:not(.js-off-canvas-ignore):focus,
-#drupal-off-canvas .form-color:not(.js-off-canvas-ignore):focus,
-#drupal-off-canvas .form-file:not(.js-off-canvas-ignore):focus,
-#drupal-off-canvas .form-textarea:not(.js-off-canvas-ignore):focus,
-#drupal-off-canvas .form-date:not(.js-off-canvas-ignore):focus,
-#drupal-off-canvas .form-time:not(.js-off-canvas-ignore):focus {
+#drupal-off-canvas .form-text:not(.js-off-canvas-computed-ignore):focus,
+#drupal-off-canvas .form-tel:not(.js-off-canvas-computed-ignore):focus,
+#drupal-off-canvas .form-email:not(.js-off-canvas-computed-ignore):focus,
+#drupal-off-canvas .form-url:not(.js-off-canvas-computed-ignore):focus,
+#drupal-off-canvas .form-search:not(.js-off-canvas-computed-ignore):focus,
+#drupal-off-canvas .form-number:not(.js-off-canvas-computed-ignore):focus,
+#drupal-off-canvas .form-color:not(.js-off-canvas-computed-ignore):focus,
+#drupal-off-canvas .form-file:not(.js-off-canvas-computed-ignore):focus,
+#drupal-off-canvas .form-textarea:not(.js-off-canvas-computed-ignore):focus,
+#drupal-off-canvas .form-date:not(.js-off-canvas-computed-ignore):focus,
+#drupal-off-canvas .form-time:not(.js-off-canvas-computed-ignore):focus {
   border-color: #40b6ff;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.125), 0 0 8px #40b6ff;
   background-color: #fff;
 }
 
-#drupal-off-canvas td .form-item:not(.js-off-canvas-ignore),
-#drupal-off-canvas td .form-select:not(.js-off-canvas-ignore) {
+#drupal-off-canvas td .form-item:not(.js-off-canvas-computed-ignore),
+#drupal-off-canvas td .form-select:not(.js-off-canvas-computed-ignore) {
   margin: 0;
 }
 
-#drupal-off-canvas .form-file:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .form-file:not(.js-off-canvas-computed-ignore) {
   margin-bottom: 5px;
   width: 100%;
 }
 
-#drupal-off-canvas .form-actions:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .form-actions:not(.js-off-canvas-computed-ignore) {
   text-align: center;
   margin: 10px 0;
 }
 
-#drupal-off-canvas .ui-autocomplete:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .ui-autocomplete:not(.js-off-canvas-computed-ignore) {
   background-color: white;
   position: absolute;
   top: 0;
@@ -141,11 +141,11 @@
   cursor: default;
 }
 
-#drupal-off-canvas .ui-autocomplete li:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .ui-autocomplete li:not(.js-off-canvas-computed-ignore) {
   display: block;
 }
 
-#drupal-off-canvas .ui-autocomplete li a:not(.js-off-canvas-ignore) {
+#drupal-off-canvas .ui-autocomplete li a:not(.js-off-canvas-computed-ignore) {
   color: #595959 !important;
   cursor: pointer;
   padding: 5px;
