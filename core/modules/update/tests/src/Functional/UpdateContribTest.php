@@ -547,6 +547,12 @@ class UpdateContribTest extends UpdateTestBase {
         'update_available' => FALSE,
         'fixture' => 'sec.8.x-2.2_1.x_secure',
       ],
+      '8.x-2.2, 8.x-1.2 8.x-2.2' => [
+        'module_patch_version' => '8.x-2.2',
+        'expected_security_release' => NULL,
+        'update_available' => FALSE,
+        'fixture' => 'sec.8.x-1.2_8.x-2.2',
+      ],
       // Security release available for module major release 1.
       // Security release also available for next major.
       '8.x-1.0, 8.x-1.2 8.x-2.2' => [
