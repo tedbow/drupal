@@ -22,7 +22,7 @@
    <version_extra>beta2</version_extra>
    <status>published</status>
    <release_link>http://example.com/aaa_update_test-8-x-3-0-beta2-release</release_link>
-   <download_link>http://example.com/aaa_update_test-8.x-3.0-beta2.tar.gz</download_link>
+   <download_link>http://example.com/aaa_update_test-8-x-3-0-beta2.tar.gz</download_link>
    <date>1533298080</date>
    <mdhash>2387284145e34a19fc45e03c258a2831</mdhash>
    <filesize>16209911</filesize>
@@ -43,7 +43,7 @@
    <version_extra>beta1</version_extra>
    <status>published</status>
    <release_link>http://example.com/aaa_update_test-8-x-3-0-beta1</release_link>
-   <download_link>http://example.com/aaa_update_test--8.x-3.0-beta1.tar.gz</download_link>
+   <download_link>http://example.com/aaa_update_test--8-x-3-0-beta1.tar.gz</download_link>
    <date>1533270485</date>
    <mdhash>3d70ae568dd8f7100082b8c58bc8d1fe</mdhash>
    <filesize>16209123</filesize>
@@ -64,7 +64,7 @@
    <version_patch>2</version_patch>
    <status>published</status>
    <release_link>http://example.com/aaa_update_test-8-x-2-2-release</release_link>
-   <download_link>http://example.com/aaa_update_test-8.x-2.2.tar.gz</download_link>
+   <download_link>http://example.com/aaa_update_test-8-x-2-2.tar.gz</download_link>
    <date>1250424521</date>
    <mdhash>b966255555d9c9b86d480ca08cfaa98e</mdhash>
    <filesize>1073741824</filesize>
@@ -82,7 +82,7 @@
    <version_patch>1</version_patch>
    <status>published</status>
    <release_link>http://example.com/aaa_update_test-8-x-2-1-release</release_link>
-   <download_link>http://example.com/aaa_update_test-8.x-2.1.tar.gz</download_link>
+   <download_link>http://example.com/aaa_update_test-8-x-2-1.tar.gz</download_link>
    <date>1250424521</date>
    <mdhash>b966255555d9c9b86d480ca08cfaa98e</mdhash>
    <filesize>1073741824</filesize>
@@ -101,7 +101,7 @@
    <version_patch>0</version_patch>
    <status>published</status>
    <release_link>http://example.com/aaa_update_test-8-x-2-0-release</release_link>
-   <download_link>http://example.com/aaa_update_test-8.x-2.0.tar.gz</download_link>
+   <download_link>http://example.com/aaa_update_test-8-x-2-0.tar.gz</download_link>
    <date>1250424521</date>
    <mdhash>b966255555d9c9b86d480ca08cfaa98e</mdhash>
    <filesize>1073741824</filesize>
@@ -119,7 +119,7 @@
    <version_patch>2</version_patch>
    <status>published</status>
    <release_link>http://example.com/aaa_update_test-8-x-1-2-release</release_link>
-   <download_link>http://example.com/aaa_update_test-8.x-1.2.tar.gz</download_link>
+   <download_link>http://example.com/aaa_update_test-8-x-1-2.tar.gz</download_link>
    <date>1250424521</date>
    <mdhash>b966255555d9c9b86d480ca08cfaa98e</mdhash>
    <filesize>1073741824</filesize>
@@ -137,7 +137,7 @@
    <version_patch>1</version_patch>
    <status>published</status>
    <release_link>http://example.com/aaa_update_test-8-x-1-1-release</release_link>
-   <download_link>http://example.com/aaa_update_test-8.x-1.1.tar.gz</download_link>
+   <download_link>http://example.com/aaa_update_test-8-x-1-1.tar.gz</download_link>
    <date>1250424521</date>
    <mdhash>b966255555d9c9b86d480ca08cfaa98e</mdhash>
    <filesize>1073741824</filesize>
@@ -155,7 +155,7 @@
    <version_patch>0</version_patch>
    <status>published</status>
    <release_link>http://example.com/aaa_update_test-8-x-1-0-release</release_link>
-   <download_link>http://example.com/aaa_update_test-8.x-1.0.tar.gz</download_link>
+   <download_link>http://example.com/aaa_update_test-8-x-1-0.tar.gz</download_link>
    <date>1250424521</date>
    <mdhash>b966255555d9c9b86d480ca08cfaa98e</mdhash>
    <filesize>1073741824</filesize>

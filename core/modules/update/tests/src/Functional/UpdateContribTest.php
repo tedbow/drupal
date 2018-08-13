@@ -453,7 +453,6 @@ class UpdateContribTest extends UpdateTestBase {
    * @dataProvider securityUpdateAvailabilityProvider
    */
   public function testSecurityUpdateAvailability($module_version, $expected_security_releases, $update_available, $fixture) {
-    $assert_session = $this->assertSession();
     $system_info = [
       '#all' => [
         'version' => '8.0.0',
@@ -466,31 +465,7 @@ class UpdateContribTest extends UpdateTestBase {
     ];
     $this->config('update_test.settings')->set('system_info', $system_info)->save();
     $this->refreshUpdateStatus(['drupal' => '0.0', 'aaa_update_test' => $fixture]);
-    $this->standardTests();
-    $update_element_css_locator = 'table.update:nth-of-type(2)';
-    $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Not supported');
-    if ($expected_security_releases) {
-      foreach ($expected_security_releases as $expected_security_release) {
-        $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Up to date');
-        $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Update available');
-        $assert_session->elementTextContains('css', $update_element_css_locator, 'Security update required!');
-        $expected_url_version = str_replace('.', '-', $expected_security_release);
-        $assert_session->linkByHrefExists("http://example.com/aaa_update_test-$expected_url_version-release");
-        $assert_session->linkByHrefExists("http://example.com/aaa_update_test-$expected_security_release.tar.gz");
-        $assert_session->responseContains('error.svg', 'Error icon was found.');
-      }
-    }
-    else {
-      $assert_session->pageTextNotContains('Security update required!');
-      if ($update_available) {
-        $assert_session->elementTextContains('css', $update_element_css_locator, 'Update available');
-        $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Up to date');
-      }
-      else {
-        $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Update available');
-        $assert_session->elementTextContains('css', $update_element_css_locator, 'Up to date');
-      }
-    }
+    $this->assertSecurityUpdates('aaa_update_test', $expected_security_releases, $update_available, 'table.update:nth-of-type(2)');
   }
 
   /**

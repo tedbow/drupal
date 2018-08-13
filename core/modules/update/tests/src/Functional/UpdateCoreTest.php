@@ -173,34 +173,9 @@ class UpdateCoreTest extends UpdateTestBase {
    * @dataProvider securityUpdateAvailabilityProvider
    */
   public function testSecurityUpdateAvailability($site_patch_version, array $expected_security_releases, $update_available, $fixture) {
-    $assert_session = $this->assertSession();
     $this->setSystemInfo("8.$site_patch_version");
     $this->refreshUpdateStatus(['drupal' => $fixture]);
-    $this->standardTests();
-    $assert_session->pageTextNotContains('Not supported');
-    if ($expected_security_releases) {
-      foreach ($expected_security_releases as $expected_security_release) {
-        $this->assertNoText(t('Up to date'));
-        $this->assertNoText(t('Update available'));
-        $this->assertText(t('Security update required!'));
-        $expected_url_version = str_replace('.', '-', $expected_security_release);
-        $this->assertRaw(\Drupal::l("8.$expected_security_release", Url::fromUri("http://example.com/drupal-8-$expected_url_version-release")), 'Link to release appears.');
-        $this->assertRaw(\Drupal::l(t('Download'), Url::fromUri("http://example.com/drupal-8-$expected_url_version.tar.gz")), 'Link to download appears.');
-        $this->assertRaw(\Drupal::l(t('Release notes'), Url::fromUri("http://example.com/drupal-8-$expected_url_version-release")), 'Link to release notes appears.');
-        $this->assertRaw('error.svg', 'Error icon was found.');
-      }
-    }
-    else {
-      $assert_session->pageTextNotContains('Security update required!');
-      if ($update_available) {
-        $assert_session->pageTextContains('Update available');
-        $assert_session->pageTextNotContains('Up to date');
-      }
-      else {
-        $assert_session->pageTextNotContains('Update available');
-        $assert_session->pageTextContains('Up to date');
-      }
-    }
+    $this->assertSecurityUpdates('drupal-8', $expected_security_releases, $update_available, 'table.update');
   }
 
   /**

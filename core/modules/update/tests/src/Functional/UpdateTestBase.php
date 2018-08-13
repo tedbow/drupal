@@ -81,4 +81,42 @@ abstract class UpdateTestBase extends BrowserTestBase {
     $this->assertNoText(t('No available releases found'));
   }
 
+  /**
+   * Asserts the expected security updates are displayed correctly on the page.
+   *
+   * @param string[] $expected_security_releases
+   *   The security releases, if any, that the status report should recommend.
+   * @param bool $update_available
+   *   Whether an update should be available.
+   * @param $update_element_css_locator
+   *   The CSS locator for the page element that contains the security updates.
+   */
+  protected function assertSecurityUpdates($project, $expected_security_releases, $update_available, $update_element_css_locator) {
+    $assert_session = $this->assertSession();
+    $this->standardTests();
+    $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Not supported');
+    if ($expected_security_releases) {
+      foreach ($expected_security_releases as $expected_security_release) {
+        $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Up to date');
+        $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Update available');
+        $assert_session->elementTextContains('css', $update_element_css_locator, 'Security update required!');
+        $expected_url_version = str_replace('.', '-', $expected_security_release);
+        $assert_session->linkByHrefExists("http://example.com/$project-$expected_url_version-release");
+        $assert_session->linkByHrefExists("http://example.com/$project-$expected_url_version.tar.gz");
+        $assert_session->responseContains('error.svg', 'Error icon was found.');
+      }
+    }
+    else {
+      $assert_session->pageTextNotContains('Security update required!');
+      if ($update_available) {
+        $assert_session->elementTextContains('css', $update_element_css_locator, 'Update available');
+        $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Up to date');
+      }
+      else {
+        $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Update available');
+        $assert_session->elementTextContains('css', $update_element_css_locator, 'Up to date');
+      }
+    }
+  }
+
 }
