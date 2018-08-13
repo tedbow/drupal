@@ -33,7 +33,7 @@
    <term><name>Release type</name><value>Security update</value></term>
   </terms>
   <security>
-   Beta releases are not covered by Drupal security advisories.
+   RC releases are not covered by Drupal security advisories.
   </security>
  </release>
  <release>
@@ -56,7 +56,7 @@
    <term><name>Release type</name><value>New features</value></term>
   </terms>
   <security>
-   Beta releases are not covered by Drupal security advisories.
+   RC releases are not covered by Drupal security advisories.
   </security>
  </release>
  <release>
@@ -125,7 +125,7 @@
    <term><name>Release type</name><value>Insecure</value></term>
   </terms>
   <security>
-   Beta releases are not covered by Drupal security advisories.
+   Alpha releases are not covered by Drupal security advisories.
   </security>
  </release>
  <release>
@@ -148,7 +148,7 @@
    <term><name>Release type</name><value>New features</value></term>
   </terms>
   <security>
-   Beta releases are not covered by Drupal security advisories.
+   Alpha releases are not covered by Drupal security advisories.
   </security>
  </release>
  <release>
