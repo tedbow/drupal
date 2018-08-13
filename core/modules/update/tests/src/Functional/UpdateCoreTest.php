@@ -184,31 +184,31 @@ class UpdateCoreTest extends UpdateTestBase {
    * These test cases rely on the following fixture files.
    * - drupal.sec.0.1_0.2.xml
    *   Contains releases:
-   *     8.0.2 Security Update
-   *     8.0.1 Security Update, Insecure
+   *     8.0.2 Security update
+   *     8.0.1 Security update, Insecure
    *     8.0.0 Insecure
    * - drupal.sec.0.2.xml
    *   Contains releases:
-   *     8.0.2 Security Update
+   *     8.0.2 Security update
    *     8.0.1 Insecure
    *     8.0.0 Insecure
    * - drupal.sec.0.2-rc2.xml
    *   Contains releases:
-   *     8.2.0-rc2 Security Update
+   *     8.2.0-rc2 Security update
    *     8.2.0-rc1 Insecure
    *     8.2.0-beta2 Insecure
    *     8.2.0-beta1 Insecure
    *     8.2.0-alpha2 Insecure
    *     8.2.0-alpha1 Insecure
-   *     8.1.2 Security Update
+   *     8.1.2 Security update
    *     8.1.1 Insecure
    *     8.1.0 Insecure
-   *     8.0.2 Security Update
+   *     8.0.2 Security update
    *     8.0.1 Insecure
    *     8.0.0 Insecure
    * - drupal.sec.1.2.xml
    *   Contains releases:
-   *     8.1.2 Security Update
+   *     8.1.2 Security update
    *     8.1.1 Insecure
    *     8.1.0 Insecure
    *     8.0.2
@@ -216,7 +216,7 @@ class UpdateCoreTest extends UpdateTestBase {
    *     8.0.0
    * - drupal.sec.1.2_insecure.xml
    *   Contains releases:
-   *     8.1.2 Security Update
+   *     8.1.2 Security update
    *     8.1.1 Insecure
    *     8.1.0 Insecure
    *     8.0.2 Insecure
@@ -230,10 +230,10 @@ class UpdateCoreTest extends UpdateTestBase {
    *     8.2.0-beta1
    *     8.2.0-alpha2
    *     8.2.0-alpha1
-   *     8.1.2 Security Update
+   *     8.1.2 Security update
    *     8.1.1 Insecure
    *     8.1.0 Insecure
-   *     8.0.2 Security Update
+   *     8.0.2 Security update
    *     8.0.1 Insecure
    *     8.0.0 Insecure
    */
