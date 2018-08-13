@@ -164,7 +164,7 @@ class UpdateCoreTest extends UpdateTestBase {
    * @param string $site_patch_version
    *   The patch version to set the site to for testing.
    * @param string[] $expected_security_releases
-   *   The expected security release.
+   *   The security releases, if any, that the status report should recommend.
    * @param bool $update_available
    *   Whether an update is available.
    * @param string $fixture
@@ -178,7 +178,6 @@ class UpdateCoreTest extends UpdateTestBase {
     $this->refreshUpdateStatus(['drupal' => $fixture]);
     $this->standardTests();
     $assert_session->pageTextNotContains('Not supported');
-    file_put_contents('/Users/ted.bowman/Sites/www/e.html', $this->getSession()->getPage()->getOuterHtml());
     if ($expected_security_releases) {
       foreach ($expected_security_releases as $expected_security_release) {
         $this->assertNoText(t('Up to date'));

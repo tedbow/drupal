@@ -444,8 +444,7 @@ class UpdateContribTest extends UpdateTestBase {
    * @param string $module_version
    *   The module version the site is using.
    * @param string[] $expected_security_releases
-   *   The expected security release. If NULL then no security release is
-   *   expected.
+   *   The security releases, if any, that the status report should recommend.
    * @param bool $update_available
    *   Whether an update should be available.
    * @param string $fixture
@@ -469,7 +468,6 @@ class UpdateContribTest extends UpdateTestBase {
     $this->refreshUpdateStatus(['drupal' => '0.0', 'aaa_update_test' => $fixture]);
     $this->standardTests();
     $update_element_css_locator = 'table.update:nth-of-type(2)';
-    file_put_contents('/Users/ted.bowman/Sites/www/ec.html', $this->getSession()->getPage()->getOuterHtml());
     $assert_session->elementTextNotContains('css', $update_element_css_locator, 'Not supported');
     if ($expected_security_releases) {
       foreach ($expected_security_releases as $expected_security_release) {
