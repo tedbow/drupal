@@ -163,7 +163,7 @@ class UpdateCoreTest extends UpdateTestBase {
    *
    * @param string $site_patch_version
    *   The patch version to set the site to for testing.
-   * @param string $expected_security_release
+   * @param string[] $expected_security_releases
    *   The expected security release.
    * @param bool $update_available
    *   Whether an update is available.
@@ -172,21 +172,24 @@ class UpdateCoreTest extends UpdateTestBase {
    *
    * @dataProvider securityUpdateAvailabilityProvider
    */
-  public function testSecurityUpdateAvailability($site_patch_version, $expected_security_release, $update_available, $fixture) {
+  public function testSecurityUpdateAvailability($site_patch_version, array $expected_security_releases, $update_available, $fixture) {
     $assert_session = $this->assertSession();
     $this->setSystemInfo("8.$site_patch_version");
     $this->refreshUpdateStatus(['drupal' => $fixture]);
     $this->standardTests();
     $assert_session->pageTextNotContains('Not supported');
-    if ($expected_security_release) {
-      $this->assertNoText(t('Up to date'));
-      $this->assertNoText(t('Update available'));
-      $this->assertText(t('Security update required!'));
-      $expected_url_version = str_replace('.', '-', $expected_security_release);
-      $this->assertRaw(\Drupal::l("8.$expected_security_release", Url::fromUri("http://example.com/drupal-8-$expected_url_version-release")), 'Link to release appears.');
-      $this->assertRaw(\Drupal::l(t('Download'), Url::fromUri("http://example.com/drupal-8-$expected_url_version.tar.gz")), 'Link to download appears.');
-      $this->assertRaw(\Drupal::l(t('Release notes'), Url::fromUri("http://example.com/drupal-8-$expected_url_version-release")), 'Link to release notes appears.');
-      $this->assertRaw('error.svg', 'Error icon was found.');
+    file_put_contents('/Users/ted.bowman/Sites/www/e.html', $this->getSession()->getPage()->getOuterHtml());
+    if ($expected_security_releases) {
+      foreach ($expected_security_releases as $expected_security_release) {
+        $this->assertNoText(t('Up to date'));
+        $this->assertNoText(t('Update available'));
+        $this->assertText(t('Security update required!'));
+        $expected_url_version = str_replace('.', '-', $expected_security_release);
+        $this->assertRaw(\Drupal::l("8.$expected_security_release", Url::fromUri("http://example.com/drupal-8-$expected_url_version-release")), 'Link to release appears.');
+        $this->assertRaw(\Drupal::l(t('Download'), Url::fromUri("http://example.com/drupal-8-$expected_url_version.tar.gz")), 'Link to download appears.');
+        $this->assertRaw(\Drupal::l(t('Release notes'), Url::fromUri("http://example.com/drupal-8-$expected_url_version-release")), 'Link to release notes appears.');
+        $this->assertRaw('error.svg', 'Error icon was found.');
+      }
     }
     else {
       $assert_session->pageTextNotContains('Security update required!');
@@ -266,7 +269,7 @@ class UpdateCoreTest extends UpdateTestBase {
       // No future releases for next minor.
       '0.0, 0.2' => [
         'site_patch_version' => '0.0',
-        'expected_security_release' => '0.2',
+        'expected_security_releases' => ['0.2'],
         'update_available' => FALSE,
         'fixture' => 'sec.0.2',
       ],
@@ -275,7 +278,7 @@ class UpdateCoreTest extends UpdateTestBase {
       // No future releases for next minor.
       '0.0, 0.1 0.2' => [
         'site_patch_version' => '0.0',
-        'expected_security_release' => '0.2',
+        'expected_security_releases' => ['0.2'],
         'update_available' => FALSE,
         'fixture' => 'sec.0.1_0.2',
       ],
@@ -283,7 +286,7 @@ class UpdateCoreTest extends UpdateTestBase {
       // No releases for next minor.
       '1.0, 1.2' => [
         'site_patch_version' => '1.0',
-        'expected_security_release' => '1.2',
+        'expected_security_releases' => ['1.2'],
         'update_available' => FALSE,
         'fixture' => 'sec.1.2',
       ],
@@ -291,7 +294,7 @@ class UpdateCoreTest extends UpdateTestBase {
       // Security release also available for next minor.
       '0.0, 0.2 1.2' => [
         'site_patch_version' => '0.0',
-        'expected_security_release' => '0.2',
+        'expected_security_releases' => ['0.2', '1.2'],
         'update_available' => TRUE,
         'fixture' => 'sec.0.2-rc2',
 
@@ -300,7 +303,7 @@ class UpdateCoreTest extends UpdateTestBase {
       // Security release also available for previous minor.
       '1.0, 0.2 1.2' => [
         'site_patch_version' => '1.0',
-        'expected_security_release' => '1.2',
+        'expected_security_releases' => ['1.2'],
         'update_available' => FALSE,
         'fixture' => 'sec.0.2-rc2',
       ],
@@ -308,7 +311,7 @@ class UpdateCoreTest extends UpdateTestBase {
       // release.
       '1.2, 0.2 1.2' => [
         'site_patch_version' => '1.2',
-        'expected_security_release' => NULL,
+        'expected_security_releases' => [],
         'update_available' => FALSE,
         // @todo Change to use fixture 'sec.0.2-rc2' in
         // https://www.drupal.org/node/2804155. Currently this case would fail
@@ -319,14 +322,14 @@ class UpdateCoreTest extends UpdateTestBase {
       // Security release available for next minor.
       '0.0, 1.2, insecure' => [
         'site_patch_version' => '0.0',
-        'expected_security_release' => '1.2',
+        'expected_security_releases' => ['1.2'],
         'update_available' => FALSE,
         'fixture' => 'sec.1.2_insecure',
       ],
       // Site on 2.0-rc2 which a security release.
       '2.0-rc2, 0.2 1.2' => [
         'site_patch_version' => '2.0-rc2',
-        'expected_security_release' => NULL,
+        'expected_security_releases' => [],
         'update_available' => FALSE,
         'fixture' => 'sec.0.2-rc2',
       ],
@@ -345,7 +348,7 @@ class UpdateCoreTest extends UpdateTestBase {
     foreach ($pre_releases as $pre_release) {
       $test_cases["Pre-release:$pre_release: 2.0-rc2"] = [
         'site_patch_version' => $pre_release,
-        'expected_security_release' => '2.0-rc2',
+        'expected_security_releases' => ['2.0-rc2'],
         'update_available' => TRUE,
         'fixture' => 'sec.0.2-rc2',
       ];
@@ -356,7 +359,7 @@ class UpdateCoreTest extends UpdateTestBase {
     foreach ($pre_releases as $pre_release) {
       $test_cases["Pre-release:$pre_release, no security update"] = [
         'site_patch_version' => $pre_release,
-        'expected_security_release' => NULL,
+        'expected_security_releases' => [],
         'update_available' => $pre_release === '2.0-rc2' ? FALSE : TRUE,
         'fixture' => 'sec.0.2-rc2-b',
       ];
