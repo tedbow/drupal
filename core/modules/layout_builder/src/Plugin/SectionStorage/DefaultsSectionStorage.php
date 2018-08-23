@@ -359,4 +359,19 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
     return $return_as_object ? $result : $result->isAllowed();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function setEditAccessControlled($edit_access_controlled = TRUE) {
+    $this->getDisplay()->setEditAccessControlled($edit_access_controlled);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isEditAccessControlled() {
+    return $this->getDisplay()->isEditAccessControlled();
+  }
+
 }

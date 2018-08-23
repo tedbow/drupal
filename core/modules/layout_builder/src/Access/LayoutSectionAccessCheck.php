@@ -35,12 +35,11 @@ class LayoutSectionAccessCheck implements AccessInterface {
 
     if (!$section_storage instanceof SectionStorageInterface) {
       $access = AccessResult::forbidden();
+      return $access->addCacheableDependency($section_storage);
     }
-    else {
-      $access = AccessResult::allowedIfHasPermission($account, 'configure any layout');
-    }
+    return AccessResult::allowed();
 
-    return $access->addCacheableDependency($section_storage);
+
   }
 
 }

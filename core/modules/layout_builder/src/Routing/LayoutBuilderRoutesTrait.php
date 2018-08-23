@@ -44,6 +44,7 @@ trait LayoutBuilderRoutesTrait {
     $defaults['section_storage'] = '';
     // Trigger the layout builder access check.
     $requirements['_has_layout_section'] = 'true';
+    $requirements['_access'] = 'TRUE';
     $requirements['_layout_builder_access'] = 'view';
     // Trigger the layout builder RouteEnhancer.
     $options['_layout_builder'] = TRUE;

@@ -3,7 +3,7 @@ layout_builder.choose_section:
   defaults:
    _controller: '\Drupal\layout_builder\Controller\ChooseSectionController::build'
   requirements:
-
+    _access: 'TRUE'
     _layout_builder_access: 'view'
   options:
     _admin_route: TRUE
@@ -16,7 +16,7 @@ layout_builder.add_section:
   defaults:
     _controller: '\Drupal\layout_builder\Controller\AddSectionController::build'
   requirements:
-
+    _access: 'TRUE'
     _layout_builder_access: 'view'
   options:
     _admin_route: TRUE
@@ -33,7 +33,7 @@ layout_builder.configure_section:
     # section does not.
     plugin_id: null
   requirements:
-
+    _access: 'TRUE'
     _layout_builder_access: 'view'
   options:
     _admin_route: TRUE
@@ -46,7 +46,7 @@ layout_builder.remove_section:
   defaults:
     _form: '\Drupal\layout_builder\Form\RemoveSectionForm'
   requirements:
-
+    _access: 'TRUE'
     _layout_builder_access: 'view'
   options:
     _admin_route: TRUE
@@ -59,7 +59,7 @@ layout_builder.choose_block:
   defaults:
     _controller: '\Drupal\layout_builder\Controller\ChooseBlockController::build'
   requirements:
-
+    _access: 'TRUE'
     _layout_builder_access: 'view'
   options:
     _admin_route: TRUE
@@ -72,7 +72,7 @@ layout_builder.add_block:
   defaults:
     _form: '\Drupal\layout_builder\Form\AddBlockForm'
   requirements:
-
+    _access: 'TRUE'
     _layout_builder_access: 'view'
   options:
     _admin_route: TRUE
@@ -85,7 +85,7 @@ layout_builder.update_block:
   defaults:
     _form: '\Drupal\layout_builder\Form\UpdateBlockForm'
   requirements:
-
+    _access: 'TRUE'
     _layout_builder_access: 'view'
   options:
     _admin_route: TRUE
@@ -98,7 +98,7 @@ layout_builder.remove_block:
   defaults:
     _form: '\Drupal\layout_builder\Form\RemoveBlockForm'
   requirements:
-
+    _access: 'TRUE'
     _layout_builder_access: 'view'
   options:
     _admin_route: TRUE
@@ -117,7 +117,7 @@ layout_builder.move_block:
     block_uuid: null
     preceding_block_uuid: null
   requirements:
-
+    _access: 'TRUE'
     _layout_builder_access: 'view'
   options:
     _admin_route: TRUE
