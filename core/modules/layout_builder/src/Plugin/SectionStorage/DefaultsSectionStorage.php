@@ -354,7 +354,8 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
    * {@inheritdoc}
    */
   public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $result = AccessResult::allowedIf($this->isLayoutBuilderEnabled());
+    $result = parent::access($operation, $account, TRUE);
+    $result = $result->andIf(AccessResult::allowedIf($this->isLayoutBuilderEnabled()));
     return $return_as_object ? $result : $result->isAllowed();
   }
 

@@ -104,6 +104,25 @@ class LayoutBuilderEntityViewDisplayForm extends EntityViewDisplayEditForm {
       if (!$is_enabled) {
         $form['layout']['allow_custom']['#attributes']['disabled'] = 'disabled';
       }
+      $form['layout']['edit_access'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Allow users to configure the layout of any @entity they can edit.', [
+          '@entity' => $entity_type->getSingularLabel(),
+        ]),
+        '#default_value' => $this->entity->isEditAccessControlled(),
+        '#states' => [
+          'disabled' => [
+            ':input[name="layout[allow_custom]"]' => ['checked' => FALSE],
+          ],
+          'invisible' => [
+            ':input[name="layout[allow_custom]"]' => ['checked' => FALSE],
+          ],
+        ],
+      ];
+      if (!$this->entity->isOverridable()) {
+        $form['layout']['edit_permission']['#attributes']['disabled'] = 'disabled';
+      }
+
       // Prevent turning off overrides while any exist.
       if ($this->hasOverrides($this->entity)) {
         $form['layout']['enabled']['#disabled'] = TRUE;
@@ -166,7 +185,10 @@ class LayoutBuilderEntityViewDisplayForm extends EntityViewDisplayEditForm {
     if ($set_enabled) {
       $overridable = (bool) $form_state->getValue(['layout', 'allow_custom'], FALSE);
       $display->setOverridable($overridable);
-
+      if ($overridable) {
+        $edit_access = (bool) $form_state->getValue(['layout', 'edit_access'], FALSE);
+        $display->setEditAccessControlled($edit_access);
+      }
       if (!$already_enabled) {
         $display->enableLayoutBuilder();
       }

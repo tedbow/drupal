@@ -2,7 +2,9 @@
 
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Plugin\PluginBase;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\layout_builder\Routing\LayoutBuilderRoutesTrait;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionListInterface;
@@ -101,6 +103,11 @@ abstract class SectionStorageBase extends PluginBase implements SectionStorageIn
   public function removeSection($delta) {
     $this->getSectionList()->removeSection($delta);
     return $this;
+  }
+
+  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
+    $result = AccessResult::allowedIfHasPermission($account, 'configure any layout');
+    return $return_as_object ? $result : $result->isAllowed();
   }
 
 }

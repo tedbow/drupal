@@ -363,4 +363,19 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
     return $this->getSection(0);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function setEditAccessControlled($edit_access_controlled = TRUE) {
+    $this->setThirdPartySetting('layout_builder', 'edit_access', $edit_access_controlled);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isEditAccessControlled() {
+    return $this->getThirdPartySetting('layout_builder', 'edit_access', FALSE);
+  }
+
 }

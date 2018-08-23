@@ -34,4 +34,22 @@ interface DefaultsSectionStorageInterface extends SectionStorageInterface, Third
    */
   public function setOverridable($overridable = TRUE);
 
+  /**
+   * Sets if edit entity access controls layout configure access.
+   *
+   * @param bool $edit_access_controlled
+   *   TRUE if edit entity access should control layout access, FALSE otherwise.
+   *
+   * @return $this
+   */
+  public function setEditAccessControlled($edit_access_controlled = TRUE);
+
+  /**
+   * Determines if edit entity access controls layout configure access.
+   *
+   * @return bool
+   *   TRUE if edit access controls layotu configure access, FALSE otherwise.
+   */
+  public function isEditAccessControlled();
+
 }
