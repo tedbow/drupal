@@ -67,11 +67,27 @@ class ChooseBlockController implements ContainerInjectionInterface {
     //   https://www.drupal.org/project/drupal/issues/2984509.
     $delta = (int) $delta;
 
-    $definitions = $this->blockManager->getFilteredDefinitions('layout_builder', $this->getAvailableContexts($section_storage), [
-      'section_storage' => $section_storage,
-      'delta' => $delta,
-      'region' => $region,
+    $cache_id = implode(':', [
+      'layout_block_list',
+      $section_storage->getPluginId(),
+      $section_storage->getStorageId(),
+      $delta,
+      $region,
     ]);
+    $cache = \Drupal::cache();
+    $cached = $cache->get($cache_id);
+    if (empty($cached->data)) {
+      $definitions = $this->blockManager->getFilteredDefinitions('layout_builder', $this->getAvailableContexts($section_storage), [
+        'section_storage' => $section_storage,
+        'delta' => $delta,
+        'region' => $region,
+      ]);
+      $cache->set($cache_id, $definitions);
+    }
+    else {
+      $definitions = $cached->data;
+    }
+
     foreach ($this->blockManager->getGroupedDefinitions($definitions) as $category => $blocks) {
       $build[$category]['#type'] = 'details';
       $build[$category]['#open'] = TRUE;
