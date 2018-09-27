@@ -428,4 +428,73 @@ class InlineBlockTest extends InlineBlockTestBase {
     $assert_session->pageTextNotContains('You are not authorized to access this page');
   }
 
+  /**
+   * Tests the workflow for adding an inline block depending on number of types.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   * @throws \Behat\Mink\Exception\ExpectationException
+   */
+  public function testAddWorkFlow() {
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    $type_storage = $this->container->get('entity_type.manager')->getStorage('block_content_type');
+    foreach ($type_storage->loadByProperties() as $type) {
+      $type->delete();
+    }
+
+    $this->drupalLogin($this->drupalCreateUser([
+      'access contextual links',
+      'configure any layout',
+      'administer node display',
+      'administer node fields',
+    ]));
+
+    // Enable layout builder and overrides.
+    $this->drupalPostForm(
+      static::FIELD_UI_PREFIX . '/display/default',
+      ['layout[enabled]' => TRUE, 'layout[allow_custom]' => TRUE],
+      'Save'
+    );
+
+    $layout_default_path = 'admin/structure/types/manage/bundle_with_section_field/display-layout/default';
+    $this->drupalGet($layout_default_path);
+    // Add a basic block with the body field set.
+    $page->clickLink('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    // Confirm that with no block content types the link does not appear.
+    $assert_session->linkNotExists('Create new content');
+
+    $this->createBlockContentType('basic', 'Basic block');
+
+    $this->drupalGet($layout_default_path);
+    // Add a basic block with the body field set.
+    $page->clickLink('Add Block');
+    $assert_session->assertWaitOnAjaxRequest();
+    // Confirm with only 1 type the "Create new content" link goes directly to block
+    // add form.
+    $assert_session->linkNotExists('Basic block');
+    $this->clickLink('Create new content');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->fieldExists('Title');
+
+    $this->createBlockContentType('advanced', 'Advanced block');
+
+    $this->drupalGet($layout_default_path);
+    // Add a basic block with the body field set.
+    $page->clickLink('Add Block');
+    // Confirm more than 1 type exists "Create new content" shows a list block types.
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->linkNotExists('Basic block');
+    $assert_session->linkNotExists('Advanced block');
+    $this->clickLink('Create new content');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->fieldNotExists('Title');
+    $assert_session->linkExists('Basic block');
+    $assert_session->linkExists('Advanced block');
+
+    $this->clickLink('Advanced block');
+    $assert_session->assertWaitOnAjaxRequest();
+    $assert_session->fieldExists('Title');
+  }
+
 }
