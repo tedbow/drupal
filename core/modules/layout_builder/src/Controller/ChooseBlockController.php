@@ -107,8 +107,21 @@ class ChooseBlockController implements ContainerInjectionInterface {
       }
     }
 
+    $build['filter'] = [
+      '#type' => 'search',
+      '#title' => $this->t('Filter'),
+      '#title_display' => 'invisible',
+      '#size' => 30,
+      '#placeholder' => $this->t('Filter by block name'),
+      '#attributes' => [
+        'class' => ['js-layout-builder-filter'],
+        'title' => $this->t('Enter a part of the block name to filter by.'),
+      ],
+    ];
+
     $block_categories['#type'] = 'container';
     $block_categories['#attributes']['class'][] = 'block-categories';
+    $block_categories['#attributes']['class'][] = 'js-layout-builder-categories';
 
     // @todo Explicitly cast delta to an integer, remove this in
     //   https://www.drupal.org/project/drupal/issues/2984509.
@@ -122,6 +135,7 @@ class ChooseBlockController implements ContainerInjectionInterface {
     $grouped_definitions = $this->blockManager->getGroupedDefinitions($definitions);
     foreach ($grouped_definitions as $category => $blocks) {
       $block_categories[$category]['#type'] = 'details';
+      $block_categories[$category]['#attributes']['class'][] = 'js-layout-builder-category';
       $block_categories[$category]['#open'] = TRUE;
       $block_categories[$category]['#title'] = $category;
       $block_categories[$category]['links'] = $this->getBlockLinks($section_storage, $delta, $region, $blocks);
@@ -189,6 +203,8 @@ class ChooseBlockController implements ContainerInjectionInterface {
   protected function getBlockLinks(SectionStorageInterface $section_storage, $delta, $region, array $blocks) {
     $links = [];
     foreach ($blocks as $block_id => $block) {
+      $attributes = $this->getAjaxAttributes();
+      $attributes['class'][] = 'js-layout-builder-block-link';
       $link = [
         'title' => $block['admin_label'],
         'url' => Url::fromRoute('layout_builder.add_block',
@@ -200,7 +216,7 @@ class ChooseBlockController implements ContainerInjectionInterface {
             'plugin_id' => $block_id,
           ]
         ),
-        'attributes' => $this->getAjaxAttributes(),
+        'attributes' => $attributes,
       ];
 
       $links[] = $link;

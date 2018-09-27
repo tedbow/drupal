@@ -7,9 +7,45 @@
 
 (function ($, _ref) {
   var ajax = _ref.ajax,
-      behaviors = _ref.behaviors;
+      behaviors = _ref.behaviors,
+      debounce = _ref.debounce;
 
-  behaviors.layoutBuilder = {
+  behaviors.layoutBuilderBlockFilter = {
+    attach: function attach(context) {
+      var $input = $('input.js-layout-builder-filter', context).once('block-filter-text');
+      var $categories = $('.js-layout-builder-categories', context);
+      var $filterLinks = void 0;
+
+      function filterBlockList(e) {
+        var query = $(e.target).val().toLowerCase();
+
+        function toggleBlockEntry(index, link) {
+          var $link = $(link);
+          var textMatch = $link.text().toLowerCase().indexOf(query) !== -1;
+          $link.toggle(textMatch);
+        }
+
+        $categories.find('.js-layout-builder-category').show();
+        $filterLinks.show();
+
+        if (query.length >= 2) {
+          $categories.find('.js-layout-builder-category').attr('open', '');
+          $filterLinks.each(toggleBlockEntry);
+          $categories.find('.js-layout-builder-category').each(function () {
+            var hasBlocks = $(this).find('.js-layout-builder-block-link:visible').length > 0;
+            $(this).toggle(hasBlocks);
+          });
+          Drupal.announce(Drupal.formatPlural($categories.find('.js-layout-builder-block-link:visible').length, '1 block is available in the modified list.', '@count blocks are available in the modified list.'));
+        }
+      }
+
+      if ($input.length) {
+        $filterLinks = $categories.find('.js-layout-builder-block-link');
+        $input.on('keyup', debounce(filterBlockList, 200));
+      }
+    }
+  };
+  behaviors.layoutBuilderBlockDrag = {
     attach: function attach(context) {
       $(context).find('.layout-builder--layout__region').sortable({
         items: '> .draggable',
