@@ -49,6 +49,21 @@
             }
           },
         });
+      $('.layout-builder-block-reorder a').once().on('click.layoutbuilder', e => {
+        const current = $(e.target).closest('.draggable').get(0);
+        current.classList.add('drag-current');
+        const newNode = document.createElement("span");
+        newNode.classList.add('ui-state-drop');
+
+        current.parentNode.insertBefore(newNode, current);
+        //current.prev().before(current);
+        //$('.layout-builder--layout__region').sortable( "refresh" );
+        //current.sortable( "refreshPositions" );
+        //alert('jdf');
+        e.preventDefault();
+        e.stopPropagation();
+
+      });
     },
   };
 })(jQuery, Drupal);

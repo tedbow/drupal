@@ -17,3 +17,8 @@ layout_builder_block_remove:
       class: ['use-ajax']
       data-dialog-type: dialog
       data-dialog-renderer: off_canvas
+
+layout_builder_block_reorder:
+  title: 'Reorder block'
+  route_name: 'layout_builder.move_block'
+  group: 'layout_builder_block'
