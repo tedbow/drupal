@@ -49,9 +49,31 @@
             }
           },
         });
-      $('.layout-builder-block-reorder a').once().on('click.layoutbuilder', e => {
-        const current = $(e.target).closest('.draggable').get(0);
-        current.classList.add('drag-current');
+      $('.layout-builder-block-reorder-previous a').once().on('click.layoutbuilder', e => {
+        function setContextualLinkFocus(link) {
+          const button = $(link).closest('[data-contextual-id]').find('button.trigger');
+          $(link).trigger('blur');
+          button.trigger('focus');
+          const returnEvent = jQuery.Event("keydown");
+          returnEvent.which = 13; // # Some key code value
+          button.trigger(returnEvent);
+          $(link).closest('[data-contextual-id]').find('.contextual-links').style('display', 'block');
+          const tabEvent = jQuery.Event("keydown");
+          tabEvent.which = 9; // # Some key code value
+          $(document.activeElement).trigger(tabEvent);
+          $(document.activeElement).trigger(tabEvent);
+          $(document.activeElement).trigger(tabEvent);
+          //button.trigger('click');
+          //button.click();
+        }
+        const current = $(e.target).closest('.draggable');
+        //current.classList.add('drag-current');
+        const prev = current.prev();
+        prev.before(current);
+        e.preventDefault();
+        e.stopPropagation();
+        setContextualLinkFocus(e.target)
+        return;
         const newNode = document.createElement("span");
         newNode.classList.add('ui-state-drop');
 
@@ -60,8 +82,7 @@
         //$('.layout-builder--layout__region').sortable( "refresh" );
         //current.sortable( "refreshPositions" );
         //alert('jdf');
-        e.preventDefault();
-        e.stopPropagation();
+
 
       });
     },

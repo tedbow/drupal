@@ -18,7 +18,12 @@ layout_builder_block_remove:
       data-dialog-type: dialog
       data-dialog-renderer: off_canvas
 
-layout_builder_block_reorder:
-  title: 'Reorder block'
+layout_builder_block_reorder_previous:
+  title: '👆Move to previous'
+  route_name: 'layout_builder.move_block'
+  group: 'layout_builder_block'
+
+layout_builder_block_reorder_next:
+  title: '👇🏽Move to next'
   route_name: 'layout_builder.move_block'
   group: 'layout_builder_block'
