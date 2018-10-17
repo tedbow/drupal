@@ -14,7 +14,7 @@
   function getSection(element) {
     return element.closest('.layout-section');
   }
-  
+
   function getComponentLayoutDelta(element) {
     return element.closest('[data-layout-delta]').data('layout-delta');
   }
@@ -129,28 +129,22 @@
   }
 
   function updateComponentPosition(item, deltaFrom, directionFocus = 'none') {
-    const itemRegion = item.closest(
-        '.layout-builder--layout__region',
-    );
+    const itemRegion = item.closest('.layout-builder--layout__region');
     // Find the destination delta.
     const deltaTo = getComponentLayoutDelta(item);
     ajax({
+      progress: { type: 'fullscreen' },
       url: [
-        item
-            .closest('[data-layout-update-url]')
-            .data('layout-update-url'),
+        item.closest('[data-layout-update-url]').data('layout-update-url'),
         deltaFrom,
         deltaTo,
         itemRegion.data('region'),
         item.data('layout-block-uuid'),
         directionFocus,
-        item
-            .prev('[data-layout-block-uuid]')
-            .data('layout-block-uuid'),
-
+        item.prev('[data-layout-block-uuid]').data('layout-block-uuid'),
       ]
-          .filter(element => element !== undefined)
-          .join('/'),
+        .filter(element => element !== undefined)
+        .join('/'),
     }).execute();
   }
 
@@ -177,14 +171,12 @@
               '.layout-builder--layout__region',
             );
             if (event.target === itemRegion[0]) {
-
               const deltaTo = getComponentLayoutDelta(ui.item);
               // If the block didn't leave the original delta use the destination.
               const deltaFrom = ui.sender
                 ? getComponentLayoutDelta(ui.sender)
                 : deltaTo;
               updateComponentPosition(ui.item, deltaFrom);
-
             }
           },
         });
@@ -196,7 +188,10 @@
           const direction = $(e.target).attr(
             'data-layout-builder-reorder-direction',
           );
-          moveComponent($(e.target).closest('[data-layout-block-uuid]'), direction);
+          moveComponent(
+            $(e.target).closest('[data-layout-block-uuid]'),
+            direction,
+          );
           e.preventDefault();
         });
     },

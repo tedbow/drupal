@@ -60,6 +60,9 @@ class MoveBlockController implements ContainerInjectionInterface {
    *   The new region for this block.
    * @param string $block_uuid
    *   The UUID for this block.
+   * @param string $direction_focus
+   *   The order link that should be in focus after a move, either 'previous',
+   *   'next' or 'none'.
    * @param string|null $preceding_block_uuid
    *   (optional) If provided, the UUID of the block to insert this block after.
    *
@@ -91,12 +94,14 @@ class MoveBlockController implements ContainerInjectionInterface {
     $this->layoutTempstoreRepository->set($section_storage);
 
     if ($direction_focus !== 'none') {
-      $selector_focus = "#layout-builder [data-layout-block-uuid=\"$block_uuid\"] [data-layout-builder-reorder-direction=\"$direction_focus\"]";
+      // Create the selector re-order link that should receive focus after the
+      // Layout Builder is rebuilt.
+      $focus_selector = "#layout-builder [data-layout-block-uuid=\"$block_uuid\"] [data-layout-builder-reorder-direction=\"$direction_focus\"]";
     }
     else {
-      $selector_focus = NULL;
+      $focus_selector = NULL;
     }
-    return $this->rebuildLayout($section_storage, $selector_focus);
+    return $this->rebuildLayout($section_storage, $focus_selector);
   }
 
 }
