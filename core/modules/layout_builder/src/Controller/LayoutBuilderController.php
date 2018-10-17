@@ -210,6 +210,12 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     foreach ($layout_definition->getRegions() as $region => $info) {
       if (!empty($build[$region])) {
         foreach ($build[$region] as $uuid => $block) {
+          if (isset($build[$region][$uuid]['content'])) {
+            $build[$region][$uuid]['content'] = [
+              'layout_builder_reorder' => $this->createLayoutBuilderReorderNavigation(),
+              'block' => $build[$region][$uuid]['content'],
+            ];
+          }
           $build[$region][$uuid]['#attributes']['class'][] = 'draggable';
           $build[$region][$uuid]['#attributes']['data-layout-block-uuid'] = $uuid;
           $build[$region][$uuid]['#contextual_links'] = [
@@ -335,6 +341,36 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     $this->messenger->addMessage($this->t('The changes to the layout have been discarded.'));
 
     return new RedirectResponse($section_storage->getRedirectUrl()->setAbsolute()->toString());
+  }
+
+  protected function createLayoutBuilderReorderNavigation() {
+    return [
+      '#type' => 'container',
+      '#weight' => -1000,
+      '#attributes' => [
+        'class' => 'layout-builder-reorder',
+        'data-layout-builder-reorder' => TRUE,
+      ],
+      'previous' => [
+        '#type' => 'html_tag',
+        '#tag' => 'a',
+        '#attributes' => [
+          'href' => '#',
+          'data-layout-builder-reorder-direction' => 'previous',
+        ],
+        '#value' => $this->t('Previous'),
+      ],
+      'next' => [
+        '#type' => 'html_tag',
+        '#tag' => 'a',
+        '#attributes' => [
+          'href' => '#',
+          'data-layout-builder-reorder-direction' => 'next',
+        ],
+        '#value' => $this->t('Next'),
+      ],
+
+    ];
   }
 
 }
