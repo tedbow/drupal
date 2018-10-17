@@ -11,6 +11,14 @@
     return component.closest('[data-region]');
   }
 
+  function getSection(element) {
+    return element.closest('.layout-section');
+  }
+  
+  function getComponentLayoutDelta(element) {
+    return element.closest('[data-layout-delta]').data('layout-delta');
+  }
+
   /**
    * Gets the next matching sibling.
    *
@@ -43,7 +51,7 @@
       '[data-region]',
     );
     if (moveToRegion.length === 0) {
-      const componentSection = elementRegion.closest('.layout-section');
+      const componentSection = getSection(elementRegion);
       const moveToSection = getSiblingByDirection(
         componentSection,
         direction,
@@ -107,15 +115,43 @@
    * @param direction
    */
   function moveComponent(element, direction) {
-    element.css('background-color', 'lightblue');
     const moveToElement = findRegionMoveToElement(
       getComponentRegion(element),
       element,
       direction,
     );
     if (moveToElement) {
+      element.addClass('updating');
+      const deltaFrom = getComponentLayoutDelta(element);
       moveToElement.before(element);
+      updateComponentPosition(element, deltaFrom, direction);
     }
+  }
+
+  function updateComponentPosition(item, deltaFrom, directionFocus = 'none') {
+    const itemRegion = item.closest(
+        '.layout-builder--layout__region',
+    );
+    // Find the destination delta.
+    const deltaTo = getComponentLayoutDelta(item);
+    ajax({
+      url: [
+        item
+            .closest('[data-layout-update-url]')
+            .data('layout-update-url'),
+        deltaFrom,
+        deltaTo,
+        itemRegion.data('region'),
+        item.data('layout-block-uuid'),
+        directionFocus,
+        item
+            .prev('[data-layout-block-uuid]')
+            .data('layout-block-uuid'),
+
+      ]
+          .filter(element => element !== undefined)
+          .join('/'),
+    }).execute();
   }
 
   behaviors.layoutBuilder = {
@@ -141,30 +177,14 @@
               '.layout-builder--layout__region',
             );
             if (event.target === itemRegion[0]) {
-              // Find the destination delta.
-              const deltaTo = ui.item
-                .closest('[data-layout-delta]')
-                .data('layout-delta');
+
+              const deltaTo = getComponentLayoutDelta(ui.item);
               // If the block didn't leave the original delta use the destination.
               const deltaFrom = ui.sender
-                ? ui.sender.closest('[data-layout-delta]').data('layout-delta')
+                ? getComponentLayoutDelta(ui.sender)
                 : deltaTo;
-              ajax({
-                url: [
-                  ui.item
-                    .closest('[data-layout-update-url]')
-                    .data('layout-update-url'),
-                  deltaFrom,
-                  deltaTo,
-                  itemRegion.data('region'),
-                  ui.item.data('layout-block-uuid'),
-                  ui.item
-                    .prev('[data-layout-block-uuid]')
-                    .data('layout-block-uuid'),
-                ]
-                  .filter(element => element !== undefined)
-                  .join('/'),
-              }).execute();
+              updateComponentPosition(ui.item, deltaFrom);
+
             }
           },
         });
@@ -177,7 +197,6 @@
             'data-layout-builder-reorder-direction',
           );
           moveComponent($(e.target).closest('[data-layout-block-uuid]'), direction);
-          $(e.target).focus();
           e.preventDefault();
         });
     },

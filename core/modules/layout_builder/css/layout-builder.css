@@ -85,3 +85,7 @@
   display: block;
   padding-top: 0.55em;
 }
+
+.block-layout-builder.updating {
+  opacity: 0.5;
+}

@@ -4,6 +4,7 @@ namespace Drupal\layout_builder\Controller;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseDialogCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\layout_builder\SectionStorageInterface;
 
@@ -47,11 +48,14 @@ trait LayoutRebuildTrait {
    *   An AJAX response to either rebuild the layout and close the dialog, or
    *   reload the page.
    */
-  protected function rebuildLayout(SectionStorageInterface $section_storage) {
+  protected function rebuildLayout(SectionStorageInterface $section_storage, $selector_focus = NULL) {
     $response = new AjaxResponse();
     $layout_controller = $this->classResolver->getInstanceFromDefinition(LayoutBuilderController::class);
     $layout = $layout_controller->layout($section_storage, TRUE);
     $response->addCommand(new ReplaceCommand('#layout-builder', $layout));
+    if ($selector_focus) {
+      $response->addCommand(new InvokeCommand($selector_focus, 'focus'));
+    }
     return $response;
   }
 
