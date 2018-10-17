@@ -194,6 +194,8 @@
           );
           e.preventDefault();
         });
+      $('#layout-builder').find('[data-layout-builder-reorder-direction="next"]').removeClass('hidden').last().addClass('hidden');
+      $('#layout-builder').find('[data-layout-builder-reorder-direction="previous"]').removeClass('hidden').first().addClass('hidden');
     },
   };
 })(jQuery, Drupal);
