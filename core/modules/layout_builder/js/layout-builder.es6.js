@@ -11,10 +11,22 @@
     return component.closest('[data-region]');
   }
 
+  /**
+   * Gets the section of element.
+   *
+   * @param element
+   * @returns {*}
+   */
   function getSection(element) {
     return element.closest('.layout-section');
   }
 
+  /**
+   * Gets the layout delta for a component.
+   *
+   * @param element
+   * @returns {*}
+   */
   function getComponentLayoutDelta(element) {
     return element.closest('[data-layout-delta]').data('layout-delta');
   }
@@ -50,6 +62,7 @@
       direction,
       '[data-region]',
     );
+    // If there is not a sibling region find sibling section.
     if (moveToRegion.length === 0) {
       const componentSection = getSection(elementRegion);
       const moveToSection = getSiblingByDirection(
@@ -64,9 +77,8 @@
       return direction === 'previous'
         ? sectionRegions.last()
         : sectionRegions.first();
-    } else {
-      return moveToRegion;
     }
+    return moveToRegion;
   }
 
   /**
@@ -91,21 +103,45 @@
         const moveToRegion = findMoveToRegion(element, direction);
         if (moveToRegion) {
           return findRegionMoveToElement(moveToRegion, element, direction);
-        } else {
-          return null;
         }
+        return null;
       }
+    } else if (direction === 'next') {
+      moveToElement = region
+        .children('[data-layout-block-uuid], .new-block')
+        .first();
     } else {
-      if (direction === 'next') {
-        moveToElement = region
-          .children('[data-layout-block-uuid], .new-block')
-          .first();
-      } else {
-        moveToElement = region.find('.new-block');
-      }
+      moveToElement = region.find('.new-block');
     }
 
     return moveToElement.length === 0 ? null : moveToElement;
+  }
+
+  /**
+   * Update the component position.
+   *
+   * @param item
+   * @param deltaFrom
+   * @param directionFocus
+   */
+  function updateComponentPosition(item, deltaFrom, directionFocus = 'none') {
+    const itemRegion = item.closest('.layout-builder--layout__region');
+    // Find the destination delta.
+    const deltaTo = getComponentLayoutDelta(item);
+    ajax({
+      progress: { type: 'fullscreen' },
+      url: [
+        item.closest('[data-layout-update-url]').data('layout-update-url'),
+        deltaFrom,
+        deltaTo,
+        itemRegion.data('region'),
+        item.data('layout-block-uuid'),
+        directionFocus,
+        item.prev('[data-layout-block-uuid]').data('layout-block-uuid'),
+      ]
+        .filter(element => element !== undefined)
+        .join('/'),
+    }).execute();
   }
 
   /**
@@ -126,26 +162,6 @@
       moveToElement.before(element);
       updateComponentPosition(element, deltaFrom, direction);
     }
-  }
-
-  function updateComponentPosition(item, deltaFrom, directionFocus = 'none') {
-    const itemRegion = item.closest('.layout-builder--layout__region');
-    // Find the destination delta.
-    const deltaTo = getComponentLayoutDelta(item);
-    ajax({
-      progress: { type: 'fullscreen' },
-      url: [
-        item.closest('[data-layout-update-url]').data('layout-update-url'),
-        deltaFrom,
-        deltaTo,
-        itemRegion.data('region'),
-        item.data('layout-block-uuid'),
-        directionFocus,
-        item.prev('[data-layout-block-uuid]').data('layout-block-uuid'),
-      ]
-        .filter(element => element !== undefined)
-        .join('/'),
-    }).execute();
   }
 
   behaviors.layoutBuilder = {

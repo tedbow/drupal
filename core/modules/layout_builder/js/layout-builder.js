@@ -31,6 +31,7 @@
   function findMoveToRegion(element, direction) {
     var elementRegion = getComponentRegion(element);
     var moveToRegion = getSiblingByDirection(elementRegion, direction, '[data-region]');
+
     if (moveToRegion.length === 0) {
       var componentSection = getSection(elementRegion);
       var moveToSection = getSiblingByDirection(componentSection, direction, '.layout-section');
@@ -39,9 +40,8 @@
       }
       var sectionRegions = moveToSection.find('[data-region]');
       return direction === 'previous' ? sectionRegions.last() : sectionRegions.first();
-    } else {
-      return moveToRegion;
     }
+    return moveToRegion;
   }
 
   function findRegionMoveToElement(region, element, direction) {
@@ -56,29 +56,16 @@
         var moveToRegion = findMoveToRegion(element, direction);
         if (moveToRegion) {
           return findRegionMoveToElement(moveToRegion, element, direction);
-        } else {
-          return null;
         }
+        return null;
       }
+    } else if (direction === 'next') {
+      moveToElement = region.children('[data-layout-block-uuid], .new-block').first();
     } else {
-      if (direction === 'next') {
-        moveToElement = region.children('[data-layout-block-uuid], .new-block').first();
-      } else {
-        moveToElement = region.find('.new-block');
-      }
+      moveToElement = region.find('.new-block');
     }
 
     return moveToElement.length === 0 ? null : moveToElement;
-  }
-
-  function moveComponent(element, direction) {
-    var moveToElement = findRegionMoveToElement(getComponentRegion(element), element, direction);
-    if (moveToElement) {
-      element.addClass('updating');
-      var deltaFrom = getComponentLayoutDelta(element);
-      moveToElement.before(element);
-      updateComponentPosition(element, deltaFrom, direction);
-    }
   }
 
   function updateComponentPosition(item, deltaFrom) {
@@ -93,6 +80,16 @@
         return element !== undefined;
       }).join('/')
     }).execute();
+  }
+
+  function moveComponent(element, direction) {
+    var moveToElement = findRegionMoveToElement(getComponentRegion(element), element, direction);
+    if (moveToElement) {
+      element.addClass('updating');
+      var deltaFrom = getComponentLayoutDelta(element);
+      moveToElement.before(element);
+      updateComponentPosition(element, deltaFrom, direction);
+    }
   }
 
   behaviors.layoutBuilder = {

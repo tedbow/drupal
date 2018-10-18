@@ -356,6 +356,7 @@ class LayoutBuilderController implements ContainerInjectionInterface {
         '#tag' => 'a',
         '#attributes' => [
           'href' => '#',
+          'class' => ['layout-reorder-previous'],
           'data-layout-builder-reorder-direction' => 'previous',
         ],
         '#value' => $this->t('Previous'),
@@ -365,6 +366,7 @@ class LayoutBuilderController implements ContainerInjectionInterface {
         '#tag' => 'a',
         '#attributes' => [
           'href' => '#',
+          'class' => ['layout-reorder-next'],
           'data-layout-builder-reorder-direction' => 'next',
         ],
         '#value' => $this->t('Next'),
