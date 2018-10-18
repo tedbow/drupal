@@ -216,8 +216,7 @@ class LayoutBuilderController implements ContainerInjectionInterface {
             '#type' => 'container',
             '#weight' => $build[$region][$uuid]['#weight'],
             'block_output' => $build[$region][$uuid],
-            'layout_builder_reorder' => $this->createLayoutBuilderReorderNavigation(),
-
+            'layout_builder_reorder' => $this->createLayoutBuilderReorderNavigation($section_storage, $delta, $region, $uuid),
           ];
           $build[$region][$uuid]['#attributes']['class'][] = 'draggable';
           $build[$region][$uuid]['#attributes']['data-layout-block-uuid'] = $uuid;
@@ -352,36 +351,162 @@ class LayoutBuilderController implements ContainerInjectionInterface {
    * @return array
    *   Navigation links render array.
    */
-  protected function createLayoutBuilderReorderNavigation() {
-    return [
+  protected function createLayoutBuilderReorderNavigation(SectionStorageInterface $section_storage, $delta_from, $region, $uuid) {
+    $previous_delta_to = NULL;
+    $region_block_uuids = $this->getRegionUuids($section_storage, $delta_from, $region);
+    $current_block_index = array_search($uuid, $region_block_uuids, TRUE);
+    if ($current_block_index > 0) {
+      $previous_delta_to = $delta_from;
+      $previous_region_to = $region;
+      if ($current_block_index === 1) {
+        $previous_preceding_block_uuid = NULL;
+      }
+      else {
+        $previous_preceding_block_uuid = $region_block_uuids[$current_block_index - 2];
+      }
+    }
+    else {
+      $previous_region_to = $this->getSiblingRegion($section_storage, $delta_from, $region, 'previous');
+      if ($previous_region_to) {
+        $previous_delta_to = $delta_from;
+      }
+      else {
+        if ($delta_from > 0) {
+          $previous_delta_to = $delta_from - 1;
+          $regions = $this->getRegionKeys($section_storage, $previous_delta_to);
+          $previous_region_to = array_pop($regions);
+        }
+      }
+      if ($previous_delta_to !== NULL && $previous_region_to !== NULL) {
+        //$previous_preceding_block_uuid = $this->getRegionLastUuid($section_storage, $previous_delta_to, $previous_region_to);
+        $region_block_uuids = $this->getRegionUuids($section_storage, $previous_delta_to, $previous_region_to);
+        if ($region_block_uuids) {
+          $previous_preceding_block_uuid =  array_pop($region_block_uuids);
+        }
+      }
+    }
+    $next_region_to = NULL;
+    $next_preceding_block_uuid = NULL;
+    if ($current_block_index + 1 < count($region_block_uuids)) {
+      $next_delta_to = $delta_from;
+      $next_region_to = $region;
+      $next_preceding_block_uuid = $region_block_uuids[$current_block_index + 1];
+    }
+    else {
+      $next_region_to = $this->getSiblingRegion($section_storage, $delta_from, $region, 'next');
+      if ($next_region_to) {
+        $next_delta_to = $delta_from;
+      }
+      else {
+        if ($delta_from + 1 < $section_storage->count()) {
+          $next_delta_to = $delta_from + 1;
+          $regions = $this->getRegionKeys($section_storage, $next_delta_to);
+          $next_region_to = array_shift($regions);
+        }
+      }
+    }
+
+    $links = [
       '#type' => 'container',
       '#weight' => -1000,
       '#attributes' => [
         'class' => 'layout-builder-reorder',
         'data-layout-builder-reorder' => TRUE,
       ],
-      'previous' => [
-        '#type' => 'html_tag',
-        '#tag' => 'a',
+    ];
+    if ($previous_region_to !== NULL) {
+      $links['previous'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Previous'),
+        '#url' => Url::fromRoute(
+          'layout_builder.move_block',
+          [
+            'section_storage' => $section_storage->getStorageId(),
+            'delta_from' => $delta_from,
+            'delta_to' => $previous_delta_to,
+            'direction_focus' => 'previous',
+            'block_uuid' => $uuid,
+            'preceding_block_uuid' => $previous_preceding_block_uuid,
+            'region_to' => $previous_region_to,
+            'section_storage_type' => $section_storage->getStorageType(),
+          ]
+        ),
         '#attributes' => [
-          'href' => '#',
-          'class' => ['layout-reorder-previous'],
+          'class' => ['layout-reorder-previous', 'use-ajax'],
           'data-layout-builder-reorder-direction' => 'previous',
         ],
-        '#value' => $this->t('Previous'),
-      ],
-      'next' => [
-        '#type' => 'html_tag',
-        '#tag' => 'a',
+      ];
+    }
+    if ($next_region_to !== NULL) {
+      $links['next'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Next'),
+        '#url' => Url::fromRoute(
+          'layout_builder.move_block',
+          [
+            'section_storage' => $section_storage->getStorageId(),
+            'delta_from' => $delta_from,
+            'delta_to' => $next_delta_to,
+            'direction_focus' => 'next',
+            'block_uuid' => $uuid,
+            'preceding_block_uuid' => $next_preceding_block_uuid,
+            'region_to' => $next_region_to,
+            'section_storage_type' => $section_storage->getStorageType(),
+          ]
+        ),
         '#attributes' => [
-          'href' => '#',
-          'class' => ['layout-reorder-next'],
+          'class' => ['layout-reorder-previous', 'use-ajax'],
           'data-layout-builder-reorder-direction' => 'next',
         ],
-        '#value' => $this->t('Next'),
-      ],
+      ];
+    }
+    return $links;
+  }
 
-    ];
+  protected function getSiblingRegion(SectionStorageInterface $section_storage, $delta, $region, $sibling_direction) {
+    $regions = $this->getRegionKeys($section_storage, $delta);
+    $sibling_index = array_search($region, $regions) + ($sibling_direction === 'previous' ? -1 : 1);
+    return isset($regions[$sibling_index]) ? $regions[$sibling_index] : NULL;
+  }
+
+  protected function getRegionUuids(SectionStorageInterface $section_storage, $delta, $region) {
+    $sortable = [];
+    foreach ($section_storage->getSection($delta)->getComponents() as $component) {
+      if ($component->getRegion() === $region) {
+        $sortable[$component->getWeight()] = $component->getUuid();
+      }
+    };
+    ksort($sortable);
+    return array_values($sortable);
+  }
+
+  /**
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   * @param $delta
+   *
+   * @return array
+   */
+  protected function getRegionKeys(SectionStorageInterface $section_storage, $delta) {
+    $regions = array_keys($section_storage->getSection($delta)
+      ->getLayout()
+      ->getPluginDefinition()
+      ->getRegions());
+    return $regions;
+  }
+
+  /**
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   * @param int $delta
+   * @param string $region
+   *
+   * @return mixed
+   */
+  protected function getRegionLastUuid(SectionStorageInterface $section_storage, $delta, $region) {
+    $region_block_uuids = $this->getRegionUuids($section_storage, $delta, $region);
+    if ($region_block_uuids) {
+      return array_pop($region_block_uuids);
+    }
+    return NULL;
   }
 
 }

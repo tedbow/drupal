@@ -43,7 +43,7 @@ trait LayoutRebuildTrait {
    *
    * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
    *   The section storage.
-   * @param string|null $focus_selector
+   * @param string[] $focus_selector
    *   The CSS selector for the element that should receive focus after the
    *   Layout is rebuilt.
    *
@@ -51,12 +51,12 @@ trait LayoutRebuildTrait {
    *   An AJAX response to either rebuild the layout and close the dialog, or
    *   reload the page.
    */
-  protected function rebuildLayout(SectionStorageInterface $section_storage, $focus_selector = NULL) {
+  protected function rebuildLayout(SectionStorageInterface $section_storage, $focus_selectors = []) {
     $response = new AjaxResponse();
     $layout_controller = $this->classResolver->getInstanceFromDefinition(LayoutBuilderController::class);
     $layout = $layout_controller->layout($section_storage, TRUE);
     $response->addCommand(new ReplaceCommand('#layout-builder', $layout));
-    if ($focus_selector) {
+    foreach ($focus_selectors as $focus_selector) {
       $response->addCommand(new InvokeCommand($focus_selector, 'focus'));
     }
     return $response;
