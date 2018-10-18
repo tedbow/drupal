@@ -210,6 +210,8 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     foreach ($layout_definition->getRegions() as $region => $info) {
       if (!empty($build[$region])) {
         foreach ($build[$region] as $uuid => $block) {
+          // Shift block output down a level in the render array to allow
+          // navigation links.
           $build[$region][$uuid] = [
             '#type' => 'container',
             '#weight' => $build[$region][$uuid]['#weight'],
@@ -344,6 +346,12 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     return new RedirectResponse($section_storage->getRedirectUrl()->setAbsolute()->toString());
   }
 
+  /**
+   * Creates Layout Builder navigations links.
+   *
+   * @return array
+   *   Navigation links render array.
+   */
   protected function createLayoutBuilderReorderNavigation() {
     return [
       '#type' => 'container',
