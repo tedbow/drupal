@@ -346,14 +346,14 @@ class LayoutBuilderController implements ContainerInjectionInterface {
   }
 
   /**
-   * Creates Layout Builder navigations links.
+   * Creates Layout Builder navigation links.
    *
    * @return array
    *   Navigation links render array.
    */
   protected function createLayoutBuilderReorderNavigation(SectionStorageInterface $section_storage, $delta_from, $region, $uuid) {
     $previous_delta_to = NULL;
-    $region_block_uuids = $this->getRegionUuids($section_storage, $delta_from, $region);
+    $region_block_uuids = $this->getRegionComponentUuids($section_storage, $delta_from, $region);
     $current_block_index = array_search($uuid, $region_block_uuids, TRUE);
     if ($current_block_index > 0) {
       $previous_delta_to = $delta_from;
@@ -378,10 +378,9 @@ class LayoutBuilderController implements ContainerInjectionInterface {
         }
       }
       if ($previous_delta_to !== NULL && $previous_region_to !== NULL) {
-        //$previous_preceding_block_uuid = $this->getRegionLastUuid($section_storage, $previous_delta_to, $previous_region_to);
-        $region_block_uuids = $this->getRegionUuids($section_storage, $previous_delta_to, $previous_region_to);
+        $region_block_uuids = $this->getRegionComponentUuids($section_storage, $previous_delta_to, $previous_region_to);
         if ($region_block_uuids) {
-          $previous_preceding_block_uuid =  array_pop($region_block_uuids);
+          $previous_preceding_block_uuid = array_pop($region_block_uuids);
         }
       }
     }
@@ -463,13 +462,41 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     return $links;
   }
 
+  /**
+   * Gets the sibling region for another region in a section.
+   *
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   *   The section storage.
+   * @param int $delta
+   *   The delta of the section.
+   * @param string $region
+   *   The region.
+   * @param string $sibling_direction
+   *   Either 'previous' or 'next'.
+   *
+   * @return null|string
+   *   The sibling region if there is one.
+   */
   protected function getSiblingRegion(SectionStorageInterface $section_storage, $delta, $region, $sibling_direction) {
     $regions = $this->getRegionKeys($section_storage, $delta);
     $sibling_index = array_search($region, $regions) + ($sibling_direction === 'previous' ? -1 : 1);
     return isset($regions[$sibling_index]) ? $regions[$sibling_index] : NULL;
   }
 
-  protected function getRegionUuids(SectionStorageInterface $section_storage, $delta, $region) {
+  /**
+   * Gets the UUIDs for a sections components.
+   *
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   *   The section storage.
+   * @param int $delta
+   *   The delta of the section.
+   * @param string $region
+   *   The region.
+   *
+   * @return string[]
+   *   The region
+   */
+  protected function getRegionComponentUuids(SectionStorageInterface $section_storage, $delta, $region) {
     $sortable = [];
     foreach ($section_storage->getSection($delta)->getComponents() as $component) {
       if ($component->getRegion() === $region) {
@@ -481,10 +508,15 @@ class LayoutBuilderController implements ContainerInjectionInterface {
   }
 
   /**
-   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
-   * @param $delta
+   * Gets region keys for a section.
    *
-   * @return array
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   *   The section storage.
+   * @param int $delta
+   *   The delta of the section.
+   *
+   * @return string[]
+   *   The region keys.
    */
   protected function getRegionKeys(SectionStorageInterface $section_storage, $delta) {
     $regions = array_keys($section_storage->getSection($delta)
@@ -492,21 +524,6 @@ class LayoutBuilderController implements ContainerInjectionInterface {
       ->getPluginDefinition()
       ->getRegions());
     return $regions;
-  }
-
-  /**
-   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
-   * @param int $delta
-   * @param string $region
-   *
-   * @return mixed
-   */
-  protected function getRegionLastUuid(SectionStorageInterface $section_storage, $delta, $region) {
-    $region_block_uuids = $this->getRegionUuids($section_storage, $delta, $region);
-    if ($region_block_uuids) {
-      return array_pop($region_block_uuids);
-    }
-    return NULL;
   }
 
 }
