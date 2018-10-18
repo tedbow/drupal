@@ -210,15 +210,16 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     foreach ($layout_definition->getRegions() as $region => $info) {
       if (!empty($build[$region])) {
         foreach ($build[$region] as $uuid => $block) {
-          if (isset($build[$region][$uuid]['content'])) {
-            $build[$region][$uuid]['content'] = [
-              'layout_builder_reorder' => $this->createLayoutBuilderReorderNavigation(),
-              'block' => $build[$region][$uuid]['content'],
-            ];
-          }
+          $build[$region][$uuid] = [
+            '#type' => 'container',
+            '#weight' => $build[$region][$uuid]['#weight'],
+            'block_output' => $build[$region][$uuid],
+            'layout_builder_reorder' => $this->createLayoutBuilderReorderNavigation(),
+
+          ];
           $build[$region][$uuid]['#attributes']['class'][] = 'draggable';
           $build[$region][$uuid]['#attributes']['data-layout-block-uuid'] = $uuid;
-          $build[$region][$uuid]['#contextual_links'] = [
+          $build[$region][$uuid]['block_output']['#contextual_links'] = [
             'layout_builder_block' => [
               'route_parameters' => [
                 'section_storage_type' => $storage_type,
