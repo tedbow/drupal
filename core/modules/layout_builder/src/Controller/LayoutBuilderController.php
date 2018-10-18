@@ -414,50 +414,10 @@ class LayoutBuilderController implements ContainerInjectionInterface {
       ],
     ];
     if ($previous_region_to !== NULL) {
-      $links['previous'] = [
-        '#type' => 'link',
-        '#title' => $this->t('Previous'),
-        '#url' => Url::fromRoute(
-          'layout_builder.move_block',
-          [
-            'section_storage' => $section_storage->getStorageId(),
-            'delta_from' => $delta_from,
-            'delta_to' => $previous_delta_to,
-            'direction_focus' => 'previous',
-            'block_uuid' => $uuid,
-            'preceding_block_uuid' => $previous_preceding_block_uuid,
-            'region_to' => $previous_region_to,
-            'section_storage_type' => $section_storage->getStorageType(),
-          ]
-        ),
-        '#attributes' => [
-          'class' => ['layout-reorder-previous', 'use-ajax'],
-          'data-layout-builder-reorder-direction' => 'previous',
-        ],
-      ];
+      $links['previous'] = $this->createReorderLink($section_storage, $delta_from, $uuid, $previous_delta_to, $previous_preceding_block_uuid, $previous_region_to, 'previous');
     }
     if ($next_region_to !== NULL) {
-      $links['next'] = [
-        '#type' => 'link',
-        '#title' => $this->t('Next'),
-        '#url' => Url::fromRoute(
-          'layout_builder.move_block',
-          [
-            'section_storage' => $section_storage->getStorageId(),
-            'delta_from' => $delta_from,
-            'delta_to' => $next_delta_to,
-            'direction_focus' => 'next',
-            'block_uuid' => $uuid,
-            'preceding_block_uuid' => $next_preceding_block_uuid,
-            'region_to' => $next_region_to,
-            'section_storage_type' => $section_storage->getStorageType(),
-          ]
-        ),
-        '#attributes' => [
-          'class' => ['layout-reorder-previous', 'use-ajax'],
-          'data-layout-builder-reorder-direction' => 'next',
-        ],
-      ];
+      $links['next'] = $this->createReorderLink($section_storage, $delta_from, $uuid, $next_delta_to, $next_preceding_block_uuid, $next_region_to, 'next');
     }
     return $links;
   }
@@ -524,6 +484,45 @@ class LayoutBuilderController implements ContainerInjectionInterface {
       ->getPluginDefinition()
       ->getRegions());
     return $regions;
+  }
+
+  /**
+   * Creates an reorder link.
+   *
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   * @param $delta_from
+   * @param $uuid
+   * @param $delta_to
+   * @param $preceding_block_uuid
+   * @param $region_to
+   *
+   * @return array
+   *   The link render array.
+   */
+  protected function createReorderLink(SectionStorageInterface $section_storage, $delta_from, $uuid, $delta_to, $preceding_block_uuid, $region_to, $direction) {
+    $route_arguments = [
+      'section_storage' => $section_storage->getStorageId(),
+      'delta_from' => $delta_from,
+      'delta_to' => $delta_to,
+      'direction_focus' => $direction,
+      'block_uuid' => $uuid,
+      'preceding_block_uuid' => $preceding_block_uuid,
+      'region_to' => $region_to,
+      'section_storage_type' => $section_storage->getStorageType(),
+    ];
+    $url = Url::fromRoute('layout_builder.move_block', $route_arguments);
+    unset($route_arguments['section_storage'], $route_arguments['section_storage_type']);
+    foreach ($route_arguments as $key => $route_argument) {
+      $attributes["data-$key"] = $route_argument;
+    }
+    $attributes['class'] = ['layout-reorder-previous', 'use-ajax'];
+    $link = [
+      '#type' => 'link',
+      '#title' => $direction === 'previous' ? $this->t('Previous') : $this->t('Next'),
+      '#url' => $url,
+      '#attributes' => $attributes,
+    ];
+    return $link;
   }
 
 }

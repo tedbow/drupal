@@ -102,8 +102,8 @@ class MoveBlockController implements ContainerInjectionInterface {
       // Provide 2 focus selectors. Both will be trigger on but the second one
       // will provide focus to the user. In the case that $direction_focus is
       // not available the back with receive focus.
-      $focus_selectors[] = "#layout-builder [data-layout-block-uuid=\"$block_uuid\"] [data-layout-builder-reorder-direction=\"$backup_focus\"]";
-      $focus_selectors[] = "#layout-builder [data-layout-block-uuid=\"$block_uuid\"] [data-layout-builder-reorder-direction=\"$direction_focus\"]";
+      $focus_selectors[] = "#layout-builder [data-layout-block-uuid=\"$block_uuid\"] [data-direction_focus=\"$backup_focus\"]";
+      $focus_selectors[] = "#layout-builder [data-layout-block-uuid=\"$block_uuid\"] [data-direction_focus=\"$direction_focus\"]";
     }
 
     if ($this->isAjax()) {
