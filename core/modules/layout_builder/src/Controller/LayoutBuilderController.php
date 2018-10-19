@@ -511,11 +511,11 @@ class LayoutBuilderController implements ContainerInjectionInterface {
       'section_storage_type' => $section_storage->getStorageType(),
     ];
     $url = Url::fromRoute('layout_builder.move_block', $route_arguments);
-    unset($route_arguments['section_storage'], $route_arguments['section_storage_type']);
+    unset($route_arguments['section_storage'], $route_arguments['section_storage_type'], $route_arguments['block_uuid'], $route_arguments['delta_from']);
     foreach ($route_arguments as $key => $route_argument) {
       $attributes["data-$key"] = $route_argument;
     }
-    $attributes['class'] = ['layout-reorder-previous', 'use-ajax'];
+    $attributes['class'] = ['layout-reorder-previous'];
     $link = [
       '#type' => 'link',
       '#title' => $direction === 'previous' ? $this->t('Previous') : $this->t('Next'),
