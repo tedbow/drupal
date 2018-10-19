@@ -100,46 +100,42 @@ class ReorderLinksTest extends WebDriverTestBase {
         ],
       ],
     ];
+    // First assert the block order before any blocks are reordered.
     $this->assertBlocksOrder($expected_blocks);
 
-
+    // Move 'Block 1' from the top region of the page to the bottom region of
+    // the page.
     $this->reorderBlock('Block 1', 'next');
-    $expected_blocks = [
-      0 => [
-        'content' => [
-          'Block 2',
-          'Block 1',
-        ],
-      ],
-      1 => [
-        'top' => [
-          'Block 3',
-        ],
-        'first' => [],
-        'second' => [
-          'Block 4',
-          'Block 5',
-        ],
-        'bottom' => [
-          'Block 6',
-          'Block 7',
-        ],
-      ],
+    $expected_blocks[0]['content'] = [
+      'Block 2',
+      'Block 1',
     ];
     $this->assertBlocksOrder($expected_blocks);
 
     $this->reorderBlock('Block 1', 'next');
-    $expected_blocks[0]['content'] = ['Block 2'];
-    $expected_blocks[1]['top'] = ['Block 1', 'Block 3'];
+    $expected_blocks[0]['content'] = [
+      'Block 2',
+    ];
+    $expected_blocks[1]['top'] = [
+      'Block 1',
+      'Block 3',
+    ];
     $this->assertBlocksOrder($expected_blocks);
 
     $this->reorderBlock('Block 1', 'next');
-    $expected_blocks[1]['top'] = ['Block 3', 'Block 1'];
+    $expected_blocks[1]['top'] = [
+      'Block 3',
+      'Block 1',
+    ];
     $this->assertBlocksOrder($expected_blocks);
 
     $this->reorderBlock('Block 1', 'next');
-    $expected_blocks[1]['top'] = ['Block 3'];
-    $expected_blocks[1]['first'] = ['Block 1'];
+    $expected_blocks[1]['top'] = [
+      'Block 3',
+    ];
+    $expected_blocks[1]['first'] = [
+      'Block 1',
+    ];
     $this->assertBlocksOrder($expected_blocks);
 
     $this->reorderBlock('Block 1', 'next');
@@ -194,6 +190,94 @@ class ReorderLinksTest extends WebDriverTestBase {
       'Block 1',
     ];
     $this->assertBlocksOrder($expected_blocks);
+
+    // Move the 'Block 1' from the bottom of the page back to the top.
+    $this->reorderBlock('Block 1', 'previous');
+    $expected_blocks[1]['bottom'] = [
+      'Block 6',
+      'Block 1',
+      'Block 7',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'previous');
+    $expected_blocks[1]['bottom'] = [
+      'Block 1',
+      'Block 6',
+      'Block 7',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'previous');
+    $expected_blocks[1]['second'] = [
+      'Block 4',
+      'Block 5',
+      'Block 1',
+    ];
+    $expected_blocks[1]['bottom'] = [
+      'Block 6',
+      'Block 7',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'previous');
+    $expected_blocks[1]['second'] = [
+      'Block 4',
+      'Block 1',
+      'Block 5',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'previous');
+    $expected_blocks[1]['second'] = [
+      'Block 1',
+      'Block 4',
+      'Block 5',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'previous');
+    $expected_blocks[1]['first'] = [
+      'Block 1',
+    ];
+    $expected_blocks[1]['second'] = [
+      'Block 4',
+      'Block 5',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'previous');
+    $expected_blocks[1]['first'] = [];
+    $expected_blocks[1]['top'] = [
+      'Block 3',
+      'Block 1',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'previous');
+    $expected_blocks[1]['top'] = [
+      'Block 1',
+      'Block 3',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'previous');
+    $expected_blocks[0]['content'] = [
+      'Block 2',
+      'Block 1',
+    ];
+    $expected_blocks[1]['top'] = [
+      'Block 3',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'previous');
+    $expected_blocks[0]['content'] = [
+      'Block 1',
+      'Block 2',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
 
   }
 
