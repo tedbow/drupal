@@ -386,6 +386,7 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     }
     $next_region_to = NULL;
     $next_preceding_block_uuid = NULL;
+    $region_block_uuids = $this->getRegionComponentUuids($section_storage, $delta_from, $region);
     if ($current_block_index + 1 < count($region_block_uuids)) {
       $next_delta_to = $delta_from;
       $next_region_to = $region;

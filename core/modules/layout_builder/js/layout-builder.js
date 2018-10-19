@@ -9,89 +9,6 @@
   var ajax = _ref.ajax,
       behaviors = _ref.behaviors;
 
-  function getComponentRegion(component) {
-    return component.closest('[data-region]');
-  }
-
-  function getSection(element) {
-    return element.closest('.layout-section');
-  }
-
-  function getComponentLayoutDelta(element) {
-    return element.closest('[data-layout-delta]').data('layout-delta');
-  }
-
-  function getSiblingByDirection(element, direction, selector) {
-    if (direction === 'previous') {
-      return element.prevAll(selector).first();
-    }
-    return element.nextAll(selector).first();
-  }
-
-  function findMoveToRegion(element, direction) {
-    var elementRegion = getComponentRegion(element);
-    var moveToRegion = getSiblingByDirection(elementRegion, direction, '[data-region]');
-
-    if (moveToRegion.length === 0) {
-      var componentSection = getSection(elementRegion);
-      var moveToSection = getSiblingByDirection(componentSection, direction, '.layout-section');
-      if (moveToSection.length === 0) {
-        return null;
-      }
-      var sectionRegions = moveToSection.find('[data-region]');
-      return direction === 'previous' ? sectionRegions.last() : sectionRegions.first();
-    }
-    return moveToRegion;
-  }
-
-  function findRegionMoveToElement(region, element, direction) {
-    var moveToElement = void 0;
-    if (region[0] === getComponentRegion(element)[0]) {
-      if (direction === 'previous') {
-        moveToElement = element.prev('[data-layout-block-uuid]');
-      } else {
-        moveToElement = element.next('[data-layout-block-uuid], .new-block').next('[data-layout-block-uuid], .new-block');
-      }
-      if (moveToElement.length === 0) {
-        var moveToRegion = findMoveToRegion(element, direction);
-        if (moveToRegion) {
-          return findRegionMoveToElement(moveToRegion, element, direction);
-        }
-        return null;
-      }
-    } else if (direction === 'next') {
-      moveToElement = region.children('[data-layout-block-uuid], .new-block').first();
-    } else {
-      moveToElement = region.find('.new-block');
-    }
-
-    return moveToElement.length === 0 ? null : moveToElement;
-  }
-
-  function updateComponentPosition(item, deltaFrom) {
-    var directionFocus = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'none';
-
-    var itemRegion = item.closest('.layout-builder--layout__region');
-
-    var deltaTo = getComponentLayoutDelta(item);
-    ajax({
-      progress: { type: 'fullscreen' },
-      url: [item.closest('[data-layout-update-url]').data('layout-update-url'), deltaFrom, deltaTo, itemRegion.data('region'), item.data('layout-block-uuid'), directionFocus, item.prev('[data-layout-block-uuid]').data('layout-block-uuid')].filter(function (element) {
-        return element !== undefined;
-      }).join('/')
-    }).execute();
-  }
-
-  function moveComponent(element, direction) {
-    var moveToElement = findRegionMoveToElement(getComponentRegion(element), element, direction);
-    if (moveToElement) {
-      element.addClass('updating');
-      var deltaFrom = getComponentLayoutDelta(element);
-      moveToElement.before(element);
-      updateComponentPosition(element, deltaFrom, direction);
-    }
-  }
-
   behaviors.layoutBuilder = {
     attach: function attach(context) {
       $(context).find('.layout-builder--layout__region').sortable({
@@ -102,10 +19,14 @@
         update: function update(event, ui) {
           var itemRegion = ui.item.closest('.layout-builder--layout__region');
           if (event.target === itemRegion[0]) {
-            var deltaTo = getComponentLayoutDelta(ui.item);
+            var deltaTo = ui.item.closest('[data-layout-delta]').data('layout-delta');
 
-            var deltaFrom = ui.sender ? getComponentLayoutDelta(ui.sender) : deltaTo;
-            updateComponentPosition(ui.item, deltaFrom);
+            var deltaFrom = ui.sender ? ui.sender.closest('[data-layout-delta]').data('layout-delta') : deltaTo;
+            ajax({
+              url: [ui.item.closest('[data-layout-update-url]').data('layout-update-url'), deltaFrom, deltaTo, itemRegion.data('region'), ui.item.data('layout-block-uuid'), ui.item.prev('[data-layout-block-uuid]').data('layout-block-uuid')].filter(function (element) {
+                return element !== undefined;
+              }).join('/')
+            }).execute();
           }
         }
       });
@@ -117,12 +38,13 @@
         var block = $(e.target).closest('[data-layout-block-uuid]');
         if (precedingUuid) {
           var preceedingBlock = $('#layout-builder [data-layout-block-uuid="' + precedingUuid + '"]');
-          block.before(preceedingBlock);
+          preceedingBlock.after(block);
         } else {
           var regionElement = $('#layout-builder [data-layout-delta="' + delta + '"] [data-region="' + region + '"]');
-          var firstBlock = regionElement.children('[data-layout-block-uuid]').first();
+          var firstBlock = regionElement.children('[data-layout-block-uuid], .new-block').first();
           firstBlock.before(block);
         }
+        $(e.target).focus();
         ajax({
           progress: { type: 'fullscreen' },
           url: $(e.target).attr('href')
