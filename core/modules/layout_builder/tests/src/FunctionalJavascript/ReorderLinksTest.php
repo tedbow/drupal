@@ -78,6 +78,31 @@ class ReorderLinksTest extends WebDriverTestBase {
    * Tests using the reorder links.
    */
   public function testUseReorderLinks() {
+    $expected_blocks = [
+      0 => [
+        'content' => [
+          'Block 1',
+          'Block 2',
+        ],
+      ],
+      1 => [
+        'top' => [
+          'Block 3',
+        ],
+        'first' => [],
+        'second' => [
+          'Block 4',
+          'Block 5',
+        ],
+        'bottom' => [
+          'Block 6',
+          'Block 7',
+        ],
+      ],
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+
     $this->reorderBlock('Block 1', 'next');
     $expected_blocks = [
       0 => [
@@ -102,10 +127,74 @@ class ReorderLinksTest extends WebDriverTestBase {
       ],
     ];
     $this->assertBlocksOrder($expected_blocks);
+
     $this->reorderBlock('Block 1', 'next');
     $expected_blocks[0]['content'] = ['Block 2'];
     $expected_blocks[1]['top'] = ['Block 1', 'Block 3'];
     $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'next');
+    $expected_blocks[1]['top'] = ['Block 3', 'Block 1'];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'next');
+    $expected_blocks[1]['top'] = ['Block 3'];
+    $expected_blocks[1]['first'] = ['Block 1'];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'next');
+    $expected_blocks[1]['first'] = [];
+    $expected_blocks[1]['second'] = [
+      'Block 1',
+      'Block 4',
+      'Block 5',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'next');
+    $expected_blocks[1]['second'] = [
+      'Block 4',
+      'Block 1',
+      'Block 5',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'next');
+    $expected_blocks[1]['second'] = [
+      'Block 4',
+      'Block 5',
+      'Block 1',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'next');
+    $expected_blocks[1]['second'] = [
+      'Block 4',
+      'Block 5',
+    ];
+    $expected_blocks[1]['bottom'] = [
+      'Block 1',
+      'Block 6',
+      'Block 7',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'next');
+    $expected_blocks[1]['bottom'] = [
+      'Block 6',
+      'Block 1',
+      'Block 7',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
+    $this->reorderBlock('Block 1', 'next');
+    $expected_blocks[1]['bottom'] = [
+      'Block 6',
+      'Block 7',
+      'Block 1',
+    ];
+    $this->assertBlocksOrder($expected_blocks);
+
   }
 
   /**
@@ -154,8 +243,6 @@ class ReorderLinksTest extends WebDriverTestBase {
    *   The section delta.
    * @param string $region
    *   The region.
-   *
-   * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
   protected function addBlockInSectionRegion($block_label, $section_delta, $region) {
     $page = $this->getSession()->getPage();
@@ -202,6 +289,9 @@ class ReorderLinksTest extends WebDriverTestBase {
 
   /**
    * @param array $expected_blocks
+   *   Nested array of expected blocks.
+   *   - Level 1 keys are section deltas
+   *   - Level 2 keys are regions and values are an array block labels.
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
@@ -222,14 +312,18 @@ class ReorderLinksTest extends WebDriverTestBase {
   }
 
   /**
-   * @param $section_delta
-   * @param $region
+   * Gets the region CSS selector.
+   *
+   * @param int $section_delta
+   *   The section delta.
+   * @param string $region
+   *   The region.
    *
    * @return string
+   *   The region CSS selector.
    */
   protected function getRegionSelector($section_delta, $region) {
-    $region_selector = "[data-layout-delta=\"$section_delta\"] [data-region=\"$region\"]";
-    return $region_selector;
+    return "[data-layout-delta=\"$section_delta\"] [data-region=\"$region\"]";
   }
 
 }
