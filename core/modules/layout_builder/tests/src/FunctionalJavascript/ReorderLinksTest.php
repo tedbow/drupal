@@ -5,6 +5,11 @@ namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 use Behat\Mink\Element\NodeElement;
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 
+/**
+ * Tests blocks reorder links in the Layout Builder.
+ *
+ * @group layout_builder
+ */
 class ReorderLinksTest extends WebDriverTestBase {
 
   /**
@@ -60,23 +65,19 @@ class ReorderLinksTest extends WebDriverTestBase {
     $this->addSectionAtBottom('Two column', '.layout--twocol');
 
     // Add Blocks in sections.
-    $this->addBlockInSection('Block 1', 0, 'content');
-    $this->addBlockInSection('Block 2', 0, 'content');
-    $this->addBlockInSection('Block 3', 1, 'top');
-    $this->addBlockInSection('Block 4', 1, 'second');
-    $this->addBlockInSection('Block 5', 1, 'second');
-    $this->addBlockInSection('Block 6', 1, 'bottom');
-    $this->addBlockInSection('Block 7', 1, 'bottom');
-
-    file_put_contents('/Users/ted.bowman/Sites/www/test.html', $page->getOuterHtml());
-
-
-
-
+    $this->addBlockInSectionRegion('Block 1', 0, 'content');
+    $this->addBlockInSectionRegion('Block 2', 0, 'content');
+    $this->addBlockInSectionRegion('Block 3', 1, 'top');
+    $this->addBlockInSectionRegion('Block 4', 1, 'second');
+    $this->addBlockInSectionRegion('Block 5', 1, 'second');
+    $this->addBlockInSectionRegion('Block 6', 1, 'bottom');
+    $this->addBlockInSectionRegion('Block 7', 1, 'bottom');
   }
 
+  /**
+   * Tests using the reorder links.
+   */
   public function testUseReorderLinks() {
-    $page = $this->getSession()->getPage();
     $this->reorderBlock('Block 1', 'next');
     $expected_blocks = [
       0 => [
@@ -89,16 +90,23 @@ class ReorderLinksTest extends WebDriverTestBase {
         'top' => [
           'Block 3',
         ],
+        'first' => [],
+        'second' => [
+          'Block 4',
+          'Block 5',
+        ],
+        'bottom' => [
+          'Block 6',
+          'Block 7',
+        ],
       ],
     ];
     $this->assertBlocksOrder($expected_blocks);
-
-    file_put_contents('/Users/ted.bowman/Sites/www/test2.html', $page->getOuterHtml());
+    $this->reorderBlock('Block 1', 'next');
+    $expected_blocks[0]['content'] = ['Block 2'];
+    $expected_blocks[1]['top'] = ['Block 1', 'Block 3'];
+    $this->assertBlocksOrder($expected_blocks);
   }
-
-
-
-
 
   /**
    * Waits for an element to be removed from the page.
@@ -115,7 +123,15 @@ class ReorderLinksTest extends WebDriverTestBase {
     $this->assertJsCondition($condition, $timeout);
   }
 
-  protected function addSectionAtBottom($label, $assert_selector) {
+  /**
+   * Adds a new section at the bottom of the page.
+   *
+   * @param string $layout_label
+   *   The layout label.
+   * @param string $assert_selector
+   *   The CSS selector to assert existings after the section is added.
+   */
+  protected function addSectionAtBottom($layout_label, $assert_selector) {
     $page = $this->getSession()->getPage();
     $assert_session = $this->assertSession();
     $add_section_links = $page->findAll('css', '.new-section__link');
@@ -123,13 +139,25 @@ class ReorderLinksTest extends WebDriverTestBase {
     $add_section_link->click();
     $assert_session->assertWaitOnAjaxRequest();
     $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#drupal-off-canvas .layout-selection'));
-    $page->clickLink($label);
+    $page->clickLink($layout_label);
     $assert_session->assertWaitOnAjaxRequest();
     $this->waitForNoElement('#drupal-off-canvas');
     $this->assertNotEmpty($assert_session->waitForElementVisible('css', "#layout-builder $assert_selector"));
   }
 
-  protected function addBlockInSection($block_label, $section_delta, $region) {
+  /**
+   * Adds a block in section region.
+   *
+   * @param string $block_label
+   *   The block label to use.
+   * @param int $section_delta
+   *   The section delta.
+   * @param string $region
+   *   The region.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   */
+  protected function addBlockInSectionRegion($block_label, $section_delta, $region) {
     $page = $this->getSession()->getPage();
     $assert_session = $this->assertSession();
     $region_selector = $this->getRegionSelector($section_delta, $region);
@@ -151,6 +179,14 @@ class ReorderLinksTest extends WebDriverTestBase {
 
   }
 
+  /**
+   * Reorders a block using a reorder link.
+   *
+   * @param string $block_label
+   *   The label of the block to reorder.
+   * @param string $direction
+   *   The direction to move the block.
+   */
   protected function reorderBlock($block_label, $direction) {
     $page = $this->getSession()->getPage();
     $assert_session = $this->assertSession();
@@ -164,6 +200,11 @@ class ReorderLinksTest extends WebDriverTestBase {
     $assert_session->assertWaitOnAjaxRequest();
   }
 
+  /**
+   * @param array $expected_blocks
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   */
   protected function assertBlocksOrder(array $expected_blocks) {
     $page = $this->getSession()->getPage();
     $assert_session = $this->assertSession();
