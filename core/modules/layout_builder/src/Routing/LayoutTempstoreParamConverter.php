@@ -45,11 +45,17 @@ class LayoutTempstoreParamConverter implements ParamConverterInterface {
    * {@inheritdoc}
    */
   public function convert($value, $definition, $name, array $defaults) {
-    if (isset($defaults['section_storage_type']) && $this->sectionStorageManager->hasDefinition($defaults['section_storage_type'])) {
-      if ($section_storage = $this->sectionStorageManager->loadFromRoute($defaults['section_storage_type'], $value, $definition, $name, $defaults)) {
-        // Pass the plugin through the tempstore repository.
-        return $this->layoutTempstoreRepository->get($section_storage);
-      }
+    // If no section storage type is specified or if it is invalid, return.
+    if (!isset($defaults['section_storage_type']) || !$this->sectionStorageManager->hasDefinition($defaults['section_storage_type'])) {
+      return NULL;
+    }
+
+    // Load an empty instance and derive the available contexts.
+    $contexts = $this->sectionStorageManager->loadEmpty($defaults['section_storage_type'])->getContextsFromRoute($value, $definition, $name, $defaults);
+    // Attempt to load a full instance based on the context.
+    if ($section_storage = $this->sectionStorageManager->load($defaults['section_storage_type'], $contexts)) {
+      // Pass the plugin through the tempstore repository.
+      return $this->layoutTempstoreRepository->get($section_storage);
     }
   }
 

@@ -15,8 +15,6 @@ use Drupal\Core\Url;
 use Drupal\field_ui\FieldUI;
 use Drupal\layout_builder\DefaultsSectionStorageInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderSampleEntityGenerator;
-use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
-use Drupal\layout_builder\SectionListInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -25,6 +23,9 @@ use Symfony\Component\Routing\RouteCollection;
  *
  * @SectionStorage(
  *   id = "defaults",
+ *   context = {
+ *     "entity" = @ContextDefinition("entity:entity_view_display"),
+ *   },
  * )
  *
  * @internal
@@ -90,12 +91,8 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function setSectionList(SectionListInterface $section_list) {
-    if (!$section_list instanceof LayoutEntityDisplayInterface) {
-      throw new \InvalidArgumentException('Defaults expect a display-based section list');
-    }
-
-    return parent::setSectionList($section_list);
+  protected function getSectionList() {
+    return $this->getContextValue('entity');
   }
 
   /**
@@ -237,34 +234,49 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function extractIdFromRoute($value, $definition, $name, array $defaults) {
-    if (is_string($value) && strpos($value, '.') !== FALSE) {
-      return $value;
-    }
+  public function getContextsFromRoute($value, $definition, $name, array $defaults) {
+    $contexts = [];
 
+    if ($entity = $this->extractEntityFromRoute($value, $defaults)) {
+      $contexts['entity'] = EntityContext::fromEntity($entity);
+    }
+    return $contexts;
+  }
+
+  /**
+   * Extracts an entity from the route values.
+   *
+   * @param mixed $value
+   *   The raw value from the route.
+   * @param array $defaults
+   *   The route defaults array.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   The entity for the route, or NULL if none exist.
+   */
+  protected function extractEntityFromRoute($value, array $defaults) {
     // If a bundle is not provided but a value corresponding to the bundle key
     // is, use that for the bundle value.
     if (empty($defaults['bundle']) && isset($defaults['bundle_key']) && !empty($defaults[$defaults['bundle_key']])) {
       $defaults['bundle'] = $defaults[$defaults['bundle_key']];
     }
 
-    if (!empty($defaults['entity_type_id']) && !empty($defaults['bundle']) && !empty($defaults['view_mode_name'])) {
-      return $defaults['entity_type_id'] . '.' . $defaults['bundle'] . '.' . $defaults['view_mode_name'];
+    if (is_string($value) && strpos($value, '.') !== FALSE) {
+      list($entity_type_id, $bundle, $view_mode) = explode('.', $value, 3);
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSectionListFromId($id) {
-    if (strpos($id, '.') === FALSE) {
-      throw new \InvalidArgumentException(sprintf('The "%s" ID for the "%s" section storage type is invalid', $id, $this->getStorageType()));
+    elseif (!empty($defaults['entity_type_id']) && !empty($defaults['bundle']) && !empty($defaults['view_mode_name'])) {
+      $entity_type_id = $defaults['entity_type_id'];
+      $bundle = $defaults['bundle'];
+      $view_mode = $defaults['view_mode_name'];
+      $value = "$entity_type_id.$bundle.$view_mode";
+    }
+    else {
+      return NULL;
     }
 
     $storage = $this->entityTypeManager->getStorage('entity_view_display');
     // If the display does not exist, create a new one.
-    if (!$display = $storage->load($id)) {
-      list($entity_type_id, $bundle, $view_mode) = explode('.', $id, 3);
+    if (!$display = $storage->load($value)) {
       $display = $storage->create([
         'targetEntityType' => $entity_type_id,
         'bundle' => $bundle,

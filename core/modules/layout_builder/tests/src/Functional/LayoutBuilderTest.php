@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\layout_builder\Functional;
 
+use Drupal\layout_builder\Section;
 use Drupal\node\Entity\Node;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\views\Entity\View;
@@ -555,6 +556,60 @@ class LayoutBuilderTest extends BrowserTestBase {
     // The block placeholder is no longer displayed and the content is visible.
     $assert_session->pageTextNotContains($placeholder_content);
     $assert_session->pageTextContains($block_content);
+  }
+
+  /**
+   * Tests that section loading is delegated to plugins during rendering.
+   */
+  public function testRenderByContextAwarePluginDelegate() {
+    $this->drupalLogin($this->drupalCreateUser([
+      'configure any layout',
+      'administer node display',
+    ]));
+
+    $state_key = 'layout_builder_test_storage';
+    /** @var \Drupal\Core\State\StateInterface $state */
+    $state = $this->container->get('state');
+
+    $this->drupalGet('node/1');
+    $this->assertEmpty($state->get($state_key));
+
+    $this->drupalGet('admin/structure/types/manage/bundle_with_section_field/display/default');
+    $this->drupalPostForm(NULL, ['layout[enabled]' => TRUE], 'Save');
+    $this->drupalPostForm(NULL, ['layout[allow_custom]' => TRUE], 'Save');
+
+    $this->drupalGet('node/1');
+    // During layout rendering, the storage plugin used for testing will set the
+    // state key to an array containing the plugin weight and view mode, which
+    // proves that the plugin matched the appropriate contexts and was actually
+    // used to render the layout.
+    list ($weight, $view_mode) = $state->get($state_key);
+    $this->assertSame(-10, $weight);
+    $this->assertSame('default', $view_mode);
+  }
+
+  /**
+   * Tests that the test implementation of Layout Builder works as expected.
+   */
+  public function testSimpleConfigBasedLayout() {
+    $assert_session = $this->assertSession();
+
+    $this->drupalLogin($this->createUser(['configure any layout']));
+
+    // Prepare an object with a pre-existing section.
+    $this->container->get('config.factory')->getEditable('layout_builder_test.test_simple_config.existing')
+      ->set('sections', [(new Section('layout_twocol'))->toArray()])
+      ->save();
+
+    // The pre-existing section is found.
+    $this->drupalGet('layout-builder-test-simple-config/existing');
+    $assert_session->elementsCount('css', '.layout', 1);
+    $assert_session->elementsCount('css', '.layout--twocol', 1);
+
+    // The default layout is selected for a new object.
+    $this->drupalGet('layout-builder-test-simple-config/new');
+    $assert_session->elementsCount('css', '.layout', 1);
+    $assert_session->elementsCount('css', '.layout--onecol', 1);
   }
 
 }

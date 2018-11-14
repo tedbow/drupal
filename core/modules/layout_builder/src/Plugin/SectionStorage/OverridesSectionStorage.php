@@ -7,14 +7,12 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
-use Drupal\layout_builder\SectionListInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -23,6 +21,10 @@ use Symfony\Component\Routing\RouteCollection;
  *
  * @SectionStorage(
  *   id = "overrides",
+ *   context = {
+ *     "entity" = @ContextDefinition("entity"),
+ *     "view_mode" = @ContextDefinition("string", required = FALSE),
+ *   }
  * )
  *
  * @internal
@@ -79,12 +81,8 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function setSectionList(SectionListInterface $section_list) {
-    if (!$section_list instanceof FieldItemListInterface) {
-      throw new \InvalidArgumentException('Overrides expect a field-based section list');
-    }
-
-    return parent::setSectionList($section_list);
+  protected function getSectionList() {
+    return $this->getEntity()->get('layout_builder__layout');
   }
 
   /**
@@ -94,7 +92,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    *   The entity storing the overrides.
    */
   protected function getEntity() {
-    return $this->getSectionList()->getEntity();
+    return $this->getContextValue('entity');
   }
 
   /**
@@ -108,30 +106,42 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function extractIdFromRoute($value, $definition, $name, array $defaults) {
-    if (strpos($value, '.') !== FALSE) {
-      return $value;
-    }
+  public function getContextsFromRoute($value, $definition, $name, array $defaults) {
+    $contexts = [];
 
-    if (isset($defaults['entity_type_id']) && !empty($defaults[$defaults['entity_type_id']])) {
-      $entity_type_id = $defaults['entity_type_id'];
-      $entity_id = $defaults[$entity_type_id];
-      return $entity_type_id . '.' . $entity_id;
+    if ($entity = $this->extractEntityFromRoute($value, $defaults)) {
+      $contexts['entity'] = EntityContext::fromEntity($entity);
     }
+    return $contexts;
   }
 
   /**
-   * {@inheritdoc}
+   * Extracts an entity from the route values.
+   *
+   * @param mixed $value
+   *   The raw value from the route.
+   * @param array $defaults
+   *   The route defaults array.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   The entity for the route, or NULL if none exist.
    */
-  public function getSectionListFromId($id) {
-    if (strpos($id, '.') !== FALSE) {
-      list($entity_type_id, $entity_id) = explode('.', $id, 2);
-      $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
-      if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
-        return $entity->get('layout_builder__layout');
-      }
+  protected function extractEntityFromRoute($value, array $defaults) {
+    if (strpos($value, '.') !== FALSE) {
+      list($entity_type_id, $entity_id) = explode('.', $value, 2);
     }
-    throw new \InvalidArgumentException(sprintf('The "%s" ID for the "%s" section storage type is invalid', $id, $this->getStorageType()));
+    elseif (isset($defaults['entity_type_id']) && !empty($defaults[$defaults['entity_type_id']])) {
+      $entity_type_id = $defaults['entity_type_id'];
+      $entity_id = $defaults[$entity_type_id];
+    }
+    else {
+      return NULL;
+    }
+
+    $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
+    if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
+      return $entity;
+    }
   }
 
   /**
