@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Plugin\Context\ContextInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderSampleEntityGenerator;
 use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
 use Drupal\layout_builder\Plugin\SectionStorage\DefaultsSectionStorage;
@@ -61,8 +62,12 @@ class DefaultsSectionStorageTest extends UnitTestCase {
   public function testThirdPartySettings() {
     // Set an initial value on the section list.
     $section_list = $this->prophesize(LayoutEntityDisplayInterface::class);
+
+    $context = $this->prophesize(ContextInterface::class);
+    $context->getContextValue()->willReturn($section_list->reveal());
+    $this->plugin->setContext('entity', $context->reveal());
+
     $section_list->getThirdPartySetting('the_module', 'the_key', NULL)->willReturn('value 1');
-    $this->plugin->setSectionList($section_list->reveal());
 
     // The plugin returns the initial value.
     $this->assertSame('value 1', $this->plugin->getThirdPartySetting('the_module', 'the_key'));
@@ -79,58 +84,11 @@ class DefaultsSectionStorageTest extends UnitTestCase {
   }
 
   /**
-   * @covers ::extractIdFromRoute
+   * @covers ::extractEntityFromRoute
    *
-   * @dataProvider providerTestExtractIdFromRoute
+   * @dataProvider providerTestExtractEntityFromRoute
    */
-  public function testExtractIdFromRoute($expected, $value, array $defaults) {
-    $result = $this->plugin->extractIdFromRoute($value, [], 'the_parameter_name', $defaults);
-    $this->assertSame($expected, $result);
-  }
-
-  /**
-   * Provides data for ::testExtractIdFromRoute().
-   */
-  public function providerTestExtractIdFromRoute() {
-    $data = [];
-    $data['with value'] = [
-      'foo.bar.baz',
-      'foo.bar.baz',
-      [],
-    ];
-    $data['empty value, without bundle'] = [
-      'my_entity_type.bundle_name.default',
-      '',
-      [
-        'entity_type_id' => 'my_entity_type',
-        'view_mode_name' => 'default',
-        'bundle_key' => 'my_bundle',
-        'my_bundle' => 'bundle_name',
-      ],
-    ];
-    $data['empty value, with bundle'] = [
-      'my_entity_type.bundle_name.default',
-      '',
-      [
-        'entity_type_id' => 'my_entity_type',
-        'view_mode_name' => 'default',
-        'bundle' => 'bundle_name',
-      ],
-    ];
-    $data['without value, empty defaults'] = [
-      NULL,
-      '',
-      [],
-    ];
-    return $data;
-  }
-
-  /**
-   * @covers ::getSectionListFromId
-   *
-   * @dataProvider providerTestGetSectionListFromId
-   */
-  public function testGetSectionListFromId($success, $expected_entity_id, $value) {
+  public function testExtractEntityFromRoute($success, $expected_entity_id, $value, array $defaults = []) {
     if ($expected_entity_id) {
       $entity_storage = $this->prophesize(EntityStorageInterface::class);
       $entity_storage->load($expected_entity_id)->willReturn('the_return_value');
@@ -143,25 +101,47 @@ class DefaultsSectionStorageTest extends UnitTestCase {
       $this->entityTypeManager->getStorage('entity_view_display')->shouldNotBeCalled();
     }
 
-    if (!$success) {
-      $this->setExpectedException(\InvalidArgumentException::class);
-    }
-
-    $result = $this->plugin->getSectionListFromId($value);
+    $method = new \ReflectionMethod($this->plugin, 'extractEntityFromRoute');
+    $method->setAccessible(TRUE);
+    $result = $method->invoke($this->plugin, $value, $defaults);
     if ($success) {
       $this->assertEquals('the_return_value', $result);
+    }
+    else {
+      $this->assertNull($result);
     }
   }
 
   /**
-   * Provides data for ::testGetSectionListFromId().
+   * Provides data for ::testExtractEntityFromRoute().
    */
-  public function providerTestGetSectionListFromId() {
+  public function providerTestExtractEntityFromRoute() {
     $data = [];
     $data['with value'] = [
       TRUE,
       'foo.bar.baz',
       'foo.bar.baz',
+    ];
+    $data['empty value, without bundle'] = [
+      TRUE,
+      'my_entity_type.bundle_name.default',
+      '',
+      [
+        'entity_type_id' => 'my_entity_type',
+        'view_mode_name' => 'default',
+        'bundle_key' => 'my_bundle',
+        'my_bundle' => 'bundle_name',
+      ],
+    ];
+    $data['empty value, with bundle'] = [
+      TRUE,
+      'my_entity_type.bundle_name.default',
+      '',
+      [
+        'entity_type_id' => 'my_entity_type',
+        'view_mode_name' => 'default',
+        'bundle' => 'bundle_name',
+      ],
     ];
     $data['without value, empty defaults'] = [
       FALSE,
@@ -172,9 +152,9 @@ class DefaultsSectionStorageTest extends UnitTestCase {
   }
 
   /**
-   * @covers ::getSectionListFromId
+   * @covers ::extractEntityFromRoute
    */
-  public function testGetSectionListFromIdCreate() {
+  public function testExtractEntityFromRouteCreate() {
     $expected = 'the_return_value';
     $value = 'foo.bar.baz';
     $expected_create_values = [
@@ -190,7 +170,9 @@ class DefaultsSectionStorageTest extends UnitTestCase {
     $this->entityTypeManager->getDefinition('entity_view_display')->willReturn(new EntityType(['id' => 'entity_view_display']));
     $this->entityTypeManager->getStorage('entity_view_display')->willReturn($entity_storage->reveal());
 
-    $result = $this->plugin->getSectionListFromId($value);
+    $method = new \ReflectionMethod($this->plugin, 'extractEntityFromRoute');
+    $method->setAccessible(TRUE);
+    $result = $method->invoke($this->plugin, $value, []);
     $this->assertSame($expected, $result);
   }
 

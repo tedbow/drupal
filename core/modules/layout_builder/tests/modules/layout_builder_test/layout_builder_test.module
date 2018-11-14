@@ -7,6 +7,7 @@
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\layout_builder_test\Plugin\SectionStorage\TestOverridesSectionStorage;
 
 /**
  * Implements hook_plugin_filter_TYPE__CONSUMER_alter().
@@ -57,4 +58,16 @@ function layout_builder_test_node_view(array &$build, EntityInterface $entity, E
       '#markup' => 'Extra, Extra read all about it.',
     ];
   }
+}
+
+/**
+ * Implements hook_layout_builder_section_storage_alter().
+ */
+function layout_builder_test_layout_builder_section_storage_alter(array &$storages) {
+  /** @var \Drupal\layout_builder\SectionStorage\SectionStorageDefinition[] $storages */
+  $storages['overrides']->setClass(TestOverridesSectionStorage::class);
+  $storages['overrides']->set('weight', -10);
+
+  $storages['overrides_heavy'] = clone $storages['overrides'];
+  $storages['overrides_heavy']->set('weight', -8);
 }

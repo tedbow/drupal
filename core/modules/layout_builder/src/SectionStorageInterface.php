@@ -4,6 +4,7 @@ namespace Drupal\layout_builder;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Access\AccessibleInterface;
+use Drupal\Core\Plugin\ContextAwarePluginInterface;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -14,7 +15,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   experimental modules and development releases of contributed modules.
  *   See https://www.drupal.org/core/experimental for more information.
  */
-interface SectionStorageInterface extends SectionListInterface, PluginInspectionInterface, AccessibleInterface {
+interface SectionStorageInterface extends SectionListInterface, PluginInspectionInterface, ContextAwarePluginInterface, AccessibleInterface {
 
   /**
    * Returns an identifier for this storage.
@@ -35,36 +36,6 @@ interface SectionStorageInterface extends SectionListInterface, PluginInspection
   public function getStorageType();
 
   /**
-   * Sets the section list on the storage.
-   *
-   * @param \Drupal\layout_builder\SectionListInterface $section_list
-   *   The section list.
-   *
-   * @return $this
-   *
-   * @internal
-   *   This should only be called during section storage instantiation.
-   */
-  public function setSectionList(SectionListInterface $section_list);
-
-  /**
-   * Derives the section list from the storage ID.
-   *
-   * @param string $id
-   *   The storage ID, see ::getStorageId().
-   *
-   * @return \Drupal\layout_builder\SectionListInterface
-   *   The section list.
-   *
-   * @throws \InvalidArgumentException
-   *   Thrown if the ID is invalid.
-   *
-   * @internal
-   *   This should only be called during section storage instantiation.
-   */
-  public function getSectionListFromId($id);
-
-  /**
    * Provides the routes needed for Layout Builder UI.
    *
    * Allows the plugin to add or alter routes during the route building process.
@@ -77,6 +48,23 @@ interface SectionStorageInterface extends SectionListInterface, PluginInspection
    * @see \Drupal\Core\Routing\RoutingEvents::ALTER
    */
   public function buildRoutes(RouteCollection $collection);
+
+  /**
+   * Derives the required plugin contexts from route values.
+   *
+   * @param mixed $value
+   *   The raw value.
+   * @param mixed $definition
+   *   The parameter definition provided in the route options.
+   * @param string $name
+   *   The name of the parameter.
+   * @param array $defaults
+   *   The route defaults array.
+   *
+   * @return \Drupal\Core\Plugin\Context\ContextInterface[]
+   *   The required plugin contexts.
+   */
+  public function getContextsFromRoute($value, $definition, $name, array $defaults);
 
   /**
    * Gets the URL used when redirecting away from the Layout Builder UI.
@@ -97,34 +85,6 @@ interface SectionStorageInterface extends SectionListInterface, PluginInspection
    *   The URL object.
    */
   public function getLayoutBuilderUrl($rel = 'view');
-
-  /**
-   * Configures the plugin based on route values.
-   *
-   * @param mixed $value
-   *   The raw value.
-   * @param mixed $definition
-   *   The parameter definition provided in the route options.
-   * @param string $name
-   *   The name of the parameter.
-   * @param array $defaults
-   *   The route defaults array.
-   *
-   * @return string|null
-   *   The section storage ID if it could be extracted, NULL otherwise.
-   *
-   * @internal
-   *   This should only be called during section storage instantiation.
-   */
-  public function extractIdFromRoute($value, $definition, $name, array $defaults);
-
-  /**
-   * Provides any available contexts for the object using the sections.
-   *
-   * @return \Drupal\Core\Plugin\Context\ContextInterface[]
-   *   The array of context objects.
-   */
-  public function getContexts();
 
   /**
    * Gets the label for the object using the sections.

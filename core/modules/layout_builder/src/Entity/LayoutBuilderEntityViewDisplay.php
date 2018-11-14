@@ -5,6 +5,8 @@ namespace Drupal\layout_builder\Entity;
 use Drupal\Core\Entity\Entity\EntityViewDisplay as BaseEntityViewDisplay;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Plugin\Context\Context;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\field\Entity\FieldConfig;
@@ -274,11 +276,21 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    *   The sections.
    */
   protected function getRuntimeSections(FieldableEntityInterface $entity) {
-    if ($this->isOverridable() && !$entity->get('layout_builder__layout')->isEmpty()) {
-      return $entity->get('layout_builder__layout')->getSections();
-    }
+    $sections = NULL;
 
-    return $this->getSections();
+    if ($this->isOverridable()) {
+      /** @var \Drupal\layout_builder\SectionStorageInterface $storage */
+      $storage = \Drupal::service('plugin.manager.layout_builder.section_storage')
+        ->findByContext('view', [
+          'view_mode' => new Context(ContextDefinition::create('string'), $this->getMode()),
+          'entity' => EntityContext::fromEntity($entity),
+        ]);
+      $sections = $storage ? $storage->getSections() : [];
+    }
+    // If we don't have a section list yet (i.e., no section storage plugin
+    // was able to derive a section list from context, or this display is not
+    // overridable), use this display as the section list.
+    return $sections ?: $this->getSections();
   }
 
   /**

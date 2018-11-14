@@ -2,8 +2,10 @@
 
 namespace Drupal\layout_builder\SectionStorage;
 
+use Drupal\Component\Plugin\Exception\ContextException;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Plugin\Context\ContextHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\layout_builder\Annotation\SectionStorage;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -19,6 +21,13 @@ use Drupal\layout_builder\SectionStorageInterface;
 class SectionStorageManager extends DefaultPluginManager implements SectionStorageManagerInterface {
 
   /**
+   * The context handler.
+   *
+   * @var \Drupal\Core\Plugin\Context\ContextHandlerInterface
+   */
+  protected $contextHandler;
+
+  /**
    * Constructs a new SectionStorageManager object.
    *
    * @param \Traversable $namespaces
@@ -28,9 +37,13 @@ class SectionStorageManager extends DefaultPluginManager implements SectionStora
    *   Cache backend instance to use.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler to invoke the alter hook with.
+   * @param \Drupal\Core\Plugin\Context\ContextHandlerInterface $context_handler
+   *   The context handler.
    */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
+  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, ContextHandlerInterface $context_handler) {
     parent::__construct('Plugin/SectionStorage', $namespaces, $module_handler, SectionStorageInterface::class, SectionStorage::class);
+
+    $this->contextHandler = $context_handler;
 
     $this->alterInfo('layout_builder_section_storage');
     $this->setCacheBackend($cache_backend, 'layout_builder_section_storage_plugins');
@@ -39,33 +52,53 @@ class SectionStorageManager extends DefaultPluginManager implements SectionStora
   /**
    * {@inheritdoc}
    */
-  public function loadEmpty($id) {
-    return $this->createInstance($id);
+  protected function findDefinitions() {
+    $definitions = parent::findDefinitions();
+
+    // Sort the definitions by their weight while preserving the original order
+    // for those with matching weights.
+    $weights = array_map(function (SectionStorageDefinition $definition) {
+      return $definition->getWeight();
+    }, $definitions);
+    $ids = array_keys($definitions);
+    array_multisort($weights, $ids, $definitions);
+    return $definitions;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function loadFromStorageId($type, $id) {
-    /** @var \Drupal\layout_builder\SectionStorageInterface $plugin */
-    $plugin = $this->createInstance($type);
-    return $plugin->setSectionList($plugin->getSectionListFromId($id));
+  public function load($type, array $contexts = []) {
+    $plugin = $this->loadEmpty($type);
+    try {
+      $this->contextHandler->applyContextMapping($plugin, $contexts);
+    }
+    catch (ContextException $e) {
+      return NULL;
+    }
+    return $plugin;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function loadFromRoute($type, $value, $definition, $name, array $defaults) {
-    /** @var \Drupal\layout_builder\SectionStorageInterface $plugin */
-    $plugin = $this->createInstance($type);
-    if ($id = $plugin->extractIdFromRoute($value, $definition, $name, $defaults)) {
-      try {
-        return $plugin->setSectionList($plugin->getSectionListFromId($id));
-      }
-      catch (\InvalidArgumentException $e) {
-        // Intentionally empty.
+  public function findByContext($operation, array $contexts) {
+    $storage_types = array_keys($this->contextHandler->filterPluginDefinitionsByContexts($contexts, $this->getDefinitions()));
+
+    foreach ($storage_types as $type) {
+      $plugin = $this->load($type, $contexts);
+      if ($plugin && $plugin->access($operation)) {
+        return $plugin;
       }
     }
+    return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadEmpty($type) {
+    return $this->createInstance($type);
   }
 
 }

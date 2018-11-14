@@ -2,10 +2,9 @@
 
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
-use Drupal\Core\Plugin\PluginBase;
+use Drupal\Core\Plugin\ContextAwarePluginBase;
 use Drupal\layout_builder\Routing\LayoutBuilderRoutesTrait;
 use Drupal\layout_builder\Section;
-use Drupal\layout_builder\SectionListInterface;
 use Drupal\layout_builder\SectionStorageInterface;
 
 /**
@@ -16,40 +15,17 @@ use Drupal\layout_builder\SectionStorageInterface;
  *   experimental modules and development releases of contributed modules.
  *   See https://www.drupal.org/core/experimental for more information.
  */
-abstract class SectionStorageBase extends PluginBase implements SectionStorageInterface {
+abstract class SectionStorageBase extends ContextAwarePluginBase implements SectionStorageInterface {
 
   use LayoutBuilderRoutesTrait;
-
-  /**
-   * The section storage instance.
-   *
-   * @var \Drupal\layout_builder\SectionListInterface|null
-   */
-  protected $sectionList;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setSectionList(SectionListInterface $section_list) {
-    $this->sectionList = $section_list;
-    return $this;
-  }
 
   /**
    * Gets the section list.
    *
    * @return \Drupal\layout_builder\SectionListInterface
    *   The section list.
-   *
-   * @throws \RuntimeException
-   *   Thrown if ::setSectionList() is not called first.
    */
-  protected function getSectionList() {
-    if (!$this->sectionList) {
-      throw new \RuntimeException(sprintf('%s::setSectionList() must be called first', static::class));
-    }
-    return $this->sectionList;
-  }
+  abstract protected function getSectionList();
 
   /**
    * {@inheritdoc}
@@ -101,6 +77,24 @@ abstract class SectionStorageBase extends PluginBase implements SectionStorageIn
   public function removeSection($delta) {
     $this->getSectionList()->removeSection($delta);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @todo Remove after https://www.drupal.org/project/drupal/issues/2982626.
+   */
+  public function getContextDefinition($name) {
+    return $this->getPluginDefinition()->getContextDefinition($name);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @todo Remove after https://www.drupal.org/project/drupal/issues/2982626.
+   */
+  public function getContextDefinitions() {
+    return $this->getPluginDefinition()->getContextDefinitions();
   }
 
 }

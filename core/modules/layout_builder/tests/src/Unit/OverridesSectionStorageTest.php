@@ -60,87 +60,42 @@ class OverridesSectionStorageTest extends UnitTestCase {
   }
 
   /**
-   * @covers ::extractIdFromRoute
+   * @covers ::extractEntityFromRoute
    *
-   * @dataProvider providerTestExtractIdFromRoute
+   * @dataProvider providerTestExtractEntityFromRoute
    */
-  public function testExtractIdFromRoute($expected, $value, array $defaults) {
-    $result = $this->plugin->extractIdFromRoute($value, [], 'the_parameter_name', $defaults);
-    $this->assertSame($expected, $result);
-  }
-
-  /**
-   * Provides data for ::testExtractIdFromRoute().
-   */
-  public function providerTestExtractIdFromRoute() {
-    $data = [];
-    $data['with value, with layout'] = [
-      'my_entity_type.entity_with_layout',
-      'my_entity_type.entity_with_layout',
-      [],
-    ];
-    $data['with value, without layout'] = [
-      NULL,
-      'my_entity_type',
-      [],
-    ];
-    $data['empty value, populated defaults'] = [
-      'my_entity_type.entity_with_layout',
-      '',
-      [
-        'entity_type_id' => 'my_entity_type',
-        'my_entity_type' => 'entity_with_layout',
-      ],
-    ];
-    $data['empty value, empty defaults'] = [
-      NULL,
-      '',
-      [],
-    ];
-    return $data;
-  }
-
-  /**
-   * @covers ::getSectionListFromId
-   *
-   * @dataProvider providerTestGetSectionListFromId
-   */
-  public function testGetSectionListFromId($success, $expected_entity_type_id, $id) {
-    $defaults['the_parameter_name'] = $id;
-
+  public function testExtractEntityFromRoute($success, $expected_entity_type_id, $value, array $defaults = []) {
     if ($expected_entity_type_id) {
       $entity_storage = $this->prophesize(EntityStorageInterface::class);
 
       $entity_without_layout = $this->prophesize(FieldableEntityInterface::class);
       $entity_without_layout->hasField('layout_builder__layout')->willReturn(FALSE);
-      $entity_without_layout->get('layout_builder__layout')->shouldNotBeCalled();
       $entity_storage->load('entity_without_layout')->willReturn($entity_without_layout->reveal());
 
       $entity_with_layout = $this->prophesize(FieldableEntityInterface::class);
       $entity_with_layout->hasField('layout_builder__layout')->willReturn(TRUE);
-      $entity_with_layout->get('layout_builder__layout')->willReturn('the_return_value');
       $entity_storage->load('entity_with_layout')->willReturn($entity_with_layout->reveal());
-
       $this->entityTypeManager->getStorage($expected_entity_type_id)->willReturn($entity_storage->reveal());
     }
     else {
       $this->entityTypeManager->getStorage(Argument::any())->shouldNotBeCalled();
     }
 
-    if (!$success) {
-      $this->setExpectedException(\InvalidArgumentException::class);
-    }
-
-    $result = $this->plugin->getSectionListFromId($id);
+    $method = new \ReflectionMethod($this->plugin, 'extractEntityFromRoute');
+    $method->setAccessible(TRUE);
+    $result = $method->invoke($this->plugin, $value, $defaults);
     if ($success) {
-      $this->assertEquals('the_return_value', $result);
+      $this->assertInstanceOf(FieldableEntityInterface::class, $result);
+    }
+    else {
+      $this->assertNull($result);
     }
   }
 
   /**
-   * Provides data for ::testGetSectionListFromId().
+   * Provides data for ::testExtractEntityFromRoute().
    */
-  public function providerTestGetSectionListFromId() {
+  public function providerTestExtractEntityFromRoute() {
     $data = [];
     $data['with value, with layout'] = [
       TRUE,
@@ -151,6 +106,15 @@ class OverridesSectionStorageTest extends UnitTestCase {
       FALSE,
       'my_entity_type',
       'my_entity_type.entity_without_layout',
+    ];
+    $data['empty value, populated defaults'] = [
+      TRUE,
+      'my_entity_type',
+      '',
+      [
+        'entity_type_id' => 'my_entity_type',
+        'my_entity_type' => 'entity_with_layout',
+      ],
     ];
     $data['empty value, empty defaults'] = [
       FALSE,
