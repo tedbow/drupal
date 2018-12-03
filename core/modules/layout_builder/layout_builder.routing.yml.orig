@@ -137,17 +137,3 @@ layout_builder.move_block:
     parameters:
       section_storage:
         layout_builder_tempstore: TRUE
-
-
-layout_builder.show_block_destinations:
-  path: '/layout_builder/show-destinations/{section_storage_type}/{section_storage}'
-  defaults:
-    _controller: '\Drupal\layout_builder\Controller\MoveBlockController::showDestinations'
-  requirements:
-    _permission: 'configure any layout'
-    _layout_builder_access: 'view'
-  options:
-    _admin_route: TRUE
-    parameters:
-      section_storage:
-        layout_builder_tempstore: TRUE

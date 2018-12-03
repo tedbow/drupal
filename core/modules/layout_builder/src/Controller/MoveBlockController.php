@@ -92,4 +92,11 @@ class MoveBlockController implements ContainerInjectionInterface {
     return $this->rebuildLayout($section_storage);
   }
 
+  /**
+   * @todo this empty function to allow making a contextual link with a actual route.
+   */
+  public function showDestinations(SectionStorageInterface $section_storage) {
+
+  }
+
 }

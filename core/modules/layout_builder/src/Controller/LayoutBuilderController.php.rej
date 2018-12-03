@@ -1,0 +1,16 @@
+***************
+*** 207,212 ****
+      $build = $section->toRenderArray($this->getAvailableContexts($section_storage), TRUE);
+      $layout_definition = $layout->getPluginDefinition();
+  
+      foreach ($layout_definition->getRegions() as $region => $info) {
+        if (!empty($build[$region])) {
+          foreach ($build[$region] as $uuid => $block) {
+--- 207,213 ----
+      $build = $section->toRenderArray($this->getAvailableContexts($section_storage), TRUE);
+      $layout_definition = $layout->getPluginDefinition();
+  
++ 
+      foreach ($layout_definition->getRegions() as $region => $info) {
+        if (!empty($build[$region])) {
+          foreach ($build[$region] as $uuid => $block) {
