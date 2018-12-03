@@ -233,17 +233,9 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     foreach ($layout_definition->getRegions() as $region => $info) {
       if (!empty($build[$region])) {
         foreach ($build[$region] as $uuid => $block) {
-          // Shift block output down a level in the render array to allow
-          // navigation links.
-          $build[$region][$uuid] = [
-            '#type' => 'container',
-            '#weight' => $build[$region][$uuid]['#weight'],
-            'block_output' => $build[$region][$uuid],
-            'layout_builder_reorder' => $this->createLayoutBuilderReorderNavigation($section_storage, $delta, $region, $uuid),
-          ];
           $build[$region][$uuid]['#attributes']['class'][] = 'draggable';
           $build[$region][$uuid]['#attributes']['data-layout-block-uuid'] = $uuid;
-          $build[$region][$uuid]['block_output']['#contextual_links'] = [
+          $build[$region][$uuid]['#contextual_links'] = [
             'layout_builder_block' => [
               'route_parameters' => [
                 'section_storage_type' => $storage_type,
@@ -367,30 +359,6 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     $this->messenger->addMessage($this->t('The changes to the layout have been discarded.'));
 
     return new RedirectResponse($section_storage->getRedirectUrl()->setAbsolute()->toString());
-  }
-
-  protected function createLayoutBuilderReorderNavigation() {
-    $links =  [
-      '#type' => 'container',
-      '#weight' => -1000,
-      '#attributes' => [
-        'class' => 'layout-builder-reorder',
-        'data-layout-builder-reorder' => TRUE,
-      ],
-    ];
-    foreach (['up', 'down', 'left', 'right'] as $direction) {
-      $links[$direction] = [
-        '#type' => 'html_tag',
-        '#tag' => 'a',
-        '#attributes' => [
-          'href' => '#',
-          'class' => ["layout-reorder-$direction"],
-          'data-layout-builder-reorder-direction' => $direction,
-        ],
-        '#value' => ucfirst($direction),
-      ];
-    }
-    return $links;
   }
 
 }
