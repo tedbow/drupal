@@ -77,3 +77,10 @@ ajax_test.render_error:
     _controller: '\Drupal\ajax_test\Controller\AjaxTestController::renderError'
   requirements:
     _access: 'TRUE'
+
+ajax_test.throw_error:
+  path: '/ajax-test/throw-exception'
+  defaults:
+    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::throwException'
+  requirements:
+    _access: 'TRUE'

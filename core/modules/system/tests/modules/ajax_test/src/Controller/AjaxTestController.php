@@ -354,4 +354,11 @@ class AjaxTestController {
     return $render_info;
   }
 
+  /**
+   * @throws \Exception
+   */
+  public function throwException() {
+    throw new \Exception('This is an exception.');
+  }
+
 }
