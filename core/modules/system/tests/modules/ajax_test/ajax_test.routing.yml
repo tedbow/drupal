@@ -78,7 +78,14 @@ ajax_test.render_error:
   requirements:
     _access: 'TRUE'
 
-ajax_test.throw_error:
+ajax_test.exception_link:
+  path: '/ajax-test/exception-link'
+  defaults:
+    _controller: '\Drupal\ajax_test\Controller\AjaxTestController::exceptionLink'
+  requirements:
+    _access: 'TRUE'
+
+ajax_test.throw_exception:
   path: '/ajax-test/throw-exception'
   defaults:
     _controller: '\Drupal\ajax_test\Controller\AjaxTestController::throwException'
