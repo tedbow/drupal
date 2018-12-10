@@ -9,6 +9,22 @@
   var ajax = _ref.ajax,
       behaviors = _ref.behaviors;
 
+  function getLayoutDelta(element) {
+    return element.closest('[data-layout-delta]').data('layout-delta');
+  }
+
+  function updateComponentPosition(item, deltaFrom) {
+    var itemRegion = item.closest('.layout-builder--layout__region');
+
+    var deltaTo = getLayoutDelta(item);
+    ajax({
+      progress: { type: 'fullscreen' },
+      url: [item.closest('[data-layout-update-url]').data('layout-update-url'), deltaFrom, deltaTo, itemRegion.data('region'), item.data('layout-block-uuid'), item.prev('[data-layout-block-uuid]').data('layout-block-uuid')].filter(function (element) {
+        return element !== undefined;
+      }).join('/')
+    }).execute();
+  }
+
   behaviors.layoutBuilder = {
     attach: function attach(context) {
       $(context).find('.layout-builder--layout__region').sortable({
@@ -19,17 +35,33 @@
         update: function update(event, ui) {
           var itemRegion = ui.item.closest('.layout-builder--layout__region');
           if (event.target === itemRegion[0]) {
-            var deltaTo = ui.item.closest('[data-layout-delta]').data('layout-delta');
+            var deltaTo = getLayoutDelta(ui.item);
 
-            var deltaFrom = ui.sender ? ui.sender.closest('[data-layout-delta]').data('layout-delta') : deltaTo;
-            ajax({
-              url: [ui.item.closest('[data-layout-update-url]').data('layout-update-url'), deltaFrom, deltaTo, itemRegion.data('region'), ui.item.data('layout-block-uuid'), ui.item.prev('[data-layout-block-uuid]').data('layout-block-uuid')].filter(function (element) {
-                return element !== undefined;
-              }).join('/')
-            }).execute();
+            var deltaFrom = ui.sender ? getLayoutDelta(ui.sender) : deltaTo;
+            updateComponentPosition(ui.item, deltaFrom);
           }
         }
       });
+      $(context).find('.layout-block-destination').on('click', function (e) {
+        var movingBlock = $('[data-layout-builder-moving-block]');
+        var deltaFrom = movingBlock.closest('[data-layout-delta]').data('layout-delta');
+        $(e.target).replaceWith(movingBlock);
+        updateComponentPosition(movingBlock, deltaFrom);
+      });
     }
   };
+
+  $(document).on('drupalContextualLinkAdded', function (event, data) {
+    data.$el.find('.layout-builder-move-block a').on('click.settingstray', function (e) {
+      $('#layout-builder').attr('data-layout-builder-state', 'destinations');
+      $('[data-layout-builder-moving-block]').removeAttr('data-layout-builder-moving-block').removeClass('layout-builder-moving-block');
+      $('.layout-builder-current-destination').removeClass('layout-builder-current-destination');
+      var movingBlock = $(e.target).closest('[data-layout-block-uuid]');
+      movingBlock.attr('data-layout-builder-moving-block', true);
+      movingBlock.addClass('layout-builder-moving-block');
+      $('.layout-block-destination[data-preceeding-block-uuid="' + movingBlock.attr('data-layout-block-uuid') + '"]').addClass('layout-builder-current-destination');
+
+      e.preventDefault();
+    });
+  });
 })(jQuery, Drupal);

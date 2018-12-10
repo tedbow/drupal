@@ -246,8 +246,14 @@ class LayoutBuilderController implements ContainerInjectionInterface {
               ],
             ],
           ];
+          $build[$region]["destination_after_$uuid"] = $this->createDestinationButton($delta, $region, $uuid);
+          // @todo reoroder blocks properly.
+          $build[$region][$uuid]['#weight'] *= 2;
+          $build[$region]["destination_after_$uuid"]['#weight'] = $build[$region][$uuid]['#weight'] + 1;
         }
       }
+      $build[$region]['top_destination'] = $this->createDestinationButton($delta, $region);
+      $build[$region]['top_destination']['#weight'] = -1000;
 
       $build[$region]['layout_builder_add_block']['link'] = [
         '#type' => 'link',
@@ -359,6 +365,22 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     $this->messenger->addMessage($this->t('The changes to the layout have been discarded.'));
 
     return new RedirectResponse($section_storage->getRedirectUrl()->setAbsolute()->toString());
+  }
+
+  private function createDestinationButton($delta, $region, $preceeding_block_uuid = NULL) {
+    return [
+      '#type' => 'html_tag',
+      '#tag' => 'a',
+      // @todo make a better icon.
+      '#value' => '🎯 ' . $this->t('Place block'),
+      '#attributes' => [
+        'data-delta-to' => $delta,
+        'data-region-to' => $region,
+        'data-preceeding-block-uuid' => $preceeding_block_uuid,
+        'class' => ['layout-block-destination'],
+      ],
+    ];
+
   }
 
 }

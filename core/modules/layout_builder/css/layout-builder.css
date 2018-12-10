@@ -1,4 +1,4 @@
-.new-section {
+  .new-section {
   background-color: #f7f7f7;
   width: 100%;
   outline: 2px dashed #979797;
@@ -113,4 +113,34 @@
 #drupal-off-canvas .inline-block-list__item {
   display: block;
   padding: 15px 0 15px 25px;
+}
+
+#layout-builder .layout-block-destination {
+  display: none;
+}
+
+/* The destination links should be the same size as add links so empty regions don't collaspe
+Add same color as drop regions
+*/
+#layout-builder[data-layout-builder-state="destinations"] .layout-block-destination {
+  display: inherit;
+  background-color: #ffd;
+  outline: 2px dashed #fedb60;
+  padding: 1.5em 0;
+  text-align: center;
+}
+/* Hide new block links when moving */
+#layout-builder[data-layout-builder-state="destinations"] .new-block {
+  display: none;
+}
+
+/** Do not show the destination of the current block that is being moved */
+#layout-builder[data-layout-builder-state="destinations"] .layout-block-destination.layout-builder-current-destination {
+  display: none;
+}
+
+/** Better highlight current block **/
+#layout-builder[data-layout-builder-state="destinations"] .layout-builder-moving-block{
+  outline: 5px dashed #fedb60;
+
 }
