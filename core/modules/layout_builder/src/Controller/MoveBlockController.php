@@ -60,13 +60,16 @@ class MoveBlockController implements ContainerInjectionInterface {
    *   The new region for this block.
    * @param string $block_uuid
    *   The UUID for this block.
+   * @param string $direction_focus
+   *   The order link that should be in focus after a move, either 'previous',
+   *   'next' or 'none'.
    * @param string|null $preceding_block_uuid
    *   (optional) If provided, the UUID of the block to insert this block after.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
    *   An AJAX response.
    */
-  public function build(SectionStorageInterface $section_storage, $delta_from, $delta_to, $region_to, $block_uuid, $preceding_block_uuid = NULL) {
+  public function build(SectionStorageInterface $section_storage, $delta_from, $delta_to, $region_to, $block_uuid, $direction_focus, $preceding_block_uuid = NULL) {
     $section = $section_storage->getSection($delta_from);
 
     $component = $section->getComponent($block_uuid);
@@ -89,7 +92,25 @@ class MoveBlockController implements ContainerInjectionInterface {
     }
 
     $this->layoutTempstoreRepository->set($section_storage);
-    return $this->rebuildLayout($section_storage);
+
+    if ($direction_focus !== 'none') {
+
+      $focus_selectors = [];
+      if ($direction_focus !== 'none') {
+        $backup_focuses = [
+          'up' => 'down',
+          'down' => 'up',
+          'left' => 'right',
+          'right' => 'left',
+        ];
+        // Provide 2 focus selectors. Both will be trigger on but the second one
+        // will provide focus to the user. In the case that $direction_focus is
+        // not available the back with receive focus.
+        $focus_selectors[] = "#layout-builder [data-layout-block-uuid=\"$block_uuid\"] [data-layout-builder-reorder-direction=\"{$backup_focuses[$direction_focus]}\"]";
+        $focus_selectors[] = "#layout-builder [data-layout-block-uuid=\"$block_uuid\"] [data-layout-builder-reorder-direction=\"$direction_focus\"]";
+      }
+    }
+    return $this->rebuildLayout($section_storage, $focus_selectors);
   }
 
 }

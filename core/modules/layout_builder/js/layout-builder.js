@@ -9,8 +9,175 @@
   var ajax = _ref.ajax,
       behaviors = _ref.behaviors;
 
+  function getRegion(element) {
+    return element.closest('[data-region]');
+  }
+
+  function getSection(element) {
+    return element.closest('.layout-section');
+  }
+
+  function getLayoutDelta(element) {
+    return element.closest('[data-layout-delta]').data('layout-delta');
+  }
+
+  function isElementSiblingInDirection(element, sibling, direction) {
+    var elementRect = element[0].getBoundingClientRect();
+    var siblingRect = sibling[0].getBoundingClientRect();
+    var topDiff = elementRect.top - siblingRect.top;
+    var diff = 10;
+    var leftDiff = elementRect.left - siblingRect.left;
+    if (topDiff < diff && topDiff > -1 * diff) {
+      if (direction === 'right') {
+        if (leftDiff * -1 > diff) {
+          return true;
+        }
+      } else if (direction === 'left') {
+        if (leftDiff > diff) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  function getSiblingByDirection(element, direction, selector) {
+    var siblings = void 0;
+    if (direction === 'up') {
+      siblings = element.prevAll(selector);
+    } else {
+      siblings = element.nextAll(selector);
+    }
+    var matchSibling = null;
+    siblings.each(function (index, sibling) {
+      if (!isElementSiblingInDirection(element, $(sibling), 'left') && !isElementSiblingInDirection(element, $(sibling), 'right')) {
+        matchSibling = sibling;
+        return false;
+      }
+    });
+    return $(matchSibling);
+  }
+
+  function findSideRegion(element, direction) {
+    var sibling = void 0;
+    var region = getRegion(element);
+    if (direction === 'left') {
+      sibling = region.prev('[data-region]');
+    } else {
+      sibling = region.next('[data-region]');
+    }
+    if (sibling.length > 0 && isElementSiblingInDirection(element, sibling, direction)) {
+      return sibling;
+    }
+  }
+
+  function findMoveToRegion(element, direction) {
+    var elementRegion = getRegion(element);
+    var moveToRegion = getSiblingByDirection(elementRegion, direction, '[data-region]');
+
+    if (moveToRegion.length === 0) {
+      var componentSection = getSection(elementRegion);
+      var moveToSection = getSiblingByDirection(componentSection, direction, '.layout-section');
+      if (moveToSection.length === 0) {
+        return null;
+      }
+      var sectionRegions = moveToSection.find('[data-region]');
+      return direction === 'up' ? sectionRegions.last() : sectionRegions.first();
+    }
+    if (direction === 'up') {
+      while (findSideRegion(moveToRegion, 'left')) {
+        moveToRegion = findSideRegion(moveToRegion, 'left');
+      }
+    }
+    return moveToRegion;
+  }
+
+  function findRegionMoveToElement(region, element, direction) {
+    var moveToElement = void 0;
+    if (region[0] === getRegion(element)[0]) {
+      if (direction === 'left' || direction === 'right') {
+        var sideRegion = findSideRegion(element, direction);
+        if (sideRegion) {
+          return findRegionMoveToElement(sideRegion, element, direction);
+        }
+        return null;
+      }
+      if (direction === 'up') {
+        moveToElement = element.prev('[data-layout-block-uuid]');
+      } else {
+        moveToElement = element.next('[data-layout-block-uuid], .new-block').next('[data-layout-block-uuid], .new-block');
+      }
+      if (moveToElement.length === 0) {
+        var moveToRegion = findMoveToRegion(element, direction);
+        if (moveToRegion) {
+          return findRegionMoveToElement(moveToRegion, element, direction);
+        }
+        return null;
+      }
+    } else if (direction === 'down') {
+      moveToElement = region.children('[data-layout-block-uuid], .new-block').first();
+    } else {
+      moveToElement = region.find('.new-block');
+    }
+
+    return moveToElement.length === 0 ? null : moveToElement;
+  }
+
+  function updateComponentPosition(item, deltaFrom) {
+    var directionFocus = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'none';
+
+    var itemRegion = item.closest('.layout-builder--layout__region');
+
+    var deltaTo = getLayoutDelta(item);
+    ajax({
+      progress: { type: 'fullscreen' },
+      url: [item.closest('[data-layout-update-url]').data('layout-update-url'), deltaFrom, deltaTo, itemRegion.data('region'), item.data('layout-block-uuid'), directionFocus, item.prev('[data-layout-block-uuid]').data('layout-block-uuid')].filter(function (element) {
+        return element !== undefined;
+      }).join('/')
+    }).execute();
+  }
+
+  function getReorderLinks(context) {
+    return $(context).find('[data-layout-builder-reorder] [data-layout-builder-reorder-direction]');
+  }
+
+  function getLinkDirection(link) {
+    return $(link).attr('data-layout-builder-reorder-direction');
+  }
+
+  function showHideReorderLinks() {
+    var reorderLinks = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+    if (!reorderLinks) {
+      reorderLinks = getReorderLinks(document.querySelector('#layout-builder'));
+    }
+    reorderLinks.each(function (index, link) {
+      var $link = $(link);
+
+      if (!findRegionMoveToElement(getRegion($link), $link.closest('[data-layout-block-uuid]'), getLinkDirection($link))) {
+        $link.hide();
+      } else {
+        $link.show();
+      }
+    });
+  }
+
+  function moveComponent(element, direction) {
+    var moveToElement = findRegionMoveToElement(getRegion(element), element, direction);
+    if (moveToElement) {
+      element.addClass('updating');
+      var deltaFrom = getLayoutDelta(element);
+      moveToElement.before(element);
+      showHideReorderLinks();
+      updateComponentPosition(element, deltaFrom, direction);
+    }
+  }
+
   behaviors.layoutBuilder = {
     attach: function attach(context) {
+      $(window).on('resize.layout_builder', function (e) {
+        showHideReorderLinks();
+      });
       $(context).find('.layout-builder--layout__region').sortable({
         items: '> .draggable',
         connectWith: '.layout-builder--layout__region',
@@ -19,16 +186,19 @@
         update: function update(event, ui) {
           var itemRegion = ui.item.closest('.layout-builder--layout__region');
           if (event.target === itemRegion[0]) {
-            var deltaTo = ui.item.closest('[data-layout-delta]').data('layout-delta');
+            var deltaTo = getLayoutDelta(ui.item);
 
-            var deltaFrom = ui.sender ? ui.sender.closest('[data-layout-delta]').data('layout-delta') : deltaTo;
-            ajax({
-              url: [ui.item.closest('[data-layout-update-url]').data('layout-update-url'), deltaFrom, deltaTo, itemRegion.data('region'), ui.item.data('layout-block-uuid'), ui.item.prev('[data-layout-block-uuid]').data('layout-block-uuid')].filter(function (element) {
-                return element !== undefined;
-              }).join('/')
-            }).execute();
+            var deltaFrom = ui.sender ? getLayoutDelta(ui.sender) : deltaTo;
+            updateComponentPosition(ui.item, deltaFrom);
           }
         }
+      });
+      var reorderLinks = getReorderLinks(context);
+      showHideReorderLinks(reorderLinks);
+      reorderLinks.on('click', function (e) {
+        var direction = getLinkDirection(e.target);
+        moveComponent($(e.target).closest('[data-layout-block-uuid]'), direction);
+        e.preventDefault();
       });
     }
   };
