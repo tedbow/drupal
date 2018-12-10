@@ -87,7 +87,7 @@ class LayoutBuilderTest extends BrowserTestBase {
     $page->checkField('settings[label_display]');
     $page->pressButton('Add Block');
     $page->clickLink('Save Layout');
-    $assert_session->pageTextContains('This is an override');
+    $assert_session->elementExists('css','h2:contains("This is an override")');
 
     // Get the UUID of the component.
     $components = Node::load(1)->get('layout_builder__layout')->getSection(0)->getComponents();
@@ -97,9 +97,10 @@ class LayoutBuilderTest extends BrowserTestBase {
     $this->drupalGet('layout_builder/update/block/overrides/node.1/0/content/' . $uuid);
     $page->uncheckField('settings[label_display]');
     $page->pressButton('Update');
-    $assert_session->pageTextNotContains('This is an override');
+
+    $assert_session->elementNotExists('css','h2:contains("This is an override")');
     $page->clickLink('Save Layout');
-    $assert_session->pageTextNotContains('This is an override');
+    $assert_session->elementNotExists('css','h2:contains("This is an override")');
   }
 
   /**

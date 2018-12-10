@@ -7,6 +7,7 @@ layout_builder_block_update:
       class: ['use-ajax']
       data-dialog-type: dialog
       data-dialog-renderer: off_canvas
+      data-layout-builder-action: update-block
 
 layout_builder_block_remove:
   title: 'Remove block'
@@ -17,3 +18,12 @@ layout_builder_block_remove:
       class: ['use-ajax']
       data-dialog-type: dialog
       data-dialog-renderer: off_canvas
+      data-layout-builder-action: remove-block
+
+layout_builder_move_block:
+  title: 'Move block'
+  route_name: 'layout_builder.show_block_destinations'
+  group: 'layout_builder_block'
+  options:
+    attributes:
+      data-layout-builder-action: move-block

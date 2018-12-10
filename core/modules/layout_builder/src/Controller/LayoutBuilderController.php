@@ -198,6 +198,7 @@ class LayoutBuilderController implements ContainerInjectionInterface {
               'class' => ['use-ajax', 'new-section__link'],
               'data-dialog-type' => 'dialog',
               'data-dialog-renderer' => 'off_canvas',
+              'data-layout-builder-action' => 'add-section',
             ],
           ]
         ),
@@ -229,6 +230,7 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     $build = $section->toRenderArray($this->getAvailableContexts($section_storage), TRUE);
     $layout_definition = $layout->getPluginDefinition();
 
+
     $region_labels = $layout_definition->getRegionLabels();
     foreach ($layout_definition->getRegions() as $region => $info) {
       if (!empty($build[$region])) {
@@ -246,8 +248,14 @@ class LayoutBuilderController implements ContainerInjectionInterface {
               ],
             ],
           ];
+          $build[$region]["destination_after_$uuid"] = $this->createDestinationArea($section, $delta, $region, $uuid);
+          // @todo reoroder blocks properly.
+          $build[$region][$uuid]['#weight'] *= 2;
+          $build[$region]["destination_after_$uuid"]['#weight'] = $build[$region][$uuid]['#weight'] + 1;
         }
       }
+      $build[$region]['top_destination'] = $this->createDestinationArea($section, $delta, $region);
+      $build[$region]['top_destination']['#weight'] = -1000;
 
       $build[$region]['layout_builder_add_block']['link'] = [
         '#type' => 'link',
@@ -265,6 +273,7 @@ class LayoutBuilderController implements ContainerInjectionInterface {
               'class' => ['use-ajax', 'new-block__link'],
               'data-dialog-type' => 'dialog',
               'data-dialog-renderer' => 'off_canvas',
+              'data-layout-builder-action' => 'add-block',
             ],
           ]
         ),
@@ -315,6 +324,7 @@ class LayoutBuilderController implements ContainerInjectionInterface {
           'class' => ['use-ajax', 'remove-section'],
           'data-dialog-type' => 'dialog',
           'data-dialog-renderer' => 'off_canvas',
+          'data-layout-builder-action' => 'remove-section',
         ],
       ],
       'layout-section' => $build,
@@ -359,6 +369,64 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     $this->messenger->addMessage($this->t('The changes to the layout have been discarded.'));
 
     return new RedirectResponse($section_storage->getRedirectUrl()->setAbsolute()->toString());
+  }
+
+  /**
+   * Creates the block destination area.
+   *
+   * @param \Drupal\layout_builder\Section $section
+   *   The section.
+   * @param int $delta
+   *   The section delta.
+   * @param string $region
+   *   The region name.
+   * @param string|null $preceding_block_uuid
+   *   The UUID of the preceding block.
+   *
+   * @return array
+   *   The destination container render array.
+   */
+  private function createDestinationArea(Section $section, $delta, $region, $preceding_block_uuid = NULL) {
+    $title_delta = $delta + 1;
+    if ($preceding_block_uuid) {
+      $component = $section->getComponent($preceding_block_uuid);
+
+      $title = $this->t(
+        'Place block <span class="visually-hidden">in section @delta after block @block</span>',
+        [
+          '@delta' => $title_delta,
+          '@block' => $component->getPlugin()->label(),
+        ]
+      );
+    }
+    else {
+      $title = $this->t(
+        'Place block <span class="visually-hidden">at the beginning of section @delta</span>',
+        [
+          '@delta' => $title_delta,
+        ]
+      );
+    }
+    return [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['block-destination'],
+      ],
+      'link' => [
+        // @todo Make this an actual URL.
+        '#type' => 'html_tag',
+        '#tag' => 'a',
+        '#value' => $title,
+        '#attributes' => [
+          'href' => '/',
+          'data-delta-to' => $delta,
+          'data-region-to' => $region,
+          'data-preceding-block-uuid' => $preceding_block_uuid,
+          'class' => ['block-destination__link'],
+        ],
+      ],
+    ];
+
   }
 
 }
