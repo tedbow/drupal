@@ -233,9 +233,17 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     foreach ($layout_definition->getRegions() as $region => $info) {
       if (!empty($build[$region])) {
         foreach ($build[$region] as $uuid => $block) {
+          // Shift block output down a level in the render array to allow
+          // navigation links.
+          $build[$region][$uuid] = [
+            '#type' => 'container',
+            '#weight' => $build[$region][$uuid]['#weight'],
+            'block_output' => $build[$region][$uuid],
+            'layout_builder_reorder' => $this->createLayoutBuilderReorderNavigation($section_storage, $delta, $region, $uuid),
+          ];
           $build[$region][$uuid]['#attributes']['class'][] = 'draggable';
           $build[$region][$uuid]['#attributes']['data-layout-block-uuid'] = $uuid;
-          $build[$region][$uuid]['#contextual_links'] = [
+          $build[$region][$uuid]['block_output']['#contextual_links'] = [
             'layout_builder_block' => [
               'route_parameters' => [
                 'section_storage_type' => $storage_type,
@@ -359,6 +367,188 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     $this->messenger->addMessage($this->t('The changes to the layout have been discarded.'));
 
     return new RedirectResponse($section_storage->getRedirectUrl()->setAbsolute()->toString());
+  }
+
+  /**
+   * Creates Layout Builder navigation links.
+   *
+   * @return array
+   *   Navigation links render array.
+   */
+  protected function createLayoutBuilderReorderNavigation(SectionStorageInterface $section_storage, $delta_from, $region, $uuid) {
+    $previous_delta_to = NULL;
+    $region_block_uuids = $this->getRegionComponentUuids($section_storage, $delta_from, $region);
+    $current_block_index = array_search($uuid, $region_block_uuids, TRUE);
+    $previous_preceding_block_uuid = NULL;
+    if ($current_block_index > 0) {
+      $previous_delta_to = $delta_from;
+      $previous_region_to = $region;
+      if ($current_block_index === 1) {
+        $previous_preceding_block_uuid = NULL;
+      }
+      else {
+        $previous_preceding_block_uuid = $region_block_uuids[$current_block_index - 2];
+      }
+    }
+    else {
+      $previous_region_to = $this->getSiblingRegion($section_storage, $delta_from, $region, 'previous');
+      if ($previous_region_to) {
+        $previous_delta_to = $delta_from;
+      }
+      else {
+        if ($delta_from > 0) {
+          $previous_delta_to = $delta_from - 1;
+          $regions = $this->getRegionKeys($section_storage, $previous_delta_to);
+          $previous_region_to = array_pop($regions);
+        }
+      }
+      if ($previous_delta_to !== NULL && $previous_region_to !== NULL) {
+        $region_block_uuids = $this->getRegionComponentUuids($section_storage, $previous_delta_to, $previous_region_to);
+        if ($region_block_uuids) {
+          $previous_preceding_block_uuid = array_pop($region_block_uuids);
+        }
+      }
+    }
+    $next_region_to = NULL;
+    $next_preceding_block_uuid = NULL;
+    $region_block_uuids = $this->getRegionComponentUuids($section_storage, $delta_from, $region);
+    if ($current_block_index + 1 < count($region_block_uuids)) {
+      $next_delta_to = $delta_from;
+      $next_region_to = $region;
+      $next_preceding_block_uuid = $region_block_uuids[$current_block_index + 1];
+    }
+    else {
+      $next_region_to = $this->getSiblingRegion($section_storage, $delta_from, $region, 'next');
+      if ($next_region_to) {
+        $next_delta_to = $delta_from;
+      }
+      else {
+        if ($delta_from + 1 < $section_storage->count()) {
+          $next_delta_to = $delta_from + 1;
+          $regions = $this->getRegionKeys($section_storage, $next_delta_to);
+          $next_region_to = array_shift($regions);
+        }
+      }
+    }
+
+    $links = [
+      '#type' => 'container',
+      '#weight' => -1000,
+      '#attributes' => [
+        'class' => 'layout-builder-reorder',
+        'data-layout-builder-reorder' => TRUE,
+      ],
+    ];
+    if ($previous_region_to !== NULL) {
+      $links['previous'] = $this->createReorderLink($section_storage, $delta_from, $uuid, $previous_delta_to, $previous_preceding_block_uuid, $previous_region_to, 'previous');
+    }
+    if ($next_region_to !== NULL) {
+      $links['next'] = $this->createReorderLink($section_storage, $delta_from, $uuid, $next_delta_to, $next_preceding_block_uuid, $next_region_to, 'next');
+    }
+    return $links;
+  }
+
+  /**
+   * Gets the sibling region for another region in a section.
+   *
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   *   The section storage.
+   * @param int $delta
+   *   The delta of the section.
+   * @param string $region
+   *   The region.
+   * @param string $sibling_direction
+   *   Either 'previous' or 'next'.
+   *
+   * @return null|string
+   *   The sibling region if there is one.
+   */
+  protected function getSiblingRegion(SectionStorageInterface $section_storage, $delta, $region, $sibling_direction) {
+    $regions = $this->getRegionKeys($section_storage, $delta);
+    $sibling_index = array_search($region, $regions) + ($sibling_direction === 'previous' ? -1 : 1);
+    return isset($regions[$sibling_index]) ? $regions[$sibling_index] : NULL;
+  }
+
+  /**
+   * Gets the UUIDs for a sections components.
+   *
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   *   The section storage.
+   * @param int $delta
+   *   The delta of the section.
+   * @param string $region
+   *   The region.
+   *
+   * @return string[]
+   *   The region
+   */
+  protected function getRegionComponentUuids(SectionStorageInterface $section_storage, $delta, $region) {
+    $sortable = [];
+    foreach ($section_storage->getSection($delta)->getComponents() as $component) {
+      if ($component->getRegion() === $region) {
+        $sortable[$component->getWeight()] = $component->getUuid();
+      }
+    };
+    ksort($sortable);
+    return array_values($sortable);
+  }
+
+  /**
+   * Gets region keys for a section.
+   *
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   *   The section storage.
+   * @param int $delta
+   *   The delta of the section.
+   *
+   * @return string[]
+   *   The region keys.
+   */
+  protected function getRegionKeys(SectionStorageInterface $section_storage, $delta) {
+    $regions = array_keys($section_storage->getSection($delta)
+      ->getLayout()
+      ->getPluginDefinition()
+      ->getRegions());
+    return $regions;
+  }
+
+  /**
+   * Creates an reorder link.
+   *
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   * @param $delta_from
+   * @param $uuid
+   * @param $delta_to
+   * @param $preceding_block_uuid
+   * @param $region_to
+   *
+   * @return array
+   *   The link render array.
+   */
+  protected function createReorderLink(SectionStorageInterface $section_storage, $delta_from, $uuid, $delta_to, $preceding_block_uuid, $region_to, $direction) {
+    $route_arguments = [
+      'section_storage' => $section_storage->getStorageId(),
+      'delta_from' => $delta_from,
+      'delta_to' => $delta_to,
+      'direction_focus' => $direction,
+      'block_uuid' => $uuid,
+      'preceding_block_uuid' => $preceding_block_uuid,
+      'region_to' => $region_to,
+      'section_storage_type' => $section_storage->getStorageType(),
+    ];
+    $url = Url::fromRoute('layout_builder.move_block', $route_arguments);
+    unset($route_arguments['section_storage'], $route_arguments['section_storage_type'], $route_arguments['block_uuid'], $route_arguments['delta_from']);
+    foreach ($route_arguments as $key => $route_argument) {
+      $attributes["data-$key"] = $route_argument;
+    }
+    $attributes['class'] = ['layout-reorder-previous'];
+    $link = [
+      '#type' => 'link',
+      '#title' => $direction === 'previous' ? $this->t('Previous') : $this->t('Next'),
+      '#url' => $url,
+      '#attributes' => $attributes,
+    ];
+    return $link;
   }
 
 }

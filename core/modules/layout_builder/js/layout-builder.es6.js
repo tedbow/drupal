@@ -49,6 +49,35 @@
             }
           },
         });
+      $(context)
+        .find('[data-layout-builder-reorder] [data-region_to]')
+        .on('click', e => {
+          const delta = $(e.target).data('delta_to');
+          const region = $(e.target).data('region_to');
+          const precedingUuid = $(e.target).data('preceding_block_uuid');
+
+          const block = $(e.target).closest('[data-layout-block-uuid]');
+          if (precedingUuid) {
+            const preceedingBlock = $(
+              `#layout-builder [data-layout-block-uuid="${precedingUuid}"]`,
+            );
+            preceedingBlock.after(block);
+          } else {
+            const regionElement = $(
+              `#layout-builder [data-layout-delta="${delta}"] [data-region="${region}"]`,
+            );
+            const firstBlock = regionElement
+              .children('[data-layout-block-uuid], .new-block')
+              .first();
+            firstBlock.before(block);
+          }
+          $(e.target).focus();
+          ajax({
+            progress: { type: 'fullscreen' },
+            url: $(e.target).attr('href'),
+          }).execute();
+          e.preventDefault();
+        });
     },
   };
 })(jQuery, Drupal);

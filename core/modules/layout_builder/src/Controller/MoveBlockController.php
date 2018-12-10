@@ -2,11 +2,13 @@
 
 namespace Drupal\layout_builder\Controller;
 
+use Drupal\Core\Ajax\AjaxHelperTrait;
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\SectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Defines a controller to move a block.
@@ -16,6 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MoveBlockController implements ContainerInjectionInterface {
 
   use LayoutRebuildTrait;
+  use AjaxHelperTrait;
 
   /**
    * The layout tempstore repository.
@@ -60,13 +63,16 @@ class MoveBlockController implements ContainerInjectionInterface {
    *   The new region for this block.
    * @param string $block_uuid
    *   The UUID for this block.
+   * @param string $direction_focus
+   *   The order link that should be in focus after a move, either 'previous',
+   *   'next' or 'none'.
    * @param string|null $preceding_block_uuid
    *   (optional) If provided, the UUID of the block to insert this block after.
    *
-   * @return \Drupal\Core\Ajax\AjaxResponse
-   *   An AJAX response.
+   * @return \Symfony\Component\HttpFoundation\Response
+   *   The controller response.
    */
-  public function build(SectionStorageInterface $section_storage, $delta_from, $delta_to, $region_to, $block_uuid, $preceding_block_uuid = NULL) {
+  public function build(SectionStorageInterface $section_storage, $delta_from, $delta_to, $region_to, $block_uuid, $direction_focus, $preceding_block_uuid = NULL) {
     $section = $section_storage->getSection($delta_from);
 
     $component = $section->getComponent($block_uuid);
@@ -89,7 +95,25 @@ class MoveBlockController implements ContainerInjectionInterface {
     }
 
     $this->layoutTempstoreRepository->set($section_storage);
-    return $this->rebuildLayout($section_storage);
+
+    $focus_selectors = [];
+    if ($direction_focus !== 'none') {
+      $backup_focus = $direction_focus === 'previous' ? 'next' : 'previous';
+      // Provide 2 focus selectors. Both will be trigger on but the second one
+      // will provide focus to the user. In the case that $direction_focus is
+      // not available the back with receive focus.
+      $focus_selectors[] = "#layout-builder [data-layout-block-uuid=\"$block_uuid\"] [data-direction_focus=\"$backup_focus\"]";
+      $focus_selectors[] = "#layout-builder [data-layout-block-uuid=\"$block_uuid\"] [data-direction_focus=\"$direction_focus\"]";
+    }
+
+    if ($this->isAjax()) {
+      return $this->rebuildLayout($section_storage, $focus_selectors);
+    }
+    else {
+      $url = $section_storage->getLayoutBuilderUrl();
+      return new RedirectResponse($url->setAbsolute()->toString());
+    }
+
   }
 
 }

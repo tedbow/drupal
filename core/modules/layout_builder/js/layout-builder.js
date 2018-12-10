@@ -30,6 +30,27 @@
           }
         }
       });
+      $(context).find('[data-layout-builder-reorder] [data-region_to]').on('click', function (e) {
+        var delta = $(e.target).data('delta_to');
+        var region = $(e.target).data('region_to');
+        var precedingUuid = $(e.target).data('preceding_block_uuid');
+
+        var block = $(e.target).closest('[data-layout-block-uuid]');
+        if (precedingUuid) {
+          var preceedingBlock = $('#layout-builder [data-layout-block-uuid="' + precedingUuid + '"]');
+          preceedingBlock.after(block);
+        } else {
+          var regionElement = $('#layout-builder [data-layout-delta="' + delta + '"] [data-region="' + region + '"]');
+          var firstBlock = regionElement.children('[data-layout-block-uuid], .new-block').first();
+          firstBlock.before(block);
+        }
+        $(e.target).focus();
+        ajax({
+          progress: { type: 'fullscreen' },
+          url: $(e.target).attr('href')
+        }).execute();
+        e.preventDefault();
+      });
     }
   };
 })(jQuery, Drupal);

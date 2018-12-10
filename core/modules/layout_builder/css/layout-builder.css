@@ -114,3 +114,7 @@
   display: block;
   padding: 15px 0 15px 25px;
 }
+
+.block-layout-builder.updating {
+  opacity: 0.5;
+}

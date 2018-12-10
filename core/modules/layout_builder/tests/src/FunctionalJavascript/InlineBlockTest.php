@@ -75,8 +75,8 @@ class InlineBlockTest extends InlineBlockTestBase {
     $this->drupalGet('node/1/layout');
     /* @var \Behat\Mink\Element\NodeElement $inline_block_2 */
     $inline_block_2 = $page->findAll('css', static::INLINE_BLOCK_LOCATOR)[1];
-    $uuid = $inline_block_2->getAttribute('data-layout-block-uuid');
-    $block_css_locator = static::INLINE_BLOCK_LOCATOR . "[data-layout-block-uuid=\"$uuid\"]";
+    $uuid = $inline_block_2->getParent()->getAttribute('data-layout-block-uuid');
+    $block_css_locator = "[data-layout-block-uuid=\"$uuid\"] " . static::INLINE_BLOCK_LOCATOR;
     $this->configureInlineBlock('The 2nd block body', 'The 2nd NEW block body!', $block_css_locator);
     $this->assertSaveLayout();
     $this->drupalGet('node/1');
