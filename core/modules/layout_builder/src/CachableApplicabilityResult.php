@@ -30,16 +30,4 @@ class CachableApplicabilityResult implements RefinableCacheableDependencyInterfa
     return $this->isApplicable;
   }
 
-  /**
-   * @param bool $is_applicable
-   *
-   * @return \Drupal\layout_builder\CachableApplicabilityResult
-   */
-  public function setIsApplicable($is_applicable) {
-    $this->isApplicable = $is_applicable;
-    return $this;
-  }
-
-
-
 }
