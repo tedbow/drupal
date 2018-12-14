@@ -98,7 +98,7 @@ class SectionStorageManager extends DefaultPluginManager implements SectionStora
 
     foreach ($storage_types as $type) {
       if ($plugin = $this->load($type, $contexts)) {
-        $is_applicable = $plugin->isRenderApplicable();
+        $is_applicable = $plugin->getRenderApplicability();
         if ($cacheability) {
           $cacheability->addCacheableDependency($is_applicable);
         }

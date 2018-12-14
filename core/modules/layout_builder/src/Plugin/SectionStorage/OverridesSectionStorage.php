@@ -330,7 +330,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function isRouterApplicable() {
+  public function getRouterApplicability() {
     $default_section_storage = $this->getDefaultSectionStorage();
     return (new CachableApplicabilityResult($default_section_storage->isLayoutBuilderEnabled()))->addCacheableDependency($default_section_storage);
   }
@@ -338,7 +338,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function isRenderApplicable() {
+  public function getRenderApplicability() {
     // Check that overrides are enabled and have at least one section.
     $default_section_storage = $this->getDefaultSectionStorage();
     return (new CachableApplicabilityResult($default_section_storage->isOverridable() && count($this)))

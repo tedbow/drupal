@@ -24,7 +24,7 @@ class LayoutBuilderAccessCheck implements AccessInterface {
    *   The access result.
    */
   public function access(SectionStorageInterface $section_storage) {
-    $access = AccessResult::allowedIf($section_storage->isRouterApplicable()->isApplicable());
+    $access = AccessResult::allowedIf($section_storage->getRouterApplicability()->isApplicable());
     if ($access instanceof RefinableCacheableDependencyInterface) {
       $access->addCacheableDependency($section_storage);
     }

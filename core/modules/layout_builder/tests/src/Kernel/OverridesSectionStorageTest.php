@@ -113,7 +113,7 @@ class OverridesSectionStorageTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::isRouterApplicable
+   * @covers ::getRouterApplicability
    * @dataProvider providerTestRoutingAccess
    *
    * @param \Drupal\Core\Access\AccessResultInterface $expected
@@ -141,7 +141,7 @@ class OverridesSectionStorageTest extends KernelTestBase {
     $entity->save();
 
     $this->plugin->setContext('entity', EntityContext::fromEntity($entity));
-    $result = $this->plugin->isRouterApplicable();
+    $result = $this->plugin->getRouterApplicability();
     $this->assertEquals($expected, $result);
   }
 

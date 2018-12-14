@@ -111,7 +111,7 @@ class DefaultsSectionStorageTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::isRouterApplicable
+   * @covers ::getRouterApplicability
    * @dataProvider providerTestRoutingAccess
    *
    * @param \Drupal\Core\Access\AccessResultInterface $expected
@@ -136,7 +136,7 @@ class DefaultsSectionStorageTest extends KernelTestBase {
       ->save();
 
     $this->plugin->setContext('display', EntityContext::fromEntity($display));
-    $result = $this->plugin->isRouterApplicable();
+    $result = $this->plugin->getRouterApplicability();
     $this->assertEquals($expected, $result);
   }
 

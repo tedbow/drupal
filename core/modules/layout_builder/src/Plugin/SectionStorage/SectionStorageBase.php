@@ -115,14 +115,14 @@ abstract class SectionStorageBase extends ContextAwarePluginBase implements Sect
    */
   public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
     @trigger_error('@todo', E_USER_DEPRECATED);
-    $result = AccessResult::allowedIf($this->isRouterApplicable()->isApplicable());
+    $result = AccessResult::allowedIf($this->getRouterApplicability()->isApplicable());
     return $return_as_object ? $result : $result->isAllowed();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isRenderApplicable() {
+  public function getRenderApplicability() {
     return AccessResult::allowed();
   }
 

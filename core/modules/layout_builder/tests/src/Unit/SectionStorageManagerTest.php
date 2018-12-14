@@ -222,10 +222,10 @@ class SectionStorageManagerTest extends UnitTestCase {
     $this->discovery->getDefinitions()->willReturn($definitions);
 
     $provider_access = $this->prophesize(SectionStorageInterface::class);
-    $provider_access->isRenderApplicable()->willReturn($plugin_access);
+    $provider_access->getRenderApplicability()->willReturn($plugin_access);
 
     $not_applicable = $this->prophesize(SectionStorageInterface::class);
-    $not_applicable->isRenderApplicable()->willReturn(new CachableApplicabilityResult(FALSE));
+    $not_applicable->getRenderApplicability()->willReturn(new CachableApplicabilityResult(FALSE));
 
     $missing_contexts = $this->prophesize(SectionStorageInterface::class);
 
@@ -276,10 +276,10 @@ class SectionStorageManagerTest extends UnitTestCase {
     $this->discovery->getDefinitions()->willReturn($definitions);
 
     $first_plugin = $this->prophesize(SectionStorageInterface::class);
-    $first_plugin->isRenderApplicable()->willReturn((new CachableApplicabilityResult(FALSE))->addCacheTags(['first_plugin']));
+    $first_plugin->getRenderApplicability()->willReturn((new CachableApplicabilityResult(FALSE))->addCacheTags(['first_plugin']));
 
     $second_plugin = $this->prophesize(SectionStorageInterface::class);
-    $second_plugin->isRenderApplicable()->willReturn((new CachableApplicabilityResult(TRUE))->addCacheTags(['second_plugin']));
+    $second_plugin->getRenderApplicability()->willReturn((new CachableApplicabilityResult(TRUE))->addCacheTags(['second_plugin']));
 
     $this->factory->createInstance('first', [])->willReturn($first_plugin->reveal());
     $this->factory->createInstance('second', [])->willReturn($second_plugin->reveal());

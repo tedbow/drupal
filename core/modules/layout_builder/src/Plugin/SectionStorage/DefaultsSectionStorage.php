@@ -447,7 +447,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function isRouterApplicable() {
+  public function getRouterApplicability() {
     return (new CachableApplicabilityResult($this->isLayoutBuilderEnabled()))->addCacheableDependency($this->getDisplay());
   }
 

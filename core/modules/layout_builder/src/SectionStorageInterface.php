@@ -169,11 +169,11 @@ interface SectionStorageInterface extends SectionListInterface, PluginInspection
   /**
    * @return \Drupal\layout_builder\CachableApplicabilityResult;
    */
-  public function isRouterApplicable();
+  public function getRouterApplicability();
 
   /**
    * @return \Drupal\layout_builder\CachableApplicabilityResult;
    */
-  public function isRenderApplicable();
+  public function getRenderApplicability();
 
 }
