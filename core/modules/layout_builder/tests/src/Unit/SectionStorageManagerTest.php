@@ -6,14 +6,13 @@ use Drupal\Component\Plugin\Context\ContextInterface;
 use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
 use Drupal\Component\Plugin\Exception\ContextException;
 use Drupal\Component\Plugin\Factory\FactoryInterface;
-use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\ContextHandlerInterface;
+use Drupal\layout_builder\CachableApplicabilityResult;
 use Drupal\layout_builder\SectionStorage\SectionStorageDefinition;
 use Drupal\layout_builder\SectionStorage\SectionStorageManager;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -211,7 +210,7 @@ class SectionStorageManagerTest extends UnitTestCase {
    * @param bool $boolean_access
    *   The Boolean equivalent of $plugin_access.
    */
-  public function testFindByContext(AccessResultInterface $plugin_access, $boolean_access) {
+  public function testFindByContext(CachableApplicabilityResult $plugin_access, $boolean_access) {
     $contexts = [
       'foo' => new Context(new ContextDefinition('foo')),
     ];
@@ -223,20 +222,20 @@ class SectionStorageManagerTest extends UnitTestCase {
     $this->discovery->getDefinitions()->willReturn($definitions);
 
     $provider_access = $this->prophesize(SectionStorageInterface::class);
-    $provider_access->renderAccess()->willReturn($plugin_access);
+    $provider_access->getRenderApplicability()->willReturn($plugin_access);
 
-    $no_access = $this->prophesize(SectionStorageInterface::class);
-    $no_access->renderAccess()->willReturn(AccessResult::neutral());
+    $not_applicable = $this->prophesize(SectionStorageInterface::class);
+    $not_applicable->getRenderApplicability()->willReturn(new CachableApplicabilityResult(FALSE));
 
     $missing_contexts = $this->prophesize(SectionStorageInterface::class);
 
     // Do not do any filtering based on context.
     $this->contextHandler->filterPluginDefinitionsByContexts($contexts, $definitions)->willReturnArgument(1);
-    $this->contextHandler->applyContextMapping($no_access, $contexts)->shouldBeCalled();
+    $this->contextHandler->applyContextMapping($not_applicable, $contexts)->shouldBeCalled();
     $this->contextHandler->applyContextMapping($provider_access, $contexts)->shouldBeCalled();
     $this->contextHandler->applyContextMapping($missing_contexts, $contexts)->willThrow(new ContextException());
 
-    $this->factory->createInstance('no_access', [])->willReturn($no_access->reveal());
+    $this->factory->createInstance('no_access', [])->willReturn($not_applicable->reveal());
     $this->factory->createInstance('missing_contexts', [])->willReturn($missing_contexts->reveal());
     $this->factory->createInstance('provider_access', [])->willReturn($provider_access->reveal());
 
@@ -257,8 +256,8 @@ class SectionStorageManagerTest extends UnitTestCase {
     // - the result for the plugin's access method to return.
     // - the Boolean equivalent of that result.
     $data = [];
-    $data['plugin access: true'] = [AccessResult::allowed(), TRUE];
-    $data['plugin access: false'] = [AccessResult::neutral(), FALSE];
+    $data['plugin access: true'] = [new CachableApplicabilityResult(TRUE), TRUE];
+    $data['plugin access: false'] = [new CachableApplicabilityResult(FALSE), FALSE];
     return $data;
   }
 
@@ -277,10 +276,10 @@ class SectionStorageManagerTest extends UnitTestCase {
     $this->discovery->getDefinitions()->willReturn($definitions);
 
     $first_plugin = $this->prophesize(SectionStorageInterface::class);
-    $first_plugin->renderAccess()->willReturn(AccessResult::neutral()->addCacheTags(['first_plugin']));
+    $first_plugin->getRenderApplicability()->willReturn((new CachableApplicabilityResult(FALSE))->addCacheTags(['first_plugin']));
 
     $second_plugin = $this->prophesize(SectionStorageInterface::class);
-    $second_plugin->renderAccess()->willReturn(AccessResult::allowed()->addCacheTags(['second_plugin']));
+    $second_plugin->getRenderApplicability()->willReturn((new CachableApplicabilityResult(TRUE))->addCacheTags(['second_plugin']));
 
     $this->factory->createInstance('first', [])->willReturn($first_plugin->reveal());
     $this->factory->createInstance('second', [])->willReturn($second_plugin->reveal());

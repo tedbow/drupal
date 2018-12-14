@@ -13,6 +13,7 @@ use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\field_ui\FieldUI;
+use Drupal\layout_builder\CachableApplicabilityResult;
 use Drupal\layout_builder\DefaultsSectionStorageInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderSampleEntityGenerator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -446,8 +447,8 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function routingAccess() {
-    return AccessResult::allowedIf($this->isLayoutBuilderEnabled());
+  public function getRouterApplicability() {
+    return (new CachableApplicabilityResult($this->isLayoutBuilderEnabled()))->addCacheableDependency($this->getDisplay());
   }
 
 }

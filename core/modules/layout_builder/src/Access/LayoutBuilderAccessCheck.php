@@ -2,11 +2,10 @@
 
 namespace Drupal\layout_builder\Access;
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Routing\Access\AccessInterface;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\layout_builder\SectionStorageInterface;
-use Symfony\Component\Routing\Route;
 
 /**
  * Provides an access check for the Layout Builder defaults.
@@ -25,7 +24,7 @@ class LayoutBuilderAccessCheck implements AccessInterface {
    *   The access result.
    */
   public function access(SectionStorageInterface $section_storage) {
-    $access = $section_storage->routingAccess();
+    $access = AccessResult::allowedIf($section_storage->getRouterApplicability()->isApplicable());
     if ($access instanceof RefinableCacheableDependencyInterface) {
       $access->addCacheableDependency($section_storage);
     }
