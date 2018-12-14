@@ -186,7 +186,8 @@ class SimpleConfigSectionStorage extends ContextAwarePluginBase implements Secti
    * {@inheritdoc}
    */
   public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $result = AccessResult::allowed();
+    @trigger_error('@todo', E_USER_DEPRECATED);
+    $result = $this->routingAccess();
     return $return_as_object ? $result : $result->isAllowed();
   }
 

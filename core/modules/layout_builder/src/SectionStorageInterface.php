@@ -14,6 +14,8 @@ use Symfony\Component\Routing\RouteCollection;
  *   Layout Builder is currently experimental and should only be leveraged by
  *   experimental modules and development releases of contributed modules.
  *   See https://www.drupal.org/core/experimental for more information.
+ *
+ * @todo Remove AccessibleInterface
  */
 interface SectionStorageInterface extends SectionListInterface, PluginInspectionInterface, ContextAwarePluginInterface, AccessibleInterface {
 
@@ -163,5 +165,15 @@ interface SectionStorageInterface extends SectionListInterface, PluginInspection
    *   performed.
    */
   public function save();
+
+  /**
+   * @return \Drupal\Core\Access\AccessResultInterface
+   */
+  public function routingAccess();
+
+  /**
+   * @return \Drupal\Core\Access\AccessResultInterface
+   */
+  public function renderAccess();
 
 }

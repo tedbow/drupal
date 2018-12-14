@@ -3,6 +3,7 @@
 namespace Drupal\layout_builder\SectionStorage;
 
 use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
+use Drupal\Core\Cache\CacheableMetadata;
 
 /**
  * Provides the interface for a plugin manager of section storage types.
@@ -30,15 +31,16 @@ interface SectionStorageManagerInterface extends DiscoveryInterface {
   /**
    * Finds the section storage to load based on available contexts.
    *
-   * @param string $operation
-   *   The access operation. See \Drupal\Core\Access\AccessibleInterface.
    * @param \Drupal\Component\Plugin\Context\ContextInterface[] $contexts
    *   The contexts which should be used to determine which storage to return.
+   * @param \Drupal\Core\Cache\CacheableMetadata|null $cacheability
+   *   (optional) Cacheability metadata object, which will be populated based on
+   *   the cacheability of each section storage candidate.
    *
    * @return \Drupal\layout_builder\SectionStorageInterface|null
    *   The section storage if one matched all contexts, or NULL otherwise.
    */
-  public function findByContext($operation, array $contexts);
+  public function findByContext(array $contexts, CacheableMetadata &$cacheability = NULL);
 
   /**
    * Loads a section storage with no associated section list.

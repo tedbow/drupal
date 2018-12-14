@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\layout_builder\Kernel;
 
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\entity_test\Entity\EntityTest;
 use Drupal\KernelTests\KernelTestBase;
@@ -54,6 +56,9 @@ class OverridesSectionStorageTest extends KernelTestBase {
    * @covers ::access
    * @dataProvider providerTestAccess
    *
+   * @group legacy
+   * @expectedDeprecation @todo
+   *
    * @param bool $expected
    *   The expected outcome of ::access().
    * @param string $operation
@@ -105,6 +110,77 @@ class OverridesSectionStorageTest extends KernelTestBase {
     $data['view, enabled, no data'] = [TRUE, 'view', TRUE, []];
     $data['view, disabled, data'] = [FALSE, 'view', FALSE, $section_data];
     $data['view, enabled, data'] = [TRUE, 'view', TRUE, $section_data];
+    return $data;
+  }
+
+  /**
+   * @covers ::routingAccess
+   * @dataProvider providerTestRoutingAccess
+   *
+   * @param \Drupal\Core\Access\AccessResultInterface $expected
+   *   The expected outcome of ::routingAccess().
+   * @param bool $is_enabled
+   *   Whether Layout Builder is enabled for this display.
+   * @param array $section_data
+   *   Data to store as the sections value for Layout Builder.
+   */
+  public function testRoutingAccess(AccessResultInterface $expected, $is_enabled, array $section_data) {
+    $display = LayoutBuilderEntityViewDisplay::create([
+      'targetEntityType' => 'entity_test',
+      'bundle' => 'entity_test',
+      'mode' => 'default',
+      'status' => TRUE,
+    ]);
+    if ($is_enabled) {
+      $display->enableLayoutBuilder();
+    }
+    $display
+      ->setOverridable()
+      ->save();
+
+    $entity = EntityTest::create([OverridesSectionStorage::FIELD_NAME => $section_data]);
+    $entity->save();
+
+    $this->plugin->setContext('entity', EntityContext::fromEntity($entity));
+    $result = $this->plugin->routingAccess();
+    $this->assertEquals($expected, $result);
+  }
+
+  /**
+   * Provides test data for ::testRoutingAccess().
+   */
+  public function providerTestRoutingAccess() {
+    $section_data = [
+      new Section('layout_default', [], [
+        'first-uuid' => new SectionComponent('first-uuid', 'content', ['id' => 'foo']),
+      ]),
+    ];
+
+    // Data provider values are:
+    // - the expected outcome of the call to ::routingAccess()
+    // - whether Layout Builder has been enabled for this display
+    // - whether this display has any section data.
+    $data = [];
+    $data['disabled, no data'] = [
+      AccessResult::neutral()->addCacheTags(['config:core.entity_view_display.entity_test.entity_test.default']),
+      FALSE,
+      [],
+    ];
+    $data['enabled, no data'] = [
+      AccessResult::allowed()->addCacheTags(['config:core.entity_view_display.entity_test.entity_test.default']),
+      TRUE,
+      [],
+    ];
+    $data['disabled, data'] = [
+      AccessResult::neutral()->addCacheTags(['config:core.entity_view_display.entity_test.entity_test.default']),
+      FALSE,
+      $section_data,
+    ];
+    $data['enabled, data'] = [
+      AccessResult::allowed()->addCacheTags(['config:core.entity_view_display.entity_test.entity_test.default']),
+      TRUE,
+      $section_data,
+    ];
     return $data;
   }
 

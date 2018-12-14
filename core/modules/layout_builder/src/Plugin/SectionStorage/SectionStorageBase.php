@@ -2,7 +2,9 @@
 
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Plugin\ContextAwarePluginBase;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\layout_builder\Routing\LayoutBuilderRoutesTrait;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionListInterface;
@@ -106,6 +108,22 @@ abstract class SectionStorageBase extends ContextAwarePluginBase implements Sect
    */
   public function getContextsDuringPreview() {
     return $this->getContexts();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
+    @trigger_error('@todo', E_USER_DEPRECATED);
+    $result = $this->routingAccess();
+    return $return_as_object ? $result : $result->isAllowed();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function renderAccess() {
+    return AccessResult::allowed();
   }
 
 }

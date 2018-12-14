@@ -6,6 +6,9 @@ use Drupal\Component\Plugin\Context\ContextInterface;
 use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
 use Drupal\Component\Plugin\Exception\ContextException;
 use Drupal\Component\Plugin\Factory\FactoryInterface;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Access\AccessResultInterface;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\Context\Context;
@@ -203,10 +206,12 @@ class SectionStorageManagerTest extends UnitTestCase {
    *
    * @dataProvider providerTestFindByContext
    *
-   * @param bool $plugin_access
+   * @param \Drupal\Core\Access\AccessResultInterface $plugin_access
    *   The result for the plugin's access method to return.
+   * @param bool $boolean_access
+   *   The Boolean equivalent of $plugin_access.
    */
-  public function testFindByContext($plugin_access) {
+  public function testFindByContext(AccessResultInterface $plugin_access, $boolean_access) {
     $contexts = [
       'foo' => new Context(new ContextDefinition('foo')),
     ];
@@ -218,10 +223,10 @@ class SectionStorageManagerTest extends UnitTestCase {
     $this->discovery->getDefinitions()->willReturn($definitions);
 
     $provider_access = $this->prophesize(SectionStorageInterface::class);
-    $provider_access->access('test_operation')->willReturn($plugin_access);
+    $provider_access->renderAccess()->willReturn($plugin_access);
 
     $no_access = $this->prophesize(SectionStorageInterface::class);
-    $no_access->access('test_operation')->willReturn(FALSE);
+    $no_access->renderAccess()->willReturn(AccessResult::neutral());
 
     $missing_contexts = $this->prophesize(SectionStorageInterface::class);
 
@@ -235,8 +240,8 @@ class SectionStorageManagerTest extends UnitTestCase {
     $this->factory->createInstance('missing_contexts', [])->willReturn($missing_contexts->reveal());
     $this->factory->createInstance('provider_access', [])->willReturn($provider_access->reveal());
 
-    $result = $this->manager->findByContext('test_operation', $contexts);
-    if ($plugin_access) {
+    $result = $this->manager->findByContext($contexts);
+    if ($boolean_access) {
       $this->assertSame($provider_access->reveal(), $result);
     }
     else {
@@ -250,10 +255,45 @@ class SectionStorageManagerTest extends UnitTestCase {
   public function providerTestFindByContext() {
     // Data provider values are:
     // - the result for the plugin's access method to return.
+    // - the Boolean equivalent of that result.
     $data = [];
-    $data['plugin access: true'] = [TRUE];
-    $data['plugin access: false'] = [FALSE];
+    $data['plugin access: true'] = [AccessResult::allowed(), TRUE];
+    $data['plugin access: false'] = [AccessResult::neutral(), FALSE];
     return $data;
+  }
+
+  /**
+   * @covers ::findByContext
+   */
+  public function testFindByContextCacheableSectionStorage() {
+    $contexts = [
+      'foo' => new Context(new ContextDefinition('foo')),
+    ];
+
+    $definitions = [
+      'first' => new SectionStorageDefinition(),
+      'second' => new SectionStorageDefinition(),
+    ];
+    $this->discovery->getDefinitions()->willReturn($definitions);
+
+    $first_plugin = $this->prophesize(SectionStorageInterface::class);
+    $first_plugin->renderAccess()->willReturn(AccessResult::neutral()->addCacheTags(['first_plugin']));
+
+    $second_plugin = $this->prophesize(SectionStorageInterface::class);
+    $second_plugin->renderAccess()->willReturn(AccessResult::allowed()->addCacheTags(['second_plugin']));
+
+    $this->factory->createInstance('first', [])->willReturn($first_plugin->reveal());
+    $this->factory->createInstance('second', [])->willReturn($second_plugin->reveal());
+
+    // Do not do any filtering based on context.
+    $this->contextHandler->filterPluginDefinitionsByContexts($contexts, $definitions)->willReturnArgument(1);
+    $this->contextHandler->applyContextMapping($first_plugin, $contexts)->shouldBeCalled();
+    $this->contextHandler->applyContextMapping($second_plugin, $contexts)->shouldBeCalled();
+
+    $cacheability = new CacheableMetadata();
+    $result = $this->manager->findByContext($contexts, $cacheability);
+    $this->assertSame($second_plugin->reveal(), $result);
+    $this->assertSame(['first_plugin', 'second_plugin'], $cacheability->getCacheTags());
   }
 
 }

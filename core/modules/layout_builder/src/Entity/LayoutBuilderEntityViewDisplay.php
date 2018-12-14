@@ -2,9 +2,12 @@
 
 namespace Drupal\layout_builder\Entity;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\Entity\EntityViewDisplay as BaseEntityViewDisplay;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Plugin\Context\Context;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\field\Entity\FieldConfig;
@@ -240,7 +243,13 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
 
     /** @var \Drupal\Core\Entity\EntityInterface $entity */
     foreach ($entities as $id => $entity) {
-      $sections = $this->getRuntimeSections($entity);
+      $cacheability = new CacheableMetadata();
+      $sections = $this->getRuntimeSections($entity, $cacheability);
+
+      // Apply cacheability metadata to the build array.
+      $build_list[$id]['_layout_builder'] = [];
+      $cacheability->applyTo($build_list[$id]['_layout_builder']);
+
       if ($sections) {
         foreach ($build_list[$id] as $name => $build_part) {
           $field_definition = $this->getFieldDefinition($name);
@@ -249,13 +258,13 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
           }
         }
 
-        // Bypass ::getContexts() in order to use the runtime entity, not a
-        // sample entity.
-        $contexts = $this->contextRepository()->getAvailableContexts();
+        $contexts = $this->getContextsForEntity($entity);
+        // @todo Remove in https://www.drupal.org/project/drupal/issues/3018782.
         $label = new TranslatableMarkup('@entity being viewed', [
           '@entity' => $entity->getEntityType()->getSingularLabel(),
         ]);
         $contexts['layout_builder.entity'] = EntityContext::fromEntity($entity, $label);
+
         foreach ($sections as $delta => $section) {
           $build_list[$id]['_layout_builder'][$delta] = $section->toRenderArray($contexts);
         }
@@ -266,20 +275,37 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   }
 
   /**
-   * Gets the runtime sections for a given entity.
+   * Gets the available contexts for a given entity.
    *
    * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
    *   The entity.
    *
+   * @return \Drupal\Core\Plugin\Context\ContextInterface[]
+   *   An array of context objects for a given entity.
+   */
+  protected function getContextsForEntity(FieldableEntityInterface $entity) {
+    return [
+      'view_mode' => new Context(ContextDefinition::create('string'), $this->getMode()),
+      'entity' => EntityContext::fromEntity($entity),
+      'display' => EntityContext::fromEntity($this),
+    ] + $this->contextRepository()->getAvailableContexts();
+  }
+
+  /**
+   * Gets the runtime sections for a given entity.
+   *
+   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
+   *   The entity.
+   * @param \Drupal\Core\Cache\CacheableMetadata|null $cacheability
+   *   (optional) Cacheability metadata object, which will be populated based on
+   *   the cacheability of each section storage candidate.
+   *
    * @return \Drupal\layout_builder\Section[]
    *   The sections.
    */
-  protected function getRuntimeSections(FieldableEntityInterface $entity) {
-    if ($this->isOverridable() && !$entity->get(OverridesSectionStorage::FIELD_NAME)->isEmpty()) {
-      return $entity->get(OverridesSectionStorage::FIELD_NAME)->getSections();
-    }
-
-    return $this->getSections();
+  protected function getRuntimeSections(FieldableEntityInterface $entity, CacheableMetadata &$cacheability = NULL) {
+    $storage = $this->sectionStorageManager()->findByContext($this->getContextsForEntity($entity), $cacheability);
+    return $storage ? $storage->getSections() : [];
   }
 
   /**
@@ -397,6 +423,16 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
 
     // Return the first section.
     return $this->getSection(0);
+  }
+
+  /**
+   * Gets the section storage manager.
+   *
+   * @return \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface
+   *   The section storage manager.
+   */
+  private function sectionStorageManager() {
+    return \Drupal::service('plugin.manager.layout_builder.section_storage');
   }
 
 }

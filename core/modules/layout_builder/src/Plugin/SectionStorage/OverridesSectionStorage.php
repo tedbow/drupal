@@ -329,10 +329,20 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
+  public function routingAccess() {
     $default_section_storage = $this->getDefaultSectionStorage();
-    $result = AccessResult::allowedIf($default_section_storage->isLayoutBuilderEnabled())->addCacheableDependency($default_section_storage);
-    return $return_as_object ? $result : $result->isAllowed();
+    return AccessResult::allowedIf($default_section_storage->isLayoutBuilderEnabled())->addCacheableDependency($default_section_storage);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function renderAccess() {
+    // Check that overrides are enabled and have at least one section.
+    $default_section_storage = $this->getDefaultSectionStorage();
+    return AccessResult::allowedIf($default_section_storage->isOverridable() && count($this))
+      ->addCacheableDependency($default_section_storage)
+      ->addCacheableDependency($this->getEntity());
   }
 
 }

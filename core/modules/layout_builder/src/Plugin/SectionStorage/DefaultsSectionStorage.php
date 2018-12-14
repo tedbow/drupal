@@ -21,8 +21,15 @@ use Symfony\Component\Routing\RouteCollection;
 /**
  * Defines the 'defaults' section storage type.
  *
+ * DefaultsSectionStorage uses a positive weight because:
+ * - It must be picked after
+ *   \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage.
+ * - The default weight is 0, so other custom implementations will also take
+ *   precedence unless otherwise specified.
+ *
  * @SectionStorage(
  *   id = "defaults",
+ *   weight = 20,
  *   context_definitions = {
  *     "display" = @ContextDefinition("entity:entity_view_display"),
  *   },
@@ -439,9 +446,8 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $result = AccessResult::allowedIf($this->isLayoutBuilderEnabled());
-    return $return_as_object ? $result : $result->isAllowed();
+  public function routingAccess() {
+    return AccessResult::allowedIf($this->isLayoutBuilderEnabled());
   }
 
 }
