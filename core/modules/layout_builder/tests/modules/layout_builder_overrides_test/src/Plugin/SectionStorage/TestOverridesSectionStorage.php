@@ -36,7 +36,7 @@ class TestOverridesSectionStorage extends SectionStorageBase {
   /**
    * {@inheritdoc}
    */
-  public function routingAccess() {
+  public function isRouterApplicable() {
     return AccessResult::allowedIf(\Drupal::state()->get('layout_builder_overrides_test', FALSE))->setCacheMaxAge(0);
   }
 

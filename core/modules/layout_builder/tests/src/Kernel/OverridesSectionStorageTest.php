@@ -2,11 +2,10 @@
 
 namespace Drupal\Tests\layout_builder\Kernel;
 
-use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\entity_test\Entity\EntityTest;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\layout_builder\CachableApplicabilityResult;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\Section;
@@ -114,7 +113,7 @@ class OverridesSectionStorageTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::routingAccess
+   * @covers ::isRouterApplicable
    * @dataProvider providerTestRoutingAccess
    *
    * @param \Drupal\Core\Access\AccessResultInterface $expected
@@ -124,7 +123,7 @@ class OverridesSectionStorageTest extends KernelTestBase {
    * @param array $section_data
    *   Data to store as the sections value for Layout Builder.
    */
-  public function testRoutingAccess(AccessResultInterface $expected, $is_enabled, array $section_data) {
+  public function testRoutingAccess(CachableApplicabilityResult $expected, $is_enabled, array $section_data) {
     $display = LayoutBuilderEntityViewDisplay::create([
       'targetEntityType' => 'entity_test',
       'bundle' => 'entity_test',
@@ -142,7 +141,7 @@ class OverridesSectionStorageTest extends KernelTestBase {
     $entity->save();
 
     $this->plugin->setContext('entity', EntityContext::fromEntity($entity));
-    $result = $this->plugin->routingAccess();
+    $result = $this->plugin->isRouterApplicable();
     $this->assertEquals($expected, $result);
   }
 
@@ -162,22 +161,22 @@ class OverridesSectionStorageTest extends KernelTestBase {
     // - whether this display has any section data.
     $data = [];
     $data['disabled, no data'] = [
-      AccessResult::neutral()->addCacheTags(['config:core.entity_view_display.entity_test.entity_test.default']),
+      (new CachableApplicabilityResult(FALSE))->addCacheTags(['config:core.entity_view_display.entity_test.entity_test.default']),
       FALSE,
       [],
     ];
     $data['enabled, no data'] = [
-      AccessResult::allowed()->addCacheTags(['config:core.entity_view_display.entity_test.entity_test.default']),
+      (new CachableApplicabilityResult(TRUE))->addCacheTags(['config:core.entity_view_display.entity_test.entity_test.default']),
       TRUE,
       [],
     ];
     $data['disabled, data'] = [
-      AccessResult::neutral()->addCacheTags(['config:core.entity_view_display.entity_test.entity_test.default']),
+      (new CachableApplicabilityResult(FALSE))->addCacheTags(['config:core.entity_view_display.entity_test.entity_test.default']),
       FALSE,
       $section_data,
     ];
     $data['enabled, data'] = [
-      AccessResult::allowed()->addCacheTags(['config:core.entity_view_display.entity_test.entity_test.default']),
+      (new CachableApplicabilityResult(TRUE))->addCacheTags(['config:core.entity_view_display.entity_test.entity_test.default']),
       TRUE,
       $section_data,
     ];

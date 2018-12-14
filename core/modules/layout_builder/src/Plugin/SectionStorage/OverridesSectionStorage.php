@@ -11,6 +11,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
+use Drupal\layout_builder\CachableApplicabilityResult;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -329,18 +330,18 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function routingAccess() {
+  public function isRouterApplicable() {
     $default_section_storage = $this->getDefaultSectionStorage();
-    return AccessResult::allowedIf($default_section_storage->isLayoutBuilderEnabled())->addCacheableDependency($default_section_storage);
+    return (new CachableApplicabilityResult($default_section_storage->isLayoutBuilderEnabled()))->addCacheableDependency($default_section_storage);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function renderAccess() {
+  public function isRenderApplicable() {
     // Check that overrides are enabled and have at least one section.
     $default_section_storage = $this->getDefaultSectionStorage();
-    return AccessResult::allowedIf($default_section_storage->isOverridable() && count($this))
+    return (new CachableApplicabilityResult($default_section_storage->isOverridable() && count($this)))
       ->addCacheableDependency($default_section_storage)
       ->addCacheableDependency($this->getEntity());
   }
