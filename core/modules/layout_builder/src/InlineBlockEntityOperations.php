@@ -7,6 +7,8 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\RevisionableInterface;
+use Drupal\Core\Entity\TranslatableInterface;
+use Drupal\Core\Language\LanguageInterface;
 use Drupal\layout_builder\Plugin\Block\InlineBlock;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -148,9 +150,21 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
       return;
     }
     $duplicate_blocks = FALSE;
+    $is_new_translation = FALSE;
 
-    if ($sections = $this->getEntitySections($entity)) {
-      if ($this->isEntityUsingFieldOverride($entity)) {
+    $sections = $this->getEntitySections($entity);
+
+    if ($entity instanceof TranslatableInterface && $entity->isTranslatable()) {
+      if (!$entity->isNew() && $entity->isNewTranslation() && !$entity->isDefaultTranslation()) {
+        $is_new_translation = TRUE;
+        if ($this->isEntityUsingFieldOverride($entity) && !empty($sections)) {
+          $duplicate_blocks = TRUE;
+        }
+      }
+    }
+
+    if ($sections) {
+      if (!$is_new_translation && $this->isEntityUsingFieldOverride($entity)) {
         if (!$entity->isNew() && isset($entity->original)) {
           if (empty($this->getEntitySections($entity->original))) {
             // If there were no sections in the original entity then this is a

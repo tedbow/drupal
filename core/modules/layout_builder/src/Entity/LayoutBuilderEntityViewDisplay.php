@@ -6,6 +6,8 @@ use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\Entity\EntityViewDisplay as BaseEntityViewDisplay;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\TranslatableInterface;
+use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\EntityContext;
@@ -333,7 +335,13 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
     // by constructing a cacheable metadata object and retrieving the
     // entity-based contexts.
     $cacheability = new CacheableMetadata();
-    $contexts = $this->getContextsForEntity($entity);
+    if ($entity instanceof TranslatableInterface && !$entity->isDefaultTranslation()) {
+      $default_entity = $entity->getTranslation(LanguageInterface::LANGCODE_DEFAULT);
+      $contexts = $this->getContextsForEntity($default_entity);
+    }
+    else {
+      $contexts = $this->getContextsForEntity($entity);
+    }
     $storage = $this->sectionStorageManager()->findByContext($contexts, $cacheability);
     return $storage ? $storage->getSections() : [];
   }

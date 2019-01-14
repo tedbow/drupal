@@ -5,9 +5,12 @@ namespace Drupal\layout_builder\Plugin\SectionStorage;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\TranslatableInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
@@ -66,13 +69,21 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   protected $entityFieldManager;
 
   /**
+   * The entity repository.
+   *
+   * @var \Drupal\Core\Entity\EntityRepositoryInterface
+   */
+  protected $entityRepository;
+
+  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, EntityRepositoryInterface $entity_repository) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
     $this->entityFieldManager = $entity_field_manager;
+    $this->entityRepository = $entity_repository;
   }
 
   /**
@@ -84,7 +95,8 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
       $plugin_id,
       $plugin_definition,
       $container->get('entity_type.manager'),
-      $container->get('entity_field.manager')
+      $container->get('entity_field.manager'),
+      $container->get('entity.repository')
     );
   }
 
@@ -110,7 +122,11 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    */
   public function getStorageId() {
     $entity = $this->getEntity();
-    return $entity->getEntityTypeId() . '.' . $entity->id();
+    $id = $entity->getEntityTypeId() . '.' . $entity->id();
+    if ($entity instanceof TranslatableInterface) {
+      $id .= '.' . $entity->language()->getId();
+    }
+    return $id;
   }
 
   /**
@@ -137,6 +153,12 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     if (strpos($id, '.') !== FALSE) {
       list($entity_type_id, $entity_id) = explode('.', $id, 2);
       $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
+      if ($entity instanceof EntityInterface && $entity instanceof TranslatableInterface) {
+        $translated_entity = $this->entityRepository->getTranslationFromContext($entity);
+        if ($translated_entity instanceof FieldableEntityInterface && $translated_entity->hasField(static::FIELD_NAME)) {
+          return $translated_entity->get(static::FIELD_NAME);
+        }
+      }
       if ($entity instanceof FieldableEntityInterface && $entity->hasField(static::FIELD_NAME)) {
         return $entity->get(static::FIELD_NAME);
       }

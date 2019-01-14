@@ -3,10 +3,12 @@
 namespace Drupal\Tests\layout_builder\Unit;
 
 use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\TranslatableInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\SectionStorage\SectionStorageDefinition;
@@ -44,6 +46,13 @@ class OverridesSectionStorageTest extends UnitTestCase {
   protected $entityFieldManager;
 
   /**
+   * The entity repository.
+   *
+   * @var \Drupal\Core\Entity\EntityRepositoryInterface
+   */
+  protected $entityRepository;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -51,12 +60,13 @@ class OverridesSectionStorageTest extends UnitTestCase {
 
     $this->entityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
     $this->entityFieldManager = $this->prophesize(EntityFieldManagerInterface::class);
+    $this->entityRepository = $this->prophesize(EntityRepositoryInterface::class);
 
     $definition = new SectionStorageDefinition([
       'id' => 'overrides',
       'class' => OverridesSectionStorage::class,
     ]);
-    $this->plugin = new OverridesSectionStorage([], 'overrides', $definition, $this->entityTypeManager->reveal(), $this->entityFieldManager->reveal());
+    $this->plugin = new OverridesSectionStorage([], 'overrides', $definition, $this->entityTypeManager->reveal(), $this->entityFieldManager->reveal(), $this->entityRepository->reveal());
   }
 
   /**
@@ -116,6 +126,7 @@ class OverridesSectionStorageTest extends UnitTestCase {
   public function testGetSectionListFromId($success, $expected_entity_type_id, $id) {
     $defaults['the_parameter_name'] = $id;
 
+    $this->entityRepository->getTranslationFromContext(Argument::cetera())->shouldNotBeCalled();
     if ($expected_entity_type_id) {
       $entity_storage = $this->prophesize(EntityStorageInterface::class);
 
@@ -248,6 +259,52 @@ class OverridesSectionStorageTest extends UnitTestCase {
       [],
     ];
     return $data;
+  }
+
+  /**
+   * @covers ::getSectionListFromId
+   */
+  public function testGetSectionListFromIdTranslatableNoTranslation() {
+    $entity_storage = $this->prophesize(EntityStorageInterface::class);
+
+    $entity_with_layout = $this->prophesize(FieldableEntityInterface::class)->willImplement(TranslatableInterface::class);
+    $entity_with_layout->hasField('layout_builder__layout')->willReturn(TRUE);
+    $entity_with_layout->get('layout_builder__layout')->willReturn('the_return_value');
+    $entity_storage->load('entity_with_layout')->willReturn($entity_with_layout->reveal());
+
+    $translated_entity = $this->prophesize(FieldableEntityInterface::class)->willImplement(TranslatableInterface::class);
+    $translated_entity->hasField('layout_builder__layout')->willReturn(FALSE);
+    $translated_entity->get('layout_builder__layout')->shouldNotBeCalled();
+
+    $this->entityTypeManager->getStorage('my_entity_type')->willReturn($entity_storage->reveal());
+
+    $this->entityRepository->getTranslationFromContext($entity_with_layout->reveal())->willReturn($translated_entity->reveal());
+
+    $result = $this->plugin->getSectionListFromId('my_entity_type.entity_with_layout.fr');
+    $this->assertEquals('the_return_value', $result);
+  }
+
+  /**
+   * @covers ::getSectionListFromId
+   */
+  public function testGetSectionListFromIdTranslatable() {
+    $entity_storage = $this->prophesize(EntityStorageInterface::class);
+
+    $entity_with_layout = $this->prophesize(FieldableEntityInterface::class)->willImplement(TranslatableInterface::class);
+    $entity_with_layout->hasField('layout_builder__layout')->shouldNotBeCalled();
+    $entity_with_layout->get('layout_builder__layout')->shouldNotBeCalled();
+    $entity_storage->load('entity_with_layout')->willReturn($entity_with_layout->reveal());
+
+    $translated_entity = $this->prophesize(FieldableEntityInterface::class)->willImplement(TranslatableInterface::class);
+    $translated_entity->hasField('layout_builder__layout')->willReturn(TRUE);
+    $translated_entity->get('layout_builder__layout')->willReturn('the_return_value');
+
+    $this->entityTypeManager->getStorage('my_entity_type')->willReturn($entity_storage->reveal());
+
+    $this->entityRepository->getTranslationFromContext($entity_with_layout->reveal())->willReturn($translated_entity->reveal());
+
+    $result = $this->plugin->getSectionListFromId('my_entity_type.entity_with_layout.fr');
+    $this->assertEquals('the_return_value', $result);
   }
 
   /**
