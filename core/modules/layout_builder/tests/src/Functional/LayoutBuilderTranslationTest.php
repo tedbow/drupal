@@ -114,6 +114,14 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
     $layout_url = $entity_url . '/layout';
     $translated_layout_url = $translated_entity_url . '/layout';
 
+    $this->drupalGet($entity_url);
+    $assert_session->pageTextNotContains('The translated field value');
+    $assert_session->pageTextContains('The untranslated field value');
+
+    $this->drupalGet($translated_entity_url);
+    $assert_session->pageTextNotContains('The untranslated field value');
+    $assert_session->pageTextContains('The translated field value');
+
     $this->drupalGet($layout_url);
     $assert_session->pageTextNotContains('The translated field value');
     $assert_session->pageTextContains('The untranslated field value');
@@ -133,6 +141,15 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
     $assert_session->linkExists('Powered by Drupal');
     $this->clickLink('Powered by Drupal');
     $page->pressButton('Add Block');
+
+    $assert_session->pageTextContains('Powered by Drupal');
+
+    // Confirm the tempstore for the translated layout is not affected.
+    $this->drupalGet($translated_layout_url);
+    $assert_session->pageTextNotContains('Powered by Drupal');
+
+    $this->drupalGet($layout_url);
+    $assert_session->pageTextContains('Powered by Drupal');
     $assert_session->linkExists('Save Layout');
     $this->clickLink('Save Layout');
 
