@@ -84,7 +84,6 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
       'body[0][value]' => 'The translated node body',
     ], 'Save');
 
-
     // Update the translate node's inline block.
     $this->drupalGet('it/node/1/layout');
     $this->configureInlineBlock('Block en body', 'Block it body');
@@ -150,7 +149,6 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
       'body[0][value]' => 'The translated node body',
     ], 'Save');
 
-
     // Add an inline block to the default layout.
     $this->drupalGet(static::FIELD_UI_PREFIX . '/display/default');
     $this->clickLink('Manage layout');
@@ -163,17 +161,16 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     $this->drupalGet('it/node/1');
     $assert_session->pageTextContains('The DEFAULT block body');
 
-
     // Override the translated node's layout.
     $this->drupalGet('it/node/1/layout');
-    $this->configureInlineBlock('The DEFAULT block body', 'Overriden block body');
+    $this->configureInlineBlock('The DEFAULT block body', 'Overridden block body');
     $this->assertSaveLayout();
 
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('The DEFAULT block body');
-    $assert_session->pageTextNotContains('Overriden block body');
+    $assert_session->pageTextNotContains('Overridden block body');
     $this->drupalGet('it/node/1');
-    $assert_session->pageTextContains('Overriden block body');
+    $assert_session->pageTextContains('Overridden block body');
     $assert_session->pageTextNotContains('The DEFAULT block body');
   }
 
@@ -220,7 +217,6 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
       'title[0][value]' => 'The translated node title',
       'body[0][value]' => 'The translated node body',
     ], 'Save');
-
 
     // Override the translated node's layout.
     $this->drupalGet('it/node/1/layout');

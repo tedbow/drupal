@@ -8,7 +8,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Entity\TranslatableInterface;
-use Drupal\Core\Language\LanguageInterface;
 use Drupal\layout_builder\Plugin\Block\InlineBlock;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
