@@ -278,7 +278,7 @@ class OverridesSectionStorageTest extends UnitTestCase {
 
     $this->entityTypeManager->getStorage('my_entity_type')->willReturn($entity_storage->reveal());
 
-    $this->entityRepository->getTranslationFromContext($entity_with_layout->reveal())->willReturn($translated_entity->reveal());
+    $this->entityRepository->getTranslationFromContext($entity_with_layout->reveal(), 'fr')->willReturn($translated_entity->reveal());
 
     $result = $this->plugin->getSectionListFromId('my_entity_type.entity_with_layout.fr');
     $this->assertEquals('the_return_value', $result);
@@ -301,7 +301,7 @@ class OverridesSectionStorageTest extends UnitTestCase {
 
     $this->entityTypeManager->getStorage('my_entity_type')->willReturn($entity_storage->reveal());
 
-    $this->entityRepository->getTranslationFromContext($entity_with_layout->reveal())->willReturn($translated_entity->reveal());
+    $this->entityRepository->getTranslationFromContext($entity_with_layout->reveal(), 'fr')->willReturn($translated_entity->reveal());
 
     $result = $this->plugin->getSectionListFromId('my_entity_type.entity_with_layout.fr');
     $this->assertEquals('the_return_value', $result);

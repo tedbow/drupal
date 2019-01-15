@@ -95,7 +95,7 @@ class LayoutBuilderTest extends BrowserTestBase {
     end($components);
     $uuid = key($components);
 
-    $this->drupalGet('layout_builder/update/block/overrides/node.1/0/content/' . $uuid);
+    $this->drupalGet('layout_builder/update/block/overrides/node.1.en/0/content/' . $uuid);
     $page->uncheckField('settings[label_display]');
     $page->pressButton('Update');
     $assert_session->pageTextNotContains('This is an override');
@@ -708,10 +708,10 @@ class LayoutBuilderTest extends BrowserTestBase {
     $assert_session = $this->assertSession();
     // Ensure the layouts provided by layout_builder are available.
     $expected_layouts_hrefs = [
-      'layout_builder/add/section/overrides/node.1/0/layout_onecol',
-      'layout_builder/configure/section/overrides/node.1/0/layout_twocol_section',
-      'layout_builder/configure/section/overrides/node.1/0/layout_threecol_section',
-      'layout_builder/add/section/overrides/node.1/0/layout_fourcol_section',
+      'layout_builder/add/section/overrides/node.1.en/0/layout_onecol',
+      'layout_builder/configure/section/overrides/node.1.en/0/layout_twocol_section',
+      'layout_builder/configure/section/overrides/node.1.en/0/layout_threecol_section',
+      'layout_builder/add/section/overrides/node.1.en/0/layout_fourcol_section',
     ];
     foreach ($expected_layouts_hrefs as $expected_layouts_href) {
       $assert_session->linkByHrefExists($expected_layouts_href);
@@ -724,7 +724,7 @@ class LayoutBuilderTest extends BrowserTestBase {
       'threecol_33_34_33',
     ];
     foreach ($unexpected_layouts as $unexpected_layout) {
-      $assert_session->linkByHrefNotExists("layout_builder/add/section/overrides/node.1/0/$unexpected_layout");
+      $assert_session->linkByHrefNotExists("layout_builder/add/section/overrides/node.1.en/0/$unexpected_layout");
     }
   }
 

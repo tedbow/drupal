@@ -151,10 +151,10 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   public function getSectionListFromId($id) {
     @trigger_error('\Drupal\layout_builder\SectionStorageInterface::getSectionListFromId() is deprecated in Drupal 8.7.0 and will be removed before Drupal 9.0.0. The section list should be derived from context. See https://www.drupal.org/node/3016262.', E_USER_DEPRECATED);
     if (strpos($id, '.') !== FALSE) {
-      list($entity_type_id, $entity_id) = explode('.', $id, 2);
+      list($entity_type_id, $entity_id, $langcode) = $this->getIdPartsArray($id);
       $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
       if ($entity instanceof EntityInterface && $entity instanceof TranslatableInterface) {
-        $translated_entity = $this->entityRepository->getTranslationFromContext($entity);
+        $translated_entity = $this->entityRepository->getTranslationFromContext($entity, $langcode);
         if ($translated_entity instanceof FieldableEntityInterface && $translated_entity->hasField(static::FIELD_NAME)) {
           return $translated_entity->get(static::FIELD_NAME);
         }
@@ -197,11 +197,12 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    */
   private function extractEntityFromRoute($value, array $defaults) {
     if (strpos($value, '.') !== FALSE) {
-      list($entity_type_id, $entity_id) = explode('.', $value, 2);
+      list($entity_type_id, $entity_id, $langcode) = $this->getIdPartsArray($value);
     }
     elseif (isset($defaults['entity_type_id']) && !empty($defaults[$defaults['entity_type_id']])) {
       $entity_type_id = $defaults['entity_type_id'];
       $entity_id = $defaults[$entity_type_id];
+      $langcode = isset($defaults['langcode']) ? $defaults['langcode'] : NULL;
     }
     else {
       return NULL;
@@ -209,6 +210,11 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
 
     $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
     if ($entity instanceof FieldableEntityInterface && $entity->hasField(static::FIELD_NAME)) {
+      if ($langcode && $entity instanceof TranslatableInterface) {
+        if ($translated_entity = $this->entityRepository->getTranslationFromContext($entity)) {
+          return $translated_entity;
+        }
+      }
       return $entity;
     }
   }
@@ -369,6 +375,27 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     $cacheability->addCacheableDependency($default_section_storage)->addCacheableDependency($this);
     // Check that overrides are enabled and have at least one section.
     return $default_section_storage->isOverridable() && count($this);
+  }
+
+  /**
+   * Gets the 3 parts of the storage ID.
+   *
+   * The 3 parts will be, entity_type, entity_id and langcode. langcode may be
+   * NULL if the ID does not contain it.
+   *
+   * @param string $id
+   *   The ID.
+   *
+   * @return array
+   *   The parts of ID. The 3 parts will be, entity_type, entity_id and
+   *   langcode. langcode may be NULL if the ID does not contain it.
+   */
+  protected function getIdPartsArray($id) {
+    $parts = explode('.', $id);
+    if (count($parts) === 2) {
+      $parts[2] = NULL;
+    }
+    return $parts;
   }
 
 }
