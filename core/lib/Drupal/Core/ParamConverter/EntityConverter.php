@@ -8,9 +8,8 @@ use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\RevisionableInterface;
-use Drupal\Core\Entity\TranslatableRevisionableInterface;
-use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
 use Drupal\Core\TypedData\TranslatableInterface;
 use Symfony\Component\Routing\Route;
 
@@ -72,7 +71,10 @@ class EntityConverter implements ParamConverterInterface {
   /**
    * {@inheritdoc}
    */
-  protected $deprecatedProperties = ['entityManager' => 'entity.manager'];
+  protected $deprecatedProperties = [
+    'entityManager' => 'entity.manager',
+    'languageManager' => 'language_manager',
+  ];
 
   /**
    * Entity type manager which performs the upcasting in the end.
@@ -89,27 +91,44 @@ class EntityConverter implements ParamConverterInterface {
   protected $entityRepository;
 
   /**
-   * The language manager.
+   * The context repository service.
    *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
+   * @var \Drupal\Core\Plugin\Context\ContextRepositoryInterface
    */
-  protected $languageManager;
+  protected $contextRepository;
 
   /**
    * Constructs a new EntityConverter.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface|null $language_manager
-   *   (optional) The language manager. Defaults to none.
+   * @param \Drupal\Core\Plugin\Context\ContextRepositoryInterface $context_repository
+   *   The context repository service.
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    *   The entity repository.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, LanguageManagerInterface $language_manager = NULL, EntityRepositoryInterface $entity_repository = NULL) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, $context_repository = NULL, EntityRepositoryInterface $entity_repository = NULL) {
     if ($entity_type_manager instanceof EntityManagerInterface) {
       @trigger_error('Passing the entity.manager service to EntityConverter::__construct() is deprecated in Drupal 8.7.0 and will be removed before Drupal 9.0.0. Pass the entity_type.manager service instead. See https://www.drupal.org/node/2549139.', E_USER_DEPRECATED);
     }
     $this->entityTypeManager = $entity_type_manager;
+
+    if ($context_repository instanceof ContextRepositoryInterface) {
+      $this->contextRepository = $context_repository;
+    }
+    else {
+      if ($context_repository instanceof LanguageManagerInterface) {
+        @trigger_error('The language_manager service has been replaced with the context.repository service as a parameter for EntityConverter::__construct(), it is required before Drupal 9.0.0. See https://www.drupal.org/node/2938929.', E_USER_DEPRECATED);
+      }
+      elseif (!isset($context_repository)) {
+        @trigger_error('The context.repository service must be passed to EntityConverter::__construct(), it is required before Drupal 9.0.0. See https://www.drupal.org/node/2938929.', E_USER_DEPRECATED);
+      }
+      else {
+        throw new \InvalidArgumentException('An instance of ' . ContextRepositoryInterface::class . ' was expected.');
+      }
+      $this->contextRepository = \Drupal::service('context.repository');
+    }
+
     if ($entity_repository) {
       $this->entityRepository = $entity_repository;
     }
@@ -117,7 +136,6 @@ class EntityConverter implements ParamConverterInterface {
       @trigger_error('The entity.repository service must be passed to EntityConverter::__construct(), it is required before Drupal 9.0.0. See https://www.drupal.org/node/2549139.', E_USER_DEPRECATED);
       $this->entityRepository = \Drupal::service('entity.repository');
     }
-    $this->languageManager = $language_manager;
   }
 
   /**
@@ -133,11 +151,8 @@ class EntityConverter implements ParamConverterInterface {
     // If the entity type is revisionable and the parameter has the
     // "load_latest_revision" flag, load the latest revision.
     if ($entity instanceof RevisionableInterface && !empty($definition['load_latest_revision']) && $entity_definition->isRevisionable()) {
-      // Retrieve the latest revision ID taking translations into account.
-      $langcode = $this->languageManager()
-        ->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)
-        ->getId();
-      $entity = $this->getLatestTranslationAffectedRevision($entity, $langcode);
+      $contexts = $this->contextRepository->getAvailableContexts();
+      $entity = $this->entityRepository->getActive($entity, $contexts);
     }
 
     // If the entity type is translatable, ensure we return the proper
@@ -163,39 +178,7 @@ class EntityConverter implements ParamConverterInterface {
    *   does not have a matching translation yet.
    */
   protected function getLatestTranslationAffectedRevision(RevisionableInterface $entity, $langcode) {
-    $revision = NULL;
-    $storage = $this->entityTypeManager->getStorage($entity->getEntityTypeId());
-
-    if ($entity instanceof TranslatableRevisionableInterface && $entity->isTranslatable()) {
-      /** @var \Drupal\Core\Entity\TranslatableRevisionableStorageInterface $storage */
-      $revision_id = $storage->getLatestTranslationAffectedRevisionId($entity->id(), $langcode);
-
-      // If the latest translation-affecting revision was a default revision, it
-      // is fine to load the latest revision instead, because in this case the
-      // latest revision, regardless of it being default or pending, will always
-      // contain the most up-to-date values for the specified translation. This
-      // provides a BC behavior when the route is defined by a module always
-      // expecting the latest revision to be loaded and to be the default
-      // revision. In this particular case the latest revision is always going
-      // to be the default revision, since pending revisions would not be
-      // supported.
-      /** @var \Drupal\Core\Entity\TranslatableRevisionableInterface $revision */
-      $revision = $revision_id ? $this->loadRevision($entity, $revision_id) : NULL;
-      if (!$revision || ($revision->wasDefaultRevision() && !$revision->isDefaultRevision())) {
-        $revision = NULL;
-      }
-    }
-
-    // Fall back to the latest revisions if no affected revision for the current
-    // content language could be found. This is acceptable as it means the
-    // entity is not translated. This is the correct logic also on monolingual
-    // sites.
-    if (!isset($revision)) {
-      $revision_id = $storage->getLatestRevisionId($entity->id());
-      $revision = $this->loadRevision($entity, $revision_id);
-    }
-
-    return $revision;
+    return $this->entityRepository->getLatestTranslationAffectedRevision($entity, $langcode);
   }
 
   /**
@@ -275,13 +258,7 @@ class EntityConverter implements ParamConverterInterface {
    * @internal
    */
   protected function languageManager() {
-    if (!isset($this->languageManager)) {
-      $this->languageManager = \Drupal::languageManager();
-      // @todo Turn this into a proper error (E_USER_ERROR) in
-      //   https://www.drupal.org/node/2938929.
-      @trigger_error('The language manager parameter has been added to EntityConverter since version 8.5.0 and will be made required in version 9.0.0 when requesting the latest translation-affected revision of an entity.', E_USER_DEPRECATED);
-    }
-    return $this->languageManager;
+    return $this->__get('languageManager');
   }
 
 }

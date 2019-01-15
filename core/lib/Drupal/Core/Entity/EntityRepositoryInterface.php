@@ -69,4 +69,41 @@ interface EntityRepositoryInterface {
    */
   public function getTranslationFromContext(EntityInterface $entity, $langcode = NULL, $context = []);
 
+  /**
+   * Retrieves an entity variant suitable to be edited in the specified context.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   An entity object.
+   * @param \Drupal\Core\Plugin\Context\ContextInterface[] $contexts
+   *   An array of objects representing the context the entity will be edited
+   *   in.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   An entity object variant.
+   *
+   * @internal This is an experimental API. It will be published once it is
+   *   deemed mature enough. In the meantime, adopters should be prepared to
+   *   update their code to accommodate API changes.
+   */
+  public function getActive(EntityInterface $entity, array $contexts);
+
+  /**
+   * Returns the ID of the latest revision translation of the specified entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface|\Drupal\Core\Entity\RevisionableInterface $entity
+   *   The default revision of the entity being converted.
+   * @param string $langcode
+   *   The language of the revision translation to be loaded.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|\Drupal\Core\Entity\RevisionableInterface
+   *   The latest translation-affecting revision for the specified entity, or
+   *   just the latest revision, if the specified entity is not translatable or
+   *   does not have a matching translation yet.
+   *
+   * @internal This is an experimental API. It will be published once it is
+   *   deemed mature enough. In the meantime, adopters should be prepared to
+   *   update their code to accommodate API changes.
+   */
+  public function getLatestTranslationAffectedRevision(RevisionableInterface $entity, $langcode);
+
 }

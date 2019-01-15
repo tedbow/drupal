@@ -112,4 +112,122 @@ class EntityRepository implements EntityRepositoryInterface {
     return $translation;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getActive(EntityInterface $entity, array $contexts) {
+    $active = $entity;
+
+    // Retrieve the context content language.
+    $langcode = $this->languageManager->getDefaultLanguage()->getId();
+    $is_translatable = $entity instanceof TranslatableInterface && $entity->isTranslatable();
+    if ($is_translatable && ($context_language = $this->getContentLanguageFromContexts($contexts))) {
+      $langcode = $context_language->getId();
+    }
+
+    // Retrieve the fittest revision, if needed.
+    if ($entity instanceof RevisionableInterface && $entity->getEntityType()->isRevisionable()) {
+      $entity = $this->getLatestTranslationAffectedRevision($entity, $langcode);
+      $active = $entity;
+    }
+
+    // Retrieve the fittest translation, if needed.
+    if ($is_translatable) {
+      $active = $entity->hasTranslation($langcode) ? $entity->getTranslation($langcode) : $entity->getUntranslated();
+    }
+
+    return $active;
+  }
+
+  /**
+   * Retrieves the current content language from the specified contexts.
+   *
+   * @param \Drupal\Core\Plugin\Context\ContextInterface[] $contexts
+   *   An array of context items.
+   *
+   * @return \Drupal\Core\Language\LanguageInterface|null
+   *   A language or NULL if no language context was provided.
+   */
+  protected function getContentLanguageFromContexts(array $contexts) {
+    // Content language might not be configurable, in which case we need to fall
+    // back to a configurable language type.
+    $language_types = $this->languageManager->getLanguageTypes();
+    $language_type = in_array(LanguageInterface::TYPE_CONTENT, $language_types) ? LanguageInterface::TYPE_CONTENT : reset($language_types);
+    $info = $this->languageManager->getDefinedLanguageTypesInfo();
+    $language_type_label = (string) $info[$language_type]['name'];
+
+    /** @var \Drupal\Core\Plugin\Context\ContextInterface $context */
+    foreach ($contexts as $context) {
+      $definition = $context->getContextDefinition();
+      if ($definition->getDataType() === 'language' && (string) $definition->getLabel() === $language_type_label) {
+        return $context->getContextData()->getValue();
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getLatestTranslationAffectedRevision(RevisionableInterface $entity, $langcode) {
+    /** @var \Drupal\Core\Entity\EntityInterface|\Drupal\Core\Entity\RevisionableInterface $entity */
+    $revision = NULL;
+    $storage = $this->entityTypeManager->getStorage($entity->getEntityTypeId());
+
+    if ($entity instanceof TranslatableRevisionableInterface && $entity->isTranslatable()) {
+      /** @var \Drupal\Core\Entity\TranslatableRevisionableStorageInterface $storage */
+      $revision_id = $storage->getLatestTranslationAffectedRevisionId($entity->id(), $langcode);
+
+      // If the latest translation-affecting revision was a default revision, it
+      // is fine to load the latest revision instead, because in this case the
+      // latest revision, regardless of it being default or pending, will always
+      // contain the most up-to-date values for the specified translation. This
+      // provides a BC behavior when the route is defined by a module always
+      // expecting the latest revision to be loaded and to be the default
+      // revision. In this particular case the latest revision is always going
+      // to be the default revision, since pending revisions would not be
+      // supported.
+      /** @var \Drupal\Core\Entity\TranslatableRevisionableInterface $revision */
+      $revision = $revision_id ? $this->loadRevision($entity, $revision_id) : NULL;
+      if (!$revision || ($revision->wasDefaultRevision() && !$revision->isDefaultRevision())) {
+        $revision = NULL;
+      }
+    }
+
+    // Fall back to the latest revisions if no affected revision for the current
+    // content language could be found. This is acceptable as it means the
+    // entity is not translated. This is the correct logic also on monolingual
+    // sites.
+    if (!isset($revision)) {
+      $revision_id = $storage->getLatestRevisionId($entity->id());
+      $revision = $this->loadRevision($entity, $revision_id);
+    }
+
+    return $revision;
+  }
+
+  /**
+   * Loads the specified entity revision.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface|\Drupal\Core\Entity\RevisionableInterface $entity
+   *   The default revision of the entity being converted.
+   * @param string $revision_id
+   *   The identifier of the revision to be loaded.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|\Drupal\Core\Entity\RevisionableInterface
+   *   An entity revision object.
+   */
+  protected function loadRevision(RevisionableInterface $entity, $revision_id) {
+    // We explicitly perform a loose equality check, since a revision ID may be
+    // returned as an integer or a string.
+    if ($entity->getLoadedRevisionId() != $revision_id) {
+      $storage = $this->entityTypeManager->getStorage($entity->getEntityTypeId());
+      return $storage->loadRevision($revision_id);
+    }
+    else {
+      return $entity;
+    }
+  }
+
 }

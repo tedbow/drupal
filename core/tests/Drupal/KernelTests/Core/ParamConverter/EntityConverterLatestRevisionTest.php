@@ -6,6 +6,7 @@ use Drupal\entity_test\Entity\EntityTest;
 use Drupal\entity_test\Entity\EntityTestMulRev;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\language\Entity\ConfigurableLanguage;
+use Drupal\user\Entity\User;
 
 /**
  * Tests the entity converter when the "load_latest_revision" flag is set.
@@ -48,6 +49,10 @@ class EntityConverterLatestRevisionTest extends KernelTestBase {
     $this->converter = $this->container->get('paramconverter.entity');
 
     ConfigurableLanguage::createFromLangcode('de')->save();
+
+    $user = User::create(['uid' => 1, 'name' => $this->randomString()]);
+    $user->save();
+    \Drupal::currentUser()->setAccount($user);
   }
 
   /**

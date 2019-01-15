@@ -8,10 +8,10 @@ use Drupal\Core\Entity\ContentEntityStorageInterface;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\ParamConverter\EntityConverter;
 use Drupal\Core\ParamConverter\ParamNotConvertedException;
+use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
 use Drupal\Tests\UnitTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Route;
@@ -31,11 +31,11 @@ class EntityConverterTest extends UnitTestCase {
   protected $entityTypeManager;
 
   /**
-   * The mocked language manager.
+   * The mocked context repository service.
    *
-   * @var \Drupal\Core\Language\LanguageManagerInterface|\PHPUnit_Framework_MockObject_MockObject
+   * @var \Drupal\Core\Plugin\Context\ContextRepositoryInterface|\PHPUnit_Framework_MockObject_MockObject
    */
-  protected $languageManager;
+  protected $contextRepository;
 
   /**
    * The mocked entities repository.
@@ -58,10 +58,74 @@ class EntityConverterTest extends UnitTestCase {
     parent::setUp();
 
     $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
-    $this->languageManager = $this->createMock(LanguageManagerInterface::class);
+    $this->contextRepository = $this->createMock(ContextRepositoryInterface::class);
     $this->entityRepository = $this->createMock(EntityRepositoryInterface::class);
 
-    $this->entityConverter = new EntityConverter($this->entityTypeManager, $this->languageManager, $this->entityRepository);
+    $this->entityConverter = new EntityConverter($this->entityTypeManager, $this->contextRepository, $this->entityRepository);
+  }
+
+  /**
+   * Sets up mock services and class instances.
+   *
+   * @param object[] $service_map
+   *   An associative array of service instances keyed by service name.
+   */
+  protected function setUpMocks($service_map = []) {
+    $entity = $this->createMock(ContentEntityInterface::class);
+    $entity->expects($this->any())
+      ->method('getEntityTypeId')
+      ->willReturn('entity_test');
+    $entity->expects($this->any())
+      ->method('id')
+      ->willReturn('id');
+    $entity->expects($this->any())
+      ->method('isTranslatable')
+      ->willReturn(FALSE);
+    $entity->expects($this->any())
+      ->method('getLoadedRevisionId')
+      ->willReturn('revision_id');
+
+    $storage = $this->createMock(ContentEntityStorageInterface::class);
+    $storage->expects($this->any())
+      ->method('load')
+      ->with('id')
+      ->willReturn($entity);
+    $storage->expects($this->any())
+      ->method('getLatestRevisionId')
+      ->with('id')
+      ->willReturn('revision_id');
+
+    $this->entityTypeManager->expects($this->any())
+      ->method('getStorage')
+      ->with('entity_test')
+      ->willReturn($storage);
+
+    $entity_type = $this->createMock(ContentEntityTypeInterface::class);
+    $entity_type->expects($this->any())
+      ->method('isRevisionable')
+      ->willReturn(TRUE);
+
+    $this->entityTypeManager->expects($this->any())
+      ->method('getDefinition')
+      ->with('entity_test')
+      ->willReturn($entity_type);
+
+    $context_repository = $this->createMock(ContextRepositoryInterface::class);
+    $context_repository->expects($this->any())
+      ->method('getAvailableContexts')
+      ->willReturn([]);
+
+    $service_map += [
+      'context.repository' => $context_repository,
+    ];
+
+    /** @var \Symfony\Component\DependencyInjection\ContainerInterface|\PHPUnit_Framework_MockObject_MockObject $container */
+    $container = $this->createMock(ContainerInterface::class);
+    $container->expects($this->any())
+      ->method('get')
+      ->willReturnMap($service_map);
+
+    \Drupal::setContainer($container);
   }
 
   /**
@@ -155,75 +219,72 @@ class EntityConverterTest extends UnitTestCase {
   }
 
   /**
-   * Tests that omitting the language manager triggers a deprecation error.
+   * Tests that omitting the context repository triggers a deprecation error.
    *
    * @group legacy
    *
-   * @expectedDeprecation The language manager parameter has been added to EntityConverter since version 8.5.0 and will be made required in version 9.0.0 when requesting the latest translation-affected revision of an entity.
+   * @expectedDeprecation The context.repository service must be passed to EntityConverter::__construct(), it is required before Drupal 9.0.0. See https://www.drupal.org/node/2938929.
    */
-  public function testDeprecatedOptionalLanguageManager() {
-    $entity = $this->createMock(ContentEntityInterface::class);
-    $entity->expects($this->any())
-      ->method('getEntityTypeId')
-      ->willReturn('entity_test');
-    $entity->expects($this->any())
-      ->method('id')
-      ->willReturn('id');
-    $entity->expects($this->any())
-      ->method('isTranslatable')
-      ->willReturn(FALSE);
-    $entity->expects($this->any())
-      ->method('getLoadedRevisionId')
-      ->willReturn('revision_id');
-
-    $storage = $this->createMock(ContentEntityStorageInterface::class);
-    $storage->expects($this->any())
-      ->method('load')
-      ->with('id')
-      ->willReturn($entity);
-    $storage->expects($this->any())
-      ->method('getLatestRevisionId')
-      ->with('id')
-      ->willReturn('revision_id');
-
-    $this->entityTypeManager->expects($this->any())
-      ->method('getStorage')
-      ->with('entity_test')
-      ->willReturn($storage);
-
-    $entity_type = $this->createMock(ContentEntityTypeInterface::class);
-    $entity_type->expects($this->any())
-      ->method('isRevisionable')
-      ->willReturn(TRUE);
-
-    $this->entityTypeManager->expects($this->any())
-      ->method('getDefinition')
-      ->with('entity_test')
-      ->willReturn($entity_type);
-
-    $language = $this->createMock(LanguageInterface::class);
-    $language->expects($this->any())
-      ->method('getId')
-      ->willReturn('en');
-
-    $language_manager = $this->createMock(LanguageManagerInterface::class);
-    $language_manager->expects($this->any())
-      ->method('getCurrentLanguage')
-      ->with(LanguageInterface::TYPE_CONTENT)
-      ->willReturn($language);
-
-    /** @var \Symfony\Component\DependencyInjection\ContainerInterface|\PHPUnit_Framework_MockObject_MockObject $container */
-    $container = $this->createMock(ContainerInterface::class);
-    $container->expects($this->any())
-      ->method('get')
-      ->with('language_manager')
-      ->willReturn($language_manager);
-
-    \Drupal::setContainer($container);
-    $definition = ['type' => 'entity:entity_test', 'load_latest_revision' => TRUE];
-
+  public function testDeprecatedOptionalContextRepository() {
+    $this->setUpMocks();
     $this->entityConverter = new EntityConverter($this->entityTypeManager, NULL, $this->entityRepository);
-    $this->entityConverter->convert('id', $definition, 'foo', []);
+  }
+
+  /**
+   * Tests that passing the language manager triggers a deprecation error.
+   *
+   * @group legacy
+   *
+   * @expectedDeprecation The language_manager service has been replaced with the context.repository service as a parameter for EntityConverter::__construct(), it is required before Drupal 9.0.0. See https://www.drupal.org/node/2938929.
+   */
+  public function testDeprecatedReplacedLanguageManager() {
+    $this->setUpMocks();
+    $language_manager = $this->createMock(LanguageManagerInterface::class);
+    $this->entityConverter = new EntityConverter($this->entityTypeManager, $language_manager, $this->entityRepository);
+  }
+
+  /**
+   * Tests that passing the language manager triggers a deprecation error.
+   *
+   * @group legacy
+   *
+   * @expectedDeprecation The property languageManager (language_manager service) is deprecated in Drupal\Core\ParamConverter\EntityConverter and will be removed before Drupal 9.0.0.
+   */
+  public function testDeprecatedLanguageManagerMethod() {
+    $service_map = [
+      'language_manager' => $this->createMock(LanguageManagerInterface::class),
+    ];
+    $this->setUpMocks($service_map);
+    $this->entityConverter = new EntityConverter($this->entityTypeManager, $this->contextRepository, $this->entityRepository);
+    $reflector = new \ReflectionMethod(EntityConverter::class, 'languageManager');
+    $reflector->setAccessible(TRUE);
+    $reflector->invoke($this->entityConverter);
+  }
+
+  /**
+   * Tests that retrieving the language manager triggers a deprecation error.
+   *
+   * @group legacy
+   *
+   * @expectedDeprecation The property languageManager (language_manager service) is deprecated in Drupal\Core\ParamConverter\EntityConverter and will be removed before Drupal 9.0.0.
+   */
+  public function testDeprecatedLanguageManagerProperty() {
+    $service_map = [
+      'language_manager' => $this->createMock(LanguageManagerInterface::class),
+    ];
+    $this->setUpMocks($service_map);
+    $this->entityConverter = new EntityConverter($this->entityTypeManager, $this->contextRepository, $this->entityRepository);
+    $this->entityConverter->__get('languageManager');
+  }
+
+  /**
+   * Tests that passing an invalid context repository triggers an exception.
+   *
+   * @group legacy
+   */
+  public function testDeprecatedInvalidArgument() {
+    $this->setExpectedException(\InvalidArgumentException::class, 'An instance of ' . ContextRepositoryInterface::class . ' was expected.');
+    $this->entityConverter = new EntityConverter($this->entityTypeManager, 'invalid argument', $this->entityRepository);
   }
 
 }

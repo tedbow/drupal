@@ -374,6 +374,31 @@ class EntityManager implements EntityManagerInterface, ContainerAwareInterface {
   /**
    * {@inheritdoc}
    *
+   * @deprecated in Drupal 8.7.0, will be removed before Drupal 9.0.0.
+   *   Use \Drupal\Core\Entity\EntityRepositoryInterface::getActive() instead.
+   *
+   * @see https://www.drupal.org/node/2549139
+   */
+  public function getActive(EntityInterface $entity, array $contexts) {
+    return $this->container->get('entity.repository')->getActive($entity, $contexts);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @deprecated in Drupal 8.7.0, will be removed before Drupal 9.0.0.
+   *   Use \Drupal\Core\Entity\EntityRepositoryInterface::getLatestTranslationAffectedRevision()
+   *   instead.
+   *
+   * @see https://www.drupal.org/node/2549139
+   */
+  public function getLatestTranslationAffectedRevision(RevisionableInterface $entity, $langcode) {
+    return $this->container->get('entity.repository')->getLatestTranslationAffectedRevision($entity, $langcode);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
    * @deprecated in Drupal 8.0.0, will be removed before Drupal 9.0.0.
    *   Use \Drupal\Core\Entity\EntityDisplayRepositoryInterface::getAllViewModes()
    *   instead.
