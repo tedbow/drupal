@@ -3,13 +3,8 @@
 namespace Drupal\layout_builder;
 
 use Drupal\Component\Plugin\DerivativeInspectionInterface;
-use Drupal\Core\Cache\CacheableMetadata;
-use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Plugin\Context\Context;
-use Drupal\Core\Plugin\Context\ContextDefinition;
-use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 
@@ -67,18 +62,13 @@ trait LayoutEntityHelperTrait {
    *   The entity layout sections if available.
    */
   protected function getEntitySections(EntityInterface $entity) {
-    /** @var \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface $section_manager */
-    $section_manager = \Drupal::service('plugin.manager.layout_builder.section_storage');
-    $view_mode = 'default';
-    $contexts['entity'] = EntityContext::fromEntity($entity);
-    if ($entity instanceof FieldableEntityInterface) {
-      $display = EntityViewDisplay::collectRenderDisplay($entity, $view_mode);
-      $contexts['display'] = EntityContext::fromEntity($display);
-      $contexts['view_mode'] = new Context(new ContextDefinition('string'), $view_mode);
+    if ($entity instanceof LayoutEntityDisplayInterface) {
+      return $entity->getSections();
     }
-
-    $section_storage = $section_manager->findByContext($contexts, new CacheableMetadata());
-    return $section_storage ? $section_storage->getSections() : [];
+    elseif ($this->isEntityUsingFieldOverride($entity)) {
+      return $entity->get(OverridesSectionStorage::FIELD_NAME)->getSections();
+    }
+    return NULL;
   }
 
   /**

@@ -154,7 +154,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
     $sections = $this->getEntitySections($entity);
 
     if ($entity instanceof TranslatableInterface && $entity->isTranslatable()) {
-      if (!$entity->isNew() && !$entity->isDefaultTranslation() && count($sections) === 0) {
+      if (!$entity->isNew() && $entity->isNewTranslation() && !$entity->isDefaultTranslation()) {
         $is_new_translation = TRUE;
         if ($this->isEntityUsingFieldOverride($entity) && !empty($sections)) {
           $duplicate_blocks = TRUE;
