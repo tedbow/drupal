@@ -116,8 +116,9 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     $entity = $this->getEntity();
     $section_list = $entity->get(static::FIELD_NAME);
     if (count($section_list) === 0 && $entity instanceof TranslatableInterface && !$entity->isDefaultTranslation()) {
-      //$entity = $this->entityTypeManager->getStorage($entity->getEntityTypeId())->load($entity->id());
-      $entity = $entity->getTranslation('en');
+      // If a translated entity has no sections the untranslated entity's
+      // sections should be used.
+      $entity = $entity->getUntranslated();
       $section_list = $entity->get(static::FIELD_NAME);
     }
     return $section_list;
