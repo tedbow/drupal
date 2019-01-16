@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\TranslatableInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
@@ -19,6 +20,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
+use Drupal\user\ContextProvider\CurrentUserContext;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -76,14 +78,20 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   protected $entityRepository;
 
   /**
+   * @var \Drupal\Core\Language\LanguageManagerInterface
+   */
+  protected $languageManager;
+
+  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, EntityRepositoryInterface $entity_repository) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, EntityRepositoryInterface $entity_repository, LanguageManagerInterface $language_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
     $this->entityFieldManager = $entity_field_manager;
     $this->entityRepository = $entity_repository;
+    $this->languageManager = $language_manager;
   }
 
   /**
@@ -96,7 +104,8 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
       $plugin_definition,
       $container->get('entity_type.manager'),
       $container->get('entity_field.manager'),
-      $container->get('entity.repository')
+      $container->get('entity.repository'),
+      $container->get('language_manager')
     );
   }
 
@@ -104,7 +113,13 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    * {@inheritdoc}
    */
   protected function getSectionList() {
-    return $this->getEntity()->get(static::FIELD_NAME);
+    $entity = $this->getEntity();
+    $section_list = $entity->get(static::FIELD_NAME);
+    if (empty($section_list) && $entity instanceof TranslatableInterface && !$entity->isDefaultTranslation()) {
+      $entity = $this->entityTypeManager->getStorage($entity->getEntityTypeId())->load($entity->id());
+      $section_list = $entity->get(static::FIELD_NAME);
+    }
+    return $section_list;
   }
 
   /**
@@ -152,13 +167,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     @trigger_error('\Drupal\layout_builder\SectionStorageInterface::getSectionListFromId() is deprecated in Drupal 8.7.0 and will be removed before Drupal 9.0.0. The section list should be derived from context. See https://www.drupal.org/node/3016262.', E_USER_DEPRECATED);
     if (strpos($id, '.') !== FALSE) {
       list($entity_type_id, $entity_id, $langcode) = $this->getIdPartsArray($id);
-      $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
-      if ($entity instanceof EntityInterface && $entity instanceof TranslatableInterface) {
-        $translated_entity = $this->entityRepository->getTranslationFromContext($entity, $langcode);
-        if ($translated_entity instanceof FieldableEntityInterface && $translated_entity->hasField(static::FIELD_NAME)) {
-          return $translated_entity->get(static::FIELD_NAME);
-        }
-      }
+      $entity = $this->getActiveEntity($entity_type_id, $entity_id, $langcode);
       if ($entity instanceof FieldableEntityInterface && $entity->hasField(static::FIELD_NAME)) {
         return $entity->get(static::FIELD_NAME);
       }
@@ -177,6 +186,8 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
       // @todo Expand to work for all view modes in
       //   https://www.drupal.org/node/2907413.
       $contexts['view_mode'] = new Context(new ContextDefinition('string'), 'full');
+      $langcode = $this->languageManager->getCurrentLanguage();
+      $contexts['language'] = new Context(new ContextDefinition('language', 'Content'), $langcode);
     }
     return $contexts;
   }
@@ -202,19 +213,15 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     elseif (isset($defaults['entity_type_id']) && !empty($defaults[$defaults['entity_type_id']])) {
       $entity_type_id = $defaults['entity_type_id'];
       $entity_id = $defaults[$entity_type_id];
-      $langcode = isset($defaults['langcode']) ? $defaults['langcode'] : NULL;
+      $langcode = isset($defaults['langcode']) ? $defaults['langcode'] : $this->languageManager->getCurrentLanguage()->getId();
     }
     else {
       return NULL;
     }
 
-    $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
+    $entity = $this->getActiveEntity($entity_type_id, $entity_id, $langcode);
+    $langcode = $entity->language()->getId();
     if ($entity instanceof FieldableEntityInterface && $entity->hasField(static::FIELD_NAME)) {
-      if ($langcode && $entity instanceof TranslatableInterface) {
-        if ($translated_entity = $this->entityRepository->getTranslationFromContext($entity)) {
-          return $translated_entity;
-        }
-      }
       return $entity;
     }
   }
@@ -396,6 +403,28 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
       $parts[2] = NULL;
     }
     return $parts;
+  }
+
+  /**
+   * @param $entity_type_id
+   * @param $entity_id
+   * @param $langcode
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  private function getActiveEntity($entity_type_id, $entity_id, $langcode) {
+    $entity = $this->entityTypeManager->getStorage($entity_type_id)
+      ->load($entity_id);
+    $contexts = [];
+    if ($langcode) {
+      $contexts[] = new Context(new ContextDefinition('language', 'Interface text'), $langcode);
+      $contexts[] = new Context(new ContextDefinition('language', 'Content'), $langcode);
+    }
+
+    $entity = $this->entityRepository->getActive($entity, $contexts);
+    return $entity;
   }
 
 }
