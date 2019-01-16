@@ -186,8 +186,6 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
       // @todo Expand to work for all view modes in
       //   https://www.drupal.org/node/2907413.
       $contexts['view_mode'] = new Context(new ContextDefinition('string'), 'full');
-      $langcode = $this->languageManager->getCurrentLanguage();
-      $contexts['language'] = new Context(new ContextDefinition('language', 'Content'), $langcode);
     }
     return $contexts;
   }
@@ -220,7 +218,6 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     }
 
     $entity = $this->getActiveEntity($entity_type_id, $entity_id, $langcode);
-    $langcode = $entity->language()->getId();
     if ($entity instanceof FieldableEntityInterface && $entity->hasField(static::FIELD_NAME)) {
       return $entity;
     }
