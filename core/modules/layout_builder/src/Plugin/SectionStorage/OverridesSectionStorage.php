@@ -14,6 +14,7 @@ use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
+use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
@@ -81,15 +82,22 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   protected $languageManager;
 
   /**
+   * @var \Drupal\Core\Plugin\Context\ContextRepositoryInterface
+   */
+  protected $contextRepository;
+
+  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, EntityRepositoryInterface $entity_repository, LanguageManagerInterface $language_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, EntityRepositoryInterface $entity_repository, LanguageManagerInterface $language_manager, ContextRepositoryInterface $context_repository) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
     $this->entityFieldManager = $entity_field_manager;
     $this->entityRepository = $entity_repository;
     $this->languageManager = $language_manager;
+    $this->contextRepository = $context_repository;
+
   }
 
   /**
@@ -103,7 +111,8 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
       $container->get('entity_type.manager'),
       $container->get('entity_field.manager'),
       $container->get('entity.repository'),
-      $container->get('language_manager')
+      $container->get('language_manager'),
+      $container->get('context.repository')
     );
   }
 
@@ -166,8 +175,8 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   public function getSectionListFromId($id) {
     @trigger_error('\Drupal\layout_builder\SectionStorageInterface::getSectionListFromId() is deprecated in Drupal 8.7.0 and will be removed before Drupal 9.0.0. The section list should be derived from context. See https://www.drupal.org/node/3016262.', E_USER_DEPRECATED);
     if (strpos($id, '.') !== FALSE) {
-      list($entity_type_id, $entity_id, $langcode) = $this->getIdPartsArray($id);
-      $entity = $this->getActiveEntity($entity_type_id, $entity_id, $langcode);
+      list($entity_type_id, $entity_id) = explode('.', $id, 2);
+      $entity = $this->getActiveEntity($entity_type_id, $entity_id);
       if ($entity instanceof FieldableEntityInterface && $entity->hasField(static::FIELD_NAME)) {
         return $entity->get(static::FIELD_NAME);
       }
@@ -206,7 +215,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    */
   private function extractEntityFromRoute($value, array $defaults) {
     if (strpos($value, '.') !== FALSE) {
-      list($entity_type_id, $entity_id, $langcode) = $this->getIdPartsArray($value);
+      list($entity_type_id, $entity_id) = explode('.', $value);
     }
     elseif (isset($defaults['entity_type_id']) && !empty($defaults[$defaults['entity_type_id']])) {
       $entity_type_id = $defaults['entity_type_id'];
@@ -217,7 +226,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
       return NULL;
     }
 
-    $entity = $this->getActiveEntity($entity_type_id, $entity_id, $langcode);
+    $entity = $this->getActiveEntity($entity_type_id, $entity_id);
     if ($entity instanceof FieldableEntityInterface && $entity->hasField(static::FIELD_NAME)) {
       return $entity;
     }
@@ -382,27 +391,6 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   }
 
   /**
-   * Gets the 3 parts of the storage ID.
-   *
-   * The 3 parts will be, entity_type, entity_id and langcode. langcode may be
-   * NULL if the ID does not contain it.
-   *
-   * @param string $id
-   *   The ID.
-   *
-   * @return array
-   *   The parts of ID. The 3 parts will be, entity_type, entity_id and
-   *   langcode. langcode may be NULL if the ID does not contain it.
-   */
-  protected function getIdPartsArray($id) {
-    $parts = explode('.', $id);
-    if (count($parts) === 2) {
-      $parts[2] = NULL;
-    }
-    return $parts;
-  }
-
-  /**
    * @param $entity_type_id
    * @param $entity_id
    * @param $langcode
@@ -411,17 +399,10 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  private function getActiveEntity($entity_type_id, $entity_id, $langcode) {
+  private function getActiveEntity($entity_type_id, $entity_id) {
     $entity = $this->entityTypeManager->getStorage($entity_type_id)
       ->load($entity_id);
-    $contexts = [];
-    if ($langcode) {
-      $contexts[] = new Context(new ContextDefinition('language', 'Interface text'), $langcode);
-      $contexts[] = new Context(new ContextDefinition('language', 'Content'), $langcode);
-    }
-
-    $entity = $this->entityRepository->getActive($entity, $contexts);
-    return $entity;
+    return $this->entityRepository->getActive($entity, $this->contextRepository->getAvailableContexts());
   }
 
 }
