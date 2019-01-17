@@ -10,7 +10,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\TranslatableInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
@@ -77,11 +76,8 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   protected $entityRepository;
 
   /**
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
+   * The context repository.
+   *
    * @var \Drupal\Core\Plugin\Context\ContextRepositoryInterface
    */
   protected $contextRepository;
@@ -89,15 +85,13 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, EntityRepositoryInterface $entity_repository, LanguageManagerInterface $language_manager, ContextRepositoryInterface $context_repository) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, EntityRepositoryInterface $entity_repository, ContextRepositoryInterface $context_repository) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
     $this->entityFieldManager = $entity_field_manager;
     $this->entityRepository = $entity_repository;
-    $this->languageManager = $language_manager;
     $this->contextRepository = $context_repository;
-
   }
 
   /**
@@ -111,7 +105,6 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
       $container->get('entity_type.manager'),
       $container->get('entity_field.manager'),
       $container->get('entity.repository'),
-      $container->get('language_manager'),
       $container->get('context.repository')
     );
   }
@@ -220,7 +213,6 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     elseif (isset($defaults['entity_type_id']) && !empty($defaults[$defaults['entity_type_id']])) {
       $entity_type_id = $defaults['entity_type_id'];
       $entity_id = $defaults[$entity_type_id];
-      $langcode = isset($defaults['langcode']) ? $defaults['langcode'] : $this->languageManager->getCurrentLanguage()->getId();
     }
     else {
       return NULL;
@@ -391,17 +383,19 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   }
 
   /**
-   * @param $entity_type_id
-   * @param $entity_id
-   * @param $langcode
+   * Gets the active entity for editing.
+   *
+   * @param string $entity_type_id
+   *   The entity type id.
+   * @param string $entity_id
+   *   The entity id.
+
    *
    * @return \Drupal\Core\Entity\EntityInterface|null
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   *   The active entity.
    */
   private function getActiveEntity($entity_type_id, $entity_id) {
-    $entity = $this->entityTypeManager->getStorage($entity_type_id)
-      ->load($entity_id);
+    $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
     return $this->entityRepository->getActive($entity, $this->contextRepository->getAvailableContexts());
   }
 
