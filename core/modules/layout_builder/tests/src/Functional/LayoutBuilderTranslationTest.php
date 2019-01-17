@@ -28,7 +28,6 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
     'entity_test',
     'layout_builder',
     'block',
-    'dblog',
   ];
 
   /**
@@ -99,7 +98,6 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
     $permissions[] = 'view test entity translations';
     $permissions[] = 'view test entity';
     $permissions[] = 'configure any layout';
-    $permissions[] = 'access site reports';
     return $permissions;
   }
 
@@ -140,7 +138,6 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
     // Adjust the layout of the original entity.
     $assert_session->linkExists('Add Block');
     $this->clickLink('Add Block');
-    //$this->getSession()->wait(10000000000000000);
     $assert_session->linkExists('Powered by Drupal');
     $this->clickLink('Powered by Drupal');
     $page->pressButton('Add Block');
