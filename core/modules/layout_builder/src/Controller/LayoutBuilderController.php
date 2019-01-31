@@ -97,6 +97,9 @@ class LayoutBuilderController implements ContainerInjectionInterface {
         '#type' => 'status_messages',
       ];
     }
+
+    $output[] = $this->buildLivePreviewToggle($section_storage);
+
     $count = 0;
     for ($i = 0; $i < $section_storage->count(); $i++) {
       $output[] = $this->buildAddSectionLink($section_storage, $count);
@@ -342,6 +345,46 @@ class LayoutBuilderController implements ContainerInjectionInterface {
     }
 
     return new RedirectResponse($section_storage->getRedirectUrl()->setAbsolute()->toString());
+  }
+
+  /**
+   * Builds the live preview toggle input.
+   *
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   *   The section storage.
+   *
+   * @return array
+   *   The render array for the live preview toggle.
+   */
+  public function buildLivePreviewToggle(SectionStorageInterface $section_storage) {
+    // $live_preview_id is used for local storage to store live preview status.
+    $storage_type = $section_storage->getStorageType();
+    $storage_id = $section_storage->getStorageId();
+    $live_preview_id = "Drupal.layout_builder.live_preview.$storage_type.$storage_id";
+
+    $preview_checkbox = [
+      '#title' => $this->t('Live Preview'),
+      '#type' => 'checkbox',
+      '#checked' => TRUE,
+      '#attributes' => [
+        'id' => 'layout-builder-live-preview',
+        'data-live-preview-id' => $live_preview_id,
+      ],
+      '#label_attributes' => [
+        'for' => 'layout-builder-live-preview',
+      ],
+      '#description_display' => 'after',
+      '#description' => $this->t('Block preview content will be visible.'),
+
+    ];
+
+    return [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['js-show'],
+      ],
+      'toggle_live_preview' => $preview_checkbox,
+    ];
   }
 
 }

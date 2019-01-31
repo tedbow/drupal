@@ -76,6 +76,17 @@
   background-image: url(../../../misc/icons/787878/ex.svg);
 }
 
+.layout-builder-grid-mode .layout-section .layout-builder--layout__region .block {
+  border-bottom: 2px dashed #979797;
+  cursor: move;
+  margin: 0;
+}
+
+.layout-builder-grid-mode h2.data-layout-grid-mode-label {
+  margin: 0;
+  text-align: center;
+}
+
 #drupal-off-canvas .layout-selection li {
   display: block;
   padding-bottom: 1em;

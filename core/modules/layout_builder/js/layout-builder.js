@@ -5,11 +5,12 @@
 * @preserve
 **/
 
-(function ($, _ref) {
-  var ajax = _ref.ajax,
-      behaviors = _ref.behaviors;
+(function ($, Drupal) {
+  var ajax = Drupal.ajax,
+      behaviors = Drupal.behaviors,
+      announce = Drupal.announce;
 
-  behaviors.layoutBuilder = {
+  behaviors.layoutBuilderBlockDrag = {
     attach: function attach(context) {
       $(context).find('.layout-builder--layout__region').sortable({
         items: '> .draggable',
@@ -30,6 +31,57 @@
           }
         }
       });
+    }
+  };
+
+  behaviors.layoutBuilderToggleLivePreview = {
+    attach: function attach(context) {
+      var $layoutBuilder = $('#layout-builder');
+
+      var $layoutBuilderLivePreview = $('#layout-builder-live-preview');
+
+      var livePreviewId = $layoutBuilderLivePreview.data('live-preview-id');
+
+      var livePreviewActive = localStorage.getItem(livePreviewId);
+
+      function gridMode(transitionTime) {
+        $layoutBuilder.addClass('layout-builder-grid-mode');
+        $('[data-layout-grid-mode-label]').each(function (i, element) {
+          var $element = $(element);
+          $element.children(':not(.contextual)').hide(transitionTime);
+          var adminLabel = document.createElement('h2');
+          adminLabel.className = 'data-layout-grid-mode-label';
+          adminLabel.innerHTML = $element.attr('data-layout-grid-mode-label');
+          $element.prepend(adminLabel);
+        });
+      }
+
+      function livePreviewMode(transitionTime) {
+        $layoutBuilder.removeClass('layout-builder-grid-mode');
+        $('.data-layout-grid-mode-label').remove();
+        $('[data-layout-grid-mode-label]').each(function (i, element) {
+          $(element).children().show(transitionTime);
+        });
+      }
+
+      $('#layout-builder-live-preview', context).on('change', function (event) {
+        var $target = $(event.currentTarget);
+        var isChecked = $target.is(':checked');
+        localStorage.setItem(livePreviewId, isChecked);
+
+        if (isChecked) {
+          livePreviewMode(500);
+          announce(Drupal.t('Layout Builder editor is in live preview mode.'));
+        } else {
+          gridMode(500);
+          announce(Drupal.t('Layout Builder editor is in grid mode.'));
+        }
+      });
+
+      if (livePreviewActive === 'false') {
+        $layoutBuilderLivePreview.attr('checked', false);
+        gridMode(0);
+      }
     }
   };
 })(jQuery, Drupal);

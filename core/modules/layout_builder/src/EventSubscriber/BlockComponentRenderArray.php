@@ -108,8 +108,14 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
         '#weight' => $event->getComponent()->getWeight(),
         'content' => $content,
       ];
+
+      $preview_fallback_string = $block->getPreviewFallbackString();
+      // @todo  Use new label methods so data-layout-grid-mode-label doesn't
+      //   have to use preview fallback in https://www.drupal.org/node/2025649.
+      $build['#attributes']['data-layout-grid-mode-label'] = $preview_fallback_string;
+
       if ($is_content_empty && $is_placeholder_ready) {
-        $build['content']['#markup'] = $block->getPreviewFallbackString();
+        $build['content']['#markup'] = $preview_fallback_string;
       }
       $event->setBuild($build);
     }

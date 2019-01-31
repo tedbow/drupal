@@ -72,7 +72,7 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
   public function testOnBuildRender($refinable_dependent_access) {
     $contexts = [];
     if ($refinable_dependent_access) {
-      $block = $this->prophesize(TestBlockPluginWithRefinableDependentAccessInterface::class);
+      $block = $this->prophesize(TestBlockPluginWithRefinableDependentAccessInterface::class)->willImplement(PreviewFallbackInterface::class);
       $layout_entity = $this->prophesize(EntityInterface::class);
       $layout_entity = $layout_entity->reveal();
       $context = $this->prophesize(ContextInterface::class);
@@ -82,7 +82,7 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
       $block->setAccessDependency($layout_entity)->shouldBeCalled();
     }
     else {
-      $block = $this->prophesize(BlockPluginInterface::class);
+      $block = $this->prophesize(BlockPluginInterface::class)->willImplement(PreviewFallbackInterface::class);
     }
     $access_result = AccessResult::allowed();
     $block->access($this->account->reveal(), TRUE)->willReturn($access_result)->shouldBeCalled();
@@ -93,6 +93,8 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
     $block->getPluginId()->willReturn('block_plugin_id');
     $block->getBaseId()->willReturn('block_plugin_id');
     $block->getDerivativeId()->willReturn(NULL);
+    $grid_mode_label = 'Grid Mode Label';
+    $block->getPreviewFallbackString()->willReturn($grid_mode_label);
 
     $block_content = ['#markup' => 'The block content.'];
     $block->build()->willReturn($block_content);
@@ -112,6 +114,9 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
       '#base_plugin_id' => 'block_plugin_id',
       '#derivative_plugin_id' => NULL,
       'content' => $block_content,
+      '#attributes' => [
+        'data-layout-grid-mode-label' => $grid_mode_label,
+      ],
     ];
 
     $expected_cache = $expected_build + [
@@ -195,7 +200,7 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
   public function testOnBuildRenderInPreview($refinable_dependent_access) {
     $contexts = [];
     if ($refinable_dependent_access) {
-      $block = $this->prophesize(TestBlockPluginWithRefinableDependentAccessInterface::class);
+      $block = $this->prophesize(TestBlockPluginWithRefinableDependentAccessInterface::class)->willImplement(PreviewFallbackInterface::class);
       $block->setAccessDependency(new LayoutPreviewAccessAllowed())->shouldBeCalled();
 
       $layout_entity = $this->prophesize(EntityInterface::class);
@@ -206,7 +211,7 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
       $contexts['layout_builder.entity'] = $context->reveal();
     }
     else {
-      $block = $this->prophesize(BlockPluginInterface::class);
+      $block = $this->prophesize(BlockPluginInterface::class)->willImplement(PreviewFallbackInterface::class);
     }
 
     $block->access($this->account->reveal(), TRUE)->shouldNotBeCalled();
@@ -217,6 +222,8 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
     $block->getPluginId()->willReturn('block_plugin_id');
     $block->getBaseId()->willReturn('block_plugin_id');
     $block->getDerivativeId()->willReturn(NULL);
+    $grid_mode_label = 'Grid Mode Label';
+    $block->getPreviewFallbackString()->willReturn($grid_mode_label);
 
     $block_content = ['#markup' => 'The block content.'];
     $block->build()->willReturn($block_content);
@@ -236,6 +243,9 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
       '#base_plugin_id' => 'block_plugin_id',
       '#derivative_plugin_id' => NULL,
       'content' => $block_content,
+      '#attributes' => [
+        'data-layout-grid-mode-label' => $grid_mode_label,
+      ],
     ];
 
     $expected_cache = $expected_build + [
@@ -267,6 +277,7 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
     $block->getPluginId()->willReturn('block_plugin_id');
     $block->getBaseId()->willReturn('block_plugin_id');
     $block->getDerivativeId()->willReturn(NULL);
+    $block->getPluginDefinition()->willReturn(['admin_label' => 'adminlabel']);
     $placeholder_string = 'The placeholder string';
     $block->getPreviewFallbackString()->willReturn($placeholder_string);
 
@@ -287,6 +298,9 @@ class BlockComponentRenderArrayTest extends UnitTestCase {
       '#base_plugin_id' => 'block_plugin_id',
       '#derivative_plugin_id' => NULL,
       'content' => $block_content,
+      '#attributes' => [
+        'data-layout-grid-mode-label' => $placeholder_string,
+      ],
     ];
     $expected_build['content']['#markup'] = $placeholder_string;
 
