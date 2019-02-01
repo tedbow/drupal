@@ -18,15 +18,53 @@ class ContextHandler implements ContextHandlerInterface {
    */
   public function filterPluginDefinitionsByContexts(array $contexts, array $definitions) {
     return array_filter($definitions, function ($plugin_definition) use ($contexts) {
+      static $checked_requirements = [];
       $context_definitions = $this->getContextDefinitions($plugin_definition);
-
       if ($context_definitions) {
-        // Check the set of contexts against the requirements.
-        return $this->checkRequirements($contexts, $context_definitions);
+        $context_definitions_key = $this->getContextDefinitionsUniqueKey($context_definitions);
+        if (empty($context_definitions_key)) {
+          return $this->checkRequirements($contexts, $context_definitions);
+        }
+        // If ::checkRequirements() has already been called for this
+        // combinations of context definitions there is not need to call it
+        // again.
+        if (!isset($checked_requirements[$context_definitions_key])) {
+          // Check the set of contexts against the requirements.
+          $checked_requirements[$context_definitions_key] = $this->checkRequirements($contexts, $context_definitions);
+        }
+        return $checked_requirements[$context_definitions_key];
       }
       // If this plugin doesn't need any context, it is available to use.
       return TRUE;
     });
+  }
+
+  /**
+   * Gets a unique key for the context definitions.
+   *
+   * @param \Drupal\Component\Plugin\Context\ContextDefinitionInterface[] $context_definitions
+   *   The context definitions key.
+   *
+   * @return string|null
+   *   If possible a string unique key for the context definitions otherwise
+   *   null.
+   */
+  protected function getContextDefinitionsUniqueKey(array $context_definitions) {
+    $hash_array = [];
+    foreach ($context_definitions as $context_definition_type => $context_definition) {
+      $constraints = $context_definition->getConstraints();
+      foreach ($constraints as $constraint_key => $constraint) {
+        if (!is_scalar($constraint) &&
+          !(is_array($constraint) && count($constraint) === count(array_filter($constraint, 'is_scalar')))) {
+          return NULL;
+        }
+      }
+      $hash_array[$context_definition_type] = [
+        'data_type' => $context_definition->getDataType(),
+        'constraints' => $constraints,
+      ];
+    }
+    return md5(serialize($hash_array));
   }
 
   /**
