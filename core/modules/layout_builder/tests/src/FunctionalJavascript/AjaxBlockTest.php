@@ -11,6 +11,8 @@ use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
  */
 class AjaxBlockTest extends WebDriverTestBase {
 
+  use LayoutBuilderTestTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -71,7 +73,8 @@ class AjaxBlockTest extends WebDriverTestBase {
     $assert_session->linkExists('Add Block');
     $this->clickLink('Add Block');
     $assert_session->assertWaitOnAjaxRequest();
-    $assert_session->linkExists('TestAjax');
+    $this->clickBlockCategory('Test');
+    $this->assertBlockLinkVisible('TestAjax');
     $this->clickLink('TestAjax');
     $assert_session->assertWaitOnAjaxRequest();
     // Find the radio buttons.

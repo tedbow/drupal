@@ -125,3 +125,38 @@
   display: block;
   padding: 15px 0 15px 25px;
 }
+
+#drupal-off-canvas .layout-builder-block-categories summary {
+  background-color: #333;
+}
+
+#drupal-off-canvas .layout-builder-block-categories details[open] {
+  padding-bottom: 6px;
+}
+
+#drupal-off-canvas .layout-builder-block-categories > details:not([open]) {
+  border-bottom: 2px solid #474747;
+}
+
+#drupal-off-canvas .layout-builder-block-categories > details > .details-wrapper {
+  padding-top: 5px;
+}
+
+#drupal-off-canvas .layout-builder-block-categories details {
+  background: transparent;
+}
+
+#drupal-off-canvas .layout-builder-block-categories .layout-builder-secondary-blocks > summary {
+  background-color: transparent;
+  font-weight: normal;
+  padding: 2px 20px 0;
+}
+
+#drupal-off-canvas .layout-builder-block-categories .layout-builder-secondary-blocks > summary:hover {
+  color: #fff;
+  background: transparent;
+}
+
+#drupal-off-canvas .layout-builder-block-categories .layout-builder-secondary-blocks[open] > summary:hover {
+  color: #ddd;
+}
