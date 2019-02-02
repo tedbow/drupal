@@ -3,6 +3,7 @@
 namespace Drupal\layout_builder;
 
 use Drupal\Component\Plugin\Exception\PluginException;
+use Drupal\Core\Config\Entity\ThirdPartySettingsInterface;
 use Drupal\Core\Plugin\ContextAwarePluginInterface;
 use Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent;
 
@@ -28,7 +29,16 @@ use Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent;
  * @todo Determine whether an interface will be provided for this in
  *   https://www.drupal.org/project/drupal/issues/2930334.
  */
-class SectionComponent {
+class SectionComponent implements ThirdPartySettingsInterface {
+
+  use ThirdPartySettingsTrait;
+
+  /**
+   * The third party settings module key for the legacy 'additional' property.
+   *
+   * @var string
+   */
+  private $legacy_additional_module_key = '_layout_builder';
 
   /**
    * The UUID of the component.
@@ -76,12 +86,17 @@ class SectionComponent {
    *   The plugin configuration.
    * @param mixed[] $additional
    *   An additional values.
+   * @param array $third_party_settings
+   *   (optional) Any third party settings.
    */
-  public function __construct($uuid, $region, array $configuration = [], array $additional = []) {
+  public function __construct($uuid, $region, array $configuration = [], array $additional = [], array $third_party_settings = []) {
     $this->uuid = $uuid;
     $this->region = $region;
     $this->configuration = $configuration;
-    $this->additional = $additional;
+    if ($additional) {
+      $third_party_settings[$this->legacy_additional_module_key] = $additional;
+    }
+    $this->third_party_settings = $third_party_settings;
   }
 
   /**
@@ -117,7 +132,7 @@ class SectionComponent {
       $value = isset($this->{$property}) ? $this->{$property} : NULL;
     }
     else {
-      $value = isset($this->additional[$property]) ? $this->additional[$property] : NULL;
+      $value = $this->getThirdPartySetting($this->legacy_additional_module_key, $property);
     }
     return $value;
   }
@@ -137,7 +152,8 @@ class SectionComponent {
       $this->{$property} = $value;
     }
     else {
-      $this->additional[$property] = $value;
+      @trigger_error('Additional component properties should set via ::setThirdPartySetting().', E_USER_DEPRECATED);
+      $this->setThirdPartySetting($this->legacy_additional_module_key, $property, $value);
     }
     return $this;
   }
@@ -302,8 +318,9 @@ class SectionComponent {
       'uuid' => $this->getUuid(),
       'region' => $this->getRegion(),
       'configuration' => $this->getConfiguration(),
-      'additional' => $this->additional,
+      'additional' => $this->getThirdPartysettings($this->legacy_additional_module_key),
       'weight' => $this->getWeight(),
+      'third_party_settings' => $this->third_party_settings,
     ];
   }
 
@@ -319,12 +336,28 @@ class SectionComponent {
    *   The section component object.
    */
   public static function fromArray(array $component) {
+    // Ensure expected array keys are present.
+    $component += [
+      'uuid' => '',
+      'region' => [],
+      'configuration' => [],
+      'additional' => [],
+      'third_party_settings' => [],
+    ];
     return (new static(
       $component['uuid'],
       $component['region'],
       $component['configuration'],
-      $component['additional']
+      $component['additional'],
+      $component['third_party_settings']
     ))->setWeight($component['weight']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getThirdPartyProviders() {
+    return array_diff(array_keys($this->third_party_settings), [$this->legacy_additional_module_key]);
   }
 
 }

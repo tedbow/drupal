@@ -28,6 +28,13 @@ layout_builder.section:
       label: 'Components'
       sequence:
         type: layout_builder.component
+    third_party_settings:
+      type: sequence
+      label: 'Third party settings'
+      sequence:
+        type: sequence
+        sequence:
+          type: ignore
 
 layout_builder.component:
   type: mapping
@@ -47,6 +54,13 @@ layout_builder.component:
     additional:
       type: ignore
       label: 'Additional data'
+    third_party_settings:
+      type: sequence
+      label: 'Third party settings'
+      sequence:
+        type: sequence
+        sequence:
+          type: ignore
 
 inline_block:
   type: block_settings

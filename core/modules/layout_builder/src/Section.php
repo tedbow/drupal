@@ -2,6 +2,8 @@
 
 namespace Drupal\layout_builder;
 
+use Drupal\Core\Config\Entity\ThirdPartySettingsInterface;
+
 /**
  * Provides a domain object for layout sections.
  *
@@ -22,7 +24,9 @@ namespace Drupal\layout_builder;
  * @todo Determine whether an interface will be provided for this in
  *   https://www.drupal.org/project/drupal/issues/2930334.
  */
-class Section {
+class Section implements ThirdPartySettingsInterface {
+
+  use ThirdPartySettingsTrait;
 
   /**
    * The layout plugin ID.
@@ -54,13 +58,16 @@ class Section {
    *   (optional) The layout plugin settings.
    * @param \Drupal\layout_builder\SectionComponent[] $components
    *   (optional) The components.
+   * @param array $third_party_settings
+   *   (optional) Any third party settings.
    */
-  public function __construct($layout_id, array $layout_settings = [], array $components = []) {
+  public function __construct($layout_id, array $layout_settings = [], array $components = [], array $third_party_settings = []) {
     $this->layoutId = $layout_id;
     $this->layoutSettings = $layout_settings;
     foreach ($components as $component) {
       $this->setComponent($component);
     }
+    $this->third_party_settings = $third_party_settings;
   }
 
   /**
@@ -334,6 +341,7 @@ class Section {
       'components' => array_map(function (SectionComponent $component) {
         return $component->toArray();
       }, $this->getComponents()),
+      'third_party_settings' => $this->third_party_settings,
     ];
   }
 
@@ -349,10 +357,18 @@ class Section {
    *   The section object.
    */
   public static function fromArray(array $section) {
+    // Ensure expected array keys are present.
+    $section += [
+      'layout_id' => '',
+      'layout_settings' => [],
+      'components' => [],
+      'third_party_settings' => [],
+    ];
     return new static(
       $section['layout_id'],
       $section['layout_settings'],
-      array_map([SectionComponent::class, 'fromArray'], $section['components'])
+      array_map([SectionComponent::class, 'fromArray'], $section['components']),
+      $section['third_party_settings']
     );
   }
 
