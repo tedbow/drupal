@@ -251,3 +251,10 @@ p {
 .layout__region .menu-footer .menu-footer__link {
   color: #00836d;
 }
+
+.field--name-field-images .field__item {
+  /* float: left; */
+  display: inline;
+  overflow-y: auto;
+  margin: 20px;
+}
