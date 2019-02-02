@@ -168,31 +168,3 @@
 [data-layout-builder-highlight-id].block-layout-builder.layout-builder-highlight {
   outline: 3px solid;
 }
-
-.region-title__action {
-  display: inline-block;
-  margin-left: 1em; /* LTR */
-}
-[dir="rtl"] .region-title__action {
-  margin-left: 0;
-  margin-right: 1em;
-}
-
-/**
-@todo Open an issue to fix .dropbutton-single in off-canvas reset
- */
-#drupal-off-canvas .layout-overview td .dropbutton-single  .dropbutton-widget .dropbutton {
-  width: auto;
-  margin-left: 5px;
-  margin-right: 5px;
-}
-#drupal-off-canvas .layout-overview td .dropbutton-single  .dropbutton-widget {
-  padding: 0 3px;
-}
-#drupal-off-canvas .layout-overview td .dropbutton-single  .dropbutton-widget .dropbutton a {
-  margin-top: 0px;
-  color: #fff;
-}
-#drupal-off-canvas .layout-overview td .dropbutton-single  .dropbutton-widget .dropbutton .dropbutton-action {
-  background: transparent;
-}

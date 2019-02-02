@@ -1,3 +1,15 @@
+layout_builder.sections_overview:
+  path: '/layout_builder/sections/overview/{section_storage_type}/{section_storage}'
+  defaults:
+    _controller: '\Drupal\layout_builder\Controller\OverViewController::overview'
+  requirements:
+    _permission: 'configure any layout'
+    _layout_builder_access: 'view'
+  options:
+    _admin_route: TRUE
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
 layout_builder.choose_section:
   path: '/layout_builder/choose/section/{section_storage_type}/{section_storage}/{delta}'
   defaults:
