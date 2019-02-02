@@ -258,3 +258,13 @@ p {
   overflow-y: auto;
   margin: 20px;
 }
+
+.tedbow-full-section {
+  width: 120%;
+  left: -50px;
+  position: relative;
+}
+
+.tedbow-bold-block {
+  border: 20px solid #79bd8f;
+}

@@ -166,3 +166,7 @@
   cursor: pointer;
   display: inline-block;
 }
+
+#toolbar-bar {
+  background-color: red !important;
+}
