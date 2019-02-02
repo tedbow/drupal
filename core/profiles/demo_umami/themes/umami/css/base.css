@@ -246,3 +246,8 @@ ul ol {
 p {
   margin-bottom: 1.28rem;
 }
+
+
+.layout__region .menu-footer .menu-footer__link {
+  color: #00836d;
+}

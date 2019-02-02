@@ -24,7 +24,7 @@
 
 @media screen and (min-width: 786px) {
   .node--type-recipe.node--view-mode-full .field--name-field-image img {
-    max-width: 796px;
+    /*max-width: 796px; */
   }
 }
 

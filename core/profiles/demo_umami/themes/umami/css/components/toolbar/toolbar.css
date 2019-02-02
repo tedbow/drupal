@@ -9,3 +9,6 @@
 .toolbar button {
   font-family: inherit;
 }
+#toolbar-bar {
+  background-color: red;
+}
