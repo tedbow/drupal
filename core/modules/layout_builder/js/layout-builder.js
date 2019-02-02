@@ -84,4 +84,14 @@
       }
     }
   };
+  $(window).on('dialog:aftercreate', function (event, dialog, $element) {
+    $('.layout-builder-highlight').removeClass('layout-builder-highlight');
+    if ($element.find('[data-layout-builder-target-highlight-id]')) {
+      var id = $element.find('[data-layout-builder-target-highlight-id]').attr('data-layout-builder-target-highlight-id');
+      $('[data-layout-builder-highlight-id="' + id + '"]').addClass('layout-builder-highlight');
+    }
+  });
+  $(window).on('dialog:afterclose', function () {
+    $('.layout-builder-highlight').removeClass('layout-builder-highlight');
+  });
 })(jQuery, Drupal);

@@ -106,6 +106,20 @@ layout_builder.update_block:
       section_storage:
         layout_builder_tempstore: TRUE
 
+layout_builder.move_block_form:
+  path: '/layout_builder/move/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}'
+  defaults:
+    _title: 'Move Block'
+    _form: '\Drupal\layout_builder\Form\MoveBlockForm'
+  requirements:
+    _permission: 'configure any layout'
+    _layout_builder_access: 'view'
+  options:
+    _admin_route: TRUE
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
 layout_builder.remove_block:
   path: '/layout_builder/remove/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}'
   defaults:

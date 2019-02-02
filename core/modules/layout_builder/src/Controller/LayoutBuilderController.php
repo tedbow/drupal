@@ -238,6 +238,7 @@ class LayoutBuilderController implements ContainerInjectionInterface {
         foreach ($build[$region] as $uuid => $block) {
           $build[$region][$uuid]['#attributes']['class'][] = 'draggable';
           $build[$region][$uuid]['#attributes']['data-layout-block-uuid'] = $uuid;
+          $build[$region][$uuid]['#attributes']['data-layout-builder-highlight-id'] = "block-$uuid";
           $build[$region][$uuid]['#contextual_links'] = [
             'layout_builder_block' => [
               'route_parameters' => [
