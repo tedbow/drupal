@@ -115,8 +115,9 @@
   padding: 15px 0 15px 25px;
 }
 
-.ui-dialog-off-canvas #drupal-off-canvas #layout-builder-components-table tr.current-block {
+.ui-dialog-off-canvas #drupal-off-canvas #layout-builder-components-table tr.current-block td {
   border: solid 3px;
+  font-weight: bold;
 }
 
 [data-layout-builder-highlight-id].block-layout-builder.layout-builder-highlight {
