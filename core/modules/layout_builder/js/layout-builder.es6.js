@@ -55,10 +55,10 @@
   $(window).on('dialog:aftercreate', (event, dialog, $element) => {
     // Remove the highlight form the previous element if any.
     $('.layout-builder-highlight').removeClass('layout-builder-highlight');
-    if ($element.find('[data-layout-builder-target-highlight-id]')) {
-      const id = $element
-        .find('[data-layout-builder-target-highlight-id]')
-        .attr('data-layout-builder-target-highlight-id');
+    const id = $element
+      .find('[data-layout-builder-target-highlight-id]')
+      .attr('data-layout-builder-target-highlight-id');
+    if (id) {
       $(`[data-layout-builder-highlight-id="${id}"]`).addClass(
         'layout-builder-highlight',
       );

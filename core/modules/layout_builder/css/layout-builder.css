@@ -123,3 +123,7 @@
 [data-layout-builder-highlight-id].block-layout-builder.layout-builder-highlight {
   outline: 3px solid;
 }
+
+.layout-block-move .tabledrag-changed-warning {
+  display: none !important;
+}
