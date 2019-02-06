@@ -115,3 +115,11 @@
   display: block;
   padding: 15px 0 15px 25px;
 }
+
+.ui-dialog-off-canvas #drupal-off-canvas #layout-builder-components-table tr.current-block {
+  border: solid 3px;
+}
+
+[data-layout-builder-highlight-id].block-layout-builder.layout-builder-highlight {
+  outline: 3px solid;
+}
