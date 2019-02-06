@@ -275,6 +275,7 @@ class MoveBlockFormTest extends WebDriverTestBase {
   protected function assertRegionBlocksOrder($section_delta, $region, array $block_selectors) {
     $page = $this->getSession()->getPage();
     $this->assertSession()->assertWaitOnAjaxRequest();
+    $this->waitForNoElement('#drupal-off-canvas');
     $region_selector = "[data-layout-delta=\"$section_delta\"] [data-region=\"$region\"]";
     $blocks = $page->findAll('css', "$region_selector [data-layout-block-uuid]");
     $this->assertNotEmpty($blocks);
