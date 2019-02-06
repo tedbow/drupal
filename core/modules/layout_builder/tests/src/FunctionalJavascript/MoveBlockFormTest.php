@@ -55,7 +55,7 @@ class MoveBlockFormTest extends WebDriverTestBase {
       ['layout[enabled]' => TRUE],
       'Save'
     );
-
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#edit-manage-layout'));
     $this->clickLink('Manage layout');
     $assert_session->addressEquals(static::FIELD_UI_PREFIX . '/display-layout/default');
 
@@ -74,23 +74,25 @@ class MoveBlockFormTest extends WebDriverTestBase {
     $assert_session->waitForElementVisible('css', '#drupal-off-canvas');
     $assert_session->linkExists('Two column');
     $page->clickLink('Two column');
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#drupal-off-canvas .layout-builder-configure-section [data-drupal-selector="edit-actions-submit"]'));
+    $page->pressButton('Add section');
     $this->assertRegionBlocksOrder(
       1,
       'content',
       $expected_block_order
     );
 
-    // Add a 'Powered by Drupal' block in the 'top' region of the new section.
-    $top_block_locator = '[data-layout-delta="0"].layout--twocol [data-region="top"] [data-layout-block-uuid]';
-    $assert_session->elementNotExists('css', $top_block_locator);
-    $top_add_block = $page->find('css', '[data-layout-delta="0"].layout--twocol [data-region="top"] .new-block__link');
-    $top_add_block->click();
+    // Add a 'Powered by Drupal' block in the 'first' region of the new section.
+    $first_region_block_locator = '[data-layout-delta="0"].layout--twocol-section [data-region="first"] [data-layout-block-uuid]';
+    $assert_session->elementNotExists('css', $first_region_block_locator);
+    $region_add_block = $page->find('css', '[data-layout-delta="0"].layout--twocol-section [data-region="first"] .new-block__link');
+    $region_add_block->click();
     $assert_session->waitForElementVisible('css', '#drupal-off-canvas a:contains("Powered by Drupal")');
     $assert_session->assertWaitOnAjaxRequest();
     $page->clickLink('Powered by Drupal');
     $this->assertNotEmpty($assert_session->waitForElementVisible('css', '[data-drupal-selector="edit-actions-submit"]'));
     $page->pressButton('Add Block');
-    $this->assertNotEmpty($assert_session->waitForElementVisible('css', $top_block_locator));
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', $first_region_block_locator));
 
     // Ensure the request has completed before the test starts.
     $this->waitForNoElement('#drupal-off-canvas');
@@ -102,6 +104,7 @@ class MoveBlockFormTest extends WebDriverTestBase {
    */
   public function testMoveBlock() {
     $page = $this->getSession()->getPage();
+    $assert_session = $this->assertSession();
 
     // Reorder body field in current region.
     $this->openBodyMoveForm(1, 'content', ['Links', 'Body']);
@@ -117,6 +120,7 @@ class MoveBlockFormTest extends WebDriverTestBase {
       $expected_block_order
     );
     $this->clickLink('Save Layout');
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#edit-manage-layout'));
     $this->clickLink('Manage layout');
     $this->assertRegionBlocksOrder(
       1,
@@ -124,9 +128,9 @@ class MoveBlockFormTest extends WebDriverTestBase {
       $expected_block_order
     );
 
-    // Move the body block into the top region above existing block.
+    // Move the body block into the first region above existing block.
     $this->openBodyMoveForm(1, 'content', ['Body', 'Links']);
-    $page->selectFieldOption('Region', '0:top');
+    $page->selectFieldOption('Region', '0:first');
     $this->assertBlockTable(['Powered by Drupal', 'Body']);
     $this->moveBlockWithKeyboard('up', 'Body', ['Body *', 'Powered by Drupal']);
     $page->pressButton('Move');
@@ -136,7 +140,7 @@ class MoveBlockFormTest extends WebDriverTestBase {
     ];
     $this->assertRegionBlocksOrder(
       0,
-      'top',
+      'first',
       $expected_block_order
     );
     // Ensure the body block is no longer in the content region.
@@ -148,21 +152,22 @@ class MoveBlockFormTest extends WebDriverTestBase {
       ]
     );
     $this->clickLink('Save Layout');
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#edit-manage-layout'));
     $this->clickLink('Manage layout');
     $this->assertRegionBlocksOrder(
       0,
-      'top',
+      'first',
       $expected_block_order
     );
 
-    // Move into the bottom region that has no existing blocks.
-    $this->openBodyMoveForm(0, 'top', ['Body', 'Powered by Drupal']);
-    $page->selectFieldOption('Region', '0:bottom');
+    // Move into the second region that has no existing blocks.
+    $this->openBodyMoveForm(0, 'first', ['Body', 'Powered by Drupal']);
+    $page->selectFieldOption('Region', '0:second');
     $this->assertBlockTable(['Body']);
     $page->pressButton('Move');
     $this->assertRegionBlocksOrder(
       0,
-      'bottom',
+      'second',
       [
         '.block-field-blocknodebundle-with-section-fieldbody',
       ]
