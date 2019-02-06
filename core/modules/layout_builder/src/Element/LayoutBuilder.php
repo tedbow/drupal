@@ -246,6 +246,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
       if (!empty($build[$region])) {
         foreach ($build[$region] as $uuid => $block) {
           $build[$region][$uuid]['#attributes']['class'][] = 'draggable';
+          $build[$region][$uuid]['#attributes']['data-layout-builder-highlight-id'] = "block-$uuid";
           $build[$region][$uuid]['#attributes']['data-layout-block-uuid'] = $uuid;
           $build[$region][$uuid]['#contextual_links'] = [
             'layout_builder_block' => [
