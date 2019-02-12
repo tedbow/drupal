@@ -160,4 +160,20 @@
         });
     },
   };
+  // Highlight the element that just triggered the layout builder dialog.
+  $(window).on('dialog:aftercreate', (event, dialog, $element) => {
+    // Remove the highlight form the previous element if any.
+    $('.layout-builder-highlight').removeClass('layout-builder-highlight');
+    const id = $element
+      .find('[data-layout-builder-target-highlight-id]')
+      .attr('data-layout-builder-target-highlight-id');
+    if (id) {
+      $(`[data-layout-builder-highlight-id="${id}"]`).addClass(
+        'layout-builder-highlight',
+      );
+    }
+  });
+  $(window).on('dialog:afterclose', () => {
+    $('.layout-builder-highlight').removeClass('layout-builder-highlight');
+  });
 })(jQuery, Drupal);

@@ -247,6 +247,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
       if (!empty($build[$region])) {
         foreach (Element::children($build[$region]) as $uuid) {
           $build[$region][$uuid]['#attributes']['class'][] = 'draggable';
+          $build[$region][$uuid]['#attributes']['data-layout-builder-highlight-id'] = "block-$uuid";
           $build[$region][$uuid]['#attributes']['data-layout-block-uuid'] = $uuid;
           $build[$region][$uuid]['#contextual_links'] = [
             'layout_builder_block' => [
@@ -256,6 +257,11 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
                 'delta' => $delta,
                 'region' => $region,
                 'uuid' => $uuid,
+                // @todo Do not cache Layout Builder contextual links to not use
+                //   stale client-side contextual links cache so that new
+                //   new 'move' link is rendered. Remove in
+                //   https://www.drupal.org/project/drupal/issues/2773591.
+                '_contextual_link' => 'move',
               ],
             ],
           ];
