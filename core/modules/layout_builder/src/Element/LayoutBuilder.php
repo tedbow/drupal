@@ -261,7 +261,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
                 //   stale client-side contextual links cache so that new
                 //   new 'move' link is rendered. Remove in
                 //   https://www.drupal.org/project/drupal/issues/2773591.
-                '_time' => time(),
+                '_contextual_link' => 'move',
               ],
             ],
           ];
