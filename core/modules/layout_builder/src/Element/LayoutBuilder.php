@@ -256,6 +256,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
                 'section_storage' => $storage_id,
                 'delta' => $delta,
                 'region' => $region,
+                'uuid' => $uuid,
               ],
               'metadata' => [
                 'has_move' => 1,
