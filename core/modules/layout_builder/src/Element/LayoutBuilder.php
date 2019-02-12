@@ -257,9 +257,10 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
                 'delta' => $delta,
                 'region' => $region,
                 'uuid' => $uuid,
-                // @todo Do not cache Layout Builder contextual links to not use
-                //   stale client-side contextual links cache so that new
-                //   new 'move' link is rendered. Remove in
+                // Add a new unused argument to ensure that any contextual links
+                // for the Layout Builder that were cached on the client-side
+                // before the new 'move' contextual was added will be cleared.
+                // @todo Remove in
                 //   https://www.drupal.org/project/drupal/issues/2773591.
                 '_contextual_link' => 'move',
               ],
