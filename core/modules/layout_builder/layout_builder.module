@@ -287,17 +287,4 @@ function layout_builder_plugin_filter_layout__layout_builder_alter(array &$defin
       'layout_onecol' => $one_col,
     ] + $definitions;
   }
-
-  /**
-   * Implements hook_block_view_alter().
-   */
-  function layout_builder_block_view_alter(array &$build) {
-    // Force a new 'data-contextual-id' attribute on blocks so as not to reuse
-    // stale data cached client-side to ensure the new
-    // @todo Remove when https://www.drupal.org/node/2773591 is fixed.
-    $build['#contextual_links']['layout_builder_block'] = [
-      'route_parameters' => [],
-    ];
-  }
-
 }
