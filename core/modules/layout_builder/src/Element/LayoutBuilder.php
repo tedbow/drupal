@@ -256,13 +256,9 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
                 'section_storage' => $storage_id,
                 'delta' => $delta,
                 'region' => $region,
-                'uuid' => $uuid,
-                // Add a new unused argument to ensure that any contextual links
-                // for the Layout Builder that were cached on the client-side
-                // before the new 'move' contextual was added will be cleared.
-                // @todo Remove in
-                //   https://www.drupal.org/project/drupal/issues/2773591.
-                '_contextual_link' => 'move',
+              ],
+              'metadata' => [
+                'has_move' => 1,
               ],
             ],
           ];

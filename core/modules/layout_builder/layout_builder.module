@@ -278,7 +278,7 @@ function layout_builder_plugin_filter_layout__layout_builder_alter(array &$defin
       }
     }
   }
-
+  
   // Move the one column layout to the top.
   if (isset($definitions['layout_onecol']) && $definitions['layout_onecol']->getProvider() === 'layout_discovery') {
     $one_col = $definitions['layout_onecol'];
