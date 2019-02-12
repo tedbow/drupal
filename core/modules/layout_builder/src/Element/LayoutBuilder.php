@@ -258,8 +258,11 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
                 'region' => $region,
                 'uuid' => $uuid,
               ],
+              // Add metadata about the current operations available in
+              // contextual links. This will invalidate the client-side cache of
+              // links that were cached before the 'move' link was added.
               'metadata' => [
-                'has_move' => 1,
+                'operations' => 'move:update:remove',
               ],
             ],
           ];
