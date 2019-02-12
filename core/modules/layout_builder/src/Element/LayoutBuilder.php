@@ -261,6 +261,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
               // Add metadata about the current operations available in
               // contextual links. This will invalidate the client-side cache of
               // links that were cached before the 'move' link was added.
+              // @see layout_builder.links.contextual.yml
               'metadata' => [
                 'operations' => 'move:update:remove',
               ],
