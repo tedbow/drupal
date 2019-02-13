@@ -92,6 +92,14 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
       ->setComponent($field_name, ['type' => 'entity_reference_label'])
       ->save();
 
+    $block_content_type = BlockContentType::create([
+      'id' => 'basic',
+      'label' => 'basic',
+      'revision' => FALSE,
+    ]);
+    $block_content_type->save();
+    block_content_add_body_field($block_content_type->id());
+
     $this->drupalPlaceBlock('page_title_block');
     $this->drupalPlaceBlock('system_main_block');
 
@@ -164,7 +172,9 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
     $assert_session = $this->assertSession();
 
     // Click the title field.
-    $this->click('[data-quickedit-field-id="node/1/title/en/full"].quickedit-candidate');
+    $this->click('[data-quickedit-field-id="'
+      . $this->getQuickEditFieldId('node', 1, 'title', 'full')
+      . '"].quickedit-candidate');
     $assert_session->waitForElement('css', '.quickedit-toolbar-field div[id*="title"]');
     $this->assertQuickEditEntityToolbar((string) $node->label(), 'Title');
     $this->assertEntityInstanceFieldStates('node', 1, 0, [
@@ -179,7 +189,9 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
     ]);
 
     // Append something to the title.
-    $this->typeInPlainTextEditor('[data-quickedit-field-id="node/1/title/en/full"].quickedit-candidate', ' Llamas are awesome!');
+    $this->typeInPlainTextEditor('[data-quickedit-field-id="'
+      . $this->getQuickEditFieldId('node', 1, 'title', 'full')
+      . '"].quickedit-candidate', ' Llamas are awesome!');
     $this->awaitEntityInstanceFieldState('node', 1, 0, 'title', 'en', 'changed');
     $this->assertEntityInstanceFieldStates('node', 1, 0, [
       'node/1/title/en/full'      => 'changed',
@@ -216,7 +228,9 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
 
     // Click the tags field.
     hold_test_response(TRUE);
-    $this->click('[data-quickedit-field-id="node/1/field_tags/en/full"]');
+    $this->click('[data-quickedit-field-id="'
+      . $this->getQuickEditFieldId('node', 1, 'field_tags', 'full')
+      . '"]');
     $assert_session->waitForElement('css', '.quickedit-toolbar-field div[id*="tags"]');
     $this->assertQuickEditEntityToolbar((string) $node->label(), 'Tags');
     $this->assertEntityInstanceFieldStates('node', 1, 0, [
@@ -284,14 +298,6 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
    * Tests if a custom can be in-place edited with Quick Edit.
    */
   public function testCustomBlock() {
-    $block_content_type = BlockContentType::create([
-      'id' => 'basic',
-      'label' => 'basic',
-      'revision' => FALSE,
-    ]);
-    $block_content_type->save();
-    block_content_add_body_field($block_content_type->id());
-
     $block_content = BlockContent::create([
       'info' => 'Llama',
       'type' => 'basic',

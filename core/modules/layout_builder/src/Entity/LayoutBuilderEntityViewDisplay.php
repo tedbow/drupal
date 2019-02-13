@@ -2,6 +2,7 @@
 
 namespace Drupal\layout_builder\Entity;
 
+use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\Entity\EntityViewDisplay as BaseEntityViewDisplay;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -13,6 +14,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\layout_builder\Plugin\Block\FieldBlock;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
@@ -468,6 +470,88 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    */
   private function sectionStorageManager() {
     return \Drupal::service('plugin.manager.layout_builder.section_storage');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getComponent($name) {
+    if ($this->isLayoutBuilderEnabled()) {
+      if ($section_component = $this->getSectionComponentForFieldName($name)) {
+        $plugin = $section_component->getPlugin();
+        if ($plugin instanceof ConfigurableInterface) {
+          $configuration = $plugin->getConfiguration();
+          if (isset($configuration['formatter'])) {
+            return $configuration['formatter'];
+          }
+        }
+      }
+    }
+    return parent::getComponent($name);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Override because the parent implementation filters out base fields which
+   * the layout builder can display.
+   */
+  protected function getFieldDefinitions() {
+    if (!$this->isLayoutBuilderEnabled()) {
+      parent::getFieldDefinitions();
+    }
+    if (!isset($this->fieldDefinitions)) {
+      $definitions = \Drupal::entityManager()->getFieldDefinitions($this->targetEntityType, $this->bundle);
+      $this->fieldDefinitions = $definitions;
+    }
+    return $this->fieldDefinitions;
+  }
+
+  /**
+   * Returns the QuickEdit formatter settings.
+   *
+   * @return array |null
+   *   The QuickEdit formatter settings.
+   *
+   * @see \Drupal\layout_builder\QuickEditIntegration::entityViewAlter
+   */
+  private function getQuickEditSectionComponent() {
+    if (isset($this->originalMode)) {
+      $parts = explode('-', $this->originalMode, 3);
+      if (count($parts) === 3) {
+        list($mode, $delta, $component_uuid) = $parts;
+        if ($mode === 'layout_builder') {
+          $sections = $this->getSections();
+          if (isset($sections[(int) $delta])) {
+            $section = $sections[(int) $delta];
+            $component = $section->getComponent($component_uuid);
+            $plugin =$component->getPlugin();
+            if ($plugin instanceof FieldBlock) {
+              return $component;
+            }
+          }
+        }
+      }
+    }
+    return NULL;
+  }
+
+  private function getSectionComponentForFieldName($name) {
+    $section_component = $this->getQuickEditSectionComponent();
+    if (empty($section_component)) {
+      foreach ($this->getSections() as $section) {
+        foreach ($section->getComponents() as $component) {
+          $plugin = $component->getPlugin();
+          if ($plugin instanceof FieldBlock) {
+            list(, , , $field_name) = explode(':', $plugin->getPluginId());
+            if ($field_name === $name) {
+              return $component;
+            }
+          }
+        }
+      }
+    }
+    return $section_component;
   }
 
 }
