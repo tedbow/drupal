@@ -315,4 +315,23 @@ JS;
     $this->getSession()->evaluateScript($js_simulate_user_typing);
   }
 
+  /**
+   * Gets the QuickEdit field ID attribute value.
+   *
+   * @param string $entity_type
+   *   The entity type.
+   * @param int $entity_id
+   *   The entity id.
+   * @param string $field_name
+   *   The field name.
+   * @param string $view_mode
+   *   The view mode.
+   *
+   * @return string
+   *   The field id.
+   */
+  protected function getQuickEditFieldId($entity_type, $entity_id, $field_name, $view_mode) {
+    return "$entity_type/$entity_id/$field_name/en/$view_mode";
+  }
+
 }
