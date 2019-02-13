@@ -119,7 +119,7 @@ class MoveBlockFormTest extends WebDriverTestBase {
       'content',
       $expected_block_order
     );
-    $this->clickLink('Save Layout');
+    $page->pressButton('Save layout');
     $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#edit-manage-layout'));
     $this->clickLink('Manage layout');
     $this->assertRegionBlocksOrder(
@@ -151,7 +151,7 @@ class MoveBlockFormTest extends WebDriverTestBase {
         '.block-extra-field-blocknodebundle-with-section-fieldlinks',
       ]
     );
-    $this->clickLink('Save Layout');
+    $page->pressButton('Save layout');
     $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#edit-manage-layout'));
     $this->clickLink('Manage layout');
     $this->assertRegionBlocksOrder(
@@ -178,7 +178,7 @@ class MoveBlockFormTest extends WebDriverTestBase {
    * Asserts the correct block labels appear in the draggable tables.
    *
    * @param string[] $expected_block_labels
-   *   The expected block lables.
+   *   The expected block labels.
    */
   protected function assertBlockTable(array $expected_block_labels) {
     $page = $this->getSession()->getPage();

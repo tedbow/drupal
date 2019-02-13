@@ -3,7 +3,6 @@
 namespace Drupal\layout_builder\Form;
 
 use Drupal\Core\Ajax\AjaxFormHelperTrait;
-use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\layout_builder\Controller\LayoutRebuildTrait;
@@ -60,12 +59,9 @@ class MoveBlockForm extends FormBase {
    *
    * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layout_tempstore_repository
    *   The layout tempstore.
-   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
-   *   The class resolver.
    */
-  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, ClassResolverInterface $class_resolver) {
+  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository) {
     $this->layoutTempStore = $layout_tempstore_repository;
-    $this->classResolver = $class_resolver;
   }
 
   /**
@@ -73,8 +69,7 @@ class MoveBlockForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('layout_builder.tempstore_repository'),
-      $container->get('class_resolver')
+      $container->get('layout_builder.tempstore_repository')
     );
   }
 
@@ -86,7 +81,7 @@ class MoveBlockForm extends FormBase {
   }
 
   /**
-   * Builds block move form.
+   * Builds move block form.
    *
    * @param array $form
    *   An associative array containing the structure of the form.
