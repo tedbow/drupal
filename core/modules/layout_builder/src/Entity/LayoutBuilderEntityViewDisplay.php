@@ -14,6 +14,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Drupal\layout_builder\Plugin\Block\FieldBlock;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\Section;
@@ -31,6 +32,7 @@ use Drupal\layout_builder\SectionStorage\SectionStorageTrait;
 class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements LayoutEntityDisplayInterface {
 
   use SectionStorageTrait;
+  use LayoutEntityHelperTrait;
 
   /**
    * The entity field manager.
@@ -47,6 +49,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
     // constructor will call init() which then calls setComponent() which needs
     // $entityFieldManager.
     $this->entityFieldManager = \Drupal::service('entity_field.manager');
+    $this->sectionStorageManager = $this->sectionStorageManager();
     parent::__construct($values, $entity_type);
   }
 
@@ -517,11 +520,17 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    */
   private function getQuickEditSectionComponent() {
     if (isset($this->originalMode)) {
-      $parts = explode('-', $this->originalMode, 3);
-      if (count($parts) === 3) {
-        list($mode, $delta, $component_uuid) = $parts;
+      $parts = explode(':', $this->originalMode);
+      if (count($parts) > 2) {
+        list($mode, $delta, $component_uuid, $entity_id, $revision_id) = $parts;
         if ($mode === 'layout_builder') {
-          $sections = $this->getSections();
+          if ($revision_id) {
+            $entity = $this->entityTypeManager()->getStorage($this->targetEntityType)->loadRevision($revision_id);
+          }
+          else {
+            $entity = $this->entityTypeManager()->getStorage($this->targetEntityType)->load($entity_id);
+          }
+          $sections = $this->getEntitySections($entity);
           if (isset($sections[(int) $delta])) {
             $section = $sections[(int) $delta];
             $component = $section->getComponent($component_uuid);
