@@ -8,6 +8,7 @@ use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
@@ -94,11 +95,15 @@ class QuickEditIntegration implements ContainerInjectionInterface {
         if (isset($section[$region])) {
           foreach ($section[$region] as $component_uuid => &$component) {
             if (isset($component['content']) && isset($component['#base_plugin_id']) && $component['#base_plugin_id'] === 'field_block') {
-              $component['content']['#view_mode'] = implode('-', [
+              $component['content']['#view_mode'] = implode(':', [
                 'layout_builder',
                 $delta,
                 $component_uuid,
+                $entity->id(),
               ]);
+              if ($entity instanceof RevisionableInterface) {
+                $component['content']['#view_mode'] .= ':' . $entity->getRevisionId();
+              }
             }
           }
         }

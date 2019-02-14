@@ -26,7 +26,11 @@ class LayoutBuilderTest extends WebDriverTestBase {
     'layout_builder',
     'layout_test',
     'node',
+    'quickedit',
+    'dblog',
   ];
+
+  protected $profile = 'standard';
 
   /**
    * The node to customize with Layout Builder.
@@ -50,28 +54,9 @@ class LayoutBuilderTest extends WebDriverTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $this->drupalPlaceBlock('local_tasks_block');
-
-    $bundle = BlockContentType::create([
-      'id' => 'basic',
-      'label' => 'Basic',
-    ]);
-    $bundle->save();
-    block_content_add_body_field($bundle->id());
-    BlockContent::create([
-      'info' => 'My custom block',
-      'type' => 'basic',
-      'body' => [
-        [
-          'value' => 'This is the block content',
-          'format' => filter_default_format(),
-        ],
-      ],
-    ])->save();
-
-    $this->createContentType(['type' => 'bundle_with_section_field']);
+    //$this->createContentType(['type' => 'bundle_with_section_field']);
     $this->node = $this->createNode([
-      'type' => 'bundle_with_section_field',
+      'type' => 'article',
       'title' => 'The node title',
       'body' => [
         [
@@ -84,6 +69,9 @@ class LayoutBuilderTest extends WebDriverTestBase {
       'access contextual links',
       'configure any layout',
       'administer node display',
+      'access in-place editing',
+      'edit any article content',
+      'access site reports',
     ], 'foobar'));
   }
 
@@ -260,7 +248,7 @@ class LayoutBuilderTest extends WebDriverTestBase {
       ->getStorage('entity_view_display')
       ->create([
         'targetEntityType' => 'node',
-        'bundle' => 'bundle_with_section_field',
+        'bundle' => 'article',
         'mode' => 'full',
       ])
       ->enable()
@@ -271,6 +259,8 @@ class LayoutBuilderTest extends WebDriverTestBase {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
 
+    $this->drupalGet('node/1');
+    $assert_session->waitForElementVisible('css', '.never',10000000000000);
     $this->drupalGet($layout_url);
     $this->markCurrentPage();
 
