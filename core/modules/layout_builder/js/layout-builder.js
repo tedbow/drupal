@@ -83,25 +83,24 @@
     var id = $element.find('[data-layout-builder-target-highlight-id]').attr('data-layout-builder-target-highlight-id');
     if (id) {
       $('[data-layout-builder-highlight-id="' + id + '"]').addClass('layout-builder-highlight');
-
+    }
+    $element.on('dialogContentResize.off-canvas', function () {
       var $target = $('.layout-builder-highlight');
       var targetTopPreResize = $target.offset().top;
 
-      setTimeout(function () {
-        var targetTop = $target.offset().top;
-        var targetBottom = targetTop + $target.outerHeight();
-        var viewportTop = $(window).scrollTop();
-        var viewportBottom = viewportTop + $(window).height();
-        var scrollAmount = targetTop - targetTopPreResize;
-        if (targetBottom < viewportTop || targetTop > viewportBottom) {
-          window.scrollBy({
-            top: scrollAmount,
-            left: 0,
-            behavior: 'smooth'
-          });
-        }
-      }, 700);
-    }
+      var targetTop = $target.offset().top;
+      var targetBottom = targetTop + $target.outerHeight();
+      var viewportTop = $(window).scrollTop();
+      var viewportBottom = viewportTop + $(window).height();
+      var scrollAmount = targetTop - targetTopPreResize;
+      if (targetBottom < viewportTop || targetTop > viewportBottom) {
+        window.scrollBy({
+          top: scrollAmount,
+          left: 0,
+          behavior: 'smooth'
+        });
+      }
+    });
   });
   $(window).on('dialog:afterclose', function () {
     $('.layout-builder-highlight').removeClass('layout-builder-highlight');

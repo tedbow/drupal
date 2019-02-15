@@ -184,29 +184,31 @@
         'layout-builder-highlight',
       );
 
-      const $target = $('.layout-builder-highlight');
-      const targetTopPreResize = $target.offset().top;
 
       /*
        * Wait 700ms for the off canvas dialog to fully appear. Then see if
        * target element is still visible in viewport. If not, scroll page so
        * target element is visible in its pre-click position.
        */
-      setTimeout(() => {
-        const targetTop = $target.offset().top;
-        const targetBottom = targetTop + $target.outerHeight();
-        const viewportTop = $(window).scrollTop();
-        const viewportBottom = viewportTop + $(window).height();
-        const scrollAmount = targetTop - targetTopPreResize;
-        if (targetBottom < viewportTop || targetTop > viewportBottom) {
-          window.scrollBy({
-            top: scrollAmount,
-            left: 0,
-            behavior: 'smooth',
-          });
-        }
-      }, 700);
+
     }
+    $element.on('dialogContentResize.off-canvas', () => {
+      const $target = $('.layout-builder-highlight');
+      const targetTopPreResize = $target.offset().top;
+
+      const targetTop = $target.offset().top;
+      const targetBottom = targetTop + $target.outerHeight();
+      const viewportTop = $(window).scrollTop();
+      const viewportBottom = viewportTop + $(window).height();
+      const scrollAmount = targetTop - targetTopPreResize;
+      if (targetBottom < viewportTop || targetTop > viewportBottom) {
+        window.scrollBy({
+          top: scrollAmount,
+          left: 0,
+          behavior: 'smooth',
+        });
+      }
+    });
   });
   $(window).on('dialog:afterclose', () => {
     $('.layout-builder-highlight').removeClass('layout-builder-highlight');
