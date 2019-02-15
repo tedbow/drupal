@@ -10,6 +10,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Render\Element\RenderElement;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
+use Drupal\layout_builder\LayoutBuilderHighlightTrait;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\Section;
@@ -25,6 +26,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
 
   use AjaxHelperTrait;
   use LayoutBuilderContextTrait;
+  use LayoutBuilderHighlightTrait;
 
   /**
    * The layout tempstore repository.
@@ -218,6 +220,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
       '#type' => 'container',
       '#attributes' => [
         'class' => ['new-section'],
+        'data-layout-builder-highlight-id' => $this->sectionAddHighlightId($delta),
       ],
     ];
   }
@@ -248,6 +251,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
         foreach (Element::children($build[$region]) as $uuid) {
           $build[$region][$uuid]['#attributes']['class'][] = 'draggable';
           $build[$region][$uuid]['#attributes']['data-layout-block-uuid'] = $uuid;
+          $build[$region][$uuid]['#attributes']['data-layout-builder-highlight-id'] = $this->blockUpdateHighlightId($uuid);
           $build[$region][$uuid]['#contextual_links'] = [
             'layout_builder_block' => [
               'route_parameters' => [
@@ -283,7 +287,10 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
         ),
       ];
       $build[$region]['layout_builder_add_block']['#type'] = 'container';
-      $build[$region]['layout_builder_add_block']['#attributes'] = ['class' => ['new-block']];
+      $build[$region]['layout_builder_add_block']['#attributes'] = [
+        'class' => ['new-block'],
+        'data-layout-builder-highlight-id' => $this->blockAddHighlightId($delta, $region),
+      ];
       $build[$region]['layout_builder_add_block']['#weight'] = 1000;
       $build[$region]['#attributes']['data-region'] = $region;
       $build[$region]['#attributes']['class'][] = 'layout-builder--layout__region';
@@ -294,6 +301,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
       'section_storage' => $storage_id,
     ])->toString();
     $build['#attributes']['data-layout-delta'] = $delta;
+    $build['#attributes']['data-layout-builder-highlight-id'] = $this->sectionUpdateHighlightId($delta);
     $build['#attributes']['class'][] = 'layout-builder--layout';
 
     return [

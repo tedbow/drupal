@@ -114,3 +114,9 @@
   display: block;
   padding: 15px 0 15px 25px;
 }
+
+.layout-builder-highlight {
+  position: relative;
+  z-index: 1;
+  outline: 3px solid;
+}

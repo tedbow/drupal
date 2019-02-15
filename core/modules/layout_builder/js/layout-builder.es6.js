@@ -160,4 +160,55 @@
         });
     },
   };
+
+  // After a dialog opens, highlight element that the dialog is acting on.
+  $(window).on('dialog:aftercreate', (event, dialog, $element) => {
+    // Start by removing any existing highlighted elements.
+    $('.layout-builder-highlight').removeClass('layout-builder-highlight');
+
+    /*
+     * Every dialog has a single 'data-layout-builder-target-highlight-id'
+     * attribute.
+     * Every dialog-opening element has a unique
+     * 'data-layout-builder-highlight-id' attribute.
+     *
+     * When the value of data-layout-builder-target-highlight-id matches
+     * an elements value of data-layout-builder-highlight-id, the class
+     * 'layout-builder-highlight' is added to it.
+     */
+    const id = $element
+      .find('[data-layout-builder-target-highlight-id]')
+      .attr('data-layout-builder-target-highlight-id');
+    if (id) {
+      $(`[data-layout-builder-highlight-id="${id}"]`).addClass(
+        'layout-builder-highlight',
+      );
+
+      const $target = $('.layout-builder-highlight');
+      const targetTopPreResize = $target.offset().top;
+
+      /*
+       * Wait 700ms for the off canvas dialog to fully appear. Then see if
+       * target element is still visible in viewport. If not, scroll page so
+       * target element is visible in its pre-click position.
+       */
+      setTimeout(() => {
+        const targetTop = $target.offset().top;
+        const targetBottom = targetTop + $target.outerHeight();
+        const viewportTop = $(window).scrollTop();
+        const viewportBottom = viewportTop + $(window).height();
+        const scrollAmount = targetTop - targetTopPreResize;
+        if (targetBottom < viewportTop || targetTop > viewportBottom) {
+          window.scrollBy({
+            top: scrollAmount,
+            left: 0,
+            behavior: 'smooth',
+          });
+        }
+      }, 700);
+    }
+  });
+  $(window).on('dialog:afterclose', () => {
+    $('.layout-builder-highlight').removeClass('layout-builder-highlight');
+  });
 })(jQuery, Drupal);
