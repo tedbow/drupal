@@ -2,23 +2,17 @@
 
 namespace Drupal\Tests\layout_builder\Kernel;
 
-use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
-use Drupal\Core\Entity\EntityDisplayBase;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Plugin\Context\Context;
-use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\entity_test\Entity\EntityTest;
-use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\layout_builder\DefaultsSectionStorageInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
-use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface;
 use Prophecy\Argument;
 
@@ -123,56 +117,100 @@ class LayoutEntityHelperTraitTest extends KernelTestBase {
 
   }
 
-  public function providerTOriginalEntityUsesDefaultStorage() {
+  /**
+   * Dataprovider for testOriginalEntityUsesDefaultStorage().
+   */
+  public function providerTestOriginalEntityUsesDefaultStorage() {
     return [
-      [
-        'updated' => 'default',
-        'original' => 'override',
+      'original uses default' => [
+        [
+          'updated' => 'override',
+          'original' => 'default',
+        ],
+        FALSE,
+        TRUE,
+        TRUE,
       ],
-      FALSE,
-      TRUE;
+      'original uses override' => [
+        [
+          'updated' => 'override',
+          'original' => 'override',
+        ],
+        FALSE,
+        TRUE,
+        FALSE,
+      ],
+      'no original use override' => [
+        [
+          'updated' => 'override',
+        ],
+        FALSE,
+        FALSE,
+        FALSE,
+      ],
+      'no original uses default' => [
+        [
+          'updated' => 'default',
+        ],
+        FALSE,
+        FALSE,
+        FALSE,
+      ],
+      'is new use override' => [
+        [
+          'updated' => 'override',
+        ],
+        TRUE,
+        FALSE,
+        FALSE,
+      ],
+      'is new use default' => [
+        [
+          'updated' => 'default',
+        ],
+        TRUE,
+        FALSE,
+        FALSE,
+      ],
+
     ];
   }
 
   /**
-   * @dataProvider providerTOriginalEntityUsesDefaultStorage
+   * @covers ::originalEntityUsesDefaultStorage
+   *
+   * @dataProvider providerTestOriginalEntityUsesDefaultStorage
    */
-  public function testOriginalEntityUsesDefaultStorage($expected_storages, $is_new, $has_original) {
+  public function testOriginalEntityUsesDefaultStorage($entity_storages, $is_new, $has_original, $expected) {
+    $this->assertFalse($is_new && $has_original);
+    $entity = EntityTest::create(['name' => 'updated']);
+    if (!$is_new) {
+      $entity->save();
+      if ($has_original) {
+        $original_entity = EntityTest::create(['name' => 'original']);
+        $entity->original = $original_entity;
+      }
 
-    $entity = EntityTest::create([]);
-    $entity->save();
-    $original_entity = EntityTest::create(['name' => 'original']);
-    $entity->original = $original_entity;
-
-    $contexts = [
-      'entity' => EntityContext::fromEntity($entity),
-      'display'=> EntityContext::fromEntity(EntityViewDisplay::collectRenderDisplay($entity, 'full')),
-      'view_mode' => new Context(new ContextDefinition('string'), 'full'),
-    ];
+    }
 
     $section_storage_manager = $this->prophesize(SectionStorageManagerInterface::class);
     $section_storage_manager->load('')->willReturn(NULL);
-    $default_section_storage = $this->prophesize(DefaultsSectionStorageInterface::class)->reveal();
-    $override_section_storage = $this->prophesize(OverridesSectionStorageInterface::class)->reveal();
-    $section_storage_manager->findByContext(Argument::cetera())->will(function ($arguments) use ($default_section_storage, $override_section_storage) {
+    $storages = [
+      'default' => $this->prophesize(DefaultsSectionStorageInterface::class)->reveal(),
+      'override' => $this->prophesize(OverridesSectionStorageInterface::class)->reveal(),
+    ];
+
+    $section_storage_manager->findByContext(Argument::cetera())->will(function ($arguments) use ($storages, $entity_storages) {
       $contexts = $arguments[0];
       if (isset($contexts['entity'])) {
         /** @var \Drupal\entity_test\Entity\EntityTest $entity */
         $entity = $contexts['entity']->getContextData()->getValue();
-        if ($entity->getName() == 'original') {
-          return $default_section_storage;
-        }
-        else {
-          return $override_section_storage;
-        }
-
+        return $storages[$entity_storages[$entity->getName()]];
       }
-
     });
-    //$section_storage_manager->findByContext($original_entity, Argument::any())->willReturn($this->prophesize(DefaultsSectionStorageInterface::class)->reveal());
+
     $this->container->set('plugin.manager.layout_builder.section_storage', $section_storage_manager->reveal());
     $class = new TestLayoutEntityHelperTrait();
-    $expected = TRUE;
     $result = $class->originalEntityUsesDefaultStorage($entity);
     $this->assertSame($expected, $result);
   }
