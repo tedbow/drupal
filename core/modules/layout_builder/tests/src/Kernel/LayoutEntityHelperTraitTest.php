@@ -52,7 +52,7 @@ class LayoutEntityHelperTraitTest extends KernelTestBase {
    */
   public function providerTestGetSectionStorageForEntity() {
     $data = [];
-    $data[] = [
+    $data['entity_view_display'] = [
       'entity_view_display',
       [
         'targetEntityType' => 'entity_test',
@@ -67,7 +67,7 @@ class LayoutEntityHelperTraitTest extends KernelTestBase {
       ],
       ['display'],
     ];
-    $data[] = [
+    $data['fieldable entity'] = [
       'entity_test',
       [],
       ['entity', 'display', 'view_mode'],
@@ -214,21 +214,36 @@ class LayoutEntityHelperTraitTest extends KernelTestBase {
 
     $this->container->set('plugin.manager.layout_builder.section_storage', $section_storage_manager->reveal());
     $class = new TestLayoutEntityHelperTrait();
-    $result = $class->originalEntityUsesDefaultStorage($entity);
-    $this->assertSame($expected, $result);
+    $this->assertSame($expected, $class->originalEntityUsesDefaultStorage($entity));
   }
 
+  /**
+   * @covers ::getEntitySections
+   */
   public function testGetEntitySections() {
     $entity = EntityTest::create(['name' => 'updated']);
     $section_storage_manager = $this->prophesize(SectionStorageManagerInterface::class);
     $section_storage_manager->load('')->willReturn(NULL);
     $section_storage = $this->prophesize(SectionStorageInterface::class);
     $sections = [
-      new Section(  );
-    ]
-    $section_storage->getSections()->willReturn
+      new Section('layout_onecol'),
+    ];
+    $this->assertCount(1, $sections);
+    $section_storage->getSections()->willReturn($sections);
+    $section_storage->count()->willReturn(1);
 
-    $section_storage_manager->findByContext(Argument::cetera())->will(function ($arguments) use ($storages, $entity_storages) {
+    $section_storage_manager->findByContext(Argument::cetera())->willReturn($section_storage->reveal());
+    $this->container->set('plugin.manager.layout_builder.section_storage', $section_storage_manager->reveal());
+    $class = new TestLayoutEntityHelperTrait();
+    // Ensure that if the entity has a section storage the sections will be
+    // returned.
+    $this->assertSame($sections, $class->getEntitySections($entity));
+
+    $section_storage_manager->findByContext(Argument::cetera())->willReturn(NULL);
+    $this->container->set('plugin.manager.layout_builder.section_storage', $section_storage_manager->reveal());
+    // Ensure that if the entity has no section storage an empty array will be
+    // returned.
+    $this->assertSame([], $class->getEntitySections($entity));
   }
 
 }
@@ -240,6 +255,7 @@ class TestLayoutEntityHelperTrait {
   use LayoutEntityHelperTrait {
     getSectionStorageForEntity as public;
     originalEntityUsesDefaultStorage as public;
+    getEntitySections as public;
   }
 
 }
