@@ -13,7 +13,10 @@ use Drupal\layout_builder\DefaultsSectionStorageInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
+use Drupal\layout_builder\Section;
+use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface;
+use Drupal\layout_builder\SectionStorageInterface;
 use Prophecy\Argument;
 
 /**
@@ -213,6 +216,19 @@ class LayoutEntityHelperTraitTest extends KernelTestBase {
     $class = new TestLayoutEntityHelperTrait();
     $result = $class->originalEntityUsesDefaultStorage($entity);
     $this->assertSame($expected, $result);
+  }
+
+  public function testGetEntitySections() {
+    $entity = EntityTest::create(['name' => 'updated']);
+    $section_storage_manager = $this->prophesize(SectionStorageManagerInterface::class);
+    $section_storage_manager->load('')->willReturn(NULL);
+    $section_storage = $this->prophesize(SectionStorageInterface::class);
+    $sections = [
+      new Section(  );
+    ]
+    $section_storage->getSections()->willReturn
+
+    $section_storage_manager->findByContext(Argument::cetera())->will(function ($arguments) use ($storages, $entity_storages) {
   }
 
 }
