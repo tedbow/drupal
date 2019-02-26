@@ -82,7 +82,7 @@ class QuickEditIntegration implements ContainerInjectionInterface {
    * @internal
    */
   public function entityViewAlter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
-    if (!isset($build['_layout_builder'])) {
+    if (!$entity instanceof FieldableEntityInterface || !isset($build['_layout_builder'])) {
       return;
     }
     foreach (Element::children($build['_layout_builder']) as $delta) {
@@ -94,7 +94,7 @@ class QuickEditIntegration implements ContainerInjectionInterface {
       foreach ($regions as $region) {
         if (isset($section[$region])) {
           foreach ($section[$region] as $component_uuid => &$component) {
-            if (isset($component['content']) && isset($component['#base_plugin_id']) && $component['#base_plugin_id'] === 'field_block') {
+            if ($this->supportQuickEditOnComponent($component, $entity)) {
               $component['content']['#view_mode'] = implode(':', [
                 'layout_builder',
                 $delta,
@@ -158,6 +158,29 @@ class QuickEditIntegration implements ContainerInjectionInterface {
       $cacheableMetaData->applyTo($build);
     }
     return $build;
+  }
+
+  /**
+   * Determines whether a component should have QuickEdit support.
+   *
+   * Only field_blocks components for view configurable fields should be
+   * supported.
+   *
+   * @param array $component
+   *   The component render array.
+   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
+   *   The entity being displayed.
+   *
+   * @return bool
+   *   Whether QuickEdit should be supported on the component.
+   */
+  private function supportQuickEditOnComponent($component, FieldableEntityInterface $entity) {
+    if (isset($component['content']['#field_name']) && isset($component['#base_plugin_id']) && $component['#base_plugin_id'] === 'field_block') {
+      if ($entity->getFieldDefinition($component['content']['#field_name'])->isDisplayConfigurable('view')) {
+        return TRUE;
+      }
+    }
+    return FALSE;
   }
 
 }
