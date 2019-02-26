@@ -151,7 +151,8 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     // Find the body field component.
     foreach (reset($sections)->getComponents() as $component) {
       if ($component->getPlugin()->getPluginId() === "field_block:$entity_type:{$entity->bundle()}:$field_name") {
-        return 'layout_builder-0-' . $component->getUuid();
+        // Hard code entity id and revision id.
+        return 'layout_builder:0:' . $component->getUuid() . ":1:1";
       }
     }
     $this->fail("Component not found for: $entity_type, $entity_id, $field_name");
