@@ -520,9 +520,10 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    */
   private function getQuickEditSectionComponent() {
     if (isset($this->originalMode)) {
-      $parts = explode(':', $this->originalMode);
+      $parts = explode('-', $this->originalMode);
       if (count($parts) > 2) {
         list($mode, $delta, $component_uuid, $entity_id, $revision_id) = $parts;
+        $component_uuid = str_replace('_', '-', $component_uuid);
         if ($mode === 'layout_builder') {
           if ($revision_id) {
             $entity = $this->entityTypeManager()->getStorage($this->targetEntityType)->loadRevision($revision_id);

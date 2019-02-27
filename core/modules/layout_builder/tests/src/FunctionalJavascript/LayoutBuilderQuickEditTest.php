@@ -161,8 +161,9 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     // Find the component with the plugin ID in the field_block format that
     // matches the entity type, bundle, and field name.
     foreach (reset($sections)->getComponents() as $component) {
+      $component_in_view_mode = str_replace('-', '_', $component->getUuid());
       if ($component->getPlugin()->getPluginId() === "field_block:$entity_type:{$entity->bundle()}:$field_name") {
-        return 'layout_builder:0:' . $component->getUuid() . ':' . $entity->id() . ':' . $entity->getRevisionId();
+        return 'layout_builder-0-' . $component_in_view_mode . '-' . $entity->id() . '-' . $entity->getRevisionId();
       }
     }
     $this->fail("Component not found for: $entity_type, $entity_id, $field_name");
