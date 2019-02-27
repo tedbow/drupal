@@ -37,6 +37,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     //   https://www.drupal.org/project/drupal/issues/2917777.
     $this->drupalPlaceBlock('local_tasks_block');
 
+    // Save the current user to re-login after Layout Builder changes.
     $user = $this->loggedInUser;
     $this->loginLayoutAdmin();
 
@@ -64,7 +65,6 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   public function testArticleNode($useOverride = FALSE) {
     $this->useOverride = $useOverride;
     parent::testArticleNode();
-    // @todo Test publised, title or other field that does appear in manage dispaly.
   }
 
   public function provideTestArticleNode() {
@@ -81,6 +81,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     $node = parent::drupalCreateNode($settings);
     $assert_session = $this->assertSession();
     if ($this->useOverride) {
+      // Save the current user to re-login after Layout Builder changes.
       $user = $this->loggedInUser;
       $this->loginLayoutAdmin();
       $this->drupalGet('node/' . $node->id() . '/layout');
@@ -122,6 +123,9 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   protected function replaceLayoutBuilderFieldIdKeys(array $array) {
     $layout_builder_expected_states = [];
     foreach ($array as $field_key => $value) {
+      // Extract from $field_key all of the information we need to call
+      // getQuickEditFieldId(). The fourth part of $field_key, language code, is
+      // not needed so it can be ignored.
       list($entity_type, $entity_id, $field_name, , $view_mode) = explode('/', $field_key);
       $layout_builder_expected_states[$this->getQuickEditFieldId($entity_type, $entity_id, $field_name, $view_mode)] = $value;
     }
@@ -137,21 +141,28 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
    *   The entity ID.
    * @param string $field_name
    *   The field name.
+   * @param string $view_mode
+   *   The view mode.
+   *
    *
    * @return string
    *   The view mode used by layout builder.
    */
   protected function getLayoutBuilderViewMode($entity_type, $entity_id, $field_name, $view_mode) {
+    // If the field is one that is not rendered by Layout Builder do not change
+    // $view_mode.
     if (in_array($field_name, ['title', 'uid', 'created'])) {
       return $view_mode;
     }
     $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity_id);
     $view_display = EntityViewDisplay::collectRenderDisplay($entity, 'default');
     $sections = $view_display->getSections();
-    // Find the body field component.
+    // Find the component with the plugin ID in the field_block format that
+    // matches the entity type, bundle, and field name.
     foreach (reset($sections)->getComponents() as $component) {
       if ($component->getPlugin()->getPluginId() === "field_block:$entity_type:{$entity->bundle()}:$field_name") {
-        // Hard code entity id and revision id.
+        // Hard code entity ID and revision ID since the test uses 1 entity with
+        // 1 revision.
         return 'layout_builder:0:' . $component->getUuid() . ":1:1";
       }
     }
