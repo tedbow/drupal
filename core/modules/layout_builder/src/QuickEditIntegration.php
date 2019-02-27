@@ -94,14 +94,14 @@ class QuickEditIntegration implements ContainerInjectionInterface {
         if (isset($section[$region])) {
           foreach ($section[$region] as $component_uuid => &$component) {
             if ($this->supportQuickEditOnComponent($component, $entity)) {
-              $component['content']['#view_mode'] = implode(':', [
+              $component['content']['#view_mode'] = implode('-', [
                 'layout_builder',
                 $delta,
-                $component_uuid,
+                str_replace('-', '_', $component_uuid),
                 $entity->id(),
               ]);
               if ($entity->getEntityType()->isRevisionable()) {
-                $component['content']['#view_mode'] .= ':' . $entity->getRevisionId();
+                $component['content']['#view_mode'] .= '-' . $entity->getRevisionId();
               }
             }
           }
@@ -129,7 +129,8 @@ class QuickEditIntegration implements ContainerInjectionInterface {
    */
   public function quickEditRenderField(EntityInterface $entity, $field_name, $view_mode_id, $langcode) {
     $build = [];
-    list(, $delta, $component_uuid) = explode('-', $view_mode_id, 3);
+    list(, $delta, $component_uuid, $entity_id, $revision_id) = explode('-', $view_mode_id);
+    $component_uuid = str_replace('_', '-', $component_uuid);
     if ($entity instanceof FieldableEntityInterface) {
       $view_display = EntityViewDisplay::collectRenderDisplay($entity, $view_mode_id);
       $cacheable_metadata = new CacheableMetadata();
