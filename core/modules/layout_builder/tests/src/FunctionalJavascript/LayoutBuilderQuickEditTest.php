@@ -154,6 +154,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     if (in_array($field_name, ['title', 'uid', 'created'])) {
       return $view_mode;
     }
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity_id);
     $view_display = EntityViewDisplay::collectRenderDisplay($entity, 'default');
     $sections = $view_display->getSections();
@@ -163,7 +164,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
       if ($component->getPlugin()->getPluginId() === "field_block:$entity_type:{$entity->bundle()}:$field_name") {
         // Hard code entity ID and revision ID since the test uses 1 entity with
         // 1 revision.
-        return 'layout_builder:0:' . $component->getUuid() . ":1:1";
+        return 'layout_builder:0:' . $component->getUuid() . ':' . $entity->id() . ':' . $entity->getRevisionId();
       }
     }
     $this->fail("Component not found for: $entity_type, $entity_id, $field_name");
