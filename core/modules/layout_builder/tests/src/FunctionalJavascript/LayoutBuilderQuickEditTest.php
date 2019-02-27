@@ -162,8 +162,6 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     // matches the entity type, bundle, and field name.
     foreach (reset($sections)->getComponents() as $component) {
       if ($component->getPlugin()->getPluginId() === "field_block:$entity_type:{$entity->bundle()}:$field_name") {
-        // Hard code entity ID and revision ID since the test uses 1 entity with
-        // 1 revision.
         return 'layout_builder:0:' . $component->getUuid() . ':' . $entity->id() . ':' . $entity->getRevisionId();
       }
     }
