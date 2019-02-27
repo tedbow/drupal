@@ -97,6 +97,8 @@ class QuickEditIntegration implements ContainerInjectionInterface {
               $component['content']['#view_mode'] = implode('-', [
                 'layout_builder',
                 $delta,
+                // Replace the dashes in the component uuid so because we need
+                // use dashes to join the parts.
                 str_replace('-', '_', $component_uuid),
                 $entity->id(),
               ]);
@@ -130,6 +132,8 @@ class QuickEditIntegration implements ContainerInjectionInterface {
   public function quickEditRenderField(EntityInterface $entity, $field_name, $view_mode_id, $langcode) {
     $build = [];
     list(, $delta, $component_uuid, $entity_id, $revision_id) = explode('-', $view_mode_id);
+    // Replace the underscores with dash to get back the component UUID.
+    // @see \Drupal\layout_builder\QuickEditIntegration::entityViewAlter
     $component_uuid = str_replace('_', '-', $component_uuid);
     if ($entity instanceof FieldableEntityInterface) {
       $view_display = EntityViewDisplay::collectRenderDisplay($entity, $view_mode_id);
