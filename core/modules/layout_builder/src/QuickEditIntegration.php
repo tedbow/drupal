@@ -8,7 +8,6 @@ use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
@@ -101,7 +100,7 @@ class QuickEditIntegration implements ContainerInjectionInterface {
                 $component_uuid,
                 $entity->id(),
               ]);
-              if ($entity instanceof RevisionableInterface) {
+              if ($entity->getEntityType()->isRevisionable()) {
                 $component['content']['#view_mode'] .= ':' . $entity->getRevisionId();
               }
             }
@@ -133,14 +132,14 @@ class QuickEditIntegration implements ContainerInjectionInterface {
     list(, $delta, $component_uuid) = explode('-', $view_mode_id, 3);
     if ($entity instanceof FieldableEntityInterface) {
       $view_display = EntityViewDisplay::collectRenderDisplay($entity, $view_mode_id);
-      $cacheableMetaData = new CacheableMetadata();
+      $cacheable_metadata = new CacheableMetadata();
       $section_list = $this->sectionStorageManager->findByContext(
         [
           'display' => EntityContext::fromEntity($view_display),
           'entity' => EntityContext::fromEntity($entity),
           'view_mode' => new Context(new ContextDefinition('string'), $view_mode_id),
         ],
-        $cacheableMetaData
+        $cacheable_metadata
       );
 
       $component = $section_list->getSection($delta)
@@ -148,22 +147,24 @@ class QuickEditIntegration implements ContainerInjectionInterface {
       $contexts = $this->contextRepository->getAvailableContexts();
       // @todo Change to use EntityContextDefinition in
       // https://www.drupal.org/project/drupal/issues/2932462.
-      $contexts['layout_builder.entity'] = new Context(new ContextDefinition("entity:{$entity->getEntityTypeId()}", new TranslatableMarkup('@entity being viewed', [
-        '@entity' => $entity->getEntityType()
-          ->getLabel(),
-      ])), $entity);
+      $contexts['layout_builder.entity'] = new Context(
+        new ContextDefinition(
+          "entity:{$entity->getEntityTypeId()}",
+          new TranslatableMarkup('@entity being viewed', ['@entity' => $entity->getEntityType()->getLabel()])),
+        $entity
+      );
       $block = $component->toRenderArray($contexts);
       $build = $block['content'];
       $build['#view_mode'] = $view_mode_id;
-      $cacheableMetaData->applyTo($build);
+      $cacheable_metadata->applyTo($build);
     }
     return $build;
   }
 
   /**
-   * Determines whether a component should have QuickEdit support.
+   * Determines whether a component has QuickEdit support.
    *
-   * Only field_blocks components for view configurable fields should be
+   * Only field_block components for view configurable fields should be
    * supported.
    *
    * @param array $component
@@ -172,7 +173,9 @@ class QuickEditIntegration implements ContainerInjectionInterface {
    *   The entity being displayed.
    *
    * @return bool
-   *   Whether QuickEdit should be supported on the component.
+   *   Whether QuickEdit is supported on the component.
+   *
+   * @see \Drupal\layout_builder\Plugin\Block\FieldBlock
    */
   private function supportQuickEditOnComponent($component, FieldableEntityInterface $entity) {
     if (isset($component['content']['#field_name']) && isset($component['#base_plugin_id']) && $component['#base_plugin_id'] === 'field_block') {
