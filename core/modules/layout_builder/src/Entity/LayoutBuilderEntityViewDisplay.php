@@ -296,9 +296,22 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
 
     $build = [];
     if ($storage) {
-      foreach ($storage->getSections() as $delta => $section) {
-        $build[$delta] = $section->toRenderArray($contexts);
+      if ($sections = $storage->getSections()) {
+        foreach ($sections as $delta => $section) {
+          $build[$delta] = $section->toRenderArray($contexts);
+        }
+        if (\Drupal::currentUser()->hasPermission('access in-place editing')) {
+          // If the current user can access QuickEdit then set a hash of the
+          // sections to clear QuickEdit metadata on the client when it changes.
+          $sections_hash = hash('sha256', serialize($sections));
+          $build['#attached']['drupalSettings']['layout_builder']['section_hashes'][$entity->getEntityTypeId() . ':' . $entity->id() . ':' . $this->mode] = [
+            'hash' => $sections_hash,
+            'quickedit_storage_prefix' => $entity->getEntityTypeId() . '/' . $entity->id(),
+          ];
+          $build['#attached']['library'][] = 'layout_builder/drupal.layout_builder_quickedit';
+        }
       }
+
     }
     // The render array is built based on decisions made by @SectionStorage
     // plugins and therefore it needs to depend on the accumulated
