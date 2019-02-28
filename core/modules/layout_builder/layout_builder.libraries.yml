@@ -27,3 +27,11 @@ fourcol_section:
   css:
     theme:
       layouts/fourcol_section/fourcol_section.css: {}
+
+
+drupal.layout_builder_quickedit:
+  version: VERSION
+  js:
+    js/layout-builder-quickedit.js: {}
+  dependencies:
+    - core/quickedit
