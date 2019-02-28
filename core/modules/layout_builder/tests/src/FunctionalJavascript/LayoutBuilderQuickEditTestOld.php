@@ -13,7 +13,7 @@ use Drupal\Tests\quickedit\FunctionalJavascript\QuickEditIntegrationTest;
  *
  * @group layout_builder
  */
-class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
+class LayoutBuilderQuickEditTestOld extends QuickEditIntegrationTest {
 
   /**
    * {@inheritdoc}
@@ -21,11 +21,11 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   public static $modules = ['layout_builder'];
 
   /**
-   * Whether the test is currently using Layout Builder on the entity.
+   * Whether the test should use an override for the node.
    *
    * @var bool
    */
-  protected $usingLayoutBuilder = FALSE;
+  protected $useOverride;
 
   /**
    * {@inheritdoc}
@@ -43,6 +43,10 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
 
     $page = $this->getSession()->getPage();
 
+    $this->drupalGet('admin/structure/types/manage/article/display/default');
+    $page->checkField('layout[enabled]');
+    $page->checkField('layout[allow_custom]');
+    $page->pressButton('Save');
 
     $this->drupalGet('admin/structure/block/block-content/manage/basic/display');
     $page->checkField('layout[enabled]');
@@ -54,46 +58,16 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   }
 
   /**
-   * {@inheritdoc}
+   * @param bool $useOverride
+   *
+   * @dataProvider provideTestArticleNode
    */
-  public function testArticleNode() {
+  public function testArticleNode($useOverride = FALSE) {
+    $this->useOverride = $useOverride;
     $node = $this->createNodeWithTerm();
     $this->doTestArticle($node);
     $this->resetEditToolbar();
-    $this->enableOverridesAtAdminPath('admin/structure/types/manage/article/display/default');
-    $this->usingLayoutBuilder = TRUE;
-    // Test article with Layout Builder enabled.
     $this->doTestArticle($node);
-    $this->resetEditToolbar();
-    $this->createLayoutOverride('node/' . $node->id() . '/layout');
-    // Test article with Layout Builder override.
-    $this->doTestArticle($node);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function testCustomBlock() {
-    $this->usingLayoutBuilder = TRUE;
-    parent::testCustomBlock();
-  }
-
-
-  protected function enableOverridesAtAdminPath($path) {
-    // Save the current user to re-login after Layout Builder changes.
-    $user = $this->loggedInUser;
-    $this->loginLayoutAdmin();
-
-    $page = $this->getSession()->getPage();
-
-    $this->drupalGet($path);
-    $page->checkField('layout[enabled]');
-    $page->checkField('layout[allow_custom]');
-    $page->pressButton('Save');
-
-    $this->drupalLogout();
-
-    $this->drupalLogin($user);
   }
 
   /**
@@ -106,14 +80,32 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function drupalCreateNode(array $settings = []) {
+    $node = parent::drupalCreateNode($settings);
+    $assert_session = $this->assertSession();
+    if ($this->useOverride) {
+      // Save the current user to re-login after Layout Builder changes.
+      $user = $this->loggedInUser;
+      $this->loginLayoutAdmin();
+      $this->drupalGet('node/' . $node->id() . '/layout');
+      $assert_session->buttonExists('Save layout');
+      $this->getSession()->getPage()->pressButton('Save layout');
+      $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
+      $assert_session->pageTextContains('The layout override has been saved.');
+      $this->drupalLogin($user);
+    }
+    return $node;
+  }
+
 
   /**
    * {@inheritdoc}
    */
   protected function assertEntityInstanceFieldStates($entity_type_id, $entity_id, $entity_instance_id, array $expected_field_states) {
-    if ($this->usingLayoutBuilder) {
-      $expected_field_states = $this->replaceLayoutBuilderFieldIdKeys($expected_field_states);
-    }
+    $expected_field_states = $this->replaceLayoutBuilderFieldIdKeys($expected_field_states);
     parent::assertEntityInstanceFieldStates($entity_type_id, $entity_id, $entity_instance_id, $expected_field_states);
   }
 
@@ -121,9 +113,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
    * {@inheritdoc}
    */
   protected function assertEntityInstanceFieldMarkup($entity_type_id, $entity_id, $entity_instance_id, array $expected_field_attributes) {
-    if ($this->usingLayoutBuilder) {
-      $expected_field_attributes = $this->replaceLayoutBuilderFieldIdKeys($expected_field_attributes);
-    }
+    $expected_field_attributes = $this->replaceLayoutBuilderFieldIdKeys($expected_field_attributes);
     parent::assertEntityInstanceFieldMarkup($entity_type_id, $entity_id, $entity_instance_id, $expected_field_attributes);
   }
 
@@ -189,9 +179,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
    * {@inheritdoc}
    */
   protected function getQuickEditFieldId($entity_type, $entity_id, $field_name, $view_mode) {
-    if ($this->usingLayoutBuilder) {
-      $view_mode = $this->getLayoutBuilderViewMode($entity_type, $entity_id, $field_name, $view_mode);
-    }
+    $view_mode = $this->getLayoutBuilderViewMode($entity_type, $entity_id, $field_name, $view_mode);
     return parent::getQuickEditFieldId($entity_type, $entity_id, $field_name, $view_mode);
   }
 
@@ -210,23 +198,4 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
       'administer blocks',
     ]));
   }
-
-
-
-  /**
-   * @param string $layout_url
-   */
-  protected function createLayoutOverride($layout_url) {
-    $assert_session = $this->assertSession();
-    // Save the current user to re-login after Layout Builder changes.
-    $user = $this->loggedInUser;
-    $this->loginLayoutAdmin();
-    $this->drupalGet($layout_url);
-    $assert_session->buttonExists('Save layout');
-    $this->getSession()->getPage()->pressButton('Save layout');
-    $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
-    $assert_session->pageTextContains('The layout override has been saved.');
-    $this->drupalLogin($user);
-  }
-
 }
