@@ -34,4 +34,4 @@ drupal.layout_builder_quickedit:
   js:
     js/layout-builder-quickedit.js: {}
   dependencies:
-    - core/quickedit
+    - core/drupalSettings
