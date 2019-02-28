@@ -102,9 +102,6 @@ class QuickEditIntegration implements ContainerInjectionInterface {
                 str_replace('-', '_', $component_uuid),
                 $entity->id(),
               ]);
-              if ($entity->getEntityType()->isRevisionable()) {
-                $component['content']['#view_mode'] .= '-' . $entity->getRevisionId();
-              }
             }
           }
         }
@@ -131,7 +128,7 @@ class QuickEditIntegration implements ContainerInjectionInterface {
    */
   public function quickEditRenderField(EntityInterface $entity, $field_name, $view_mode_id, $langcode) {
     $build = [];
-    list(, $delta, $component_uuid, $entity_id, $revision_id) = explode('-', $view_mode_id);
+    list(, $delta, $component_uuid, $entity_id) = explode('-', $view_mode_id);
     // Replace the underscores with dash to get back the component UUID.
     // @see \Drupal\layout_builder\QuickEditIntegration::entityViewAlter
     $component_uuid = str_replace('_', '-', $component_uuid);
