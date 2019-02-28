@@ -122,24 +122,17 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
    * Tests if an article node can be in-place edited with Quick Edit.
    */
   public function testArticleNode() {
-    $term = Term::create([
-      'name' => 'foo',
-      'vid' => 'tags',
-    ]);
-    $term->save();
+    $node = $this->createNodeWithTerm();
+    $this->doTestArticle($node);
+  }
 
-    $node = $this->drupalCreateNode([
-      'type' => 'article',
-      'title' => t('My Test Node'),
-      'body' => [
-        'value' => '<p>Hello world!</p><p>I do not know what to say…</p><p>I wish I were eloquent.</p>',
-        'format' => 'some_format',
-      ],
-      'field_tags' => [
-        ['target_id' => $term->id()],
-      ],
-    ]);
-
+  /**
+   * Test an article with QuickEdit.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The node.
+   */
+  protected function doTestArticle(\Drupal\node\NodeInterface $node) {
     $this->drupalGet('node/' . $node->id());
 
     // Initial state.
@@ -250,9 +243,9 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
     // Wait for the form to load.
     $this->assertJsCondition('document.querySelector(\'.quickedit-form-container > .quickedit-form[role="dialog"] > .placeholder\') === null');
     $this->assertEntityInstanceFieldStates('node', 1, 0, [
-      'node/1/uid/en/full'        => 'candidate',
-      'node/1/created/en/full'    => 'candidate',
-      'node/1/body/en/full'       => 'candidate',
+      'node/1/uid/en/full' => 'candidate',
+      'node/1/created/en/full' => 'candidate',
+      'node/1/body/en/full' => 'candidate',
       'node/1/field_tags/en/full' => 'active',
       'node/1/title/en/full'      => 'candidate',
     ]);
@@ -344,6 +337,33 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
       'block_content/1/body/en/full' => '.cke_editable_inline',
     ]);
     $this->assertSession()->elementExists('css', '#quickedit-entity-toolbar .quickedit-toolgroup.wysiwyg-main > .cke_chrome .cke_top[role="presentation"] .cke_toolbar[role="toolbar"] .cke_toolgroup[role="presentation"] > .cke_button[title~="Bold"][role="button"]');
+  }
+
+  /**
+   * Create a node with a term reference for testing.
+   *
+   * @return \Drupal\node\NodeInterface
+   *   The created node.
+   */
+  protected function createNodeWithTerm() {
+    $term = Term::create([
+      'name' => 'foo',
+      'vid' => 'tags',
+    ]);
+    $term->save();
+
+    $node = $this->drupalCreateNode([
+      'type' => 'article',
+      'title' => t('My Test Node'),
+      'body' => [
+        'value' => '<p>Hello world!</p><p>I do not know what to say…</p><p>I wish I were eloquent.</p>',
+        'format' => 'some_format',
+      ],
+      'field_tags' => [
+        ['target_id' => $term->id()],
+      ],
+    ]);
+    return $node;
   }
 
 }

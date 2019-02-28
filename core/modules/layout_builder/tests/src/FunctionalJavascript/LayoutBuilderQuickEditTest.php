@@ -64,9 +64,15 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
    */
   public function testArticleNode($useOverride = FALSE) {
     $this->useOverride = $useOverride;
-    parent::testArticleNode();
+    $node = $this->createNodeWithTerm();
+    $this->doTestArticle($node);
+    $this->resetEditToolbar();
+    $this->doTestArticle($node);
   }
 
+  /**
+   * Dataprovider for testArticleNode().
+   */
   public function provideTestArticleNode() {
     return [
       'no override' => [FALSE],
@@ -163,7 +169,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     foreach (reset($sections)->getComponents() as $component) {
       $component_in_view_mode = str_replace('-', '_', $component->getUuid());
       if ($component->getPlugin()->getPluginId() === "field_block:$entity_type:{$entity->bundle()}:$field_name") {
-        return 'layout_builder-0-' . $component_in_view_mode . '-' . $entity->id() . '-' . $entity->getRevisionId();
+        return 'layout_builder-0-' . $component_in_view_mode . '-' . $entity->id();
       }
     }
     $this->fail("Component not found for: $entity_type, $entity_id, $field_name");
@@ -191,6 +197,30 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
       'administer block_content fields',
       'administer blocks',
     ]));
+  }
+
+  /**
+   * Reset the Edit toolbar button.
+   */
+  private function resetEditToolbar() {
+    $this->click('#toolbar-bar .contextual-toolbar-tab button');
+    $contextual_links_trigger_selector = '[data-contextual-id] > .trigger';
+    $this->waitForNoElement("$contextual_links_trigger_selector:not(.visually-hidden)");
+  }
+
+  /**
+   * Waits for an element to be removed from the page.
+   *
+   * @param string $selector
+   *   CSS selector.
+   * @param int $timeout
+   *   (optional) Timeout in milliseconds, defaults to 10000.
+   *
+   * @todo Remove in https://www.drupal.org/node/2892440.
+   */
+  protected function waitForNoElement($selector, $timeout = 10000) {
+    $condition = "(typeof jQuery !== 'undefined' && jQuery('$selector').length === 0)";
+    $this->assertJsCondition($condition, $timeout);
   }
 
 }
