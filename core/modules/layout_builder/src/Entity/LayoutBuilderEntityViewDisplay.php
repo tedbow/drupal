@@ -270,6 +270,9 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
         }
       }
       else {
+        // Set variable indicate we are not using the Layout Builder. If the
+        // Layout Builder was previously enable for this entity the QuickEdit
+        // metadata will need to be clear on the client.
         $build['#attached']['drupalSettings']['layout_builder']['section_hashes'][$entity->getEntityTypeId() . ':' . $entity->id() . ':' . $this->mode] = [
           'hash' => 'no_sections',
           'quickedit_storage_prefix' => $entity->getEntityTypeId() . '/' . $entity->id(),
