@@ -125,7 +125,6 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
   public function testArticleNode() {
     $node = $this->createNodeWithTerm();
     $this->doTestArticle($node);
-    $this->resetEditToolbar();
     $this->doTestArticle($node);
   }
 
@@ -290,6 +289,8 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
     $this->assertEntityInstanceStates([
       'node/1[0]' => 'closed',
     ]);
+    // Reset Edit toolbar to be ready to test the node again.
+    $this->resetEditToolbar();
   }
 
   /**
