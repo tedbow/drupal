@@ -48,8 +48,6 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     $page->checkField('layout[enabled]');
     $page->pressButton('Save');
 
-    $this->drupalLogout();
-
     $this->drupalLogin($user);
   }
 
@@ -59,14 +57,22 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   public function testArticleNode() {
     $node = $this->createNodeWithTerm();
     $this->doTestArticle($node);
-    $this->resetEditToolbar();
     $this->enableOverridesAtAdminPath('admin/structure/types/manage/article/display/default');
     $this->usingLayoutBuilder = TRUE;
     // Test article with Layout Builder enabled.
     $this->doTestArticle($node);
-    $this->resetEditToolbar();
-    $this->createLayoutOverride('node/' . $node->id() . '/layout');
+
     // Test article with Layout Builder override.
+    $this->createLayoutOverride('node/' . $node->id() . '/layout');
+    $this->doTestArticle($node);
+
+    // Test article with Layout Builder when reverted back to defaults.
+    $this->revertLayoutToDefaults('node/' . $node->id() . '/layout');
+    $this->doTestArticle($node);
+
+    // Test with Layout Builder disabled after being enabled.
+    $this->usingLayoutBuilder = FALSE;
+    $this->disableLayoutBuilder('admin/structure/types/manage/article/display/default');
     $this->doTestArticle($node);
   }
 
@@ -83,16 +89,11 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     // Save the current user to re-login after Layout Builder changes.
     $user = $this->loggedInUser;
     $this->loginLayoutAdmin();
-
     $page = $this->getSession()->getPage();
-
     $this->drupalGet($path);
     $page->checkField('layout[enabled]');
     $page->checkField('layout[allow_custom]');
     $page->pressButton('Save');
-
-    $this->drupalLogout();
-
     $this->drupalLogin($user);
   }
 
@@ -211,8 +212,6 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     ]));
   }
 
-
-
   /**
    * @param string $layout_url
    */
@@ -226,6 +225,41 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     $this->getSession()->getPage()->pressButton('Save layout');
     $this->assertNotEmpty($assert_session->waitForElement('css', '.messages--status'));
     $assert_session->pageTextContains('The layout override has been saved.');
+    $this->drupalLogin($user);
+  }
+
+  /**
+   * Revert a layout override.
+   *
+   * @param string $path
+   *   The path for the layout builder.
+   */
+  protected function revertLayoutToDefaults($path) {
+    // Save the current user to re-login after Layout Builder changes.
+    $user = $this->loggedInUser;
+    $this->loginLayoutAdmin();
+    $this->drupalGet($path);
+    $this->clickLink('Revert to defaults');
+    $this->getSession()->getPage()->pressButton('Revert');
+    $this->drupalLogin($user);
+  }
+
+  /**
+   * Disable layout builder.
+   *
+   * @param $path
+   *   The path to the manage display page.
+   */
+  protected function disableLayoutBuilder($path) {
+    $page = $this->getSession()->getPage();
+    // Save the current user to re-login after Layout Builder changes.
+    $user = $this->loggedInUser;
+    $this->loginLayoutAdmin();
+    $this->drupalGet($path);
+    $page->uncheckField('layout[allow_custom]');
+    $page->uncheckField('layout[enabled]');
+    $page->pressButton('Save');
+    $page->pressButton('Confirm');
     $this->drupalLogin($user);
   }
 
