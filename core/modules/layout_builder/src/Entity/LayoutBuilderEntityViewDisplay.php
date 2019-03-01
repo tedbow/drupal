@@ -269,7 +269,14 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
           }
         }
       }
+      else {
+        $build['#attached']['drupalSettings']['layout_builder']['section_hashes'][$entity->getEntityTypeId() . ':' . $entity->id() . ':' . $this->mode] = [
+          'hash' => 'no_sections',
+          'quickedit_storage_prefix' => $entity->getEntityTypeId() . '/' . $entity->id(),
+        ];
+      }
     }
+    $build_list['#attached']['library'][] = 'layout_builder/drupal.layout_builder_quickedit';
 
     return $build_list;
   }
@@ -308,7 +315,6 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
             'hash' => $sections_hash,
             'quickedit_storage_prefix' => $entity->getEntityTypeId() . '/' . $entity->id(),
           ];
-          $build['#attached']['library'][] = 'layout_builder/drupal.layout_builder_quickedit';
         }
       }
 
