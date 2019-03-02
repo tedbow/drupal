@@ -86,6 +86,11 @@ class QuickEditIntegration implements ContainerInjectionInterface {
     }
     foreach (Element::children($build['_layout_builder']) as $delta) {
       $section = &$build['_layout_builder'][$delta];
+      // Skip blank sections.
+      if (empty($section)) {
+        continue;
+      }
+
       /** @var \Drupal\Core\Layout\LayoutDefinition $layout */
       $layout = $section['#layout'];
       $regions = $layout->getRegionNames();
