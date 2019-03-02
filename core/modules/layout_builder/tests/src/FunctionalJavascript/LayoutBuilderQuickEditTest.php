@@ -43,7 +43,6 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
 
     $page = $this->getSession()->getPage();
 
-
     $this->drupalGet('admin/structure/block/block-content/manage/basic/display');
     $page->checkField('layout[enabled]');
     $page->pressButton('Save');
@@ -84,7 +83,9 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     parent::testCustomBlock();
   }
 
-
+  /**
+   * @todo.
+   */
   protected function enableOverridesAtAdminPath($path) {
     // Save the current user to re-login after Layout Builder changes.
     $user = $this->loggedInUser;
@@ -98,7 +99,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   }
 
   /**
-   * Dataprovider for testArticleNode().
+   * Data provider for testArticleNode().
    */
   public function provideTestArticleNode() {
     return [
@@ -106,7 +107,6 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
       'use override' => [TRUE],
     ];
   }
-
 
   /**
    * {@inheritdoc}
@@ -161,7 +161,6 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
    * @param string $view_mode
    *   The view mode.
    *
-   *
    * @return string
    *   The view mode used by layout builder.
    */
@@ -213,6 +212,8 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   }
 
   /**
+   * @todo.
+   *
    * @param string $layout_url
    */
   protected function createLayoutOverride($layout_url) {
@@ -247,7 +248,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   /**
    * Disable layout builder.
    *
-   * @param $path
+   * @param string $path
    *   The path to the manage display page.
    */
   protected function disableLayoutBuilder($path) {

@@ -22,7 +22,7 @@ function layout_builder_install() {
   foreach ($displays as $display) {
     // Create the first section from any existing Field Layout settings.
     $field_layout = $display->getThirdPartySettings('field_layout');
-    if (isset($field_layout['id']) && !empty($field_layout['settings'])) {
+    if (isset($field_layout['id'])) {
       $field_layout += ['settings' => []];
       $display
         ->enableLayoutBuilder()
