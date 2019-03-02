@@ -18,7 +18,10 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['layout_builder'];
+  public static $modules = [
+    'layout_builder',
+    'layout_builder_test_css_transitions',
+  ];
 
   /**
    * Whether the test is currently using Layout Builder on the entity.
