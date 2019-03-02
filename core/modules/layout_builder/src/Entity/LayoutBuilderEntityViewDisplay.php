@@ -516,23 +516,6 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   }
 
   /**
-   * {@inheritdoc}
-   *
-   * Override because the parent implementation filters out base fields which
-   * the layout builder can display.
-   */
-  protected function getFieldDefinitions() {
-    if (!$this->isLayoutBuilderEnabled()) {
-      parent::getFieldDefinitions();
-    }
-    if (!isset($this->fieldDefinitions)) {
-      $definitions = \Drupal::entityManager()->getFieldDefinitions($this->targetEntityType, $this->bundle);
-      $this->fieldDefinitions = $definitions;
-    }
-    return $this->fieldDefinitions;
-  }
-
-  /**
    * Returns the QuickEdit formatter settings.
    *
    * @return array |null
@@ -552,7 +535,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
           if (isset($sections[(int) $delta])) {
             $section = $sections[(int) $delta];
             $component = $section->getComponent($component_uuid);
-            $plugin =$component->getPlugin();
+            $plugin = $component->getPlugin();
             if ($plugin instanceof FieldBlock) {
               return $component;
             }
