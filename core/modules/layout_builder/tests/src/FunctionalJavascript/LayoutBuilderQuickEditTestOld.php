@@ -66,7 +66,6 @@ class LayoutBuilderQuickEditTestOld extends QuickEditIntegrationTest {
     $this->useOverride = $useOverride;
     $node = $this->createNodeWithTerm();
     $this->doTestArticle($node);
-    $this->resetEditToolbar();
     $this->doTestArticle($node);
   }
 
