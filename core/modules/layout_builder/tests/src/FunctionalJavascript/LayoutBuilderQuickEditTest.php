@@ -4,6 +4,7 @@ namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\node\Entity\Node;
+use Drupal\node\Entity\NodeType;
 use Drupal\Tests\quickedit\FunctionalJavascript\QuickEditIntegrationTest;
 
 /**
@@ -55,28 +56,49 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   }
 
   /**
-   * {@inheritdoc}
+   * Tests enabling and displaying Layout Builder on a node.
+   *
+   * @dataProvider providerEnableDisableLayoutBuilder
    */
-  public function testEnableDisableLayoutBuilder() {
+  public function testEnableDisableLayoutBuilder($use_revisions) {
+    if (!$use_revisions) {
+      $content_type = NodeType::load('article');
+      $content_type->setNewRevision(FALSE);
+      $content_type->save();
+    }
+
     $node = $this->createNodeWithTerm();
+
     $this->assertQuickEditInit($node);
     $this->enableLayouts('admin/structure/types/manage/article/display/default');
     $this->usingLayoutBuilder = TRUE;
     // Test article with Layout Builder enabled.
+    // $this->assertSession()->waitForElementVisible('css', '.go',898998989898989989898989989898998);
     $this->assertQuickEditInit($node);
 
     // Test article with Layout Builder override.
     $this->createLayoutOverride('node/' . $node->id() . '/layout');
     $this->assertQuickEditInit($node);
 
-    // Test article with Layout Builder when reverted back to defaults.
-    $this->revertLayoutToDefaults('node/' . $node->id() . '/layout');
-    $this->assertQuickEditInit($node);
+    if (!$use_revisions) {
+      // Test article with Layout Builder when reverted back to defaults.
+      $this->revertLayoutToDefaults('node/' . $node->id() . '/layout');
+      //$this->assertSession()->waitForElementVisible('css', '.go',898998989898989989898989989898998);
+      $this->assertQuickEditInit($node);
+      //$this->assertSession()->waitForElementVisible('css', '.go',898998989898989989898989989898998);
 
-    // Test with Layout Builder disabled after being enabled.
-    $this->usingLayoutBuilder = FALSE;
-    $this->disableLayoutBuilder('admin/structure/types/manage/article/display/default');
-    $this->assertQuickEditInit($node);
+      // Test with Layout Builder disabled after being enabled.
+      $this->usingLayoutBuilder = FALSE;
+      $this->disableLayoutBuilder('admin/structure/types/manage/article/display/default');
+      $this->assertQuickEditInit($node);
+    }
+  }
+
+  public function providerEnableDisableLayoutBuilder() {
+    return [
+      'use revisions' => [TRUE],
+      'do not use revisions' => [FALSE],
+    ];
   }
 
   /**
@@ -256,13 +278,16 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
    */
   protected function revertLayoutToDefaults($path) {
     $page = $this->getSession()->getPage();
+    $assert_session = $this->assertSession();
     // Save the current user to re-login after Layout Builder changes.
     $user = $this->loggedInUser;
     $this->loginLayoutAdmin();
     $this->drupalGet($path);
-    $this->assertSession()->buttonExists('Revert to defaults');
+    $assert_session->buttonExists('Revert to defaults');
     $page->pressButton('Revert to defaults');
     $page->pressButton('Revert');
+    $assert_session->pageTextContains('The layout has been reverted back to defaults.');
+    // $this->assertSession()->waitForElementVisible('css', '.go',898998989898989989898989989898998);
     $this->drupalLogin($user);
   }
 
@@ -282,6 +307,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     $page->uncheckField('layout[enabled]');
     $page->pressButton('Save');
     // @todo why no confirm here?
+    // $this->assertSession()->waitForElementVisible('css', '.go',898998989898989989898989989898998);
     $page->pressButton('Confirm');
     $this->drupalLogin($user);
   }

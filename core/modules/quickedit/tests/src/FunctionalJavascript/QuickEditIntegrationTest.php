@@ -115,6 +115,7 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
       'use text format some_format',
       'edit terms in tags',
       'administer blocks',
+      'view all revisions',
     ]);
     $this->drupalLogin($this->contentAuthorUser);
   }
