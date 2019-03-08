@@ -56,10 +56,10 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   /**
    * {@inheritdoc}
    */
-  public function testArticleNode() {
+  public function testEnableDisableLayoutBuilder() {
     $node = $this->createNodeWithTerm();
     $this->doTestArticle($node);
-    $this->enableOverridesAtAdminPath('admin/structure/types/manage/article/display/default');
+    $this->enableLayouts('admin/structure/types/manage/article/display/default');
     $this->usingLayoutBuilder = TRUE;
     // Test article with Layout Builder enabled.
     $this->doTestArticle($node);
@@ -79,6 +79,21 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   }
 
   /**
+   * @param bool $useOverride
+   *
+   * @dataProvider provideTestArticleNode
+   */
+  public function testArticleNode($useOverride = FALSE) {
+    $this->enableLayouts('admin/structure/types/manage/article/display/default');
+    $this->usingLayoutBuilder = TRUE;
+    $node = $this->createNodeWithTerm();
+    if ($useOverride) {
+      $this->createLayoutOverride('node/' . $node->id() . '/layout');
+    }
+    $this->doTestArticle($node);
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function testCustomBlock() {
@@ -89,7 +104,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   /**
    * @todo.
    */
-  protected function enableOverridesAtAdminPath($path) {
+  protected function enableLayouts($path) {
     // Save the current user to re-login after Layout Builder changes.
     $user = $this->loggedInUser;
     $this->loginLayoutAdmin();
