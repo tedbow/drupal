@@ -73,7 +73,6 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     $this->enableLayouts('admin/structure/types/manage/article/display/default');
     $this->usingLayoutBuilder = TRUE;
     // Test article with Layout Builder enabled.
-    // $this->assertSession()->waitForElementVisible('css', '.go',898998989898989989898989989898998);
     $this->assertQuickEditInit($node);
 
     // Test article with Layout Builder override.
@@ -83,9 +82,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     if (!$use_revisions) {
       // Test article with Layout Builder when reverted back to defaults.
       $this->revertLayoutToDefaults('node/' . $node->id() . '/layout');
-      //$this->assertSession()->waitForElementVisible('css', '.go',898998989898989989898989989898998);
       $this->assertQuickEditInit($node);
-      //$this->assertSession()->waitForElementVisible('css', '.go',898998989898989989898989989898998);
 
       // Test with Layout Builder disabled after being enabled.
       $this->usingLayoutBuilder = FALSE;
@@ -94,6 +91,9 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     }
   }
 
+  /**
+   * @return array
+   */
   public function providerEnableDisableLayoutBuilder() {
     return [
       'use revisions' => [TRUE],
@@ -253,9 +253,10 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   }
 
   /**
-   * @todo.
+   * Create a layout override.
    *
    * @param string $layout_url
+   *   The layout url.
    */
   protected function createLayoutOverride($layout_url) {
     $assert_session = $this->assertSession();
@@ -287,7 +288,6 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     $page->pressButton('Revert to defaults');
     $page->pressButton('Revert');
     $assert_session->pageTextContains('The layout has been reverted back to defaults.');
-    // $this->assertSession()->waitForElementVisible('css', '.go',898998989898989989898989989898998);
     $this->drupalLogin($user);
   }
 
@@ -306,15 +306,20 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     $page->uncheckField('layout[allow_custom]');
     $page->uncheckField('layout[enabled]');
     $page->pressButton('Save');
-    // @todo why no confirm here?
-    // $this->assertSession()->waitForElementVisible('css', '.go',898998989898989989898989989898998);
     $page->pressButton('Confirm');
     $this->drupalLogin($user);
   }
 
+  /**
+   * Asserts that QuickEdit is initialized on the node view correctly.
+   *
+   * @todo Replace calls to this method with calls to ::doTestArticle() in
+   *   
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The node.
+   */
   private function assertQuickEditInit(\Drupal\node\NodeInterface $node) {
-    \Drupal::entityTypeManager()->getStorage('node')->resetCache([$node->id()]);
-    $node = Node::load($node->id());
     $this->drupalGet('node/' . $node->id());
 
     // Initial state.
