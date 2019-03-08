@@ -3,8 +3,8 @@
 namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
-use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
+use Drupal\node\NodeInterface;
 use Drupal\Tests\quickedit\FunctionalJavascript\QuickEditIntegrationTest;
 
 /**
@@ -66,7 +66,6 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
       $content_type->setNewRevision(FALSE);
       $content_type->save();
     }
-
     $node = $this->createNodeWithTerm();
 
     $this->assertQuickEditInit($node);
@@ -79,6 +78,8 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     $this->createLayoutOverride('node/' . $node->id() . '/layout');
     $this->assertQuickEditInit($node);
 
+    // If we are not using revisions remove the layout override and disable
+    // layout for the bundle.
     if (!$use_revisions) {
       // Test article with Layout Builder when reverted back to defaults.
       $this->revertLayoutToDefaults('node/' . $node->id() . '/layout');
@@ -92,7 +93,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   }
 
   /**
-   * @return array
+   * DataProvider for testEnableDisableLayoutBuilder().
    */
   public function providerEnableDisableLayoutBuilder() {
     return [
@@ -102,7 +103,10 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   }
 
   /**
+   * {@inheritdoc}
+   *
    * @param bool $useOverride
+   *   Whether test should use a layout override.
    *
    * @dataProvider provideTestArticleNode
    */
@@ -125,7 +129,10 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   }
 
   /**
-   * @todo.
+   * Enables layouts at an admin path.
+   *
+   * @param $path
+   *   The manage display path.
    */
   protected function enableLayouts($path) {
     // Save the current user to re-login after Layout Builder changes.
@@ -253,10 +260,10 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   }
 
   /**
-   * Create a layout override.
+   * Creates a layout override.
    *
    * @param string $layout_url
-   *   The layout url.
+   *   The layout builder url.
    */
   protected function createLayoutOverride($layout_url) {
     $assert_session = $this->assertSession();
@@ -272,18 +279,18 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
   }
 
   /**
-   * Revert a layout override.
+   * Reverts a layout override.
    *
-   * @param string $path
-   *   The path for the layout builder.
+   * @param string $layout_url
+   *   The layout builder url.
    */
-  protected function revertLayoutToDefaults($path) {
+  protected function revertLayoutToDefaults($layout_url) {
     $page = $this->getSession()->getPage();
     $assert_session = $this->assertSession();
     // Save the current user to re-login after Layout Builder changes.
     $user = $this->loggedInUser;
     $this->loginLayoutAdmin();
-    $this->drupalGet($path);
+    $this->drupalGet($layout_url);
     $assert_session->buttonExists('Revert to defaults');
     $page->pressButton('Revert to defaults');
     $page->pressButton('Revert');
@@ -314,12 +321,12 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
    * Asserts that QuickEdit is initialized on the node view correctly.
    *
    * @todo Replace calls to this method with calls to ::doTestArticle() in
-   *
+   *    https://www.drupal.org/node/3037436.
    *
    * @param \Drupal\node\NodeInterface $node
    *   The node.
    */
-  private function assertQuickEditInit(\Drupal\node\NodeInterface $node) {
+  private function assertQuickEditInit(NodeInterface $node) {
     $this->drupalGet('node/' . $node->id());
 
     // Initial state.
