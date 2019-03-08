@@ -314,7 +314,7 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
    * Asserts that QuickEdit is initialized on the node view correctly.
    *
    * @todo Replace calls to this method with calls to ::doTestArticle() in
-   *   
+   *
    *
    * @param \Drupal\node\NodeInterface $node
    *   The node.
