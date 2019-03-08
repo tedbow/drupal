@@ -3,6 +3,7 @@
 namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
+use Drupal\node\Entity\Node;
 use Drupal\Tests\quickedit\FunctionalJavascript\QuickEditIntegrationTest;
 
 /**
@@ -280,12 +281,28 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     $page->uncheckField('layout[allow_custom]');
     $page->uncheckField('layout[enabled]');
     $page->pressButton('Save');
+    // @todo why no confirm here?
     $page->pressButton('Confirm');
     $this->drupalLogin($user);
   }
 
   private function assertQuickEditInit(\Drupal\node\NodeInterface $node) {
+    \Drupal::entityTypeManager()->getStorage('node')->resetCache([$node->id()]);
+    $node = Node::load($node->id());
+    $this->drupalGet('node/' . $node->id());
 
+    // Initial state.
+    $this->awaitQuickEditForEntity('node', 1);
+    $this->assertEntityInstanceStates([
+      'node/1[0]' => 'closed',
+    ]);
+    $this->assertEntityInstanceFieldStates('node', 1, 0, [
+      'node/1/title/en/full'      => 'inactive',
+      'node/1/uid/en/full'        => 'inactive',
+      'node/1/created/en/full'    => 'inactive',
+      'node/1/body/en/full'       => 'inactive',
+      'node/1/field_tags/en/full' => 'inactive',
+    ]);
   }
 
 }
