@@ -163,9 +163,7 @@ JS;
     // We cannot use ->getText() because it also returns the text of all child
     // nodes. We also cannot use XPath to select text node in Selenium. So we
     // use JS expression to select only the text node.
-    // @todo this Line is comment out in current patch because of quickedit label
-    //   bug https://www.drupal.org/node/2914826
-    //$this->assertSame($expected_entity_label, $this->getSession()->evaluateScript("return window.jQuery('#quickedit-entity-toolbar .quickedit-toolbar-label').clone().children().remove().end().text();"));
+    $this->assertSame($expected_entity_label, $this->getSession()->evaluateScript("return window.jQuery('#quickedit-entity-toolbar .quickedit-toolbar-label').clone().children().remove().end().text();"));
     if ($expected_field_label !== NULL) {
       $field_label = $quickedit_entity_toolbar->find('css', '.quickedit-toolbar-label > .field');
       // Only try to find the text content of the element if it was actually
@@ -315,25 +313,6 @@ function () {
 }()
 JS;
     $this->getSession()->evaluateScript($js_simulate_user_typing);
-  }
-
-  /**
-   * Gets the QuickEdit field ID attribute value.
-   *
-   * @param string $entity_type
-   *   The entity type.
-   * @param int $entity_id
-   *   The entity id.
-   * @param string $field_name
-   *   The field name.
-   * @param string $view_mode
-   *   The view mode.
-   *
-   * @return string
-   *   The field id.
-   */
-  protected function getQuickEditFieldId($entity_type, $entity_id, $field_name, $view_mode) {
-    return "$entity_type/$entity_id/$field_name/en/$view_mode";
   }
 
 }
