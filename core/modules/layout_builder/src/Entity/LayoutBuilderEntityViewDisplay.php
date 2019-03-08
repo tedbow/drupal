@@ -278,8 +278,9 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
           'quickedit_storage_prefix' => $entity->getEntityTypeId() . '/' . $entity->id(),
         ];
       }
+      $build_list[$id]['#attached']['library'][] = 'layout_builder/drupal.layout_builder_quickedit';
     }
-    $build_list['#attached']['library'][] = 'layout_builder/drupal.layout_builder_quickedit';
+
 
     return $build_list;
   }
