@@ -239,12 +239,14 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
    *   The path for the layout builder.
    */
   protected function revertLayoutToDefaults($path) {
+    $page = $this->getSession()->getPage();
     // Save the current user to re-login after Layout Builder changes.
     $user = $this->loggedInUser;
     $this->loginLayoutAdmin();
     $this->drupalGet($path);
-    $this->clickLink('Revert to defaults');
-    $this->getSession()->getPage()->pressButton('Revert');
+    $this->assertSession()->buttonExists('Revert to defaults');
+    $page->pressButton('Revert to defaults');
+    $page->pressButton('Revert');
     $this->drupalLogin($user);
   }
 
