@@ -58,24 +58,24 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
    */
   public function testEnableDisableLayoutBuilder() {
     $node = $this->createNodeWithTerm();
-    $this->doTestArticle($node);
+    $this->assertQuickEditInit($node);
     $this->enableLayouts('admin/structure/types/manage/article/display/default');
     $this->usingLayoutBuilder = TRUE;
     // Test article with Layout Builder enabled.
-    $this->doTestArticle($node);
+    $this->assertQuickEditInit($node);
 
     // Test article with Layout Builder override.
     $this->createLayoutOverride('node/' . $node->id() . '/layout');
-    $this->doTestArticle($node);
+    $this->assertQuickEditInit($node);
 
     // Test article with Layout Builder when reverted back to defaults.
     $this->revertLayoutToDefaults('node/' . $node->id() . '/layout');
-    $this->doTestArticle($node);
+    $this->assertQuickEditInit($node);
 
     // Test with Layout Builder disabled after being enabled.
     $this->usingLayoutBuilder = FALSE;
     $this->disableLayoutBuilder('admin/structure/types/manage/article/display/default');
-    $this->doTestArticle($node);
+    $this->assertQuickEditInit($node);
   }
 
   /**
@@ -282,6 +282,10 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     $page->pressButton('Save');
     $page->pressButton('Confirm');
     $this->drupalLogin($user);
+  }
+
+  private function assertQuickEditInit(\Drupal\node\NodeInterface $node) {
+
   }
 
 }
