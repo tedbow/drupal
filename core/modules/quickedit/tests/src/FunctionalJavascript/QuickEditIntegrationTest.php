@@ -7,7 +7,7 @@ use Drupal\block_content\Entity\BlockContentType;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\editor\Entity\Editor;
 use Drupal\filter\Entity\FilterFormat;
-use Drupal\node\Entity\Node;
+use Drupal\node\NodeInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\Tests\field\Traits\EntityReferenceTestTrait;
@@ -115,7 +115,6 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
       'use text format some_format',
       'edit terms in tags',
       'administer blocks',
-      'view all revisions',
     ]);
     $this->drupalLogin($this->contentAuthorUser);
   }
@@ -126,18 +125,15 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
   public function testArticleNode() {
     $node = $this->createNodeWithTerm();
     $this->doTestArticle($node);
-    $this->doTestArticle($node);
   }
 
   /**
-   * Test an article with QuickEdit.
+   * Tests an article with QuickEdit.
    *
    * @param \Drupal\node\NodeInterface $node
    *   The node.
    */
-  protected function doTestArticle(\Drupal\node\NodeInterface $node) {
-    \Drupal::entityTypeManager()->getStorage('node')->resetCache([$node->id()]);
-    $node = Node::load($node->id());
+  protected function doTestArticle(NodeInterface $node) {
     $this->drupalGet('node/' . $node->id());
 
     // Initial state.
@@ -248,9 +244,9 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
     // Wait for the form to load.
     $this->assertJsCondition('document.querySelector(\'.quickedit-form-container > .quickedit-form[role="dialog"] > .placeholder\') === null');
     $this->assertEntityInstanceFieldStates('node', 1, 0, [
-      'node/1/uid/en/full' => 'candidate',
-      'node/1/created/en/full' => 'candidate',
-      'node/1/body/en/full' => 'candidate',
+      'node/1/uid/en/full'        => 'candidate',
+      'node/1/created/en/full'    => 'candidate',
+      'node/1/body/en/full'       => 'candidate',
       'node/1/field_tags/en/full' => 'active',
       'node/1/title/en/full'      => 'candidate',
     ]);
@@ -290,8 +286,6 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
     $this->assertEntityInstanceStates([
       'node/1[0]' => 'closed',
     ]);
-    // Reset Edit toolbar to be ready to test the node again.
-    $this->resetEditToolbar();
   }
 
   /**
@@ -372,29 +366,4 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
     ]);
     return $node;
   }
-
-  /**
-   * Reset the Edit toolbar button.
-   */
-  protected function resetEditToolbar() {
-    $this->click('#toolbar-bar .contextual-toolbar-tab button');
-    $contextual_links_trigger_selector = '[data-contextual-id] > .trigger';
-    $this->waitForNoElement("$contextual_links_trigger_selector:not(.visually-hidden)");
-  }
-
-  /**
-   * Waits for an element to be removed from the page.
-   *
-   * @param string $selector
-   *   CSS selector.
-   * @param int $timeout
-   *   (optional) Timeout in milliseconds, defaults to 10000.
-   *
-   * @todo Remove in https://www.drupal.org/node/2892440.
-   */
-  protected function waitForNoElement($selector, $timeout = 10000) {
-    $condition = "(typeof jQuery !== 'undefined' && jQuery('$selector').length === 0)";
-    $this->assertJsCondition($condition, $timeout);
-  }
-
 }
