@@ -3,6 +3,7 @@
 namespace Drupal\layout_builder\Entity;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
+use Drupal\Component\Plugin\DerivativeInspectionInterface;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\Entity\EntityViewDisplay as BaseEntityViewDisplay;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -499,15 +500,22 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   /**
    * Returns the QuickEdit formatter settings.
    *
-   * @return array |null
+   * @return \Drupal\layout_builder\SectionComponent|null
    *   The QuickEdit formatter settings.
    *
-   * @see \Drupal\layout_builder\QuickEditIntegration::entityViewAlter
+   * @see \Drupal\layout_builder\QuickEditIntegration::entityViewAlter()
+   * @see \Drupal\quickedit\MetadataGenerator::generateFieldMetadata()
    */
   private function getQuickEditSectionComponent() {
+    // To determine the view_mode used by QuickEdit we need an originalMode set.
     if (isset($this->originalMode)) {
       $parts = explode('-', $this->originalMode);
       if (count($parts) > 2) {
+        // The QuickEdit view_mode is created
+        // \Drupal\layout_builder\QuickEditIntegration::entityViewAlter
+        // by concatenating together the information we need to retrieve the
+        // Layout Builder component. The created view_mode starts
+        // 'layout_builder' to distinguish if from other view_modes.
         list($mode, $delta, $component_uuid, $entity_id) = $parts;
         $component_uuid = str_replace('_', '-', $component_uuid);
         if ($mode === 'layout_builder') {
@@ -517,7 +525,9 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
             $section = $sections[(int) $delta];
             $component = $section->getComponent($component_uuid);
             $plugin = $component->getPlugin();
-            if ($plugin instanceof FieldBlock) {
+            // We only care about FieldBlock because these are only components
+            // that provide QuickEdit integration.
+            if ($plugin instanceof DerivativeInspectionInterface && $plugin->getBaseId() === 'field_block') {
               return $component;
             }
           }
@@ -527,15 +537,29 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
     return NULL;
   }
 
-  private function getSectionComponentForFieldName($name) {
+  /**
+   * Gets the component for a given field name if any.
+   *
+   * @param string $field_name
+   *   The field name.
+   *
+   * @return \Drupal\layout_builder\SectionComponent
+   *   The section component.
+   */
+  private function getSectionComponentForFieldName($field_name) {
+    // First check if there is section component that was set up to work with
+    // QuickEdit. This does not require $field_name because it requires this
+    // display to be setup to handle a single field for QuickEdit.
     $section_component = $this->getQuickEditSectionComponent();
     if (empty($section_component)) {
       foreach ($this->getSections() as $section) {
         foreach ($section->getComponents() as $component) {
           $plugin = $component->getPlugin();
-          if ($plugin instanceof FieldBlock) {
-            list(, , , $field_name) = explode(':', $plugin->getPluginId());
-            if ($field_name === $name) {
+          if ($plugin instanceof DerivativeInspectionInterface && $plugin->getBaseId() === 'field_block') {
+            // field_block plugin Ids are in the format
+            // field_block:[entity_type]:[bundle]:[field].
+            list(, , , $field_block_field_name) = explode(':', $plugin->getPluginId());
+            if ($field_block_field_name === $field_name) {
               return $component;
             }
           }

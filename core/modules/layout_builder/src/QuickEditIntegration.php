@@ -12,6 +12,7 @@ use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
 use Drupal\Core\Plugin\Context\EntityContext;
+use Drupal\Core\Plugin\Context\EntityContextDefinition;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -74,7 +75,7 @@ class QuickEditIntegration implements ContainerInjectionInterface {
   }
 
   /**
-   * Alters the entity for Quick Edit compatibility.
+   * Alters the entity view build for Quick Edit compatibility.
    *
    * When rendering fields outside of normal view modes, Quick Edit requires
    * that modules identify themselves with a view mode in the format module
@@ -93,7 +94,7 @@ class QuickEditIntegration implements ContainerInjectionInterface {
    * @internal
    */
   public function entityViewAlter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
-    if (!$entity instanceof FieldableEntityInterface || !isset($build['_layout_builder'])) {
+    if (!$entity instanceof FieldableEntityInterface || !isset($build['_layout_builder']) || !$this->currentUser->hasPermission('access in-place editing')) {
       return;
     }
     $non_empty_sections = [];
@@ -126,25 +127,21 @@ class QuickEditIntegration implements ContainerInjectionInterface {
         }
       }
     }
-    // If the current user can access QuickEdit then set a hash of the sections
-    // to clear QuickEdit metadata on the client when it changes.
-    if ($this->currentUser->hasPermission('access in-place editing')) {
-      if ($non_empty_sections) {
-        $sections_hash = hash('sha256', serialize($non_empty_sections));
-      }
-      else {
-        // Set the section hash to indicate we are not using the Layout Builder.
-        // If the Layout Builder was previously enabled for this entity the
-        // QuickEdit metadata will need to be cleared on the client.
-        $sections_hash = 'no_sections';
-
-      }
-      $build['#attached']['drupalSettings']['layout_builder']['section_hashes'][$entity->getEntityTypeId() . ':' . $entity->id() . ':' . $display->getMode()] = [
-        'hash' => $sections_hash,
-        'quickedit_storage_prefix' => $entity->getEntityTypeId() . '/' . $entity->id(),
-      ];
-      $build['#attached']['library'][] = 'layout_builder/drupal.layout_builder_quickedit';
+    if ($non_empty_sections) {
+      $sections_hash = hash('sha256', serialize($non_empty_sections));
     }
+    else {
+      // Set the section hash to indicate we are not using the Layout Builder.
+      // If the Layout Builder was previously enabled for this entity the
+      // QuickEdit metadata will need to be cleared on the client.
+      $sections_hash = 'no_sections';
+
+    }
+    $build['#attached']['drupalSettings']['layout_builder']['section_hashes'][$entity->getEntityTypeId() . ':' . $entity->id() . ':' . $display->getMode()] = [
+      'hash' => $sections_hash,
+      'quickedit_storage_prefix' => $entity->getEntityTypeId() . '/' . $entity->id(),
+    ];
+    $build['#attached']['library'][] = 'layout_builder/drupal.layout_builder_quickedit';
   }
 
   /**
@@ -185,14 +182,7 @@ class QuickEditIntegration implements ContainerInjectionInterface {
       $component = $section_list->getSection($delta)
         ->getComponent($component_uuid);
       $contexts = $this->contextRepository->getAvailableContexts();
-      // @todo Change to use EntityContextDefinition in
-      // https://www.drupal.org/project/drupal/issues/2932462.
-      $contexts['layout_builder.entity'] = new Context(
-        new ContextDefinition(
-          "entity:{$entity->getEntityTypeId()}",
-          new TranslatableMarkup('@entity being viewed', ['@entity' => $entity->getEntityType()->getLabel()])),
-        $entity
-      );
+      $contexts['layout_builder.entity'] = EntityContext::fromEntity($entity);
       $block = $component->toRenderArray($contexts);
       $build = $block['content'];
       $build['#view_mode'] = $view_mode_id;
