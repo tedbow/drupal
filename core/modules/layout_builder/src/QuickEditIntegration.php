@@ -135,7 +135,6 @@ class QuickEditIntegration implements ContainerInjectionInterface {
       // If the Layout Builder was previously enabled for this entity the
       // QuickEdit metadata will need to be cleared on the client.
       $sections_hash = 'no_sections';
-
     }
     $build['#attached']['drupalSettings']['layout_builder']['section_hashes'][$entity->getEntityTypeId() . ':' . $entity->id() . ':' . $display->getMode()] = [
       'hash' => $sections_hash,
