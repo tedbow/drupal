@@ -269,18 +269,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
           }
         }
       }
-      else {
-        // Set variable indicate we are not using the Layout Builder. If the
-        // Layout Builder was previously enable for this entity the QuickEdit
-        // metadata will need to be clear on the client.
-        $build['#attached']['drupalSettings']['layout_builder']['section_hashes'][$entity->getEntityTypeId() . ':' . $entity->id() . ':' . $this->mode] = [
-          'hash' => 'no_sections',
-          'quickedit_storage_prefix' => $entity->getEntityTypeId() . '/' . $entity->id(),
-        ];
-      }
-      $build_list[$id]['#attached']['library'][] = 'layout_builder/drupal.layout_builder_quickedit';
     }
-
 
     return $build_list;
   }
@@ -310,15 +299,6 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
       if ($sections = $storage->getSections()) {
         foreach ($sections as $delta => $section) {
           $build[$delta] = $section->toRenderArray($contexts);
-        }
-        if (\Drupal::currentUser()->hasPermission('access in-place editing')) {
-          // If the current user can access QuickEdit then set a hash of the
-          // sections to clear QuickEdit metadata on the client when it changes.
-          $sections_hash = hash('sha256', serialize($sections));
-          $build['#attached']['drupalSettings']['layout_builder']['section_hashes'][$entity->getEntityTypeId() . ':' . $entity->id() . ':' . $this->mode] = [
-            'hash' => $sections_hash,
-            'quickedit_storage_prefix' => $entity->getEntityTypeId() . '/' . $entity->id(),
-          ];
         }
       }
 

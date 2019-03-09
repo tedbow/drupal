@@ -13,6 +13,7 @@ use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -39,16 +40,26 @@ class QuickEditIntegration implements ContainerInjectionInterface {
   protected $contextRepository;
 
   /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected $currentUser;
+
+  /**
    * Constructs a new QuickEditIntegration object.
    *
    * @param \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface $section_storage_manager
    *   The section storage manager.
    * @param \Drupal\Core\Plugin\Context\ContextRepositoryInterface $context_repository
    *   The context repository.
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   The current user.
    */
-  public function __construct(SectionStorageManagerInterface $section_storage_manager, ContextRepositoryInterface $context_repository) {
+  public function __construct(SectionStorageManagerInterface $section_storage_manager, ContextRepositoryInterface $context_repository, AccountInterface $current_user) {
     $this->sectionStorageManager = $section_storage_manager;
     $this->contextRepository = $context_repository;
+    $this->currentUser = $current_user;
   }
 
   /**
@@ -57,7 +68,8 @@ class QuickEditIntegration implements ContainerInjectionInterface {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('plugin.manager.layout_builder.section_storage'),
-      $container->get('context.repository')
+      $container->get('context.repository'),
+      $container->get('current_user')
     );
   }
 
@@ -84,12 +96,14 @@ class QuickEditIntegration implements ContainerInjectionInterface {
     if (!$entity instanceof FieldableEntityInterface || !isset($build['_layout_builder'])) {
       return;
     }
+    $non_empty_sections = [];
     foreach (Element::children($build['_layout_builder']) as $delta) {
       $section = &$build['_layout_builder'][$delta];
       // Skip blank sections.
       if (empty($section)) {
         continue;
       }
+      $non_empty_sections[] = $section;
 
       /** @var \Drupal\Core\Layout\LayoutDefinition $layout */
       $layout = $section['#layout'];
@@ -111,6 +125,25 @@ class QuickEditIntegration implements ContainerInjectionInterface {
           }
         }
       }
+    }
+    // If the current user can access QuickEdit then set a hash of the sections
+    // to clear QuickEdit metadata on the client when it changes.
+    if ($this->currentUser->hasPermission('access in-place editing')) {
+      if ($non_empty_sections) {
+        $sections_hash = hash('sha256', serialize($non_empty_sections));
+      }
+      else {
+        // Set the section hash to indicate we are not using the Layout Builder.
+        // If the Layout Builder was previously enabled for this entity the
+        // QuickEdit metadata will need to be cleared on the client.
+        $sections_hash = 'no_sections';
+
+      }
+      $build['#attached']['drupalSettings']['layout_builder']['section_hashes'][$entity->getEntityTypeId() . ':' . $entity->id() . ':' . $display->getMode()] = [
+        'hash' => $sections_hash,
+        'quickedit_storage_prefix' => $entity->getEntityTypeId() . '/' . $entity->id(),
+      ];
+      $build['#attached']['library'][] = 'layout_builder/drupal.layout_builder_quickedit';
     }
   }
 
