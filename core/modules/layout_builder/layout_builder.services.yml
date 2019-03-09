@@ -43,3 +43,6 @@ services:
   inline_block.usage:
     class: Drupal\layout_builder\InlineBlockUsage
     arguments: ['@database']
+  layout_builder.quickedit_integration:
+    class: Drupal\layout_builder\QuickEditIntegration
+    arguments: ['@plugin.manager.layout_builder.section_storage', '@context.repository', '@current_user']

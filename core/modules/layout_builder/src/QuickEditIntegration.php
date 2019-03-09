@@ -12,19 +12,16 @@ use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\ContextRepositoryInterface;
 use Drupal\Core\Plugin\Context\EntityContext;
-use Drupal\Core\Plugin\Context\EntityContextDefinition;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Helper methods for QuickEdit module integration.
  *
  * @internal
  */
-class QuickEditIntegration implements ContainerInjectionInterface {
+class QuickEditIntegration {
 
   /**
    * The section storage manager.
@@ -61,17 +58,6 @@ class QuickEditIntegration implements ContainerInjectionInterface {
     $this->sectionStorageManager = $section_storage_manager;
     $this->contextRepository = $context_repository;
     $this->currentUser = $current_user;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('plugin.manager.layout_builder.section_storage'),
-      $container->get('context.repository'),
-      $container->get('current_user')
-    );
   }
 
   /**
