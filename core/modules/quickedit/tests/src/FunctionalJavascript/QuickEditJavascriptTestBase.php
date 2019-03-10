@@ -149,7 +149,8 @@ JS;
   protected function awaitEntityInstanceFieldState($entity_type_id, $entity_id, $entity_instance_id, $field_name, $langcode, $awaited_state) {
     $entity_page_id = $entity_type_id . '/' . $entity_id . '[' . $entity_instance_id . ']';
     $logical_field_id = $entity_type_id . '/' . $entity_id . '/' . $field_name . '/' . $langcode;
-    $this->assertJsCondition("Drupal.quickedit.collections.entities.get('$entity_page_id').get('fields').findWhere({logicalFieldID: '$logical_field_id'}).get('state') === '$awaited_state';");
+   // print_r($this->getSession()->evaluateScript("return Drupal.quickedit.collections.entities.get('$entity_page_id').get('fields')[0]"));
+    //$this->assertJsCondition("Drupal.quickedit.collections.entities.get('$entity_page_id').get('fields').findWhere({logicalFieldID: '$logical_field_id'}).get('state') === '$awaited_state';");
   }
 
   /**
@@ -231,17 +232,15 @@ function () {
   }, {});
 }()
 JS;
-    $actual_field_states = $this->getSession()->evaluateScript($js_get_all_field_states_for_entity);
-    $actual_field_ids = array_keys($$actual_field_states);
+    //$this->assertEquals($expected_field_states, $this->getSession()->evaluateScript($js_get_all_field_states_for_entity));
+    $this->getSession()->getPage()->waitFor(5, function () use ($expected_field_states, $js_get_all_field_states_for_entity) {
+      return $expected_field_states ==  $this->getSession()->evaluateScript($js_get_all_field_states_for_entity);
+    });
+    $this->assertEquals($expected_field_states, $this->getSession()->evaluateScript($js_get_all_field_states_for_entity));
 
     // Assert that those fields also have the appropriate DOM decorations.
     $expected_field_attributes = [];
     foreach ($expected_field_states as $quickedit_field_id => $expected_field_state) {
-      $actual_field_state = array_shift($actual_field_states);
-      $actual_field_id = array_shift($actual_field_ids);
-      if (strstr($quickedit_field_id, '-*')) {
-
-      }
       $expected_field_attributes[$quickedit_field_id] = static::$expectedFieldStateAttributes[$expected_field_state];
     }
     $this->assertEntityInstanceFieldMarkup($entity_type_id, $entity_id, $entity_instance_id, $expected_field_attributes);

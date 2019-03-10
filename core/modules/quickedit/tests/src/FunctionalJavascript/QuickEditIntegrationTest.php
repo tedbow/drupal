@@ -167,7 +167,7 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
 
     // Click the title field.
     $this->click('[data-quickedit-field-id="'
-      . $this->getQuickEditFieldId('node', 1, 'title', 'full')
+      . $this->getQuickEditFieldId('node/1/title/full')
       . '"].quickedit-candidate');
     $assert_session->waitForElement('css', '.quickedit-toolbar-field div[id*="title"]');
     $this->assertQuickEditEntityToolbar((string) $node->label(), 'Title');
@@ -184,7 +184,7 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
 
     // Append something to the title.
     $this->typeInPlainTextEditor('[data-quickedit-field-id="'
-      . $this->getQuickEditFieldId('node', 1, 'title', 'full')
+      . $this->getQuickEditFieldId('node/1/title/full')
       . '"].quickedit-candidate', ' Llamas are awesome!');
     $this->awaitEntityInstanceFieldState('node', 1, 0, 'title', 'en', 'changed');
     $this->assertEntityInstanceFieldStates('node', 1, 0, [
@@ -223,10 +223,11 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
     // Click the tags field.
     hold_test_response(TRUE);
     $this->click('[data-quickedit-field-id="'
-      . $this->getQuickEditFieldId('node', 1, 'field_tags', 'full')
+      . $this->getQuickEditFieldId('node/1/field_tags/full')
       . '"]');
     $assert_session->waitForElement('css', '.quickedit-toolbar-field div[id*="tags"]');
     $this->assertQuickEditEntityToolbar((string) $node->label(), 'Tags');
+    $assert_session->waitForElementVisible('css', '.go', 99999393939393939393939393);
     $this->assertEntityInstanceFieldStates('node', 1, 0, [
       'node/1/uid/en/full'        => 'candidate',
       'node/1/created/en/full'    => 'candidate',
@@ -382,8 +383,8 @@ class QuickEditIntegrationTest extends QuickEditJavascriptTestBase {
    * @return string
    *   The field id.
    */
-  protected function getQuickEditFieldId($entity_type, $entity_id, $field_name, $view_mode) {
-    return "$entity_type/$entity_id/$field_name/en/$view_mode";
+  protected function getQuickEditFieldId($id) {
+    return $id;
   }
 
 }

@@ -186,13 +186,11 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
    *   The array with the keys replaced.
    */
   protected function replaceLayoutBuilderFieldIdKeys(array $array) {
+
     $layout_builder_expected_states = [];
     foreach ($array as $field_key => $value) {
-      // Extract from $field_key all of the information we need to call
-      // getQuickEditFieldId(). The fourth part of $field_key, language code, is
-      // not needed so it can be ignored.
-      list($entity_type, $entity_id, $field_name, , $view_mode) = explode('/', $field_key);
-      $layout_builder_expected_states[$this->getQuickEditFieldId($entity_type, $entity_id, $field_name, $view_mode)] = $value;
+      $new_field_key = $this->getQuickEditFieldId($field_key);
+      $layout_builder_expected_states[$new_field_key] = $value;
     }
     return $layout_builder_expected_states;
   }
@@ -227,20 +225,10 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
     foreach (reset($sections)->getComponents() as $component) {
       $component_in_view_mode = str_replace('-', '_', $component->getUuid());
       if ($component->getPlugin()->getPluginId() === "field_block:$entity_type:{$entity->bundle()}:$field_name") {
-        return 'layout_builder-0-' . $component_in_view_mode . '-' . $entity->id() . '-*';
+        return 'layout_builder-0-' . $component_in_view_mode . '-' . $entity->id();
       }
     }
     $this->fail("Component not found for: $entity_type, $entity_id, $field_name");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getQuickEditFieldId($entity_type, $entity_id, $field_name, $view_mode) {
-    if ($this->usingLayoutBuilder) {
-      $view_mode = $this->getLayoutBuilderViewMode($entity_type, $entity_id, $field_name, $view_mode);
-    }
-    return parent::getQuickEditFieldId($entity_type, $entity_id, $field_name, $view_mode);
   }
 
   /**
@@ -342,166 +330,21 @@ class LayoutBuilderQuickEditTest extends QuickEditIntegrationTest {
       'node/1/field_tags/en/full' => 'inactive',
     ]);
   }
+
   /**
-   * Tests an article with QuickEdit.
+   * @param $original_field_id
    *
-   * @param \Drupal\node\NodeInterface $node
-   *   The node.
+   * @return string|null
    */
-  protected function doTestArticle(NodeInterface $node) {
-    $this->drupalGet('node/' . $node->id());
-
-    // Initial state.
-    $this->awaitQuickEditForEntity('node', 1);
-    $this->assertEntityInstanceStates([
-      'node/1[0]' => 'closed',
-    ]);
-    $this->assertEntityInstanceFieldStates('node', 1, 0, [
-      'node/1/title/en/full'      => 'inactive',
-      'node/1/uid/en/full'        => 'inactive',
-      'node/1/created/en/full'    => 'inactive',
-      'node/1/body/en/full'       => 'inactive',
-      'node/1/field_tags/en/full' => 'inactive',
-    ]);
-
-    // Start in-place editing of the article node.
-    $this->startQuickEditViaToolbar('node', 1, 0);
-    $this->assertEntityInstanceStates([
-      'node/1[0]' => 'opened',
-    ]);
-    $this->assertQuickEditEntityToolbar((string) $node->label(), NULL);
-    $this->assertEntityInstanceFieldStates('node', 1, 0, [
-      'node/1/title/en/full'      => 'candidate',
-      'node/1/uid/en/full'        => 'candidate',
-      'node/1/created/en/full'    => 'candidate',
-      'node/1/body/en/full'       => 'candidate',
-      'node/1/field_tags/en/full' => 'candidate',
-    ]);
-
-    $assert_session = $this->assertSession();
-
-    // Click the title field.
-    $this->click('[data-quickedit-field-id="'
-      . $this->getQuickEditFieldId('node', 1, 'title', 'full')
-      . '"].quickedit-candidate');
-    $assert_session->waitForElement('css', '.quickedit-toolbar-field div[id*="title"]');
-    $this->assertQuickEditEntityToolbar((string) $node->label(), 'Title');
-    $this->assertEntityInstanceFieldStates('node', 1, 0, [
-      'node/1/title/en/full'      => 'active',
-      'node/1/uid/en/full'        => 'candidate',
-      'node/1/created/en/full'    => 'candidate',
-      'node/1/body/en/full'       => 'candidate',
-      'node/1/field_tags/en/full' => 'candidate',
-    ]);
-    $this->assertEntityInstanceFieldMarkup('node', 1, 0, [
-      'node/1/title/en/full' => '[contenteditable="true"]',
-    ]);
-
-    // Append something to the title.
-    $this->typeInPlainTextEditor('[data-quickedit-field-id="'
-      . $this->getQuickEditFieldId('node', 1, 'title', 'full')
-      . '"].quickedit-candidate', ' Llamas are awesome!');
-    $this->awaitEntityInstanceFieldState('node', 1, 0, 'title', 'en', 'changed');
-    $this->assertEntityInstanceFieldStates('node', 1, 0, [
-      'node/1/title/en/full'      => 'changed',
-      'node/1/uid/en/full'        => 'candidate',
-      'node/1/created/en/full'    => 'candidate',
-      'node/1/body/en/full'       => 'candidate',
-      'node/1/field_tags/en/full' => 'candidate',
-    ]);
-
-    // Click the body field.
-    hold_test_response(TRUE);
-    $this->click('[data-quickedit-entity-id="node/1"] .field--name-body');
-    $assert_session->waitForElement('css', '.quickedit-toolbar-field div[id*="body"]');
-    $this->assertQuickEditEntityToolbar((string) $node->label(), 'Body');
-    $this->assertEntityInstanceFieldStates('node', 1, 0, [
-      'node/1/title/en/full'      => 'saving',
-      'node/1/uid/en/full'        => 'candidate',
-      'node/1/created/en/full'    => 'candidate',
-      'node/1/body/en/full'       => 'active',
-      'node/1/field_tags/en/full' => 'candidate',
-    ]);
-    hold_test_response(FALSE);
-
-    // Wait for CKEditor to load, then verify it has.
-    $this->assertJsCondition('CKEDITOR.status === "loaded"');
-    $this->assertEntityInstanceFieldMarkup('node', 1, 0, [
-      'node/1/body/en/full'       => '.cke_editable_inline',
-      'node/1/field_tags/en/full' => ':not(.quickedit-editor-is-popup)',
-    ]);
-    $this->assertSession()->elementExists('css', '#quickedit-entity-toolbar .quickedit-toolgroup.wysiwyg-main > .cke_chrome .cke_top[role="presentation"] .cke_toolbar[role="toolbar"] .cke_toolgroup[role="presentation"] > .cke_button[title~="Bold"][role="button"]');
-
-    // Wait for the validating & saving of the title to complete.
-    $this->awaitEntityInstanceFieldState('node', 1, 0, 'title', 'en', 'candidate');
-
-    // Click the tags field.
-    hold_test_response(TRUE);
-    $this->click('[data-quickedit-field-id="'
-      . $this->getQuickEditFieldId('node', 1, 'field_tags', 'full')
-      . '"]');
-    $assert_session->waitForElement('css', '.quickedit-toolbar-field div[id*="tags"]');
-    $this->assertQuickEditEntityToolbar((string) $node->label(), 'Tags');
-    $this->assertEntityInstanceFieldStates('node', 1, 0, [
-      'node/1/uid/en/full'        => 'candidate',
-      'node/1/created/en/full'    => 'candidate',
-      'node/1/body/en/full'       => 'candidate',
-      'node/1/field_tags/en/full' => 'activating',
-      'node/1/title/en/full'      => 'candidate',
-    ]);
-    $this->assertEntityInstanceFieldMarkup('node', 1, 0, [
-      'node/1/title/en/full'      => '.quickedit-changed',
-      'node/1/field_tags/en/full' => '.quickedit-editor-is-popup',
-    ]);
-    // Assert the "Loading…" popup appears.
-    $this->assertSession()->elementExists('css', '.quickedit-form-container > .quickedit-form[role="dialog"] > .placeholder');
-    hold_test_response(FALSE);
-    // Wait for the form to load.
-    $this->assertJsCondition('document.querySelector(\'.quickedit-form-container > .quickedit-form[role="dialog"] > .placeholder\') === null');
-    $this->assertEntityInstanceFieldStates('node', 1, 0, [
-      'node/1/uid/en/full'        => 'candidate',
-      'node/1/created/en/full'    => 'candidate',
-      'node/1/body/en/full'       => 'candidate',
-      'node/1/field_tags/en/full' => 'active',
-      'node/1/title/en/full'      => 'candidate',
-    ]);
-
-    // Enter an additional tag.
-    $this->typeInFormEditorTextInputField('field_tags[target_id]', 'foo, bar');
-    $this->awaitEntityInstanceFieldState('node', 1, 0, 'field_tags', 'en', 'changed');
-    $this->assertEntityInstanceFieldStates('node', 1, 0, [
-      'node/1/uid/en/full'        => 'candidate',
-      'node/1/created/en/full'    => 'candidate',
-      'node/1/body/en/full'       => 'candidate',
-      'node/1/field_tags/en/full' => 'changed',
-      'node/1/title/en/full'      => 'candidate',
-    ]);
-
-    // Click 'Save'.
-    hold_test_response(TRUE);
-    $this->saveQuickEdit();
-    $this->assertEntityInstanceStates([
-      'node/1[0]' => 'committing',
-    ]);
-    $this->assertEntityInstanceFieldStates('node', 1, 0, [
-      'node/1/uid/en/full'        => 'candidate',
-      'node/1/created/en/full'    => 'candidate',
-      'node/1/body/en/full'       => 'candidate',
-      'node/1/field_tags/en/full' => 'saving',
-      'node/1/title/en/full'      => 'candidate',
-    ]);
-    hold_test_response(FALSE);
-    $this->assertEntityInstanceFieldMarkup('node', 1, 0, [
-      'node/1/title/en/full'      => '.quickedit-changed',
-      'node/1/field_tags/en/full' => '.quickedit-changed',
-    ]);
-
-    // Wait for the saving of the tags field to complete.
-    $this->assertJsCondition("Drupal.quickedit.collections.entities.get('node/1[0]').get('state') === 'closed'");
-    $this->assertEntityInstanceStates([
-      'node/1[0]' => 'closed',
-    ]);
+  protected function getQuickEditFieldId($original_field_id) {
+    $page = $this->getSession()->getPage();
+    $parts = explode('/', $original_field_id);
+    array_pop($parts);
+    $field_key_without_view_mode = implode('/', $parts);
+    $element = $page->find('css', "[data-quickedit-field-id^=\"$field_key_without_view_mode\"]");
+    $this->assertNotEmpty($element);
+    $new_field_key = $element->getAttribute('data-quickedit-field-id');
+    return $new_field_key;
   }
-
 
 }
