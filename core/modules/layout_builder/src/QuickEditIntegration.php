@@ -83,6 +83,7 @@ class QuickEditIntegration {
     if (!$entity instanceof FieldableEntityInterface || !isset($build['_layout_builder']) || !$this->currentUser->hasPermission('access in-place editing')) {
       return;
     }
+    // should I be altering all fields here? because it will not get new field unless all are invalide?
     $non_empty_sections = [];
     foreach (Element::children($build['_layout_builder']) as $delta) {
       $section = &$build['_layout_builder'][$delta];
@@ -90,43 +91,48 @@ class QuickEditIntegration {
       if (empty($section)) {
         continue;
       }
-      $non_empty_sections[] = $section;
+      $non_empty_sections[$delta] = &$section;
+    }
+    if ($non_empty_sections) {
+      $sections_hash = hash('sha256', serialize($non_empty_sections));
 
-      /** @var \Drupal\Core\Layout\LayoutDefinition $layout */
-      $layout = $section['#layout'];
-      $regions = $layout->getRegionNames();
+      foreach ($non_empty_sections as $delta => &$section) {
+        /** @var \Drupal\Core\Layout\LayoutDefinition $layout */
+        $layout = $section['#layout'];
+        $regions = $layout->getRegionNames();
 
-      foreach ($regions as $region) {
-        if (isset($section[$region])) {
-          foreach ($section[$region] as $component_uuid => &$component) {
-            if ($this->supportQuickEditOnComponent($component, $entity)) {
-              $component['content']['#view_mode'] = implode('-', [
-                'layout_builder',
-                $delta,
-                // Replace the dashes in the component uuid so because we need
-                // use dashes to join the parts.
-                str_replace('-', '_', $component_uuid),
-                $entity->id(),
-              ]);
+        foreach ($regions as $region) {
+          if (isset($section[$region])) {
+            foreach ($section[$region] as $component_uuid => &$component) {
+              if ($this->supportQuickEditOnComponent($component, $entity)) {
+                $component['content']['#view_mode'] = implode('-', [
+                  'layout_builder',
+                  $delta,
+                  // Replace the dashes in the component uuid so because we need
+                  // use dashes to join the parts.
+                  str_replace('-', '_', $component_uuid),
+                  $entity->id(),
+                  $sections_hash,
+                ]);
+              }
             }
           }
         }
       }
+      // Alter the view_mode of all fields outside of the Layout Builder
+      // sections to force QuickEdit to request to field metadata.
+      // @todo IN THIS ISSUE determine if this a bug in QuickEdit or just how
+      //   client metadata needs to be cleared.
+      //   @see https://www.drupal.org/project/drupal/issues/2966136
+      foreach (Element::children($build) as $field_name) {
+        if ($field_name !== '_layout_builder') {
+          $field_build = &$build[$field_name];
+          if (isset($field_build['#view_mode'])) {
+            $field_build['#view_mode'] .= "-$sections_hash";
+          }
+        }
+      }
     }
-    if ($non_empty_sections) {
-      $sections_hash = hash('sha256', serialize($non_empty_sections));
-    }
-    else {
-      // Set the section hash to indicate we are not using the Layout Builder.
-      // If the Layout Builder was previously enabled for this entity the
-      // QuickEdit metadata will need to be cleared on the client.
-      $sections_hash = 'no_sections';
-    }
-    $build['#attached']['drupalSettings']['layout_builder']['section_hashes'][$entity->getEntityTypeId() . ':' . $entity->id() . ':' . $display->getMode()] = [
-      'hash' => $sections_hash,
-      'quickedit_storage_prefix' => $entity->getEntityTypeId() . '/' . $entity->id(),
-    ];
-    $build['#attached']['library'][] = 'layout_builder/drupal.layout_builder_quickedit';
   }
 
   /**
@@ -148,7 +154,7 @@ class QuickEditIntegration {
    */
   public function quickEditRenderField(EntityInterface $entity, $field_name, $view_mode_id, $langcode) {
     $build = [];
-    list(, $delta, $component_uuid, $entity_id) = explode('-', $view_mode_id);
+    list(, $delta, $component_uuid, $entity_id,) = explode('-', $view_mode_id);
     // Replace the underscores with dash to get back the component UUID.
     // @see \Drupal\layout_builder\QuickEditIntegration::entityViewAlter
     $component_uuid = str_replace('_', '-', $component_uuid);

@@ -516,7 +516,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
         // by concatenating together the information we need to retrieve the
         // Layout Builder component. The created view_mode starts
         // 'layout_builder' to distinguish if from other view_modes.
-        list($mode, $delta, $component_uuid, $entity_id) = $parts;
+        list($mode, $delta, $component_uuid, $entity_id,) = $parts;
         $component_uuid = str_replace('_', '-', $component_uuid);
         if ($mode === 'layout_builder') {
           $entity = $this->entityTypeManager()->getStorage($this->targetEntityType)->load($entity_id);

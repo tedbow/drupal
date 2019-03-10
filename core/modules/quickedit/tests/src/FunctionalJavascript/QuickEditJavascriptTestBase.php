@@ -231,11 +231,17 @@ function () {
   }, {});
 }()
 JS;
-    $this->assertEquals($expected_field_states, $this->getSession()->evaluateScript($js_get_all_field_states_for_entity));
+    $actual_field_states = $this->getSession()->evaluateScript($js_get_all_field_states_for_entity);
+    $actual_field_ids = array_keys($$actual_field_states);
 
     // Assert that those fields also have the appropriate DOM decorations.
     $expected_field_attributes = [];
     foreach ($expected_field_states as $quickedit_field_id => $expected_field_state) {
+      $actual_field_state = array_shift($actual_field_states);
+      $actual_field_id = array_shift($actual_field_ids);
+      if (strstr($quickedit_field_id, '-*')) {
+
+      }
       $expected_field_attributes[$quickedit_field_id] = static::$expectedFieldStateAttributes[$expected_field_state];
     }
     $this->assertEntityInstanceFieldMarkup($entity_type_id, $entity_id, $entity_instance_id, $expected_field_attributes);
