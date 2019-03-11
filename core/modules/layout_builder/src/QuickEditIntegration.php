@@ -106,7 +106,9 @@ class QuickEditIntegration {
             foreach ($section[$region] as $component_uuid => &$component) {
               if ($this->supportQuickEditOnComponent($component, $entity)) {
                 $component['content']['#view_mode'] = implode('-', [
-                  'layout_builder-component',
+                  'layout_builder',
+                  $display->getMode(),
+                  'component',
                   $delta,
                   // Replace the dashes in the component uuid so because we need
                   // use dashes to join the parts.
@@ -128,7 +130,7 @@ class QuickEditIntegration {
         if ($field_name !== '_layout_builder') {
           $field_build = &$build[$field_name];
           if (isset($field_build['#view_mode'])) {
-            $field_build['#view_mode'] = "layout_builder-non_component-{$field_build['#view_mode']}-$sections_hash";
+            $field_build['#view_mode'] = "layout_builder-{$display->getMode()}-non_component-$sections_hash";
           }
         }
       }
@@ -156,18 +158,19 @@ class QuickEditIntegration {
     $build = [];
 
     if ($entity instanceof FieldableEntityInterface) {
-      $view_display = EntityViewDisplay::collectRenderDisplay($entity, $view_mode_id);
+      list(, $entity_view_mode, $field_type, $info) = explode('-', $view_mode_id, 4);
+      $view_display = EntityViewDisplay::collectRenderDisplay($entity, $entity_view_mode);
       $entity_build = $view_display->build($entity);
-      list(, $field_type, $info) = explode('-', $view_mode_id, 3);
+
       // Replace the underscores with dash to get back the component UUID.
       // @see \Drupal\layout_builder\QuickEditIntegration::entityViewAlter
       if ($field_type === 'component') {
         list($delta, $component_uuid) = explode('-', $info);
         $component_uuid = str_replace('_', '-', $component_uuid);
         if (isset($entity_build['_layout_builder'][$delta])) {
-          foreach ($entity_build['_layout_builder'][$delta] as $region => $components) {
-            if (isset($components[$component_uuid])) {
-              return $components[$component_uuid];
+          foreach (Element::children($entity_build['_layout_builder'][$delta]) as $region) {
+            if (isset($entity_build['_layout_builder'][$delta][$region][$component_uuid])) {
+              return $entity_build['_layout_builder'][$delta][$region][$component_uuid];
             }
           }
         }
