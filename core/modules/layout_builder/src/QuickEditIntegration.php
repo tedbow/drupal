@@ -158,30 +158,22 @@ class QuickEditIntegration {
     if ($entity instanceof FieldableEntityInterface) {
       $view_display = EntityViewDisplay::collectRenderDisplay($entity, $view_mode_id);
       $entity_build = $view_display->build($entity);
-      list($module, $field_type, $info) = explode('-', $view_mode_id, 3);
+      list(, $field_type, $info) = explode('-', $view_mode_id, 3);
       // Replace the underscores with dash to get back the component UUID.
       // @see \Drupal\layout_builder\QuickEditIntegration::entityViewAlter
       if ($field_type === 'component') {
         list($delta, $component_uuid) = explode('-', $info);
         $component_uuid = str_replace('_', '-', $component_uuid);
-        $cacheable_metadata = new CacheableMetadata();
-        $section_list = $this->sectionStorageManager->findByContext(
-          [
-            'display' => EntityContext::fromEntity($view_display),
-            'entity' => EntityContext::fromEntity($entity),
-            'view_mode' => new Context(new ContextDefinition('string'), $view_mode_id),
-          ],
-          $cacheable_metadata
-        );
-
-        $component = $section_list->getSection($delta)
-          ->getComponent($component_uuid);
-        $contexts = $this->contextRepository->getAvailableContexts();
-        $contexts['layout_builder.entity'] = EntityContext::fromEntity($entity);
-        $block = $component->toRenderArray($contexts);
-        $build = $block['content'];
-        $build['#view_mode'] = $view_mode_id;
-        $cacheable_metadata->applyTo($build);
+        if (isset($entity_build['_layout_builder'][$delta])) {
+          foreach ($entity_build['_layout_builder'][$delta] as $region => $components) {
+            if (isset($components[$component_uuid])) {
+              return $components[$component_uuid];
+            }
+          }
+        }
+      }
+      else {
+        return $entity_build[$field_name];
       }
 
     }
