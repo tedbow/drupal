@@ -7,6 +7,7 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
@@ -45,6 +46,11 @@ class QuickEditIntegration {
   protected $currentUser;
 
   /**
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a new QuickEditIntegration object.
    *
    * @param \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface $section_storage_manager
@@ -54,10 +60,11 @@ class QuickEditIntegration {
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
    */
-  public function __construct(SectionStorageManagerInterface $section_storage_manager, ContextRepositoryInterface $context_repository, AccountInterface $current_user) {
+  public function __construct(SectionStorageManagerInterface $section_storage_manager, ContextRepositoryInterface $context_repository, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager) {
     $this->sectionStorageManager = $section_storage_manager;
     $this->contextRepository = $context_repository;
     $this->currentUser = $current_user;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -159,8 +166,13 @@ class QuickEditIntegration {
 
     if ($entity instanceof FieldableEntityInterface) {
       list(, $entity_view_mode, $field_type, $info) = explode('-', $view_mode_id, 4);
-      $view_display = EntityViewDisplay::collectRenderDisplay($entity, $entity_view_mode);
-      $entity_build = $view_display->build($entity);
+      $entity_build = $this->entityTypeManager->getViewBuilder($entity->getEntityTypeId())->view($entity, $entity_view_mode);
+      if (isset($entity_build['#pre_render'])) {
+        foreach ($entity_build['#pre_render'] as $callable) {
+          $entity_build = call_user_func($callable, $entity_build);
+        }
+      }
+
 
       // Replace the underscores with dash to get back the component UUID.
       // @see \Drupal\layout_builder\QuickEditIntegration::entityViewAlter
