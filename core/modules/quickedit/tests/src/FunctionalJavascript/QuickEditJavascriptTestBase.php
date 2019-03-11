@@ -233,7 +233,7 @@ function () {
 }()
 JS;
     //$this->assertEquals($expected_field_states, $this->getSession()->evaluateScript($js_get_all_field_states_for_entity));
-    $this->getSession()->getPage()->waitFor(5, function () use ($expected_field_states, $js_get_all_field_states_for_entity) {
+    $this->getSession()->getPage()->waitFor(10, function () use ($expected_field_states, $js_get_all_field_states_for_entity) {
       return $expected_field_states ==  $this->getSession()->evaluateScript($js_get_all_field_states_for_entity);
     });
     $this->assertEquals($expected_field_states, $this->getSession()->evaluateScript($js_get_all_field_states_for_entity));

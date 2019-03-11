@@ -125,7 +125,7 @@ class QuickEditIntegration {
       //   client metadata needs to be cleared.
       //   @see https://www.drupal.org/project/drupal/issues/2966136
       foreach (Element::children($build) as $field_name) {
-        if ($field_name !== '_layout_builder') {
+        if ($field_name !== '_layout_builder' && $field_name !== 'title') {
           $field_build = &$build[$field_name];
           if (isset($field_build['#view_mode'])) {
             $field_build['#view_mode'] .= "-$sections_hash";
