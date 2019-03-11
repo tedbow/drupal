@@ -509,27 +509,25 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   private function getQuickEditSectionComponent() {
     // To determine the view_mode used by QuickEdit we need an originalMode set.
     if (isset($this->originalMode)) {
-      $parts = explode('-', $this->originalMode);
-      if (count($parts) > 2) {
+      $parts = explode('-', $this->originalMode, 3);
+      if (count($parts) === 3 && $parts[0] === 'layout_builder' && $parts[1] === 'component') {
         // The QuickEdit view_mode is created
         // \Drupal\layout_builder\QuickEditIntegration::entityViewAlter
         // by concatenating together the information we need to retrieve the
         // Layout Builder component. The created view_mode starts
         // 'layout_builder' to distinguish if from other view_modes.
-        list($mode, $delta, $component_uuid, $entity_id,) = $parts;
+        list($delta, $component_uuid, $entity_id,) = explode('-', $parts[2]);
         $component_uuid = str_replace('_', '-', $component_uuid);
-        if ($mode === 'layout_builder') {
-          $entity = $this->entityTypeManager()->getStorage($this->targetEntityType)->load($entity_id);
-          $sections = $this->getEntitySections($entity);
-          if (isset($sections[(int) $delta])) {
-            $section = $sections[(int) $delta];
-            $component = $section->getComponent($component_uuid);
-            $plugin = $component->getPlugin();
-            // We only care about FieldBlock because these are only components
-            // that provide QuickEdit integration.
-            if ($plugin instanceof DerivativeInspectionInterface && $plugin->getBaseId() === 'field_block') {
-              return $component;
-            }
+        $entity = $this->entityTypeManager()->getStorage($this->targetEntityType)->load($entity_id);
+        $sections = $this->getEntitySections($entity);
+        if (isset($sections[(int) $delta])) {
+          $section = $sections[(int) $delta];
+          $component = $section->getComponent($component_uuid);
+          $plugin = $component->getPlugin();
+          // We only care about FieldBlock because these are only components
+          // that provide QuickEdit integration.
+          if ($plugin instanceof DerivativeInspectionInterface && $plugin->getBaseId() === 'field_block') {
+            return $component;
           }
         }
       }
