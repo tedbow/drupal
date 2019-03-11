@@ -91,54 +91,56 @@ class QuickEditIntegration {
       return;
     }
     // should I be altering all fields here? because it will not get new field unless all are invalide?
-    $non_empty_sections = [];
+    $cacheable_metadata = new CacheableMetadata();
+    $section_list = $this->sectionStorageManager->findByContext(
+      [
+        'display' => EntityContext::fromEntity($display),
+        'entity' => EntityContext::fromEntity($entity),
+        'view_mode' => new Context(new ContextDefinition('string'), $display->getMode()),
+      ],
+      $cacheable_metadata
+    );
+    if (empty($section_list)) {
+      return;
+    }
+    $sections_hash = hash('sha256', serialize($section_list->getSections()));
+
     foreach (Element::children($build['_layout_builder']) as $delta) {
       $section = &$build['_layout_builder'][$delta];
-      // Skip blank sections.
-      if (empty($section)) {
-        continue;
-      }
-      $non_empty_sections[$delta] = &$section;
-    }
-    if ($non_empty_sections) {
-      $sections_hash = hash('sha256', serialize($non_empty_sections));
+      /** @var \Drupal\Core\Layout\LayoutDefinition $layout */
+      $layout = $section['#layout'];
+      $regions = $layout->getRegionNames();
 
-      foreach ($non_empty_sections as $delta => &$section) {
-        /** @var \Drupal\Core\Layout\LayoutDefinition $layout */
-        $layout = $section['#layout'];
-        $regions = $layout->getRegionNames();
-
-        foreach ($regions as $region) {
-          if (isset($section[$region])) {
-            foreach ($section[$region] as $component_uuid => &$component) {
-              if ($this->supportQuickEditOnComponent($component, $entity)) {
-                $component['content']['#view_mode'] = implode('-', [
-                  'layout_builder',
-                  $display->getMode(),
-                  'component',
-                  $delta,
-                  // Replace the dashes in the component uuid so because we need
-                  // use dashes to join the parts.
-                  str_replace('-', '_', $component_uuid),
-                  $entity->id(),
-                  $sections_hash,
-                ]);
-              }
+      foreach ($regions as $region) {
+        if (isset($section[$region])) {
+          foreach ($section[$region] as $component_uuid => &$component) {
+            if ($this->supportQuickEditOnComponent($component, $entity)) {
+              $component['content']['#view_mode'] = implode('-', [
+                'layout_builder',
+                $display->getMode(),
+                'component',
+                $delta,
+                // Replace the dashes in the component uuid so because we need
+                // use dashes to join the parts.
+                str_replace('-', '_', $component_uuid),
+                $entity->id(),
+                $sections_hash,
+              ]);
             }
           }
         }
       }
-      // Alter the view_mode of all fields outside of the Layout Builder
-      // sections to force QuickEdit to request to field metadata.
-      // @todo IN THIS ISSUE determine if this a bug in QuickEdit or just how
-      //   client metadata needs to be cleared.
-      //   @see https://www.drupal.org/project/drupal/issues/2966136
-      foreach (Element::children($build) as $field_name) {
-        if ($field_name !== '_layout_builder') {
-          $field_build = &$build[$field_name];
-          if (isset($field_build['#view_mode'])) {
-            $field_build['#view_mode'] = "layout_builder-{$display->getMode()}-non_component-$sections_hash";
-          }
+    }
+    // Alter the view_mode of all fields outside of the Layout Builder
+    // sections to force QuickEdit to request to field metadata.
+    // @todo IN THIS ISSUE determine if this a bug in QuickEdit or just how
+    //   client metadata needs to be cleared.
+    //   @see https://www.drupal.org/project/drupal/issues/2966136
+    foreach (Element::children($build) as $field_name) {
+      if ($field_name !== '_layout_builder') {
+        $field_build = &$build[$field_name];
+        if (isset($field_build['#view_mode'])) {
+          $field_build['#view_mode'] = "layout_builder-{$display->getMode()}-non_component-$sections_hash";
         }
       }
     }
@@ -172,7 +174,6 @@ class QuickEditIntegration {
           $entity_build = call_user_func($callable, $entity_build);
         }
       }
-
 
       // Replace the underscores with dash to get back the component UUID.
       // @see \Drupal\layout_builder\QuickEditIntegration::entityViewAlter
