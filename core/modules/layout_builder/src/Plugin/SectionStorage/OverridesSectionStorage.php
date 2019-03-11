@@ -3,7 +3,9 @@
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -15,10 +17,12 @@ use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface;
+use Drupal\layout_builder\TranslatableOverridesSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -47,7 +51,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   experimental modules and development releases of contributed modules.
  *   See https://www.drupal.org/core/experimental for more information.
  */
-class OverridesSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, OverridesSectionStorageInterface, SectionStorageLocalTaskProviderInterface {
+class OverridesSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, TranslatableOverridesSectionStorageInterface, SectionStorageLocalTaskProviderInterface {
 
   /**
    * The field name used by this storage.
@@ -174,7 +178,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   public function getSectionListFromId($id) {
     @trigger_error('\Drupal\layout_builder\SectionStorageInterface::getSectionListFromId() is deprecated in Drupal 8.7.0 and will be removed before Drupal 9.0.0. The section list should be derived from context. See https://www.drupal.org/node/3016262.', E_USER_DEPRECATED);
     if (strpos($id, '.') !== FALSE) {
-      list($entity_type_id, $entity_id) = explode('.', $id, 2);
+      list($entity_type_id, $entity_id) = explode('.', $id);
       $entity = $this->entityRepository->getActive($entity_type_id, $entity_id);
       if ($entity instanceof FieldableEntityInterface && $entity->hasField(static::FIELD_NAME)) {
         return $entity->get(static::FIELD_NAME);
@@ -218,7 +222,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    */
   private function extractEntityFromRoute($value, array $defaults) {
     if (strpos($value, '.') !== FALSE) {
-      list($entity_type_id, $entity_id) = explode('.', $value, 2);
+      list($entity_type_id, $entity_id) = explode('.', $value);
     }
     elseif (isset($defaults['entity_type_id']) && !empty($defaults[$defaults['entity_type_id']])) {
       $entity_type_id = $defaults['entity_type_id'];
@@ -362,6 +366,11 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
     $default_section_storage = $this->getDefaultSectionStorage();
     $result = AccessResult::allowedIf($default_section_storage->isLayoutBuilderEnabled())->addCacheableDependency($default_section_storage);
+    $entity = $this->getEntity();
+    $result->addCacheableDependency($entity);
+    if ($entity instanceof TranslatableInterface && !$entity->isDefaultTranslation()) {
+      $result = $result->andIf(AccessResult::allowedIf($this->isTranslatable()));
+    }
     return $return_as_object ? $result : $result->isAllowed();
   }
 
@@ -372,7 +381,18 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     $default_section_storage = $this->getDefaultSectionStorage();
     $cacheability->addCacheableDependency($default_section_storage)->addCacheableDependency($this);
     // Check that overrides are enabled and have at least one section.
-    return $default_section_storage->isOverridable() && $this->isOverridden();
+    if ($default_section_storage->isOverridable()) {
+      if ($this->isOverridden()) {
+        return TRUE;
+      }
+      if ($this->isTranslatable() && !$this->isDefaultTranslation()) {
+        $default_translation_section_storage = $this->getDefaultTranslationSectionStorage();
+        if ($default_translation_section_storage instanceof OverridesSectionStorageInterface) {
+          return $default_translation_section_storage->isOverridden();
+        }
+      }
+    }
+    return FALSE;
   }
 
   /**
@@ -383,6 +403,66 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     // storage has been overridden. Do not use count() as it does not include
     // blank sections.
     return !empty($this->getSections());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isTranslatable() {
+    $entity = $this->getEntity();
+    if ($entity instanceof TranslatableInterface) {
+      $translatable_fields = $entity->getTranslatableFields(FALSE);
+      return array_key_exists(static::FIELD_NAME, $translatable_fields) && $entity->isTranslatable();
+    }
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isDefaultTranslation() {
+    if ($this->isTranslatable()) {
+      /** @var \Drupal\Core\Entity\TranslatableInterface $entity */
+      $entity = $this->getEntity();
+      return $entity->isDefaultTranslation();
+    }
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDefaultTranslationSectionStorage() {
+    if ($this->isTranslatable()) {
+      if ($this->isDefaultTranslation()) {
+        return $this;
+      }
+      else {
+        /** @var \Drupal\Core\Entity\TranslatableInterface $entity */
+        $entity = $this->getEntity();
+        $untranslated_entity = $entity->getUntranslated();
+        // @todo Expand to work for all view modes in
+        //   https://www.drupal.org/node/2907413.
+        $view_mode = 'full';
+        // Retrieve the actual view mode from the returned view display as the
+        // requested view mode may not exist and a fallback will be used.
+        $view_mode = LayoutBuilderEntityViewDisplay::collectRenderDisplay($entity, $view_mode)->getMode();
+        $contexts = [
+          'view_mode' => new Context(ContextDefinition::create('string'), $view_mode),
+          'entity' => EntityContext::fromEntity($untranslated_entity),
+          'display' => EntityContext::fromEntity(EntityViewDisplay::collectRenderDisplay($untranslated_entity, 'full')),
+        ];
+        $label = new TranslatableMarkup('@entity being viewed', [
+          '@entity' => $untranslated_entity->getEntityType()->getSingularLabel(),
+        ]);
+        $contexts['layout_builder.entity'] = EntityContext::fromEntity($untranslated_entity, $label);
+
+
+        $cacheability = new CacheableMetadata();
+        return $this->sectionStorageManager->findByContext($contexts, $cacheability);
+      }
+    }
+    return NULL;
   }
 
 }

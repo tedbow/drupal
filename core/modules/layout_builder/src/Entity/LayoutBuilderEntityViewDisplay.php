@@ -13,6 +13,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
@@ -288,6 +289,11 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
 
     $cacheability = new CacheableMetadata();
     $storage = $this->sectionStorageManager()->findByContext($contexts, $cacheability);
+    if ($storage instanceof OverridesSectionStorageInterface) {
+      if ($storage->isTranslatable() && !$storage->isDefaultTranslation() && !$storage->isOverridden()) {
+        $storage = $storage->getDefaultTranslationSectionStorage();
+      }
+    }
 
     $build = [];
     if ($storage) {

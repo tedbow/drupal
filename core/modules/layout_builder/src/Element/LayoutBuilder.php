@@ -12,6 +12,7 @@ use Drupal\Core\Url;
 use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
+use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\SectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -142,8 +143,13 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     // If the layout is an override that has not yet been overridden, copy the
     // sections from the corresponding default.
     elseif ($section_storage instanceof OverridesSectionStorageInterface && !$section_storage->isOverridden()) {
-      $sections = $section_storage->getDefaultSectionStorage()->getSections();
-      foreach ($sections as $section) {
+      if ($section_storage->isTranslatable() && !$section_storage->isDefaultTranslation()) {
+        $source_storage = $section_storage->getDefaultTranslationSectionStorage();
+      }
+      else {
+        $source_storage = $section_storage->getDefaultSectionStorage();
+      }
+      foreach ($source_storage->getSections() as $section) {
         $section_storage->appendSection($section);
       }
       $this->layoutTempstoreRepository->set($section_storage);

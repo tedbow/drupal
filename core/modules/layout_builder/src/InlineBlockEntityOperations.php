@@ -7,6 +7,7 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\RevisionableInterface;
+use Drupal\Core\Entity\TranslatableInterface;
 use Drupal\layout_builder\Plugin\Block\InlineBlock;
 use Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -176,6 +177,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
         // duplicated.
         $duplicate_blocks = TRUE;
       }
+
       $new_revision = FALSE;
       if ($entity instanceof RevisionableInterface) {
         // If the parent entity will have a new revision create a new revision
@@ -279,6 +281,30 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
       $this->usage->addUsage($this->getPluginBlockId($plugin), $entity);
     }
     $component->setConfiguration($post_save_configuration);
+  }
+
+  /**
+   * Determines if an entity is a new translation.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to check.
+   *
+   * @return bool
+   *   TRUE if the entity has a new layout translation, otherwise FALSE.
+   */
+  private function hasNewLayoutTranslation(EntityInterface $entity) {
+
+    if (isset($entity->original) && $entity instanceof TranslatableInterface && $entity->isTranslatable() && !$entity->isDefaultTranslation()) {
+      // Get the unchanged translation. $entity->original will not work here.
+      // @todo Confirm ^
+      $unchanged_translation = $this->entityTypeManager->getStorage($entity->getEntityTypeId())->loadUnchanged($entity->id())->getTranslation($entity->language()->getId());
+      assert($entity->language()->getId() == $unchanged_translation->language()->getId());
+      $sections = $this->getEntitySections($unchanged_translation);
+      if (empty($sections)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
   }
 
 }
