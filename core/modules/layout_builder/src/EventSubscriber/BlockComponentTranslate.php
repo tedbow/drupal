@@ -2,52 +2,19 @@
 
 namespace Drupal\layout_builder\EventSubscriber;
 
-use Drupal\block_content\Access\RefinableDependentAccessInterface;
-use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Block\BlockPluginInterface;
-use Drupal\Core\Render\Element;
-use Drupal\Core\Render\PreviewFallbackInterface;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\layout_builder\Access\LayoutPreviewAccessAllowed;
 use Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent;
 use Drupal\layout_builder\LayoutBuilderEvents;
 use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-/**
- * Builds render arrays and handles access for all block components.
- *
- * @internal
- *   Layout Builder is currently experimental and should only be leveraged by
- *   experimental modules and development releases of contributed modules.
- *   See https://www.drupal.org/core/experimental for more information.
- */
-class BlockComponentRenderArray implements EventSubscriberInterface {
+class BlockComponentTranslate implements EventSubscriberInterface {
 
   use LayoutEntityHelperTrait;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * Creates a BlockComponentRenderArray object.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
-   */
-  public function __construct(AccountInterface $current_user) {
-    $this->currentUser = $current_user;
-  }
-
   /**
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
-    $events[LayoutBuilderEvents::SECTION_COMPONENT_BUILD_RENDER_ARRAY] = ['onBuildRender', 100];
+    $events[LayoutBuilderEvents::SECTION_COMPONENT_BUILD_RENDER_ARRAY] = ['onBuildRender', -100];
     return $events;
   }
 
@@ -61,7 +28,14 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
     $block = $event->getPlugin();
     if (!$block instanceof BlockPluginInterface) {
       return;
+
     }
+    $contexts = $event->getContexts();
+    $entity = $contexts['layout_builder.entity'];
+
+    $section_storage = $this->()
+
+
 
     // Set block access dependency even if we are not checking access on
     // this level. The block itself may render another
@@ -117,6 +91,5 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
       }
       $event->setBuild($build);
     }
-  }
 
 }

@@ -379,16 +379,19 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
   }
 
   /**
+   * Determines if the component in the default translation is translatable.
+   *
    * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   *   The section storage.
    * @param \Drupal\layout_builder\SectionComponent $component
+   *   The component to check.
    *
    * @return bool
+   *   TRUE if the default component has translatable settings, otherwise FALSE.
    */
   protected function defaultComponentHasTranslatableSettings(SectionStorageInterface $section_storage, SectionComponent $component) {
     if ($section_storage instanceof TranslatableOverridesSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
-      $default_translation_section_storage = $section_storage->getDefaultTranslationSectionStorage();
-      $default_translation_sections = $default_translation_section_storage->getSections();
-      foreach ($default_translation_sections as $default_translation_section) {
+      foreach ($section_storage->getDefaultTranslationSections() as $default_translation_section) {
         if ($default_component = $default_translation_section->getComponent($component->getUuid())) {
           $plugin = $default_component->getPlugin();
           if ($plugin instanceof BlockBase) {
@@ -398,7 +401,6 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
         }
       }
     }
-
     return FALSE;
   }
 

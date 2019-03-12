@@ -475,9 +475,8 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
       /** @var TranslatableInterface $entity */
       $entity = $this->getEntity();
       $untranslated_entity = $entity->getUntranslated();
-      $untranslated_entity->get(static::FIELD_NAME);
+      return $untranslated_entity->get(static::FIELD_NAME)->getSections();
     }
-
-
+    return [];
   }
 }

@@ -341,8 +341,8 @@ function layout_builder_entity_translation_create(EntityInterface $translation) 
  */
 function layout_builder_block_alter(&$definitions) {
   foreach ($definitions as &$definition) {
-    // If a block plugin does not define its own 'settings_tray' form, use the
-    // plugin class itself.
+    // If a block plugin does not define its own 'layout_builder_translation'
+    // form use the one provided by this module.
     if (!isset($definition['forms']['layout_builder_translation'])) {
       $definition['forms']['layout_builder_translation'] = BlockPluginTranslationForm::class;
     }

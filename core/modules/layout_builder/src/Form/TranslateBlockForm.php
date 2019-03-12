@@ -7,27 +7,20 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\PluginWithFormsInterface;
 use Drupal\layout_builder\SectionStorageInterface;
 
+/**
+ * Provides a form to translate a block in the Layout Builder.
+ */
 class TranslateBlockForm extends ConfigureBlockFormBase {
 
   /**
-   * Returns the label for the submit button.
-   *
-   * @return string
-   *   Submit label.
+   * {@inheritdoc}
    */
   protected function submitLabel() {
     $this->t('Save');
   }
 
   /**
-   * Returns a unique string identifying the form.
-   *
-   * The returned ID should be a unique string that can be a valid PHP function
-   * name, since it's used in hook implementation names such as
-   * hook_form_FORM_ID_alter().
-   *
-   * @return string
-   *   The unique string identifying the form.
+   * {@inheritdoc}
    */
   public function getFormId() {
     return 'layout_builder_block_translation';
@@ -58,13 +51,7 @@ class TranslateBlockForm extends ConfigureBlockFormBase {
   }
 
   /**
-   * Retrieves the plugin form for a given block.
-   *
-   * @param \Drupal\Core\Block\BlockPluginInterface $block
-   *   The block plugin.
-   *
-   * @return \Drupal\Core\Plugin\PluginFormInterface
-   *   The plugin form for the block.
+   * {@inheritdoc}
    */
   protected function getPluginForm(BlockPluginInterface $block) {
     if ($block instanceof PluginWithFormsInterface) {
@@ -72,4 +59,5 @@ class TranslateBlockForm extends ConfigureBlockFormBase {
     }
     return $block;
   }
+
 }
