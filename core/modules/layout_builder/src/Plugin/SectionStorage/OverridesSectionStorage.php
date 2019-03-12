@@ -426,7 +426,9 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
       $entity = $this->getEntity();
       return $entity->isDefaultTranslation();
     }
-    return FALSE;
+    // @todo If not translatable should we always consider this the default
+    //   translation?
+    return TRUE;
   }
 
   /**
@@ -465,4 +467,17 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     return NULL;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getDefaultTranslationSections() {
+    if ($this->isTranslatable()) {
+      /** @var TranslatableInterface $entity */
+      $entity = $this->getEntity();
+      $untranslated_entity = $entity->getUntranslated();
+      $untranslated_entity->get(static::FIELD_NAME);
+    }
+
+
+  }
 }

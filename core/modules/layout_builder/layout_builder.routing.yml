@@ -6,6 +6,7 @@ layout_builder.choose_section:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
+    _layout_builder_translation_access: 'view'
   options:
     _admin_route: TRUE
     parameters:
@@ -19,6 +20,7 @@ layout_builder.add_section:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
+    _layout_builder_translation_access: 'view'
   options:
     _admin_route: TRUE
     parameters:
@@ -36,6 +38,7 @@ layout_builder.configure_section:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
+    _layout_builder_translation_access: 'view'
   options:
     _admin_route: TRUE
     parameters:
@@ -49,6 +52,7 @@ layout_builder.remove_section:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
+    _layout_builder_translation_access: 'view'
   options:
     _admin_route: TRUE
     parameters:
@@ -63,6 +67,7 @@ layout_builder.choose_block:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
+    _layout_builder_translation_access: 'view'
   options:
     _admin_route: TRUE
     parameters:
@@ -77,6 +82,7 @@ layout_builder.add_block:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
+    _layout_builder_translation_access: 'view'
   options:
     _admin_route: TRUE
     parameters:
@@ -90,6 +96,7 @@ layout_builder.choose_inline_block:
     _title: 'Add a new Inline Block'
   requirements:
     _permission: 'configure any layout'
+    _layout_builder_translation_access: 'view'
   options:
     _admin_route: TRUE
     parameters:
@@ -101,6 +108,21 @@ layout_builder.update_block:
   defaults:
     _form: '\Drupal\layout_builder\Form\UpdateBlockForm'
     _title: 'Configure block'
+  requirements:
+    _permission: 'configure any layout'
+    _layout_builder_access: 'view'
+    _layout_builder_translation_access: 'view'
+  options:
+    _admin_route: TRUE
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
+layout_builder.translate_block:
+  path: '/layout_builder/translate/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}'
+  defaults:
+    _form: '\Drupal\layout_builder\Form\TranslateBlockForm'
+    _title: 'Translate block'
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
@@ -117,6 +139,7 @@ layout_builder.remove_block:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
+    _layout_builder_translation_access: 'view'
   options:
     _admin_route: TRUE
     parameters:
@@ -136,6 +159,7 @@ layout_builder.move_block:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
+    _layout_builder_translation_access: 'view'
   options:
     _admin_route: TRUE
     parameters:

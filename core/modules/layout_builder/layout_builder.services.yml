@@ -6,6 +6,10 @@ services:
     class: Drupal\layout_builder\Access\LayoutBuilderAccessCheck
     tags:
       - { name: access_check, applies_to: _layout_builder_access }
+  access_check.entity.layout_builder_translation_access:
+    class: Drupal\layout_builder\Access\LayoutBuilderTranslationAccessCheck
+    tags:
+      - { name: access_check, applies_to: _layout_builder_translation_access }
   access_check.entity.layout:
     class: Drupal\layout_builder\Access\LayoutSectionAccessCheck
     tags:

@@ -99,6 +99,13 @@ abstract class ConfigureBlockFormBase extends FormBase implements BaseFormIdInte
   protected $sectionStorage;
 
   /**
+   * The plugin form mode.
+   *
+   * @var string
+   */
+  protected $pluginFormMode = 'settings';
+
+  /**
    * Constructs a new block form.
    *
    * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layout_tempstore_repository

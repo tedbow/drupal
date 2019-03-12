@@ -3,6 +3,7 @@
 namespace Drupal\layout_builder\Element;
 
 use Drupal\Core\Ajax\AjaxHelperTrait;
+use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
@@ -13,7 +14,9 @@ use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
+use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorageInterface;
+use Drupal\layout_builder\TranslatableOverridesSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -106,6 +109,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    */
   protected function layout(SectionStorageInterface $section_storage) {
     $this->prepareLayout($section_storage);
+    $is_translation = $section_storage instanceof TranslatableOverridesSectionStorageInterface && !$section_storage->isDefaultTranslation();
 
     $output = [];
     if ($this->isAjax()) {
@@ -115,17 +119,27 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     }
     $count = 0;
     for ($i = 0; $i < $section_storage->count(); $i++) {
-      $output[] = $this->buildAddSectionLink($section_storage, $count);
+      if (!$is_translation) {
+        $output[] = $this->buildAddSectionLink($section_storage, $count);
+      }
+
       $output[] = $this->buildAdministrativeSection($section_storage, $count);
       $count++;
     }
-    $output[] = $this->buildAddSectionLink($section_storage, $count);
+    if (!$is_translation) {
+      $output[] = $this->buildAddSectionLink($section_storage, $count);
+    }
+
     $output['#attached']['library'][] = 'layout_builder/drupal.layout_builder';
     $output['#type'] = 'container';
     $output['#attributes']['id'] = 'layout-builder';
     $output['#attributes']['class'][] = 'layout-builder';
     // Mark this UI as uncacheable.
     $output['#cache']['max-age'] = 0;
+
+    // @todo Add message if not components have translate links!
+    //    "There are no settings to translate"
+
     return $output;
   }
 
@@ -143,7 +157,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     // If the layout is an override that has not yet been overridden, copy the
     // sections from the corresponding default.
     elseif ($section_storage instanceof OverridesSectionStorageInterface && !$section_storage->isOverridden()) {
-      if ($section_storage->isTranslatable() && !$section_storage->isDefaultTranslation()) {
+      if ($section_storage instanceof TranslatableOverridesSectionStorageInterface && $section_storage->isTranslatable() && !$section_storage->isDefaultTranslation()) {
         $source_storage = $section_storage->getDefaultTranslationSectionStorage();
       }
       else {
@@ -237,7 +251,8 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     $storage_type = $section_storage->getStorageType();
     $storage_id = $section_storage->getStorageId();
     $section = $section_storage->getSection($delta);
-
+    $is_translation = $section_storage instanceof TranslatableOverridesSectionStorageInterface && !$section_storage->isDefaultTranslation();
+    $contextual_link_group = $is_translation ? 'layout_builder_block_translation' : 'layout_builder_block';
     $layout = $section->getLayout();
     $build = $section->toRenderArray($this->getAvailableContexts($section_storage), TRUE);
     $layout_definition = $layout->getPluginDefinition();
@@ -246,46 +261,58 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     foreach ($layout_definition->getRegions() as $region => $info) {
       if (!empty($build[$region])) {
         foreach (Element::children($build[$region]) as $uuid) {
-          $build[$region][$uuid]['#attributes']['class'][] = 'draggable';
+          if (!$is_translation) {
+            $build[$region][$uuid]['#attributes']['class'][] = 'draggable';
+          }
+          $component = $section->getComponent($uuid);
+
+          $needs_translation_link = $this->defaultComponentHasTranslatableSettings($section_storage, $component);
+
           $build[$region][$uuid]['#attributes']['data-layout-block-uuid'] = $uuid;
-          $build[$region][$uuid]['#contextual_links'] = [
-            'layout_builder_block' => [
-              'route_parameters' => [
-                'section_storage_type' => $storage_type,
-                'section_storage' => $storage_id,
-                'delta' => $delta,
-                'region' => $region,
-                'uuid' => $uuid,
+          if (!$is_translation || $needs_translation_link) {
+            $build[$region][$uuid]['#contextual_links'] = [
+              $contextual_link_group => [
+                'route_parameters' => [
+                  'section_storage_type' => $storage_type,
+                  'section_storage' => $storage_id,
+                  'delta' => $delta,
+                  'region' => $region,
+                  'uuid' => $uuid,
+                ],
               ],
-            ],
-          ];
+            ];
+          }
+
         }
       }
 
-      $build[$region]['layout_builder_add_block']['link'] = [
-        '#type' => 'link',
-        // Add one to the current delta since it is zero-indexed.
-        '#title' => $this->t('Add Block <span class="visually-hidden">in section @section, @region region</span>', ['@section' => $delta + 1, '@region' => $region_labels[$region]]),
-        '#url' => Url::fromRoute('layout_builder.choose_block',
-          [
-            'section_storage_type' => $storage_type,
-            'section_storage' => $storage_id,
-            'delta' => $delta,
-            'region' => $region,
-          ],
-          [
-            'attributes' => [
-              'class' => [
-                'use-ajax',
-                'layout-builder__link',
-                'layout-builder__link--add',
-              ],
-              'data-dialog-type' => 'dialog',
-              'data-dialog-renderer' => 'off_canvas',
+      if (!$is_translation) {
+        $build[$region]['layout_builder_add_block']['link'] = [
+          '#type' => 'link',
+          // Add one to the current delta since it is zero-indexed.
+          '#title' => $this->t('Add Block <span class="visually-hidden">in section @section, @region region</span>', ['@section' => $delta + 1, '@region' => $region_labels[$region]]),
+          '#url' => Url::fromRoute('layout_builder.choose_block',
+            [
+              'section_storage_type' => $storage_type,
+              'section_storage' => $storage_id,
+              'delta' => $delta,
+              'region' => $region,
             ],
-          ]
-        ),
-      ];
+            [
+              'attributes' => [
+                'class' => [
+                  'use-ajax',
+                  'layout-builder__link',
+                  'layout-builder__link--add',
+                ],
+                'data-dialog-type' => 'dialog',
+                'data-dialog-renderer' => 'off_canvas',
+              ],
+            ]
+          ),
+        ];
+      }
+
       $build[$region]['layout_builder_add_block']['#type'] = 'container';
       $build[$region]['layout_builder_add_block']['#attributes'] = ['class' => ['layout-builder__add-block']];
       $build[$region]['layout_builder_add_block']['#weight'] = 1000;
@@ -300,50 +327,79 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     $build['#attributes']['data-layout-delta'] = $delta;
     $build['#attributes']['class'][] = 'layout-builder__layout';
 
-    return [
+    $section_container = [
       '#type' => 'container',
       '#attributes' => [
         'class' => ['layout-builder__section'],
       ],
-      'remove' => [
-        '#type' => 'link',
-        '#title' => $this->t('Remove section <span class="visually-hidden">@section</span>', ['@section' => $delta + 1]),
-        '#url' => Url::fromRoute('layout_builder.remove_section', [
-          'section_storage_type' => $storage_type,
-          'section_storage' => $storage_id,
-          'delta' => $delta,
-        ]),
-        '#attributes' => [
-          'class' => [
-            'use-ajax',
-            'layout-builder__link',
-            'layout-builder__link--remove',
-          ],
-          'data-dialog-type' => 'dialog',
-          'data-dialog-renderer' => 'off_canvas',
-        ],
-      ],
-      'configure' => [
-        '#type' => 'link',
-        '#title' => $this->t('Configure section <span class="visually-hidden">@section</span>', ['@section' => $delta + 1]),
-        '#access' => $layout instanceof PluginFormInterface,
-        '#url' => Url::fromRoute('layout_builder.configure_section', [
-          'section_storage_type' => $storage_type,
-          'section_storage' => $storage_id,
-          'delta' => $delta,
-        ]),
-        '#attributes' => [
-          'class' => [
-            'use-ajax',
-            'layout-builder__link',
-            'layout-builder__link--configure',
-          ],
-          'data-dialog-type' => 'dialog',
-          'data-dialog-renderer' => 'off_canvas',
-        ],
-      ],
       'layout-builder__section' => $build,
     ];
+    if (!$is_translation) {
+      $section_container += [
+        'remove' => [
+          '#type' => 'link',
+          '#title' => $this->t('Remove section <span class="visually-hidden">@section</span>', ['@section' => $delta + 1]),
+          '#url' => Url::fromRoute('layout_builder.remove_section', [
+            'section_storage_type' => $storage_type,
+            'section_storage' => $storage_id,
+            'delta' => $delta,
+          ]),
+          '#attributes' => [
+            'class' => [
+              'use-ajax',
+              'layout-builder__link',
+              'layout-builder__link--remove',
+            ],
+            'data-dialog-type' => 'dialog',
+            'data-dialog-renderer' => 'off_canvas',
+          ],
+        ],
+        'configure' => [
+          '#type' => 'link',
+          '#title' => $this->t('Configure section <span class="visually-hidden">@section</span>', ['@section' => $delta + 1]),
+          '#access' => $layout instanceof PluginFormInterface,
+          '#url' => Url::fromRoute('layout_builder.configure_section', [
+            'section_storage_type' => $storage_type,
+            'section_storage' => $storage_id,
+            'delta' => $delta,
+          ]),
+          '#attributes' => [
+            'class' => [
+              'use-ajax',
+              'layout-builder__link',
+              'layout-builder__link--configure',
+            ],
+            'data-dialog-type' => 'dialog',
+            'data-dialog-renderer' => 'off_canvas',
+          ],
+        ],
+      ];
+    }
+    return $section_container;
+  }
+
+  /**
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   * @param \Drupal\layout_builder\SectionComponent $component
+   *
+   * @return bool
+   */
+  protected function defaultComponentHasTranslatableSettings(SectionStorageInterface $section_storage, SectionComponent $component) {
+    if ($section_storage instanceof TranslatableOverridesSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
+      $default_translation_section_storage = $section_storage->getDefaultTranslationSectionStorage();
+      $default_translation_sections = $default_translation_section_storage->getSections();
+      foreach ($default_translation_sections as $default_translation_section) {
+        if ($default_component = $default_translation_section->getComponent($component->getUuid())) {
+          $plugin = $default_component->getPlugin();
+          if ($plugin instanceof BlockBase) {
+            $configuration = $plugin->getConfiguration();
+            return !empty($configuration['label_display']) && !empty($configuration['label']);
+          }
+        }
+      }
+    }
+
+    return FALSE;
   }
 
 }

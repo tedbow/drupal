@@ -36,4 +36,12 @@ interface TranslatableOverridesSectionStorageInterface extends OverridesSectionS
    */
   public function getDefaultTranslationSectionStorage();
 
+  /**
+   * Gets the layout default translation sections.
+   *
+   * @return \Drupal\layout_builder\Section[]
+   *   A sequentially and numerically keyed array of section objects.
+   */
+  public function getDefaultTranslationSections();
+
 }

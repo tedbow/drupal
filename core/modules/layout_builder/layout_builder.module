@@ -25,7 +25,9 @@ use Drupal\layout_builder\Plugin\Block\ExtraFieldBlock;
 use Drupal\layout_builder\InlineBlockEntityOperations;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Access\AccessResult;
+use Drupal\layout_builder\Form\BlockPluginTranslationForm;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
+
 
 /**
  * Implements hook_help().
@@ -327,6 +329,22 @@ function layout_builder_entity_translation_create(EntityInterface $translation) 
       // layout will use the untranslated layout.
       // @see \Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay::buildSections()
       $translation->set(OverridesSectionStorage::FIELD_NAME, []);
+    }
+  }
+}
+
+/**
+ * Implements hook_block_alter().
+ *
+ * Ensures every block plugin definition has an 'layout_builder_translation'
+ * form specified.
+ */
+function layout_builder_block_alter(&$definitions) {
+  foreach ($definitions as &$definition) {
+    // If a block plugin does not define its own 'settings_tray' form, use the
+    // plugin class itself.
+    if (!isset($definition['forms']['layout_builder_translation'])) {
+      $definition['forms']['layout_builder_translation'] = BlockPluginTranslationForm::class;
     }
   }
 }
