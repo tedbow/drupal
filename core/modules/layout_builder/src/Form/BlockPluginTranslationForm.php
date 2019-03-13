@@ -43,9 +43,11 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     if ($this->plugin instanceof ConfigurableInterface) {
+      $configuration = $this->plugin->getConfiguration();
      $form['translated_label'] = [
        '#title' => $this->t('Translated label'),
        '#type' => 'textfield',
+       '#default_value' => isset($configuration['layout_builder_translations'][$this->current_language]['label']) ? $configuration['layout_builder_translations'][$this->current_language]['label'] : $configuration['label'],
        '#required' => TRUE,
      ];
     }
@@ -56,14 +58,17 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
    * {@inheritdoc}
    */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $this->getConfigureForm()->validateConfigurationForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $this->getConfigureForm()->submitConfigurationForm($form, $form_state);
+    if ($this->plugin instanceof ConfigurableInterface) {
+      $configuration = $this->plugin->getConfiguration();
+      $configuration['layout_builder_translations'][$this->current_language]['label']  = $form_state->getValue('translated_label');
+      $this->plugin->setConfiguration($configuration);
+    }
   }
 
   /**

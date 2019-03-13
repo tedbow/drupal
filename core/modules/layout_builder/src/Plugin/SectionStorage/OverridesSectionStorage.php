@@ -366,11 +366,6 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
     $default_section_storage = $this->getDefaultSectionStorage();
     $result = AccessResult::allowedIf($default_section_storage->isLayoutBuilderEnabled())->addCacheableDependency($default_section_storage);
-    $entity = $this->getEntity();
-    $result->addCacheableDependency($entity);
-    if ($entity instanceof TranslatableInterface && !$entity->isDefaultTranslation()) {
-      $result = $result->andIf(AccessResult::allowedIf($this->isTranslatable()));
-    }
     return $return_as_object ? $result : $result->isAllowed();
   }
 
@@ -411,8 +406,9 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   public function isTranslatable() {
     $entity = $this->getEntity();
     if ($entity instanceof TranslatableInterface) {
-      $translatable_fields = $entity->getTranslatableFields(FALSE);
-      return array_key_exists(static::FIELD_NAME, $translatable_fields) && $entity->isTranslatable();
+      return $entity->isTranslatable();
+      /*$translatable_fields = $entity->getTranslatableFields(FALSE);
+      return array_key_exists(static::FIELD_NAME, $translatable_fields) && $entity->isTranslatable();*/
     }
     return FALSE;
   }
