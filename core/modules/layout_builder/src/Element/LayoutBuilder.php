@@ -153,6 +153,14 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     // If the layout has pending changes, add a warning.
     if ($this->layoutTempstoreRepository->has($section_storage)) {
       $this->messenger->addWarning($this->t('You have unsaved changes.'));
+      if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
+        // @todo Copy in any change from the default translation and then
+        //   reapply any translated labels where the original labels has not
+        //   changed. This should avoid data loss if the layout has been
+        //   updated since this layout override has started. This probably also
+        //   needs to be done on save to avoid overriding the layout if it was
+        //   save since the last time this page was opened.
+      }
     }
     // If the layout is an override that has not yet been overridden, copy the
     // sections from the corresponding default.
