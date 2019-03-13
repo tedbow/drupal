@@ -3,29 +3,52 @@
 namespace Drupal\layout_builder\Form;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\PluginFormBase;
 use Drupal\Core\Render\Element;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a block plugin form for translatable settings in the Layout Builder.
  */
-class BlockPluginTranslationForm extends PluginFormBase {
+class BlockPluginTranslationForm extends PluginFormBase implements ContainerInjectionInterface {
+
+  use StringTranslationTrait;
+
+  protected $current_language;
+
+  /**
+   * BlockPluginTranslationForm constructor.
+   *
+   * @param $current_language
+   */
+  public function __construct($current_language) {
+    $this->current_language = $current_language;
+  }
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('language_manager')->getCurrentLanguage()->getId()
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     if ($this->plugin instanceof ConfigurableInterface) {
-      $configure_form = $this->getConfigureForm()->buildConfigurationForm($form, $form_state);
-      foreach (Element::children($configure_form) as $key) {
-        if ($key !== 'label' && $key !== 'label_display') {
-          $configure_form[$key]['#access'] = FALSE;
-        }
-      }
-      return $configure_form;
+     $form['translated_label'] = [
+       '#title' => $this->t('Translated label'),
+       '#type' => 'textfield',
+     ];
     }
-    return [];
+    return $form;
   }
 
   /**
@@ -51,4 +74,5 @@ class BlockPluginTranslationForm extends PluginFormBase {
     $form_factory = \Drupal::service('plugin_form.factory');
     return $form_factory->createInstance($this->plugin, 'configure');
   }
+
 }

@@ -65,6 +65,8 @@ class SectionComponent {
    */
   protected $additional = [];
 
+  protected $translations = [];
+
   /**
    * Constructs a new SectionComponent.
    *
@@ -77,11 +79,12 @@ class SectionComponent {
    * @param mixed[] $additional
    *   An additional values.
    */
-  public function __construct($uuid, $region, array $configuration = [], array $additional = []) {
+  public function __construct($uuid, $region, array $configuration = [], array $additional = [], array $translations) {
     $this->uuid = $uuid;
     $this->region = $region;
     $this->configuration = $configuration;
     $this->additional = $additional;
+    $this->translations = $translations;
   }
 
   /**
@@ -319,11 +322,15 @@ class SectionComponent {
    *   The section component object.
    */
   public static function fromArray(array $component) {
+    $component += [
+      'translations' => [],
+    ];
     return (new static(
       $component['uuid'],
       $component['region'],
       $component['configuration'],
-      $component['additional']
+      $component['additional'],
+      $component['translations']
     ))->setWeight($component['weight']);
   }
 

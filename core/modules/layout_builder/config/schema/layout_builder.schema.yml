@@ -52,6 +52,9 @@ layout_builder.component:
     additional:
       type: ignore
       label: 'Additional data'
+    translations
+      type: ignore
+
 
 inline_block:
   type: block_settings
