@@ -207,7 +207,6 @@ class LayoutSectionTest extends BrowserTestBase {
     $this->rebuildContainer();
 
     ConfigurableLanguage::createFromLangcode('es')->save();
-    $this->container->get('content_translation.manager')->setEnabled('node', 'bundle_with_section_field', TRUE);
 
     $entity = $this->createSectionNode([
       [

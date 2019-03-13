@@ -21,7 +21,7 @@ class LayoutBuilderMultilingualTest extends BrowserTestBase {
     'layout_builder',
     'node',
     'block_content',
-    'content_translation',
+    'language',
     'locale',
   ];
 
@@ -50,7 +50,8 @@ class LayoutBuilderMultilingualTest extends BrowserTestBase {
     $this->createContentType([
       'type' => 'bundle_with_section_field',
     ]);
-    $this->container->get('content_translation.manager')->setEnabled('node', 'bundle_with_section_field', TRUE);
+
+
     LayoutBuilderEntityViewDisplay::load('node.bundle_with_section_field.default')
       ->enableLayoutBuilder()
       ->setOverridable()
