@@ -46,6 +46,7 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
      $form['translated_label'] = [
        '#title' => $this->t('Translated label'),
        '#type' => 'textfield',
+       '#required' => TRUE,
      ];
     }
     return $form;
