@@ -376,18 +376,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     $default_section_storage = $this->getDefaultSectionStorage();
     $cacheability->addCacheableDependency($default_section_storage)->addCacheableDependency($this);
     // Check that overrides are enabled and have at least one section.
-    if ($default_section_storage->isOverridable()) {
-      if ($this->isOverridden()) {
-        return TRUE;
-      }
-      if ($this->isTranslatable() && !$this->isDefaultTranslation()) {
-        $default_translation_section_storage = $this->getDefaultTranslationSectionStorage();
-        if ($default_translation_section_storage instanceof OverridesSectionStorageInterface) {
-          return $default_translation_section_storage->isOverridden();
-        }
-      }
-    }
-    return FALSE;
+    return $default_section_storage->isOverridable() && $this->isOverridden();
   }
 
   /**
@@ -430,49 +419,14 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function getDefaultTranslationSectionStorage() {
-    if ($this->isTranslatable()) {
-      if ($this->isDefaultTranslation()) {
-        return $this;
-      }
-      else {
-        /** @var \Drupal\Core\Entity\TranslatableInterface $entity */
-        $entity = $this->getEntity();
-        $untranslated_entity = $entity->getUntranslated();
-        // @todo Expand to work for all view modes in
-        //   https://www.drupal.org/node/2907413.
-        $view_mode = 'full';
-        // Retrieve the actual view mode from the returned view display as the
-        // requested view mode may not exist and a fallback will be used.
-        $view_mode = LayoutBuilderEntityViewDisplay::collectRenderDisplay($entity, $view_mode)->getMode();
-        $contexts = [
-          'view_mode' => new Context(ContextDefinition::create('string'), $view_mode),
-          'entity' => EntityContext::fromEntity($untranslated_entity),
-          'display' => EntityContext::fromEntity(EntityViewDisplay::collectRenderDisplay($untranslated_entity, 'full')),
-        ];
-        $label = new TranslatableMarkup('@entity being viewed', [
-          '@entity' => $untranslated_entity->getEntityType()->getSingularLabel(),
-        ]);
-        $contexts['layout_builder.entity'] = EntityContext::fromEntity($untranslated_entity, $label);
-
-
-        $cacheability = new CacheableMetadata();
-        return $this->sectionStorageManager->findByContext($contexts, $cacheability);
-      }
-    }
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getDefaultTranslationSections() {
     if ($this->isTranslatable()) {
-      /** @var TranslatableInterface $entity */
+      /** @var \Drupal\Core\Entity\TranslatableInterface $entity */
       $entity = $this->getEntity();
       $untranslated_entity = $entity->getUntranslated();
       return $untranslated_entity->get(static::FIELD_NAME)->getSections();
     }
     return [];
   }
+
 }

@@ -290,11 +290,6 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
 
     $cacheability = new CacheableMetadata();
     $storage = $this->sectionStorageManager()->findByContext($contexts, $cacheability);
-    if ($storage instanceof OverridesSectionStorageInterface) {
-      if ($storage->isTranslatable() && !$storage->isDefaultTranslation() && !$storage->isOverridden()) {
-        $storage = $storage->getDefaultTranslationSectionStorage();
-      }
-    }
 
     $build = [];
     if ($storage) {

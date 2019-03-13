@@ -2,8 +2,8 @@
 
 namespace Drupal\layout_builder\Element;
 
+use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Core\Ajax\AjaxHelperTrait;
-use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
@@ -13,7 +13,6 @@ use Drupal\Core\Url;
 use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
-use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\layout_builder\TranslatableSectionStorageInterface;
@@ -397,7 +396,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
       foreach ($section_storage->getDefaultTranslationSections() as $default_translation_section) {
         if ($default_component = $default_translation_section->getComponent($component->getUuid())) {
           $plugin = $default_component->getPlugin();
-          if ($plugin instanceof BlockBase) {
+          if ($plugin instanceof ConfigurableInterface) {
             $configuration = $plugin->getConfiguration();
             return !empty($configuration['label_display']) && !empty($configuration['label']);
           }

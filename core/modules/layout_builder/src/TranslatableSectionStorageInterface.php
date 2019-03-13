@@ -29,14 +29,6 @@ interface TranslatableSectionStorageInterface {
   public function isDefaultTranslation();
 
   /**
-   * Gets the default translation section storage.
-   *
-   * @return \Drupal\layout_builder\SectionStorageInterface
-   *   The section storage used by the default translation.
-   */
-  public function getDefaultTranslationSectionStorage();
-
-  /**
    * Gets the layout default translation sections.
    *
    * @return \Drupal\layout_builder\Section[]

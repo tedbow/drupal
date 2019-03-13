@@ -11,7 +11,6 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\layout_builder\Access\LayoutPreviewAccessAllowed;
 use Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent;
 use Drupal\layout_builder\LayoutBuilderEvents;
-use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -23,8 +22,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *   See https://www.drupal.org/core/experimental for more information.
  */
 class BlockComponentRenderArray implements EventSubscriberInterface {
-
-  use LayoutEntityHelperTrait;
 
   /**
    * The current user.

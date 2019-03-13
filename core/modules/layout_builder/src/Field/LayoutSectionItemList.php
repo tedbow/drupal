@@ -84,6 +84,4 @@ class LayoutSectionItemList extends FieldItemList implements SectionListInterfac
     return AccessResult::forbidden();
   }
 
-
-
 }
