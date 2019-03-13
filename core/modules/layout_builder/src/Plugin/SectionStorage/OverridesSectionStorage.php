@@ -22,7 +22,7 @@ use Drupal\Core\Url;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface;
-use Drupal\layout_builder\TranslatableOverridesSectionStorageInterface;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -51,7 +51,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   experimental modules and development releases of contributed modules.
  *   See https://www.drupal.org/core/experimental for more information.
  */
-class OverridesSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, TranslatableOverridesSectionStorageInterface, SectionStorageLocalTaskProviderInterface {
+class OverridesSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, OverridesSectionStorageInterface, TranslatableSectionStorageInterface, SectionStorageLocalTaskProviderInterface {
 
   /**
    * The field name used by this storage.

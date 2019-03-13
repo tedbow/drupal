@@ -16,7 +16,7 @@ use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorageInterface;
-use Drupal\layout_builder\TranslatableOverridesSectionStorageInterface;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -109,7 +109,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    */
   protected function layout(SectionStorageInterface $section_storage) {
     $this->prepareLayout($section_storage);
-    $is_translation = $section_storage instanceof TranslatableOverridesSectionStorageInterface && !$section_storage->isDefaultTranslation();
+    $is_translation = $section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation();
 
     $output = [];
     if ($this->isAjax()) {
@@ -157,7 +157,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     // If the layout is an override that has not yet been overridden, copy the
     // sections from the corresponding default.
     elseif ($section_storage instanceof OverridesSectionStorageInterface && !$section_storage->isOverridden()) {
-      if ($section_storage instanceof TranslatableOverridesSectionStorageInterface && $section_storage->isTranslatable() && !$section_storage->isDefaultTranslation()) {
+      if ($section_storage instanceof TranslatableSectionStorageInterface && $section_storage->isTranslatable() && !$section_storage->isDefaultTranslation()) {
         $source_storage = $section_storage->getDefaultTranslationSectionStorage();
       }
       else {
@@ -251,7 +251,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     $storage_type = $section_storage->getStorageType();
     $storage_id = $section_storage->getStorageId();
     $section = $section_storage->getSection($delta);
-    $is_translation = $section_storage instanceof TranslatableOverridesSectionStorageInterface && !$section_storage->isDefaultTranslation();
+    $is_translation = $section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation();
     $contextual_link_group = $is_translation ? 'layout_builder_block_translation' : 'layout_builder_block';
     $layout = $section->getLayout();
     $build = $section->toRenderArray($this->getAvailableContexts($section_storage), TRUE);
@@ -390,7 +390,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    *   TRUE if the default component has translatable settings, otherwise FALSE.
    */
   protected function defaultComponentHasTranslatableSettings(SectionStorageInterface $section_storage, SectionComponent $component) {
-    if ($section_storage instanceof TranslatableOverridesSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
+    if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
       foreach ($section_storage->getDefaultTranslationSections() as $default_translation_section) {
         if ($default_component = $default_translation_section->getComponent($component->getUuid())) {
           $plugin = $default_component->getPlugin();

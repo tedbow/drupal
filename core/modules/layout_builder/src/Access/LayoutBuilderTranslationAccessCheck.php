@@ -6,7 +6,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\layout_builder\SectionStorageInterface;
-use Drupal\layout_builder\TranslatableOverridesSectionStorageInterface;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 
 /**
  * Provides an access check for the Layout Builder translations.
@@ -25,7 +25,7 @@ class LayoutBuilderTranslationAccessCheck implements AccessInterface {
    *   The access result.
    */
   public function access(SectionStorageInterface $section_storage) {
-    $access = AccessResult::allowedIf(!($section_storage instanceof TranslatableOverridesSectionStorageInterface && !$section_storage->isDefaultTranslation()));
+    $access = AccessResult::allowedIf(!($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()));
     if ($access instanceof RefinableCacheableDependencyInterface) {
       $access->addCacheableDependency($section_storage);
     }
