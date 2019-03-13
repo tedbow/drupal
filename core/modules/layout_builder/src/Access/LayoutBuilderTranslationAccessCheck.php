@@ -28,10 +28,11 @@ class LayoutBuilderTranslationAccessCheck implements AccessInterface {
    *   The access result.
    */
   public function access(SectionStorageInterface $section_storage) {
-    $access = AccessResult::allowedIf(!($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()));
+    $access = AccessResult::allowedIf(!$section_storage instanceof TranslatableSectionStorageInterface || $section_storage->isDefaultTranslation());
     if ($access instanceof RefinableCacheableDependencyInterface) {
       $access->addCacheableDependency($section_storage);
     }
     return $access;
   }
+
 }

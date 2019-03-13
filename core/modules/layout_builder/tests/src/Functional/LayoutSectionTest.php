@@ -203,12 +203,12 @@ class LayoutSectionTest extends BrowserTestBase {
    * Tests the multilingual support of the section formatter.
    */
   public function testMultilingualLayoutSectionFormatter() {
-    $this->container->get('module_installer')->install(['content_translation']);
+    $this->container->get('module_installer')->install(['language']);
     $this->rebuildContainer();
 
     ConfigurableLanguage::createFromLangcode('es')->save();
 
-    $entity = $this->createSectionNode([
+    $en_entity = $this->createSectionNode([
       [
         'section' => new Section('layout_onecol', [], [
           'baz' => new SectionComponent('baz', 'content', [
@@ -217,28 +217,27 @@ class LayoutSectionTest extends BrowserTestBase {
         ]),
       ],
     ]);
-    $entity->addTranslation('es', [
-      'title' => 'Translated node title',
-      OverridesSectionStorage::FIELD_NAME => [
-        [
-          'section' => new Section('layout_twocol', [], [
-            'foo' => new SectionComponent('foo', 'first', [
-              'id' => 'test_block_instantiation',
-              'display_message' => 'foo text',
-            ]),
-            'bar' => new SectionComponent('bar', 'second', [
-              'id' => 'test_block_instantiation',
-              'display_message' => 'bar text',
-            ]),
+
+    $es_entity = $this->createSectionNode([
+      [
+        'section' => new Section('layout_twocol', [], [
+          'foo' => new SectionComponent('foo', 'first', [
+            'id' => 'test_block_instantiation',
+            'display_message' => 'foo text',
           ]),
-        ],
+          'bar' => new SectionComponent('bar', 'second', [
+            'id' => 'test_block_instantiation',
+            'display_message' => 'bar text',
+          ]),
+        ]),
       ],
     ]);
-    $entity->save();
+    $es_entity->set('langcode', 'es');
+    $es_entity->save();
 
-    $this->drupalGet($entity->toUrl('canonical'));
+    $this->drupalGet($en_entity->toUrl('canonical'));
     $this->assertLayoutSection('.layout--onecol', 'Powered by');
-    $this->drupalGet($entity->toUrl('canonical')->setOption('prefix', 'es/'));
+    $this->drupalGet($es_entity->toUrl('canonical'));
     $this->assertLayoutSection('.layout--twocol', ['foo text', 'bar text']);
   }
 
