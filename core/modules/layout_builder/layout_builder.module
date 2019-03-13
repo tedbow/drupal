@@ -324,9 +324,7 @@ function layout_builder_entity_translation_create(EntityInterface $translation) 
     $translatable_fields = $translation->getTranslatableFields();
     if (array_key_exists(OverridesSectionStorage::FIELD_NAME, $translatable_fields)) {
       // When creating a new translation do not copy untranslated sections.
-      // Until the user explicitly creates an layout translation the translated
-      // layout will use the untranslated layout.
-      // @see \Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay::buildSections()
+      // Currently totally independent overrides per language are not supported.
       $translation->set(OverridesSectionStorage::FIELD_NAME, []);
     }
   }

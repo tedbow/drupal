@@ -284,7 +284,6 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
               ],
             ];
           }
-
         }
       }
 
@@ -314,7 +313,6 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
           ),
         ];
       }
-
       $build[$region]['layout_builder_add_block']['#type'] = 'container';
       $build[$region]['layout_builder_add_block']['#attributes'] = ['class' => ['layout-builder__add-block']];
       $build[$region]['layout_builder_add_block']['#weight'] = 1000;

@@ -11,6 +11,9 @@ use Drupal\layout_builder\TranslatableSectionStorageInterface;
 /**
  * Provides an access check for the Layout Builder translations.
  *
+ * When accessing the layout builder for a translation only translating labels
+ * and inline blocks are supported.
+ *
  * @internal
  */
 class LayoutBuilderTranslationAccessCheck implements AccessInterface {
