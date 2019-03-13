@@ -165,13 +165,8 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     // If the layout is an override that has not yet been overridden, copy the
     // sections from the corresponding default.
     elseif ($section_storage instanceof OverridesSectionStorageInterface && !$section_storage->isOverridden()) {
-      if ($section_storage instanceof TranslatableSectionStorageInterface && $section_storage->isTranslatable() && !$section_storage->isDefaultTranslation()) {
-        $source_storage = $section_storage->getDefaultTranslationSectionStorage();
-      }
-      else {
-        $source_storage = $section_storage->getDefaultSectionStorage();
-      }
-      foreach ($source_storage->getSections() as $section) {
+      $sections = $section_storage->getDefaultSectionStorage()->getSections();
+      foreach ($sections as $section) {
         $section_storage->appendSection($section);
       }
       $this->layoutTempstoreRepository->set($section_storage);
