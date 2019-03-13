@@ -28,7 +28,6 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\layout_builder\Form\BlockPluginTranslationForm;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 
-
 /**
  * Implements hook_help().
  */
