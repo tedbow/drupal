@@ -60,14 +60,23 @@ class LayoutBuilderMultilingualTest extends BrowserTestBase {
     ConfigurableLanguage::createFromLangcode('es')->save();
 
     // Create a node and translate it.
-    $node = $this->createNode([
+    $en_node = $this->createNode([
       'type' => 'bundle_with_section_field',
       'title' => 'The untranslated node title',
     ]);
-    $node->addTranslation('es', [
-      'title' => 'The translated node title',
+    $en_node->save();
+
+    // Create a second node in Spanish to confirm the UI works in another
+    // language. We cannot use a translation for this because layout
+    // translations do not have the full UI.
+    $es_node = $this->createNode([
+      'type' => 'bundle_with_section_field',
+      'title' => 'The untranslated node title',
+      'langcode' => 'es',
     ]);
-    $node->save();
+    $es_node->save();
+
+
 
     $this->drupalLogin($this->createUser([
       'configure any layout',
@@ -81,7 +90,7 @@ class LayoutBuilderMultilingualTest extends BrowserTestBase {
   public function testCustomBlocks() {
     // Check translated and untranslated entities before translating the string.
     $this->assertCustomBlocks('node/1');
-    $this->assertCustomBlocks('es/node/1');
+    $this->assertCustomBlocks('es/node/2');
 
     // Translate the 'Inline blocks' string used as a category in
     // \Drupal\layout_builder\Controller\ChooseBlockController::inlineBlockList().
@@ -90,7 +99,7 @@ class LayoutBuilderMultilingualTest extends BrowserTestBase {
 
     // Check translated and untranslated entities after translating the string.
     $this->assertCustomBlocks('node/1');
-    $this->assertCustomBlocks('es/node/1');
+    $this->assertCustomBlocks('es/node/2');
   }
 
   /**
