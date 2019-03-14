@@ -29,13 +29,13 @@ class ComponentPluginLabelTranslate implements EventSubscriberInterface {
   public function onBuildRender(SectionComponentBuildRenderArrayEvent $event) {
     $plugin = $event->getPlugin();
     $contexts = $event->getContexts();
-    if (!$plugin instanceof ConfigurableInterface && !isset($contexts['@language.current_language_context:language_interface'])) {
+    if (!$plugin instanceof ConfigurableInterface && !isset($contexts['layout_builder.entity'])) {
       return;
     }
 
-    /** @var \Drupal\Core\Language\Language $language */
-    $language = $contexts['@language.current_language_context:language_interface']->getContextValue();
-    $langcode = $language->getId();
+    /** @var \Drupal\Core\Entity\EntityInterface $entity */
+    $entity = $contexts['layout_builder.entity']->getContextValue();
+    $langcode = $entity->language()->getId();
     $configuration = $plugin->getConfiguration();
     if (isset($configuration['label']) && isset($configuration['layout_builder_translations'][$langcode]['label'])) {
       $configuration['label'] = $configuration['layout_builder_translations'][$langcode]['label'];

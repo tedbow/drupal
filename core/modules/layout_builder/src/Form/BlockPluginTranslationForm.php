@@ -6,7 +6,6 @@ use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\PluginFormBase;
-use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -17,15 +16,21 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
 
   use StringTranslationTrait;
 
-  protected $current_language;
+  /**
+   * The current language code.
+   *
+   * @var string
+   */
+  protected $currentLangcode;
 
   /**
    * BlockPluginTranslationForm constructor.
    *
-   * @param $current_language
+   * @param string $current_langcode
+   *   The current language code.
    */
-  public function __construct($current_language) {
-    $this->current_language = $current_language;
+  public function __construct($current_langcode) {
+    $this->currentLangcode = $current_langcode;
   }
 
 
@@ -44,12 +49,12 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     if ($this->plugin instanceof ConfigurableInterface) {
       $configuration = $this->plugin->getConfiguration();
-     $form['translated_label'] = [
-       '#title' => $this->t('Translated label'),
-       '#type' => 'textfield',
-       '#default_value' => isset($configuration['layout_builder_translations'][$this->current_language]['label']) ? $configuration['layout_builder_translations'][$this->current_language]['label'] : $configuration['label'],
-       '#required' => TRUE,
-     ];
+      $form['translated_label'] = [
+        '#title' => $this->t('Label'),
+        '#type' => 'textfield',
+        '#default_value' => isset($configuration['layout_builder_translations'][$this->currentLangcode]['label']) ? $configuration['layout_builder_translations'][$this->currentLangcode]['label'] : $configuration['label'],
+        '#required' => TRUE,
+      ];
     }
     return $form;
   }
@@ -66,19 +71,9 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     if ($this->plugin instanceof ConfigurableInterface) {
       $configuration = $this->plugin->getConfiguration();
-      $configuration['layout_builder_translations'][$this->current_language]['label']  = $form_state->getValue('translated_label');
+      $configuration['layout_builder_translations'][$this->currentLangcode]['label'] = $form_state->getValue('translated_label');
       $this->plugin->setConfiguration($configuration);
     }
-  }
-
-  /**
-   *
-   * @return \Drupal\Core\Plugin\PluginFormInterface
-   */
-  protected function getConfigureForm() {
-    /** @var \Drupal\Core\Plugin\PluginFormFactoryInterface $form_factory */
-    $form_factory = \Drupal::service('plugin_form.factory');
-    return $form_factory->createInstance($this->plugin, 'configure');
   }
 
 }

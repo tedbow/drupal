@@ -378,6 +378,9 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
   /**
    * Determines if the component in the default translation is translatable.
    *
+   * @todo determine how handle other settings that need to be translated
+   *    such as the inline blocks use case.
+   *
    * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
    *   The section storage.
    * @param \Drupal\layout_builder\SectionComponent $component
