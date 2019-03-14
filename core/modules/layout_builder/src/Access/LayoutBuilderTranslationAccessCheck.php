@@ -7,6 +7,7 @@ use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\layout_builder\TranslatableSectionStorageInterface;
+use Symfony\Component\Routing\Route;
 
 /**
  * Provides an access check for the Layout Builder translations.
@@ -23,12 +24,20 @@ class LayoutBuilderTranslationAccessCheck implements AccessInterface {
    *
    * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
    *   The section storage.
+   * @param \Symfony\Component\Routing\Route $route
+   *   The route to check against.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
-  public function access(SectionStorageInterface $section_storage) {
-    $access = AccessResult::allowedIf(!$section_storage instanceof TranslatableSectionStorageInterface || $section_storage->isDefaultTranslation());
+  public function access(SectionStorageInterface $section_storage, Route $route) {
+    $translation_type = $route->getRequirement('_layout_builder_translation_access');
+    if ($translation_type === 'untranslated') {
+      $access = AccessResult::allowedIf(!$section_storage instanceof TranslatableSectionStorageInterface || $section_storage->isDefaultTranslation());
+    }
+    elseif ($translation_type === 'translated') {
+      $access = AccessResult::allowedIf($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation());
+    }
     if ($access instanceof RefinableCacheableDependencyInterface) {
       $access->addCacheableDependency($section_storage);
     }

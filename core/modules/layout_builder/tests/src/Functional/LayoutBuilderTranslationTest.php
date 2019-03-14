@@ -99,7 +99,8 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
     $assert_session->pageTextContains('The translated field value');
     $assert_session->pageTextContains('Powered by Drupal');
 
-    // The translate layout is not available.
+    // Confirm that layout translation page is accessible once the untranslated
+    // entity has a override.
     $this->drupalGet($translated_layout_url);
     $assert_session->pageTextNotContains('Access denied');
     $assert_session->pageTextNotContains('The untranslated field value');

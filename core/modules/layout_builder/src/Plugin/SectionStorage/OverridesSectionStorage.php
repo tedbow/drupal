@@ -409,8 +409,6 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
       $entity = $this->getEntity();
       return $entity->isDefaultTranslation();
     }
-    // @todo If not translatable should we always consider this the default
-    //   translation?
     return TRUE;
   }
 

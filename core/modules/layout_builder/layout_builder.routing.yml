@@ -6,7 +6,7 @@ layout_builder.choose_section:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
-    _layout_builder_translation_access: 'view'
+    _layout_builder_translation_access: 'untranslated'
   options:
     _admin_route: TRUE
     parameters:
@@ -20,7 +20,7 @@ layout_builder.add_section:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
-    _layout_builder_translation_access: 'view'
+    _layout_builder_translation_access: 'untranslated'
   options:
     _admin_route: TRUE
     parameters:
@@ -38,7 +38,7 @@ layout_builder.configure_section:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
-    _layout_builder_translation_access: 'view'
+    _layout_builder_translation_access: 'untranslated'
   options:
     _admin_route: TRUE
     parameters:
@@ -52,7 +52,7 @@ layout_builder.remove_section:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
-    _layout_builder_translation_access: 'view'
+    _layout_builder_translation_access: 'untranslated'
   options:
     _admin_route: TRUE
     parameters:
@@ -67,7 +67,7 @@ layout_builder.choose_block:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
-    _layout_builder_translation_access: 'view'
+    _layout_builder_translation_access: 'untranslated'
   options:
     _admin_route: TRUE
     parameters:
@@ -82,7 +82,7 @@ layout_builder.add_block:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
-    _layout_builder_translation_access: 'view'
+    _layout_builder_translation_access: 'untranslated'
   options:
     _admin_route: TRUE
     parameters:
@@ -96,7 +96,7 @@ layout_builder.choose_inline_block:
     _title: 'Add a new Inline Block'
   requirements:
     _permission: 'configure any layout'
-    _layout_builder_translation_access: 'view'
+    _layout_builder_translation_access: 'untranslated'
   options:
     _admin_route: TRUE
     parameters:
@@ -111,7 +111,7 @@ layout_builder.update_block:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
-    _layout_builder_translation_access: 'view'
+    _layout_builder_translation_access: 'untranslated'
   options:
     _admin_route: TRUE
     parameters:
@@ -126,6 +126,7 @@ layout_builder.translate_block:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
+    _layout_builder_translation_access: 'translated'
   options:
     _admin_route: TRUE
     parameters:
@@ -139,7 +140,7 @@ layout_builder.remove_block:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
-    _layout_builder_translation_access: 'view'
+    _layout_builder_translation_access: 'untranslated'
   options:
     _admin_route: TRUE
     parameters:
@@ -159,7 +160,7 @@ layout_builder.move_block:
   requirements:
     _permission: 'configure any layout'
     _layout_builder_access: 'view'
-    _layout_builder_translation_access: 'view'
+    _layout_builder_translation_access: 'untranslated'
   options:
     _admin_route: TRUE
     parameters:

@@ -127,7 +127,6 @@ class OverridesSectionStorageTest extends UnitTestCase {
   public function testGetSectionListFromId($success, $expected_entity_type_id, $id) {
     $defaults['the_parameter_name'] = $id;
 
-    $this->entityRepository->getTranslationFromContext(Argument::cetera())->shouldNotBeCalled();
     if ($expected_entity_type_id) {
       $entity_without_layout = $this->prophesize(FieldableEntityInterface::class);
       $entity_without_layout->hasField(OverridesSectionStorage::FIELD_NAME)->willReturn(FALSE);
