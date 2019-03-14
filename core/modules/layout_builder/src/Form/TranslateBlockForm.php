@@ -16,7 +16,7 @@ class TranslateBlockForm extends ConfigureBlockFormBase {
    * {@inheritdoc}
    */
   protected function submitLabel() {
-    $this->t('Save');
+    return $this->t('Translate');
   }
 
   /**

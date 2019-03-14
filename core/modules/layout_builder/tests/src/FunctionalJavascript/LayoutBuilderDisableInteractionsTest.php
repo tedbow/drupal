@@ -18,6 +18,7 @@ use WebDriver\Exception\UnknownError;
 class LayoutBuilderDisableInteractionsTest extends WebDriverTestBase {
 
   use ContextualLinkClickTrait;
+  use LayoutBuilderTestTrait;
 
   /**
    * {@inheritdoc}
@@ -134,36 +135,6 @@ class LayoutBuilderDisableInteractionsTest extends WebDriverTestBase {
   }
 
   /**
-   * Adds a block in the Layout Builder.
-   *
-   * @param string $block_link_text
-   *   The link text to add the block.
-   * @param string $rendered_locator
-   *   The CSS locator to confirm the block was rendered.
-   */
-  protected function addBlock($block_link_text, $rendered_locator) {
-    $assert_session = $this->assertSession();
-    $page = $this->getSession()->getPage();
-
-    // Add a new block.
-    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#layout-builder a:contains(\'Add Block\')'));
-    $this->clickLink('Add Block');
-    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#drupal-off-canvas'));
-    $assert_session->assertWaitOnAjaxRequest();
-
-    $assert_session->linkExists($block_link_text);
-    $this->clickLink($block_link_text);
-
-    // Wait for off-canvas dialog to reopen with block form.
-    $this->assertNotEmpty($assert_session->waitForElementVisible('css', ".layout-builder-add-block"));
-    $assert_session->assertWaitOnAjaxRequest();
-    $page->pressButton('Add Block');
-
-    // Wait for block form to be rendered in the Layout Builder.
-    $this->assertNotEmpty($assert_session->waitForElement('css', $rendered_locator));
-  }
-
-  /**
    * Checks if element is unclickable.
    *
    * @param \Behat\Mink\Element\NodeElement $element
@@ -273,28 +244,6 @@ class LayoutBuilderDisableInteractionsTest extends WebDriverTestBase {
     $driver_session = $this->getSession()->getDriver()->getWebDriverSession();
     $element = $driver_session->element('css selector', $selector);
     $driver_session->moveto(['element' => $element->getID()]);
-  }
-
-  /**
-   * Waits for an element to be removed from the page.
-   *
-   * @param string $selector
-   *   CSS selector.
-   * @param int $timeout
-   *   (optional) Timeout in milliseconds, defaults to 10000.
-   * @param string $message
-   *   (optional) Custom message to display with the assertion.
-   *
-   * @todo: Remove after https://www.drupal.org/project/drupal/issues/2892440
-   */
-  public function assertNoElementAfterWait($selector, $timeout = 10000, $message = '') {
-    $page = $this->getSession()->getPage();
-    if ($message === '') {
-      $message = "Element '$selector' was not on the page after wait.";
-    }
-    $this->assertTrue($page->waitFor($timeout / 1000, function () use ($page, $selector) {
-      return empty($page->find('css', $selector));
-    }), $message);
   }
 
 }
