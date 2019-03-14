@@ -67,12 +67,14 @@ class TranslateBlockForm extends ConfigureBlockFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
     $subform_state = SubformState::createForSubform($form['settings'], $form, $form_state);
-    $mapping = $subform_state->getValue('context_mapping');
-    // @todo(in this issue) Should really have to switch the context mapping here?
-    if (isset($mapping['entity']) && $mapping['entity'] === 'entity') {
-      $mapping['entity'] = 'layout_builder.entity';
+    if ($subform_state->hasValue('context_mapping')) {
+      $mapping = $subform_state->getValue('context_mapping');
+      // @todo(in this issue) Should really have to switch the context mapping here?
+      if (isset($mapping['entity']) && $mapping['entity'] === 'entity') {
+        $mapping['entity'] = 'layout_builder.entity';
+      }
+      $subform_state->setValue('context_mapping', $mapping);
     }
-    $subform_state->setValue('context_mapping', $mapping);
   }
 
 }

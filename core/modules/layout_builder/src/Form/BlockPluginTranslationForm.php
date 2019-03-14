@@ -3,6 +3,7 @@
 namespace Drupal\layout_builder\Form;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
+use Drupal\Component\Plugin\ContextAwarePluginInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
@@ -57,7 +58,9 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
         '#default_value' => isset($configuration['layout_builder_translations'][$this->currentLangcode]['label']) ? $configuration['layout_builder_translations'][$this->currentLangcode]['label'] : $configuration['label'],
         '#required' => TRUE,
       ];
-      $form['context_mapping'] = $this->addContextAssignmentElement($this->plugin, $this->plugin->getContexts());
+      if ($this->plugin instanceof ContextAwarePluginInterface) {
+        $form['context_mapping'] = $this->addContextAssignmentElement($this->plugin, $this->plugin->getContexts());
+      }
     }
     return $form;
   }

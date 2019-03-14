@@ -91,6 +91,14 @@ class TranslationTest extends WebDriverTestBase {
 
     // Add a new inline block to the original node.
     $this->drupalGet('node/1/layout');
+
+    $this->clickContextualLink('.block-field-blocknodebundle-with-section-fieldbody', 'Configure');
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#drupal-off-canvas'));
+    $page->fillField('settings[label]', 'field label untranslated');
+    $page->checkField('settings[label_display]');
+    $page->pressButton('Update');
+    $assert_session->assertWaitOnAjaxRequest();
+    $this->assertNoElementAfterWait('#drupal-off-canvas');
     $this->addBlock('Powered by Drupal', '.block-system-powered-by-block', TRUE, 'untranslated label');
     $assert_session->pageTextContains('untranslated label');
     $assert_session->buttonExists('Save layout');
@@ -111,23 +119,46 @@ class TranslationTest extends WebDriverTestBase {
     // Update the translations block label.
     $this->drupalGet('it/node/1/layout');
     $this->assertNonTranslationActionsRemoved();
-    $this->clickContextualLink('.block-system-powered-by-block', 'Translate block');
-    $label_input = $assert_session->waitForElementVisible('css', '#drupal-off-canvas [name="settings[translated_label]"]');
-    $this->assertNotEmpty($label_input);
-    $this->assertEquals('untranslated label', $label_input->getValue());
-    $label_input->setValue('label in translation');
-    $page->pressButton('Translate');
-    $this->assertNoElementAfterWait('#drupal-off-canvas');
-    $this->assertNotEmpty($assert_session->waitForElementVisible('css', 'h2:contains("label in translation")'));
+    $this->updateBlockTranslation('.block-system-powered-by-block', 'untranslated label', 'label in translation');
+    // @todo this will fail until https://www.drupal.org/node/3039185
+    // $this->updateBlockTranslation('.block-field-blocknodebundle-with-section-fieldbody', 'field label untranslated', 'field label translated');
     $assert_session->buttonExists('Save layout');
     $page->pressButton('Save layout');
     $assert_session->addressEquals('it/node/1');
     $assert_session->pageTextContains('label in translation');
+    // @todo this will fail until https://www.drupal.org/node/3039185
+    // $assert_session->pageTextContains('field label translated');
 
     // Confirm that untranslated label is still used on default translation.
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('untranslated label');
     $assert_session->pageTextNotContains('label in translation');
+    // @todo this will fail until https://www.drupal.org/node/3039185
+    // $assert_session->pageTextContains('field label translated');
+    // $assert_session->pageTextNotContains('field label untranslated');
+  }
+
+  /**
+   * Updates a block label translation.
+   *
+   * @param string $block_selector
+   *   The CSS selector for the block.
+   * @param string $expected_label
+   *   The label that is expected.
+   * @param string $new_label
+   *   The new label to set.
+   */
+  protected function updateBlockTranslation($block_selector, $expected_label, $new_label) {
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    $this->clickContextualLink($block_selector, 'Translate block');
+    $label_input = $assert_session->waitForElementVisible('css', '#drupal-off-canvas [name="settings[translated_label]"]');
+    $this->assertNotEmpty($label_input);
+    $this->assertEquals($expected_label, $label_input->getValue());
+    $label_input->setValue($new_label);
+    $page->pressButton('Translate');
+    $this->assertNoElementAfterWait('#drupal-off-canvas');
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', "h2:contains(\"$new_label\")"));
   }
 
 }
