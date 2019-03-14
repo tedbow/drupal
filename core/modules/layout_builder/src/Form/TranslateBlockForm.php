@@ -4,6 +4,7 @@ namespace Drupal\layout_builder\Form;
 
 use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Form\SubformState;
 use Drupal\Core\Plugin\PluginWithFormsInterface;
 use Drupal\layout_builder\SectionStorageInterface;
 
@@ -58,6 +59,20 @@ class TranslateBlockForm extends ConfigureBlockFormBase {
       return $this->pluginFormFactory->createInstance($block, 'layout_builder_translation');
     }
     return $block;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+    $subform_state = SubformState::createForSubform($form['settings'], $form, $form_state);
+    $mapping = $subform_state->getValue('context_mapping');
+    // @todo(in this issue) Should really have to switch the context mapping here?
+    if (isset($mapping['entity']) && $mapping['entity'] === 'entity') {
+      $mapping['entity'] = 'layout_builder.entity';
+    }
+    $subform_state->setValue('context_mapping', $mapping);
   }
 
 }
