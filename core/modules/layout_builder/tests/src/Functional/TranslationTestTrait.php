@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\layout_builder\Functional;
 
-
 /**
  * Common functions for testing Layout Builder with translations.
  */

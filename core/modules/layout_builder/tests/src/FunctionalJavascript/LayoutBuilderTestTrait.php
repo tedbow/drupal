@@ -1,10 +1,12 @@
 <?php
 
-
 namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
-
+/**
+ * Common functions for testing Layout Builder.
+ */
 trait LayoutBuilderTestTrait {
+
   /**
    * Adds a block in the Layout Builder.
    *
@@ -12,8 +14,12 @@ trait LayoutBuilderTestTrait {
    *   The link text to add the block.
    * @param string $rendered_locator
    *   The CSS locator to confirm the block was rendered.
+   * @param bool $label_display
+   *   Whether the label should be displayed.
+   * @param string|null $label
+   *   The label use.
    */
-  protected function addBlock($block_link_text, $rendered_locator, $label_display = FALSE, $label = NULl) {
+  protected function addBlock($block_link_text, $rendered_locator, $label_display = FALSE, $label = NULL) {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
 

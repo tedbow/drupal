@@ -97,7 +97,6 @@ class TranslationTest extends WebDriverTestBase {
     $page->pressButton('Save layout');
     $assert_session->addressEquals('node/1');
 
-
     // Create a translation.
     $add_translation_url = Url::fromRoute("entity.node.content_translation_add", [
       'node' => 1,

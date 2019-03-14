@@ -51,7 +51,6 @@ class LayoutBuilderMultilingualTest extends BrowserTestBase {
       'type' => 'bundle_with_section_field',
     ]);
 
-
     LayoutBuilderEntityViewDisplay::load('node.bundle_with_section_field.default')
       ->enableLayoutBuilder()
       ->setOverridable()
@@ -76,8 +75,6 @@ class LayoutBuilderMultilingualTest extends BrowserTestBase {
       'langcode' => 'es',
     ]);
     $es_node->save();
-
-
 
     $this->drupalLogin($this->createUser([
       'configure any layout',
