@@ -38,6 +38,9 @@ class LayoutBuilderTranslationAccessCheck implements AccessInterface {
     elseif ($translation_type === 'translated') {
       $access = AccessResult::allowedIf($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation());
     }
+    else {
+      throw new \UnexpectedValueException("Unexpected _layout_builder_translation_access route requirement: $translation_type");
+    }
     if ($access instanceof RefinableCacheableDependencyInterface) {
       $access->addCacheableDependency($section_storage);
     }
