@@ -108,7 +108,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    */
   protected function layout(SectionStorageInterface $section_storage) {
     $this->prepareLayout($section_storage);
-    $is_translation = $section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation();
+    $sections_editable = !($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation());
 
     $output = [];
     if ($this->isAjax()) {
@@ -118,14 +118,14 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     }
     $count = 0;
     for ($i = 0; $i < $section_storage->count(); $i++) {
-      if (!$is_translation) {
+      if ($sections_editable) {
         $output[] = $this->buildAddSectionLink($section_storage, $count);
       }
 
       $output[] = $this->buildAdministrativeSection($section_storage, $count);
       $count++;
     }
-    if (!$is_translation) {
+    if ($sections_editable) {
       $output[] = $this->buildAddSectionLink($section_storage, $count);
     }
 
