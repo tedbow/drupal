@@ -36,7 +36,6 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
     $this->currentLangcode = $current_langcode;
   }
 
-
   /**
    * {@inheritdoc}
    */

@@ -89,15 +89,15 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
     $block = $this->getEntity();
-
-    // Add the entity form display in a process callback so that #parents can
-    // be successfully propagated to field widgets.
-    $form['block_form'] = [
-      '#type' => 'container',
-      '#process' => [[static::class, 'processBlockForm']],
-      '#block' => $block,
-    ];
-
+    if ($block->isTranslatable()) {
+      // Add the entity form display in a process callback so that #parents can
+      // be successfully propagated to field widgets.
+      $form['block_form'] = [
+        '#type' => 'container',
+        '#process' => [[static::class, 'processBlockForm']],
+        '#block' => $block,
+      ];
+    }
     return $form;
   }
 
@@ -115,6 +115,9 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
   public static function processBlockForm(array $element, FormStateInterface $form_state) {
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = $element['#block'];
+    // @todo (in this issue) Look at how ContentTranslationController creates
+    //   the add/edit translation forms and determine if we need to implement
+    //   the same logic.
     EntityFormDisplay::collectRenderDisplay($block, 'edit')->buildForm($block, $element, $form_state);
     $element['revision_log']['#access'] = FALSE;
     $element['info']['#access'] = FALSE;
@@ -127,15 +130,18 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
    */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
     parent::validateConfigurationForm($form, $form_state);
-    $block_form = $form['block_form'];
-    /** @var \Drupal\block_content\BlockContentInterface $block */
-    $block = $block_form['#block'];
-    $form_display = EntityFormDisplay::collectRenderDisplay($block, 'edit');
-    $complete_form_state = $form_state instanceof SubformStateInterface ? $form_state->getCompleteFormState() : $form_state;
-    $form_display->extractFormValues($block, $block_form, $complete_form_state);
-    $form_display->validateFormValues($block, $block_form, $complete_form_state);
-    // @todo Remove when https://www.drupal.org/project/drupal/issues/2948549 is closed.
-    $form_state->setTemporaryValue('block_form_parents', $block_form['#parents']);
+    if (!empty($form['block_form'])) {
+      $block_form = $form['block_form'];
+      /** @var \Drupal\block_content\BlockContentInterface $block */
+      $block = $block_form['#block'];
+      $form_display = EntityFormDisplay::collectRenderDisplay($block, 'edit');
+      $complete_form_state = $form_state instanceof SubformStateInterface ? $form_state->getCompleteFormState() : $form_state;
+      $form_display->extractFormValues($block, $block_form, $complete_form_state);
+      $form_display->validateFormValues($block, $block_form, $complete_form_state);
+      // @todo Remove when https://www.drupal.org/project/drupal/issues/2948549 is closed.
+      $form_state->setTemporaryValue('block_form_parents', $block_form['#parents']);
+    }
+
   }
 
   /**
@@ -144,17 +150,19 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     parent::submitConfigurationForm($form, $form_state);
 
-    $configuration = $this->plugin->getConfiguration();
-    // @todo Remove when https://www.drupal.org/project/drupal/issues/2948549 is closed.
-    $block_form = NestedArray::getValue($form, $form_state->getTemporaryValue('block_form_parents'));
-    /** @var \Drupal\block_content\BlockContentInterface $block */
-    $block = $block_form['#block'];
-    $form_display = EntityFormDisplay::collectRenderDisplay($block, 'edit');
-    $complete_form_state = $form_state instanceof SubformStateInterface ? $form_state->getCompleteFormState() : $form_state;
-    $form_display->extractFormValues($block, $block_form, $complete_form_state);
+    if (!empty($form['settings']['block_form'])) {
+      // @todo Remove when https://www.drupal.org/project/drupal/issues/2948549 is closed.
+      $block_form = NestedArray::getValue($form, $form_state->getTemporaryValue('block_form_parents'));
+      /** @var \Drupal\block_content\BlockContentInterface $block */
+      $block = $block_form['#block'];
+      $form_display = EntityFormDisplay::collectRenderDisplay($block, 'edit');
+      $complete_form_state = $form_state instanceof SubformStateInterface ? $form_state->getCompleteFormState() : $form_state;
+      $form_display->extractFormValues($block, $block_form, $complete_form_state);
 
-    $configuration['block_serialized'] = serialize($block);
-    $this->plugin->setConfiguration($configuration);
+      $configuration = $this->plugin->getConfiguration();
+      $configuration['block_serialized'] = serialize($block);
+      $this->plugin->setConfiguration($configuration);
+    }
   }
 
 }

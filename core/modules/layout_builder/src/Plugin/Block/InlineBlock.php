@@ -158,7 +158,7 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
     $element['revision_log']['#access'] = FALSE;
     $element['info']['#access'] = FALSE;
     if (isset($element['langcode'])) {
-      $element['langcode'] = FALSE;
+      $element['langcode']['langcode'] = FALSE;
     }
     return $element;
   }
