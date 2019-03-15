@@ -17,6 +17,7 @@ class TranslationTest extends WebDriverTestBase {
 
   use LayoutBuilderTestTrait;
   use TranslationTestTrait;
+  use JavascriptTranslationTestTrait;
   use ContextualLinkClickTrait;
 
   /**
@@ -59,14 +60,6 @@ class TranslationTest extends WebDriverTestBase {
 
     // Enable translation for the node type 'bundle_with_section_field'.
     \Drupal::service('content_translation.manager')->setEnabled('node', 'bundle_with_section_field', TRUE);
-  }
-
-  /**
-   * Tests that block labels can be translated.
-   */
-  public function testLabelTranslation() {
-    $page = $this->getSession()->getPage();
-    $assert_session = $this->assertSession();
 
     $this->drupalLogin($this->drupalCreateUser([
       'access contextual links',
@@ -76,6 +69,18 @@ class TranslationTest extends WebDriverTestBase {
       'translate bundle_with_section_field node',
       'create content translations',
     ]));
+
+    // Create a translation.
+    $add_translation_url = Url::fromRoute("entity.node.content_translation_add", [
+      'node' => 1,
+      'source' => 'en',
+      'target' => 'it',
+    ]);
+    $this->drupalPostForm($add_translation_url, [
+      'title[0][value]' => 'The translated node title',
+      'body[0][value]' => 'The translated node body',
+    ], 'Save');
+
 
     // Allow layout overrides.
     $this->drupalPostForm(
@@ -88,6 +93,24 @@ class TranslationTest extends WebDriverTestBase {
       ['layout[allow_custom]' => TRUE],
       'Save'
     );
+
+  }
+
+  /**
+   * Tests that block labels can be translated.
+   */
+  public function testLabelTranslation() {
+    $page = $this->getSession()->getPage();
+    $assert_session = $this->assertSession();
+
+    $this->drupalLogin($this->drupalCreateUser([
+      'access contextual links',
+      'configure any layout',
+      // @todo should you need this permission? You don't actually save the
+      //   entity translation because labels are stored with untranslated
+      //   layout.
+      //'translate bundle_with_section_field node',
+    ]));
 
     // Add a new inline block to the original node.
     $this->drupalGet('node/1/layout');
@@ -104,17 +127,6 @@ class TranslationTest extends WebDriverTestBase {
     $assert_session->buttonExists('Save layout');
     $page->pressButton('Save layout');
     $assert_session->addressEquals('node/1');
-
-    // Create a translation.
-    $add_translation_url = Url::fromRoute("entity.node.content_translation_add", [
-      'node' => 1,
-      'source' => 'en',
-      'target' => 'it',
-    ]);
-    $this->drupalPostForm($add_translation_url, [
-      'title[0][value]' => 'The translated node title',
-      'body[0][value]' => 'The translated node body',
-    ], 'Save');
 
     // Update the translations block label.
     $this->drupalGet('it/node/1/layout');
@@ -136,29 +148,6 @@ class TranslationTest extends WebDriverTestBase {
     // @todo this will fail until https://www.drupal.org/node/3039185
     // $assert_session->pageTextContains('field label translated');
     // $assert_session->pageTextNotContains('field label untranslated');
-  }
-
-  /**
-   * Updates a block label translation.
-   *
-   * @param string $block_selector
-   *   The CSS selector for the block.
-   * @param string $expected_label
-   *   The label that is expected.
-   * @param string $new_label
-   *   The new label to set.
-   */
-  protected function updateBlockTranslation($block_selector, $expected_label, $new_label) {
-    $assert_session = $this->assertSession();
-    $page = $this->getSession()->getPage();
-    $this->clickContextualLink($block_selector, 'Translate block');
-    $label_input = $assert_session->waitForElementVisible('css', '#drupal-off-canvas [name="settings[translated_label]"]');
-    $this->assertNotEmpty($label_input);
-    $this->assertEquals($expected_label, $label_input->getValue());
-    $label_input->setValue($new_label);
-    $page->pressButton('Translate');
-    $this->assertNoElementAfterWait('#drupal-off-canvas');
-    $this->assertNotEmpty($assert_session->waitForElementVisible('css', "h2:contains(\"$new_label\")"));
   }
 
 }
