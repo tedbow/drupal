@@ -412,17 +412,4 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     return TRUE;
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getDefaultTranslationSections() {
-    if ($this->isTranslatable()) {
-      /** @var \Drupal\Core\Entity\TranslatableInterface $entity */
-      $entity = $this->getEntity();
-      $untranslated_entity = $entity->getUntranslated();
-      return $untranslated_entity->get(static::FIELD_NAME)->getSections();
-    }
-    return [];
-  }
-
 }

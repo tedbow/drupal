@@ -28,12 +28,4 @@ interface TranslatableSectionStorageInterface {
    */
   public function isDefaultTranslation();
 
-  /**
-   * Gets the layout default translation sections.
-   *
-   * @return \Drupal\layout_builder\Section[]
-   *   A sequentially and numerically keyed array of section objects.
-   */
-  public function getDefaultTranslationSections();
-
 }
