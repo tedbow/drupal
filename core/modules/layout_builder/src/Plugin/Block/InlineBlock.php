@@ -14,6 +14,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\layout_builder\LayoutBuilderTranslatablePluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -24,12 +25,15 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  admin_label = @Translation("Inline block"),
  *  category = @Translation("Inline blocks"),
  *  deriver = "Drupal\layout_builder\Plugin\Derivative\InlineBlockDeriver",
+ *  forms = {
+ *     "layout_builder_translation" = "\Drupal\layout_builder\Plugin\Block\InlineBlockTranslationForm",
+ *   },
  * )
  *
  * @internal
  *   Plugin classes are internal.
  */
-class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, RefinableDependentAccessInterface {
+class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, RefinableDependentAccessInterface, LayoutBuilderTranslatablePluginInterface {
 
   use RefinableDependentAccessTrait;
 
@@ -153,6 +157,9 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
     EntityFormDisplay::collectRenderDisplay($block, 'edit')->buildForm($block, $element, $form_state);
     $element['revision_log']['#access'] = FALSE;
     $element['info']['#access'] = FALSE;
+    if (isset($element['langcode'])) {
+      $element['langcode'] = FALSE;
+    }
     return $element;
   }
 
@@ -278,6 +285,14 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
       $this->configuration['block_revision_id'] = $block->getRevisionId();
       $this->configuration['block_serialized'] = NULL;
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasTranslatableConfiguration() {
+    $block_content = $this->getEntity();
+    return $block_content->isTranslatable() ||  (!empty($this->configuration['label_display']) && !empty($this->configuration['label']));
   }
 
 }

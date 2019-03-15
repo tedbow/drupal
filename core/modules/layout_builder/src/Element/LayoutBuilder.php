@@ -11,6 +11,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Render\Element\RenderElement;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
+use Drupal\layout_builder\LayoutBuilderTranslatablePluginInterface;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\SectionComponent;
@@ -281,7 +282,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
               'layout_builder_block' => $contextual_link_settings,
             ];
           }
-          elseif ($this->defaultComponentHasTranslatableSettings($section_storage, $component = $section->getComponent($uuid))) {
+          elseif ($this->componentHasTranslatableConfiguration($section_storage, $section->getComponent($uuid))) {
             $build[$region][$uuid]['#contextual_links'] = [
               'layout_builder_block_translation' => $contextual_link_settings,
             ];
@@ -376,7 +377,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
   }
 
   /**
-   * Determines if the component in the default translation is translatable.
+   * Determines if the component is translatable.
    *
    * @todo determine how handle other settings that need to be translated
    *    such as the inline blocks use case.
@@ -389,16 +390,16 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    * @return bool
    *   TRUE if the default component has translatable settings, otherwise FALSE.
    */
-  protected function defaultComponentHasTranslatableSettings(SectionStorageInterface $section_storage, SectionComponent $component) {
+  protected function componentHasTranslatableConfiguration(SectionStorageInterface $section_storage, SectionComponent $component) {
     if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
-      foreach ($section_storage->getDefaultTranslationSections() as $default_translation_section) {
-        if ($default_component = $default_translation_section->getComponent($component->getUuid())) {
-          $plugin = $default_component->getPlugin();
-          if ($plugin instanceof ConfigurableInterface) {
-            $configuration = $plugin->getConfiguration();
-            return !empty($configuration['label_display']) && !empty($configuration['label']);
-          }
-        }
+      $plugin = $component->getPlugin();
+      $contexts = $section_storage->getContexts();
+      if ($plugin instanceof LayoutBuilderTranslatablePluginInterface) {
+        return $plugin->hasTranslatableConfiguration();
+      }
+      elseif ($plugin instanceof ConfigurableInterface) {
+        $configuration = $plugin->getConfiguration();
+        return !empty($configuration['label_display']) && !empty($configuration['label']);
       }
     }
     return FALSE;
