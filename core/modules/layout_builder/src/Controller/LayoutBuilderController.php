@@ -2,6 +2,7 @@
 
 namespace Drupal\layout_builder\Controller;
 
+use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\layout_builder\SectionStorageInterface;
 
@@ -36,10 +37,11 @@ class LayoutBuilderController {
    * @return array
    *   A render array.
    */
-  public function layout(SectionStorageInterface $section_storage) {
+  public function layout(SectionStorageInterface $section_storage, LanguageInterface $language) {
     return [
       '#type' => 'layout_builder',
       '#section_storage' => $section_storage,
+      '#langague' => $language,
     ];
   }
 

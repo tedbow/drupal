@@ -9,6 +9,7 @@ use Drupal\field_ui\Form\EntityViewDisplayEditForm;
 use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\SectionStorageInterface;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 
 /**
  * Edit form for the LayoutBuilderEntityViewDisplay entity type.
@@ -68,6 +69,29 @@ class LayoutBuilderEntityViewDisplayForm extends EntityViewDisplayEditForm {
       '#url' => $this->sectionStorage->getLayoutBuilderUrl(),
       '#access' => $is_enabled,
     ];
+
+
+    if ($this->sectionStorage instanceof TranslatableSectionStorageInterface && $this->sectionStorage->isTranslatable()) {
+      $form['layout_translations'] = [
+        '#type' => 'details',
+        '#open' => TRUE,
+        '#title' => $this->t('Layout Translation'),
+        '#access' => $is_enabled,
+      ];
+      foreach (\Drupal::languageManager()->getLanguages() as $language) {
+        if ($language->isDefault()) {
+          continue;
+        }
+        $url =  $this->sectionStorage->getLayoutBuilderUrl();
+        $form['layout_translations'][$language->getId()] = [
+          '#type' => 'link',
+          '#title' => $language->getName(),
+          '#attributes' => ['class' => ['button']],
+          '#url' => $url->setRouteParameter('language', $language->getId()),
+        ];
+      }
+    }
+
 
     $form['layout'] = [
       '#type' => 'details',

@@ -35,12 +35,6 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
 
     // Enable translation for the node type 'bundle_with_section_field'.
     \Drupal::service('content_translation.manager')->setEnabled('node', 'bundle_with_section_field', TRUE);
-    drupal_static_reset();
-    \Drupal::entityTypeManager()->clearCachedDefinitions();
-    \Drupal::service('router.builder')->rebuild();
-    \Drupal::service('entity.definition_update_manager')->applyUpdates();
-
-    $this->rebuildContainer();
   }
 
   /**

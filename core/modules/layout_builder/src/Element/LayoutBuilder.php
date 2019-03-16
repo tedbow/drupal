@@ -82,6 +82,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
   public function getInfo() {
     return [
       '#section_storage' => NULL,
+      '#language' => NULL,
       '#pre_render' => [
         [$this, 'preRender'],
       ],
@@ -93,7 +94,9 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    */
   public function preRender($element) {
     if ($element['#section_storage'] instanceof SectionStorageInterface) {
-      $element['layout_builder'] = $this->layout($element['#section_storage']);
+      $language = $element['#lanuauge'] ?: NULL;
+      $element['layout_builder'] = $this->layout($element['#section_storage'], $language);
+
     }
     return $element;
   }

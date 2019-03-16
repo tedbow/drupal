@@ -16,6 +16,7 @@ use Drupal\Core\Url;
 use Drupal\field_ui\FieldUI;
 use Drupal\layout_builder\DefaultsSectionStorageInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderSampleEntityGenerator;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -41,7 +42,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   experimental modules and development releases of contributed modules.
  *   See https://www.drupal.org/core/experimental for more information.
  */
-class DefaultsSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, DefaultsSectionStorageInterface {
+class DefaultsSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, DefaultsSectionStorageInterface, TranslatableSectionStorageInterface {
 
   /**
    * The entity type manager.
@@ -117,7 +118,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
    * {@inheritdoc}
    */
   public function getRedirectUrl() {
-    return Url::fromRoute("entity.entity_view_display.{$this->getDisplay()->getTargetEntityTypeId()}.view_mode", $this->getRouteParameters());
+    return Url::fromRoute("entity.entity_view_display.{$this->getDisplay()->getTargetEntityTypeId()}.view_mode", $this->getRouteParameters())->setOption('prefix', NULL);
   }
 
   /**
@@ -194,6 +195,12 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
           'section_storage_type' => $this->getStorageType(),
           'section_storage' => '',
         ] + $defaults);
+
+        if ($this->isTranslatable()) {
+          $route->setPath($route->getPath() . '/{language}');
+          $route->setDefault('language', \Drupal::languageManager()->getDefaultLanguage()->getId());
+          $parameters['language']['type'] = 'language';
+        }
         $parameters['section_storage']['layout_builder_tempstore'] = TRUE;
         $parameters = NestedArray::mergeDeep($parameters, $route->getOption('parameters') ?: []);
         $route->setOption('parameters', $parameters);
@@ -432,6 +439,20 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   public function isApplicable(RefinableCacheableDependencyInterface $cacheability) {
     $cacheability->addCacheableDependency($this);
     return $this->isLayoutBuilderEnabled();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isTranslatable() {
+    return \Drupal::moduleHandler()->moduleExists('language');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isDefaultTranslation() {
+    return \Drupal::languageManager()->getDefaultLanguage()->getId() === \Drupal::languageManager()->getCurrentLanguage()->getId();
   }
 
 }
