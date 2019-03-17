@@ -57,6 +57,8 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    */
   const FIELD_NAME = 'layout_builder__layout';
 
+  const TRANSLATED_LABELS_FIELD_NAME = 'layout_builder__labels';
+
   /**
    * The entity type manager.
    *

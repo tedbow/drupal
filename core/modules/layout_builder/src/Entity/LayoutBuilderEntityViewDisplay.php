@@ -212,6 +212,31 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
       ]);
       $field->save();
     }
+    $this->addTranslatedLabelsField($entity_type_id, $bundle, OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME);
+  }
+
+  protected function addTranslatedLabelsField($entity_type_id, $bundle, $field_name) {
+    $field = FieldConfig::loadByName($entity_type_id, $bundle, $field_name);
+    if (!$field) {
+      $field_storage = FieldStorageConfig::loadByName($entity_type_id, $field_name);
+      if (!$field_storage) {
+        $field_storage = FieldStorageConfig::create([
+          'entity_type' => $entity_type_id,
+          'field_name' => $field_name,
+          'type' => 'map',
+          'locked' => TRUE,
+        ]);
+        $field_storage->setTranslatable(TRUE);
+        $field_storage->save();
+      }
+
+      $field = FieldConfig::create([
+        'field_storage' => $field_storage,
+        'bundle' => $bundle,
+        'label' => t('Layout Labels'),
+      ]);
+      $field->save();
+    }
   }
 
   /**
