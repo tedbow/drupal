@@ -28,4 +28,31 @@ interface TranslatableSectionStorageInterface {
    */
   public function isDefaultTranslation();
 
+  /**
+   * Sets the translated component configuration.
+   *
+   * @param string $uuid
+   * @param array $configuration
+   */
+  public function setTranslatedComponentConfiguration($uuid, $langcode, $configuration);
+
+  /**
+   * Gets the translated component configuration.
+   *
+   * @param string $uuid
+   *
+   * @return array
+   *   The component configuration.
+   */
+  public function getTranslatedComponentConfiguration($uuid, $langcode);
+
+  /**
+   * Saves translated configuration.
+   *
+   * @return int
+   *   SAVED_NEW or SAVED_UPDATED is returned depending on the operation
+   *   performed.
+   */
+  public function saveTranslatedConfiguration($langcode);
+
 }

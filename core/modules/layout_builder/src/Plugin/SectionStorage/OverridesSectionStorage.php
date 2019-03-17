@@ -414,4 +414,25 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     return TRUE;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function setTranslatedComponentConfiguration($uuid, $langcode, $configuration) {
+    // TODO: Implement setTranslatedComponentConfiguration() method.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTranslatedComponentConfiguration($uuid, $langcode) {
+    // TODO: Implement getTranslatedComponentConfiguration() method.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function saveTranslatedConfiguration($langcode) {
+    return $this->getEntity()->save();
+  }
+
 }
