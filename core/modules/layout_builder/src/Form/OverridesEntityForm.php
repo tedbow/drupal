@@ -90,8 +90,7 @@ class OverridesEntityForm extends ContentEntityForm {
 
 
     // Add the widget for Layout Builder after the alter.
-    $section_storage = $this->getSectionStorage($form_state);
-    if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
+    if ($this->sectionStorage instanceof TranslatableSectionStorageInterface && !$this->sectionStorage->isDefaultTranslation()) {
       $display->setComponent(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME, [
         'type' => 'layout_builder_widget',
         'weight' => -10,
@@ -105,14 +104,8 @@ class OverridesEntityForm extends ContentEntityForm {
         'settings' => [],
       ]);
     }
-
-
-
-
-
     $this->setFormDisplay($display, $form_state);
   }
-
 
   /**
    * {@inheritdoc}
