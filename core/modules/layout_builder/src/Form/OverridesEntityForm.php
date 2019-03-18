@@ -113,7 +113,7 @@ class OverridesEntityForm extends ContentEntityForm {
   public function buildEntity(array $form, FormStateInterface $form_state) {
     $entity = parent::buildEntity($form, $form_state);
     if ($this->sectionStorage instanceof TranslatableSectionStorageInterface && !$this->sectionStorage->isDefaultTranslation()) {
-      $entity->set(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME, [$this->sectionStorage->getTranslatedConfiguration()]);
+      $entity->set(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME, [$this->sectionStorage->getTranslatedConfiguration()]);
     }
     return $entity;
   }

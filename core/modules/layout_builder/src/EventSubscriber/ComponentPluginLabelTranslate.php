@@ -39,10 +39,10 @@ class ComponentPluginLabelTranslate implements EventSubscriberInterface {
 
     /** @var \Drupal\Core\Entity\FieldableEntityInterface $entity */
     $entity = $contexts['layout_builder.entity']->getContextValue();
-    if ($entity instanceof FieldableEntityInterface && $entity instanceof TranslatableInterface && !$entity->isDefaultTranslation() && $entity->hasField(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME)) {
+    if ($entity instanceof FieldableEntityInterface && $entity instanceof TranslatableInterface && !$entity->isDefaultTranslation() && $entity->hasField(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)) {
       $configuration = $plugin->getConfiguration();
-      if (!$entity->get(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME)->isEmpty()) {
-        $translated_layout_configuration = $entity->get(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME)->get(0)->getValue();
+      if (!$entity->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->isEmpty()) {
+        $translated_layout_configuration = $entity->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->get(0)->getValue();
         if (isset($translated_layout_configuration['value']['components'][$component->getUuid()])) {
           $translated_plugin_configuration = $translated_layout_configuration['value']['components'][$component->getUuid()];
           $translated_plugin_configuration += $configuration;

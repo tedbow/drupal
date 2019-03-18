@@ -46,17 +46,11 @@ interface TranslatableSectionStorageInterface {
    */
   public function getTranslatedComponentConfiguration($uuid);
 
-  public function getTranslatedSections();
-
-  public function getTranslatedConfiguration();
-
   /**
-   * Saves translated configuration.
+   * Get the translated configuration for the layout.
    *
-   * @return int
-   *   SAVED_NEW or SAVED_UPDATED is returned depending on the operation
-   *   performed.
+   * @return array
    */
-  public function saveTranslatedConfiguration($langcode);
+  public function getTranslatedConfiguration();
 
 }

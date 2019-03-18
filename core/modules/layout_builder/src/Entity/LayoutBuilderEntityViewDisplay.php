@@ -213,7 +213,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
       ]);
       $field->save();
     }
-    $this->addTranslatedLabelsField($entity_type_id, $bundle, OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME);
+    $this->addTranslatedLabelsField($entity_type_id, $bundle, OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME);
   }
 
   protected function addTranslatedLabelsField($entity_type_id, $bundle, $field_name) {

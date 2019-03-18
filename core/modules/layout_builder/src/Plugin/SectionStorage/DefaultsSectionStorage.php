@@ -456,43 +456,24 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   }
 
   /**
-   * Sets the translated component configuration.
-   *
-   * @param string $uuid
-   * @param array $configuration
+   * {@inheritdoc}
    */
   public function setTranslatedComponentConfiguration($uuid, array $configuration) {
     // TODO: Implement setTranslatedComponentConfiguration() method.
   }
 
   /**
-   * Gets the translated component configuration.
-   *
-   * @param string $uuid
-   *
-   * @return array
-   *   The component configuration.
+   * {@inheritdoc}
    */
   public function getTranslatedComponentConfiguration($uuid) {
     // TODO: Implement getTranslatedComponentConfiguration() method.
   }
 
   /**
-   * Saves translated configuration.
-   *
-   * @return int
-   *   SAVED_NEW or SAVED_UPDATED is returned depending on the operation
-   *   performed.
+   * {@inheritdoc}
    */
-  public function saveTranslatedConfiguration($langcode) {
-    // TODO: Implement saveTranslatedConfiguration() method.
-  }
-
-  public function getTranslatedSections() {
-    // TODO: Implement getTranslatedSections() method.
-  }
-
   public function getTranslatedConfiguration() {
     // TODO: Implement getTranslatedConfiguration() method.
   }
+
 }
