@@ -55,6 +55,8 @@ class LayoutBuilderWidget extends WidgetBase {
       $items->setValue($section_storage->getSections());
     }
     elseif ($field_name === OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME && $section_storage instanceof TranslatableSectionStorageInterface) {
+      // The translated configuration is stored in single value field because it
+      // stores configuration for components in all sections.
       $items->set(0, $section_storage->getTranslatedConfiguration());
     }
     else {
