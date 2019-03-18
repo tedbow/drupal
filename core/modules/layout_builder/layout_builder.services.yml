@@ -42,7 +42,7 @@ services:
     tags:
       - { name: event_subscriber }
   layout_builder.translate_block_component_subscriber:
-    class: Drupal\layout_builder\EventSubscriber\ComponentPluginLabelTranslate
+    class: Drupal\layout_builder\EventSubscriber\ComponentPluginTranslate
     tags:
       - { name: event_subscriber }
   logger.channel.layout_builder:

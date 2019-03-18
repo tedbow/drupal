@@ -113,6 +113,8 @@ class OverridesEntityForm extends ContentEntityForm {
   public function buildEntity(array $form, FormStateInterface $form_state) {
     $entity = parent::buildEntity($form, $form_state);
     if ($this->sectionStorage instanceof TranslatableSectionStorageInterface && !$this->sectionStorage->isDefaultTranslation()) {
+      // @todo get sections from unchanged entity? You shouldn't override layout on non-default
+      //   should TRANSLATED_CONFIGURATION_FIELD_NAME have it's own form and widget?
       $entity->set(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME, [$this->sectionStorage->getTranslatedConfiguration()]);
     }
     return $entity;

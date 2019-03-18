@@ -13,7 +13,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * Translates the plugin label if set in the plugin configuration.
  */
-class ComponentPluginLabelTranslate implements EventSubscriberInterface {
+class ComponentPluginTranslate implements EventSubscriberInterface {
 
   /**
    * {@inheritdoc}
@@ -48,11 +48,8 @@ class ComponentPluginLabelTranslate implements EventSubscriberInterface {
           $translated_plugin_configuration += $configuration;
           $plugin->setConfiguration($translated_plugin_configuration);
         }
-
       }
-
     }
-
   }
 
 }
