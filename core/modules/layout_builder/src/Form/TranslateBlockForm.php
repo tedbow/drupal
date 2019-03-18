@@ -55,8 +55,12 @@ class TranslateBlockForm extends ConfigureBlockFormBase {
    * {@inheritdoc}
    */
   protected function getPluginForm(BlockPluginInterface $block) {
+
     if ($block instanceof PluginWithFormsInterface) {
-      return $this->pluginFormFactory->createInstance($block, 'layout_builder_translation');
+      $plugin_form = $this->pluginFormFactory->createInstance($block, 'layout_builder_translation');
+      $plugin_form->setTranslatedConfiguration($this->sectionStorage->getTranslatedComponentConfiguration($this->uuid));
+      return $plugin_form;
+
     }
     return $block;
   }
@@ -75,6 +79,23 @@ class TranslateBlockForm extends ConfigureBlockFormBase {
       }
       $subform_state->setValue('context_mapping', $mapping);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Call the plugin submit handler.
+    $subform_state = SubformState::createForSubform($form['settings'], $form, $form_state);
+    $this->getPluginForm($this->block)->submitConfigurationForm($form, $subform_state);
+
+    $settings = $subform_state->getValues();
+    /** @var \Drupal\layout_builder\TranslatableSectionStorageInterface $section_storage */
+    $section_storage = $this->sectionStorage;
+    $section_storage->setTranslatedComponentConfiguration($this->uuid, $settings);
+
+    $this->layoutTempstoreRepository->set($this->sectionStorage);
+    $form_state->setRedirectUrl($this->sectionStorage->getLayoutBuilderUrl());
   }
 
 }

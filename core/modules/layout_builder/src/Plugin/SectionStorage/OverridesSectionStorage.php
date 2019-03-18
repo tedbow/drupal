@@ -2,6 +2,7 @@
 
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
+use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
@@ -37,7 +38,8 @@ use Symfony\Component\Routing\RouteCollection;
  *   weight = -20,
  *   context_definitions = {
  *     "entity" = @ContextDefinition("entity", constraints = {
- *       "EntityHasField" = \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage::FIELD_NAME,
+ *       "EntityHasField" =
+ *   \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage::FIELD_NAME,
  *     }),
  *     "view_mode" = @ContextDefinition("string"),
  *   }
@@ -417,15 +419,25 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function setTranslatedComponentConfiguration($uuid, $langcode, $configuration) {
-    // TODO: Implement setTranslatedComponentConfiguration() method.
+  public function setTranslatedComponentConfiguration($uuid, array $configuration) {
+    if (!$this->getEntity()->get(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME)->isEmpty()) {
+      $translation_settings = $this->getEntity()->get(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME)->getValue()[0];
+    }
+    $translation_settings['value']['components'][$uuid] = $configuration;
+    $this->getEntity()->set(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME, [$translation_settings]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getTranslatedComponentConfiguration($uuid, $langcode) {
-    // TODO: Implement getTranslatedComponentConfiguration() method.
+  public function getTranslatedComponentConfiguration($uuid) {
+    if ($this->getEntity()->get(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME)->isEmpty()) {
+      return [];
+    }
+    else {
+      $translation_settings = $this->getEntity()->get(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME)->getValue()[0];
+    }
+    return isset($translation_settings['value']['components'][$uuid]) ? $translation_settings['value']['components'][$uuid] : [];
   }
 
   /**
@@ -435,4 +447,59 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     return $this->getEntity()->save();
   }
 
+  public function getTranslatedSections() {
+    $sections = $this->getSections();
+    return $sections;
+    if ($this->isDefaultTranslation()) {
+      return $sections;
+    }
+    /** @var \Drupal\layout_builder\Section $section */
+    foreach ($sections as $section) {
+      foreach ($section->getComponents() as $component) {
+        $translated_configuration = $this->getTranslatedComponentConfiguration($component->getUuid());
+        if (!empty($translated_configuration)) {
+          $plugin = $component->getPlugin();
+          if ($plugin instanceof ConfigurableInterface) {
+            $untranslated_configuration = $plugin->getConfiguration();
+            $translated_configuration += $untranslated_configuration;
+            $component->setConfiguration($translated_configuration);
+          }
+        }
+      }
+    }
+    return $sections;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getSections() {
+    $sections = parent::getSections();
+    if ($this->isDefaultTranslation()) {
+      return $sections;
+    }
+    /** @var \Drupal\layout_builder\Section $section */
+    foreach ($sections as $section) {
+      foreach ($section->getComponents() as $component) {
+        $translated_configuration = $this->getTranslatedComponentConfiguration($component->getUuid());
+        if (!empty($translated_configuration)) {
+          $plugin = $component->getPlugin();
+          if ($plugin instanceof ConfigurableInterface) {
+            $untranslated_configuration = $plugin->getConfiguration();
+            $translated_configuration += $untranslated_configuration;
+            $component->setConfiguration($translated_configuration);
+          }
+        }
+      }
+    }
+    return $sections;
+  }
+
+
+  public function getTranslatedConfiguration() {
+    if ($this->getEntity()->get(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME)->isEmpty()) {
+      return [];
+    }
+    return $this->getEntity()->get(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME)->getValue()[0];
+  }
 }

@@ -34,7 +34,7 @@ interface TranslatableSectionStorageInterface {
    * @param string $uuid
    * @param array $configuration
    */
-  public function setTranslatedComponentConfiguration($uuid, $langcode, $configuration);
+  public function setTranslatedComponentConfiguration($uuid, array $configuration);
 
   /**
    * Gets the translated component configuration.
@@ -44,7 +44,11 @@ interface TranslatableSectionStorageInterface {
    * @return array
    *   The component configuration.
    */
-  public function getTranslatedComponentConfiguration($uuid, $langcode);
+  public function getTranslatedComponentConfiguration($uuid);
+
+  public function getTranslatedSections();
+
+  public function getTranslatedConfiguration();
 
   /**
    * Saves translated configuration.

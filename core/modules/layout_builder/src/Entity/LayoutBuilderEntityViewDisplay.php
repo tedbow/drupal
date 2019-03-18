@@ -17,6 +17,7 @@ use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorage\SectionStorageTrait;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 
 /**
  * Provides an entity view display entity that has a layout.
@@ -223,7 +224,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
         $field_storage = FieldStorageConfig::create([
           'entity_type' => $entity_type_id,
           'field_name' => $field_name,
-          'type' => 'map',
+          'type' => 'layout_translation',
           'locked' => TRUE,
         ]);
         $field_storage->setTranslatable(TRUE);
@@ -317,7 +318,13 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
 
     $build = [];
     if ($storage) {
-      foreach ($storage->getSections() as $delta => $section) {
+      if ($storage instanceof TranslatableSectionStorageInterface) {
+        $sections = $storage->getTranslatedSections();
+      }
+      else {
+        $sections = $storage->getSections();
+      }
+      foreach ($sections as $delta => $section) {
         $build[$delta] = $section->toRenderArray($contexts);
       }
     }

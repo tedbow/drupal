@@ -455,4 +455,44 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
     return \Drupal::languageManager()->getDefaultLanguage()->getId() === \Drupal::languageManager()->getCurrentLanguage()->getId();
   }
 
+  /**
+   * Sets the translated component configuration.
+   *
+   * @param string $uuid
+   * @param array $configuration
+   */
+  public function setTranslatedComponentConfiguration($uuid, array $configuration) {
+    // TODO: Implement setTranslatedComponentConfiguration() method.
+  }
+
+  /**
+   * Gets the translated component configuration.
+   *
+   * @param string $uuid
+   *
+   * @return array
+   *   The component configuration.
+   */
+  public function getTranslatedComponentConfiguration($uuid) {
+    // TODO: Implement getTranslatedComponentConfiguration() method.
+  }
+
+  /**
+   * Saves translated configuration.
+   *
+   * @return int
+   *   SAVED_NEW or SAVED_UPDATED is returned depending on the operation
+   *   performed.
+   */
+  public function saveTranslatedConfiguration($langcode) {
+    // TODO: Implement saveTranslatedConfiguration() method.
+  }
+
+  public function getTranslatedSections() {
+    // TODO: Implement getTranslatedSections() method.
+  }
+
+  public function getTranslatedConfiguration() {
+    // TODO: Implement getTranslatedConfiguration() method.
+  }
 }

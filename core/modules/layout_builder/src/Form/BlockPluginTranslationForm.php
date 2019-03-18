@@ -27,6 +27,11 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
   protected $currentLangcode;
 
   /**
+   * @var array
+   */
+  protected $translatedConfiguration;
+
+  /**
    * BlockPluginTranslationForm constructor.
    *
    * @param string $current_langcode
@@ -51,15 +56,12 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     if ($this->plugin instanceof ConfigurableInterface) {
       $configuration = $this->plugin->getConfiguration();
-      $form['translated_label'] = [
+      $form['label'] = [
         '#title' => $this->t('Label'),
         '#type' => 'textfield',
-        '#default_value' => isset($configuration['layout_builder_translations'][$this->currentLangcode]['label']) ? $configuration['layout_builder_translations'][$this->currentLangcode]['label'] : $configuration['label'],
+        '#default_value' => isset($this->translatedConfiguration['label']) ? $this->translatedConfiguration['label'] : $configuration['label'],
         '#required' => TRUE,
       ];
-      if ($this->plugin instanceof ContextAwarePluginInterface) {
-        $form['context_mapping'] = $this->addContextAssignmentElement($this->plugin, $this->plugin->getContexts());
-      }
     }
     return $form;
   }
@@ -74,11 +76,16 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    if ($this->plugin instanceof ConfigurableInterface) {
+    /*if ($this->plugin instanceof ConfigurableInterface) {
       $configuration = $this->plugin->getConfiguration();
       $configuration['layout_builder_translations'][$this->currentLangcode]['label'] = $form_state->getValue('translated_label');
       $this->plugin->setConfiguration($configuration);
-    }
+    }*/
+  }
+
+  public function setTranslatedConfiguration(array $translated_configuration) {
+    $this->translatedConfiguration = $translated_configuration;
+
   }
 
 }

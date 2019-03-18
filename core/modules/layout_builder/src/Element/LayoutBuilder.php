@@ -94,7 +94,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    */
   public function preRender($element) {
     if ($element['#section_storage'] instanceof SectionStorageInterface) {
-      $language = $element['#lanuauge'] ?: NULL;
+      $language = !empty($element['#lanuauge']) ? $element['#lanuauge'] : NULL;
       $element['layout_builder'] = $this->layout($element['#section_storage'], $language);
 
     }

@@ -24,7 +24,7 @@ trait JavascriptTranslationTestTrait {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
     $this->clickContextualLink($block_selector, 'Translate block');
-    $label_input = $assert_session->waitForElementVisible('css', '#drupal-off-canvas [name="settings[translated_label]"]');
+    $label_input = $assert_session->waitForElementVisible('css', '#drupal-off-canvas [name="settings[label]"]');
     $this->assertNotEmpty($label_input);
     $this->assertEquals($expected_label, $label_input->getValue());
     $label_input->setValue($new_label);
