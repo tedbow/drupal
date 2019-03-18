@@ -88,13 +88,6 @@ class OverridesEntityForm extends ContentEntityForm {
     // Allow modules to choose if they are relevant to the layout form.
     $this->moduleHandler->alter('layout_builder_overrides_entity_form_display', $display);
 
-    if ($this->sectionStorage instanceof TranslatableSectionStorageInterface && !$this->sectionStorage->isDefaultTranslation()) {
-//      $display->setComponent(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME, [
-//        'type' => 'layout_builder_widget',
-//        'weight' => -10,
-//        'settings' => [],
-//      ]);
-    }
        // Add the widget for Layout Builder after the alter.
       $display->setComponent(OverridesSectionStorage::FIELD_NAME, [
         'type' => 'layout_builder_widget',

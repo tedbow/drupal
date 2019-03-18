@@ -11,7 +11,7 @@ use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Translates the plugin label if set in the plugin configuration.
+ * Translates the plugin configuration if needed.
  */
 class ComponentPluginTranslate implements EventSubscriberInterface {
 
@@ -24,7 +24,7 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
   }
 
   /**
-   * Translates the plugin label if set.
+   * Translates the plugin configuration if needed.
    *
    * @param \Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent $event
    *   The section component render event.
