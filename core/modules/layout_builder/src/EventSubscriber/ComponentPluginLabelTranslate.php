@@ -3,8 +3,11 @@
 namespace Drupal\layout_builder\EventSubscriber;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\TranslatableInterface;
 use Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent;
 use Drupal\layout_builder\LayoutBuilderEvents;
+use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -29,18 +32,27 @@ class ComponentPluginLabelTranslate implements EventSubscriberInterface {
   public function onBuildRender(SectionComponentBuildRenderArrayEvent $event) {
     $plugin = $event->getPlugin();
     $contexts = $event->getContexts();
+    $component = $event->getComponent();
     if (!$plugin instanceof ConfigurableInterface && !isset($contexts['layout_builder.entity'])) {
       return;
     }
 
-    /** @var \Drupal\Core\Entity\EntityInterface $entity */
+    /** @var \Drupal\Core\Entity\FieldableEntityInterface $entity */
     $entity = $contexts['layout_builder.entity']->getContextValue();
-    $langcode = $entity->language()->getId();
-    $configuration = $plugin->getConfiguration();
-    if (isset($configuration['label']) && isset($configuration['layout_builder_translations'][$langcode]['label'])) {
-      $configuration['label'] = $configuration['layout_builder_translations'][$langcode]['label'];
-      $plugin->setConfiguration($configuration);
+    if ($entity instanceof FieldableEntityInterface && $entity instanceof TranslatableInterface && !$entity->isDefaultTranslation() && $entity->hasField(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME)) {
+      $configuration = $plugin->getConfiguration();
+      if (!$entity->get(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME)->isEmpty()) {
+        $translated_layout_configuration = $entity->get(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME)->get(0)->getValue();
+        if (isset($translated_layout_configuration['value']['components'][$component->getUuid()])) {
+          $translated_plugin_configuration = $translated_layout_configuration['value']['components'][$component->getUuid()];
+          $translated_plugin_configuration += $configuration;
+          $plugin->setConfiguration($translated_plugin_configuration);
+        }
+
+      }
+
     }
+
   }
 
 }

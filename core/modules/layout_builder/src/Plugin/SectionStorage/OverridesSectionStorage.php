@@ -19,6 +19,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
+use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface;
 use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -455,17 +456,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     }
     /** @var \Drupal\layout_builder\Section $section */
     foreach ($sections as $section) {
-      foreach ($section->getComponents() as $component) {
-        $translated_configuration = $this->getTranslatedComponentConfiguration($component->getUuid());
-        if (!empty($translated_configuration)) {
-          $plugin = $component->getPlugin();
-          if ($plugin instanceof ConfigurableInterface) {
-            $untranslated_configuration = $plugin->getConfiguration();
-            $translated_configuration += $untranslated_configuration;
-            $component->setConfiguration($translated_configuration);
-          }
-        }
-      }
+      $this->translateSection($section);
     }
     return $sections;
   }
@@ -473,24 +464,24 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * @inheritDoc
    */
-  public function getSections() {
+  public function xgetSection($delta) {
+    $section = parent::getSection($delta);
+    $this->translateSection($section);
+    return $section;
+  }
+
+
+  /**
+   * @inheritDoc
+   */
+  public function gxetSections() {
     $sections = parent::getSections();
     if ($this->isDefaultTranslation()) {
       return $sections;
     }
     /** @var \Drupal\layout_builder\Section $section */
     foreach ($sections as $section) {
-      foreach ($section->getComponents() as $component) {
-        $translated_configuration = $this->getTranslatedComponentConfiguration($component->getUuid());
-        if (!empty($translated_configuration)) {
-          $plugin = $component->getPlugin();
-          if ($plugin instanceof ConfigurableInterface) {
-            $untranslated_configuration = $plugin->getConfiguration();
-            $translated_configuration += $untranslated_configuration;
-            $component->setConfiguration($translated_configuration);
-          }
-        }
-      }
+      $this->translateSection($section);
     }
     return $sections;
   }
@@ -501,5 +492,14 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
       return [];
     }
     return $this->getEntity()->get(OverridesSectionStorage::TRANSLATED_LABELS_FIELD_NAME)->getValue()[0];
+  }
+
+  /**
+   * @param \Drupal\layout_builder\Section $section
+   */
+  protected function translateSection(Section $section) {
+    foreach ($section->getComponents() as $component) {
+      $component->setTranslatedConfiguration($this->getTranslatedComponentConfiguration($component->getUuid()));
+    }
   }
 }

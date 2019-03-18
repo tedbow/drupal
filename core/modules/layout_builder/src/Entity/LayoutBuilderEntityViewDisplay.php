@@ -318,13 +318,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
 
     $build = [];
     if ($storage) {
-      if ($storage instanceof TranslatableSectionStorageInterface) {
-        $sections = $storage->getTranslatedSections();
-      }
-      else {
-        $sections = $storage->getSections();
-      }
-      foreach ($sections as $delta => $section) {
+      foreach ($storage->getSections() as $delta => $section) {
         $build[$delta] = $section->toRenderArray($contexts);
       }
     }
