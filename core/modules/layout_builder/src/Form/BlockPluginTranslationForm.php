@@ -3,18 +3,18 @@
 namespace Drupal\layout_builder\Form;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
-use Drupal\Component\Plugin\ContextAwarePluginInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
 use Drupal\Core\Plugin\PluginFormBase;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\layout_builder\LayoutBuilderPluginTranslationFormInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a block plugin form for translatable settings in the Layout Builder.
  */
-class BlockPluginTranslationForm extends PluginFormBase implements ContainerInjectionInterface {
+class BlockPluginTranslationForm extends PluginFormBase implements ContainerInjectionInterface, LayoutBuilderPluginTranslationFormInterface {
 
   use StringTranslationTrait;
   use ContextAwarePluginAssignmentTrait;
@@ -76,16 +76,13 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    /*if ($this->plugin instanceof ConfigurableInterface) {
-      $configuration = $this->plugin->getConfiguration();
-      $configuration['layout_builder_translations'][$this->currentLangcode]['label'] = $form_state->getValue('translated_label');
-      $this->plugin->setConfiguration($configuration);
-    }*/
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function setTranslatedConfiguration(array $translated_configuration) {
     $this->translatedConfiguration = $translated_configuration;
-
   }
 
 }

@@ -6,7 +6,9 @@ use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\Plugin\PluginWithFormsInterface;
+use Drupal\layout_builder\LayoutBuilderPluginTranslationFormInterface;
 use Drupal\layout_builder\SectionStorageInterface;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 
 /**
  * Provides a form to translate a block in the Layout Builder.
@@ -55,30 +57,15 @@ class TranslateBlockForm extends ConfigureBlockFormBase {
    * {@inheritdoc}
    */
   protected function getPluginForm(BlockPluginInterface $block) {
-
-    if ($block instanceof PluginWithFormsInterface) {
+    if ($block instanceof PluginWithFormsInterface && $this->sectionStorage instanceof TranslatableSectionStorageInterface) {
       $plugin_form = $this->pluginFormFactory->createInstance($block, 'layout_builder_translation');
-      $plugin_form->setTranslatedConfiguration($this->sectionStorage->getTranslatedComponentConfiguration($this->uuid));
+      if ($plugin_form instanceof LayoutBuilderPluginTranslationFormInterface) {
+        $plugin_form->setTranslatedConfiguration($this->sectionStorage->getTranslatedComponentConfiguration($this->uuid));
+      }
       return $plugin_form;
 
     }
     return $block;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    parent::validateForm($form, $form_state);
-    $subform_state = SubformState::createForSubform($form['settings'], $form, $form_state);
-    if ($subform_state->hasValue('context_mapping')) {
-      $mapping = $subform_state->getValue('context_mapping');
-      // @todo(in this issue) Should really have to switch the context mapping here?
-      if (isset($mapping['entity']) && $mapping['entity'] === 'entity') {
-        $mapping['entity'] = 'layout_builder.entity';
-      }
-      $subform_state->setValue('context_mapping', $mapping);
-    }
   }
 
   /**
