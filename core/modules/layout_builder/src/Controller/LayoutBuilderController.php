@@ -37,7 +37,7 @@ class LayoutBuilderController {
    * @return array
    *   A render array.
    */
-  public function layout(SectionStorageInterface $section_storage, LanguageInterface $language) {
+  public function layout(SectionStorageInterface $section_storage, LanguageInterface $language = NULL) {
     return [
       '#type' => 'layout_builder',
       '#section_storage' => $section_storage,
