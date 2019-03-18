@@ -88,29 +88,29 @@ class OverridesEntityForm extends ContentEntityForm {
     // Allow modules to choose if they are relevant to the layout form.
     $this->moduleHandler->alter('layout_builder_overrides_entity_form_display', $display);
 
-       // Add the widget for Layout Builder after the alter.
+
+    // Add the widget for Layout Builder after the alter.
+    $section_storage = $this->getSectionStorage($form_state);
+    if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
+      $display->setComponent(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME, [
+        'type' => 'layout_builder_widget',
+        'weight' => -10,
+        'settings' => [],
+      ]);
+    }
+    else {
       $display->setComponent(OverridesSectionStorage::FIELD_NAME, [
         'type' => 'layout_builder_widget',
         'weight' => -10,
         'settings' => [],
       ]);
+    }
+
+
 
 
 
     $this->setFormDisplay($display, $form_state);
-  }
-
-  /**
-   * @inheritDoc
-   */
-  public function buildEntity(array $form, FormStateInterface $form_state) {
-    $entity = parent::buildEntity($form, $form_state);
-    if ($this->sectionStorage instanceof TranslatableSectionStorageInterface && !$this->sectionStorage->isDefaultTranslation()) {
-      // @todo get sections from unchanged entity? You shouldn't override layout on non-default
-      //   should TRANSLATED_CONFIGURATION_FIELD_NAME have it's own form and widget?
-      $entity->set(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME, [$this->sectionStorage->getTranslatedConfiguration()]);
-    }
-    return $entity;
   }
 
 

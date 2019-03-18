@@ -5,6 +5,8 @@ namespace Drupal\layout_builder\Plugin\Field\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 
 /**
  * A widget to display the layout form.
@@ -15,6 +17,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   description = @Translation("A field widget for Layout Builder."),
  *   field_types = {
  *     "layout_section",
+ *     "layout_translation"
  *   },
  *   multiple_values = TRUE,
  * )
@@ -46,8 +49,17 @@ class LayoutBuilderWidget extends WidgetBase {
     if (!$form_state->isValidationComplete()) {
       return;
     }
-
-    $items->setValue($this->getSectionStorage($form_state)->getSections());
+    $field_name = $this->fieldDefinition->getName();
+    $section_storage = $this->getSectionStorage($form_state);
+    if ($field_name === OverridesSectionStorage::FIELD_NAME) {
+      $items->setValue($section_storage->getSections());
+    }
+    elseif ($field_name === OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME && $section_storage instanceof TranslatableSectionStorageInterface) {
+      $items->set(0, $section_storage->getTranslatedConfiguration());
+    }
+    else {
+      throw new \LogicException("Widget used with unexpected field, $field_name for section storage: " . $section_storage->getStorageType());
+    }
   }
 
   /**
