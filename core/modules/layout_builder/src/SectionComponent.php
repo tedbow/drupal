@@ -52,15 +52,6 @@ class SectionComponent {
   protected $configuration;
 
   /**
-   * An array of translated plugin configuration.
-   *
-   * Only keys that have translation overrides need to be specified.
-   *
-   * @var mixed[]
-   */
-  protected $translatedConfiguration;
-
-  /**
    * The weight of the component.
    *
    * @var int
@@ -334,14 +325,6 @@ class SectionComponent {
       $component['configuration'],
       $component['additional']
     ))->setWeight($component['weight']);
-  }
-
-  public function setTranslatedConfiguration($translated_configuration) {
-    $this->translatedConfiguration = $translated_configuration;
-  }
-
-  public function getTranslatedConfiguration() {
-    return $this->translatedConfiguration ?: [];
   }
 
 }
