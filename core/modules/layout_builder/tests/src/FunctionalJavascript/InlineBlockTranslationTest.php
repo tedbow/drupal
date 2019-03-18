@@ -110,7 +110,7 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     $this->assertEquals('Block en body', $textarea->getValue());
     $textarea->setValue('Block it body');
 
-    $label_input = $assert_session->elementExists('css', '#drupal-off-canvas [name="settings[translated_label]"]');
+    $label_input = $assert_session->elementExists('css', '#drupal-off-canvas [name="settings[label]"]');
     $this->assertNotEmpty($label_input);
     $this->assertEquals('Block it label', $label_input->getValue());
     $label_input->setValue('Block Updated it label');
@@ -119,10 +119,10 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     $this->assertNoElementAfterWait('#drupal-off-canvas');
     $assert_session->assertWaitOnAjaxRequest();
 
-    $assert_session->pageTextContains('Block it body');
     $assert_session->pageTextContains('Block Updated it label');
-    $assert_session->pageTextNotContains('Block en body');
+    $assert_session->pageTextContains('Block it body');
     $assert_session->pageTextNotContains('Block en label');
+    $assert_session->pageTextNotContains('Block en body');
     $this->assertSaveLayout();
 
     $assert_session->addressEquals('it/node/1');

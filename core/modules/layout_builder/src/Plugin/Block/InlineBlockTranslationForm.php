@@ -159,9 +159,8 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
       $complete_form_state = $form_state instanceof SubformStateInterface ? $form_state->getCompleteFormState() : $form_state;
       $form_display->extractFormValues($block, $block_form, $complete_form_state);
 
-      $configuration = $this->plugin->getConfiguration();
-      $configuration['block_serialized'] = serialize($block);
-      $this->plugin->setConfiguration($configuration);
+      $form_state->setValue('block_serialized', serialize($block));
+      $form_state->unsetValue('block_form');
     }
   }
 
