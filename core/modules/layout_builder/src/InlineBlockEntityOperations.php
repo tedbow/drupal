@@ -199,23 +199,18 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
       }
 
       $section_storage = $this->getSectionStorageForEntity($entity);
-
-      if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
-        $translated_configuration = $section_storage->getTranslatedConfiguration();
-        if (!empty($translated_configuration['value']['components'])) {
-          foreach ($translated_configuration['value']['components'] as $component_uuid => $translated_component_configuration) {
-            if (isset($translated_component_configuration['block_serialized'])) {
-              $this->saveTranslatedInlineBlock($entity, $component_uuid, $translated_component_configuration, $new_revision);
-            }
+      foreach ($this->getInlineBlockComponents($sections) as $component) {
+        if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
+          $translated_component_configuration = $section_storage->getTranslatedComponentConfiguration($component->getUuid());
+          if (isset($translated_component_configuration['block_serialized'])) {
+            $this->saveTranslatedInlineBlock($entity, $component->getUuid(), $translated_component_configuration, $new_revision);
           }
+
         }
-      }
-      else {
-        foreach ($this->getInlineBlockComponents($sections) as $component) {
+        else {
           $this->saveInlineBlockComponent($entity, $component, $new_revision, $duplicate_blocks);
         }
       }
-
     }
     $this->removeUnusedForEntityOnSave($entity);
   }
@@ -304,26 +299,19 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
       $this->usage->addUsage($this->getPluginBlockId($plugin), $entity);
     }
     $component->setConfiguration($post_save_configuration);
-    $section_storage = $this->getSectionStorageForEntity($entity);
-    if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
-      if (!empty($post_save_configuration['block_revision_id'])) {
-        $translated_configuration = $section_storage->getTranslatedComponentConfiguration($component->getUuid());
-        $translated_configuration['block_revision_id'] = $post_save_configuration['block_revision_id'];
-        $section_storage->setTranslatedComponentConfiguration($component->getUuid(),  $translated_configuration);
-
-      }
-    }
   }
 
   /**
+   * Saves a translated inline block.
+   *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity with the layout.
-   * @param $component_uuid
-   *
-   * @param $translated_component_configuration
-   * @param $new_revision
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   * @param string $component_uuid
+   *   The component UUID.
+   * @param array $translated_component_configuration
+   *   The translated component configuration.
+   * @param bool $new_revision
+   *   Whether a new revision of the block should be created.
    */
   protected function saveTranslatedInlineBlock($entity, $component_uuid, $translated_component_configuration, $new_revision) {
     /** @var \Drupal\block_content\BlockContentInterface $block */
