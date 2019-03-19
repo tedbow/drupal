@@ -17,7 +17,6 @@ use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorage\SectionStorageTrait;
-use Drupal\layout_builder\TranslatableSectionStorageInterface;
 
 /**
  * Provides an entity view display entity that has a layout.
