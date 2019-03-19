@@ -2,6 +2,7 @@
 
 namespace Drupal\layout_builder;
 
+use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Core\Plugin\ContextAwarePluginInterface;
 use Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent;
@@ -325,6 +326,27 @@ class SectionComponent {
       $component['configuration'],
       $component['additional']
     ))->setWeight($component['weight']);
+  }
+
+  /**
+   * Determines whether the component has translatable configuration.
+   *
+   * @return bool
+   *   TRUE if the plugin has translatable configuration.
+   */
+  public function hasTranslatableConfiguration() {
+    $plugin = $this->getPlugin();
+    if ($plugin instanceof LayoutBuilderTranslatablePluginInterface) {
+      return $plugin->hasTranslatableConfiguration();
+    }
+    elseif ($plugin instanceof ConfigurableInterface) {
+      // For all plugins that do not implement
+      // LayoutBuilderTranslatablePluginInterface only allow label
+      // translation.
+      $configuration = $plugin->getConfiguration();
+      return !empty($configuration['label_display']) && !empty($configuration['label']);
+    }
+    return FALSE;
   }
 
 }

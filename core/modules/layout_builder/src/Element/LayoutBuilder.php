@@ -2,7 +2,6 @@
 
 namespace Drupal\layout_builder\Element;
 
-use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Core\Ajax\AjaxHelperTrait;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -11,10 +10,8 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Render\Element\RenderElement;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
-use Drupal\layout_builder\LayoutBuilderTranslatablePluginInterface;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
-use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -257,7 +254,8 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     $storage_type = $section_storage->getStorageType();
     $storage_id = $section_storage->getStorageId();
     $section = $section_storage->getSection($delta);
-    $sections_editable = !($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation());
+    $is_translation = $section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation();
+    $sections_editable = !$is_translation;
     $layout = $section->getLayout();
     $build = $section->toRenderArray($this->getAvailableContexts($section_storage), TRUE);
     $layout_definition = $layout->getPluginDefinition();
@@ -285,7 +283,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
               'layout_builder_block' => $contextual_link_settings,
             ];
           }
-          elseif ($this->componentHasTranslatableConfiguration($section_storage, $section->getComponent($uuid))) {
+          elseif ($is_translation && $section->getComponent($uuid)->hasTranslatableConfiguration()) {
             $build[$region][$uuid]['#contextual_links'] = [
               'layout_builder_block_translation' => $contextual_link_settings,
             ];
@@ -377,34 +375,6 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
       ],
       'layout-builder__section' => $build,
     ];
-  }
-
-  /**
-   * Determines if the component is translatable.
-   *
-   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
-   *   The section storage.
-   * @param \Drupal\layout_builder\SectionComponent $component
-   *   The component to check.
-   *
-   * @return bool
-   *   TRUE if the default component has translatable settings, otherwise FALSE.
-   */
-  protected function componentHasTranslatableConfiguration(SectionStorageInterface $section_storage, SectionComponent $component) {
-    if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
-      $plugin = $component->getPlugin();
-      if ($plugin instanceof LayoutBuilderTranslatablePluginInterface) {
-        return $plugin->hasTranslatableConfiguration();
-      }
-      elseif ($plugin instanceof ConfigurableInterface) {
-        // For all plugins that do not implement
-        // LayoutBuilderTranslatablePluginInterface only allow label
-        // translation.
-        $configuration = $plugin->getConfiguration();
-        return !empty($configuration['label_display']) && !empty($configuration['label']);
-      }
-    }
-    return FALSE;
   }
 
 }
