@@ -2,12 +2,10 @@
 
 namespace Drupal\layout_builder\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
-use Drupal\layout_builder\Section;
 
 /**
  * Plugin implementation of the 'layout_section' field type.
@@ -64,4 +62,5 @@ class LayoutTranslationItem extends FieldItemBase {
 
     return $schema;
   }
+
 }

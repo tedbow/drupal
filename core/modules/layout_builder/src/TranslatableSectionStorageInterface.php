@@ -32,7 +32,9 @@ interface TranslatableSectionStorageInterface {
    * Sets the translated component configuration.
    *
    * @param string $uuid
+   *   The component UUID.
    * @param array $configuration
+   *   The component's translated configuration.
    */
   public function setTranslatedComponentConfiguration($uuid, array $configuration);
 
@@ -40,9 +42,10 @@ interface TranslatableSectionStorageInterface {
    * Gets the translated component configuration.
    *
    * @param string $uuid
+   *   The component UUID.
    *
    * @return array
-   *   The component configuration.
+   *   The component's translated configuration.
    */
   public function getTranslatedComponentConfiguration($uuid);
 
@@ -50,6 +53,7 @@ interface TranslatableSectionStorageInterface {
    * Get the translated configuration for the layout.
    *
    * @return array
+   *   The translated configuration for the layout.
    */
   public function getTranslatedConfiguration();
 

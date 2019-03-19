@@ -11,7 +11,7 @@ use Drupal\Core\Form\SubformStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a Layout Builder inline block translation form..
+ * Provides a Layout Builder inline block translation form.
  */
 class InlineBlockTranslationForm extends BlockPluginTranslationForm {
 
@@ -21,7 +21,6 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
    * @var \Drupal\layout_builder\Plugin\Block\InlineBlock
    */
   protected $plugin;
-
 
   /**
    * The block content entity.
@@ -51,6 +50,8 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
    *   The current language code.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   *   The entity repository.
    */
   public function __construct($current_langcode, EntityTypeManagerInterface $entity_type_manager, EntityRepositoryInterface $entity_repository) {
     parent::__construct($current_langcode);

@@ -70,7 +70,6 @@ class LayoutBuilderEntityViewDisplayForm extends EntityViewDisplayEditForm {
       '#access' => $is_enabled,
     ];
 
-
     if ($this->sectionStorage instanceof TranslatableSectionStorageInterface && $this->sectionStorage->isTranslatable()) {
       $form['layout_translations'] = [
         '#type' => 'details',
@@ -82,7 +81,7 @@ class LayoutBuilderEntityViewDisplayForm extends EntityViewDisplayEditForm {
         if ($language->isDefault()) {
           continue;
         }
-        $url =  $this->sectionStorage->getLayoutBuilderUrl();
+        $url = $this->sectionStorage->getLayoutBuilderUrl();
         $form['layout_translations'][$language->getId()] = [
           '#type' => 'link',
           '#title' => $language->getName(),

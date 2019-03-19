@@ -382,9 +382,6 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
   /**
    * Determines if the component is translatable.
    *
-   * @todo determine how handle other settings that need to be translated
-   *    such as the inline blocks use case.
-   *
    * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
    *   The section storage.
    * @param \Drupal\layout_builder\SectionComponent $component
@@ -396,11 +393,13 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
   protected function componentHasTranslatableConfiguration(SectionStorageInterface $section_storage, SectionComponent $component) {
     if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
       $plugin = $component->getPlugin();
-      $contexts = $section_storage->getContexts();
       if ($plugin instanceof LayoutBuilderTranslatablePluginInterface) {
         return $plugin->hasTranslatableConfiguration();
       }
       elseif ($plugin instanceof ConfigurableInterface) {
+        // For all plugins that do not implement
+        // LayoutBuilderTranslatablePluginInterface only allow label
+        // translation.
         $configuration = $plugin->getConfiguration();
         return !empty($configuration['label_display']) && !empty($configuration['label']);
       }

@@ -27,6 +27,8 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
   protected $currentLangcode;
 
   /**
+   * The translated configuration for the plugin.
+   *
    * @var array
    */
   protected $translatedConfiguration;
