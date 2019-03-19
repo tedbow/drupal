@@ -3,7 +3,7 @@
 namespace Drupal\Tests\layout_builder\FunctionalJavascript;
 
 /**
- * Common functions for test Layout Builder with translations.
+ * Common functions for testing Layout Builder with translations.
  */
 trait JavascriptTranslationTestTrait {
 

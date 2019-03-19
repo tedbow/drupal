@@ -112,18 +112,15 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
 
   }
 
-
   /**
    * Tests that access is denied to a layout translation if there is override.
    */
   public function testLayoutTranslationNoOverride() {
     $assert_session = $this->assertSession();
-    $page = $this->getSession()->getPage();
 
     $entity_url = $this->entity->toUrl('canonical')->toString();
     $language = \Drupal::languageManager()->getLanguage($this->langcodes[2]);
     $translated_entity_url = $this->entity->toUrl('canonical', ['language' => $language])->toString();
-    $layout_url = $entity_url . '/layout';
     $translated_layout_url = $translated_entity_url . '/layout';
 
     $this->drupalGet($entity_url);

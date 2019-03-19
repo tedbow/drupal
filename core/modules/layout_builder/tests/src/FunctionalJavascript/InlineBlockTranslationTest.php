@@ -42,7 +42,6 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
    */
   public function testInlineBlockContentTranslation() {
     $assert_session = $this->assertSession();
-    $page = $this->getSession()->getPage();
 
     $this->drupalLogin($this->drupalCreateUser([
       'access contextual links',
@@ -118,7 +117,6 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     $block = $this->blockStorage->load($block_id);
     $this->assertFalse($block->hasTranslation('it'), 'A block translation was not created before the layout was saved.');
 
-
     $this->assertSaveLayout();
     $this->assertEquals($block_id, $this->getLatestBlockEntityId(), 'A new block was not created');
     $this->blockStorage->resetCache([$block_id]);
@@ -134,12 +132,14 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     $assert_session->pageTextNotContains('Block en body');
     $assert_session->pageTextNotContains('Block en label');
 
+    // Confirm that the default translation was not effected.
     $this->drupalGet('node/1');
     $assert_session->pageTextNotContains('Block it body');
     $assert_session->pageTextNotContains('Block updated it label');
     $assert_session->pageTextContains('Block en body');
     $assert_session->pageTextContains('Block en label');
 
+    // Update the translation inline block again.
     $this->drupalGet('it/node/1/layout');
     $this->updateTranslatedBlock('Block updated it label', 'Block it body', 'Block newer updated it label', 'Block updated it body');
     $this->assertSaveLayout();
@@ -156,6 +156,7 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     $assert_session->pageTextNotContains('Block en body');
     $assert_session->pageTextNotContains('Block en label');
 
+    // Confirm that the default translation was not effected.
     $this->drupalGet('node/1');
     $assert_session->pageTextNotContains('Block updated it body');
     $assert_session->pageTextNotContains('Block newer updated it label');
@@ -173,6 +174,7 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     $assert_session->pageTextContains('Block updated en body');
     $assert_session->pageTextContains('Block en label');
 
+    // Confirm that the translation was not effected.
     $this->drupalGet('it/node/1');
     $assert_session->pageTextContains('Block updated it body');
     $assert_session->pageTextContains('Block newer updated it label');
@@ -198,23 +200,29 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
   }
 
   /**
-   * @param string $expected_label
-   * @param string $expected_body
+   * Update a translation inline block.
+   *
+   * @param string $existing_label
+   *   The inline block's existing label.
+   * @param string $existing_body
+   *   The inline block's existing body field value.
    * @param string $new_label
+   *   The new label.
    * @param string $new_body
+   *   The new body field value.
    */
-  protected function updateTranslatedBlock($expected_label, $expected_body, $new_label, $new_body) {
+  protected function updateTranslatedBlock($existing_label, $existing_body, $new_label, $new_body) {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
     $this->clickContextualLink(static::INLINE_BLOCK_LOCATOR, 'Translate block');
     $textarea = $assert_session->waitForElement('css', '[name="settings[block_form][body][0][value]"]');
     $this->assertNotEmpty($textarea);
-    $this->assertEquals($expected_body, $textarea->getValue());
+    $this->assertEquals($existing_body, $textarea->getValue());
     $textarea->setValue($new_body);
 
     $label_input = $assert_session->elementExists('css', '#drupal-off-canvas [name="settings[label]"]');
     $this->assertNotEmpty($label_input);
-    $this->assertEquals($expected_label, $label_input->getValue());
+    $this->assertEquals($existing_label, $label_input->getValue());
     $label_input->setValue($new_label);
     $page->pressButton('Translate');
 
@@ -223,8 +231,8 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
 
     $assert_session->pageTextContains($new_label);
     $assert_session->pageTextContains($new_label);
-    $assert_session->pageTextNotContains($expected_label);
-    $assert_session->pageTextNotContains($expected_body);
+    $assert_session->pageTextNotContains($existing_label);
+    $assert_session->pageTextNotContains($existing_body);
   }
 
 }
