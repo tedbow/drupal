@@ -72,6 +72,7 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('Block en label');
     $assert_session->pageTextContains('Block en body');
+    $block_id = $this->getLatestBlockEntityId();
 
     // Create a translation.
     $add_translation_url = Url::fromRoute("entity.node.content_translation_add", [
@@ -96,6 +97,11 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     );
 
     $this->assertSaveLayout();
+    $this->assertEquals($block_id, $this->getLatestBlockEntityId(), 'A new block was not created.');
+    $this->blockStorage->resetCache([$block_id]);
+    /** @var \Drupal\block_content\BlockContentInterface $block */
+    $block = $this->blockStorage->load($block_id);
+    $this->assertFalse($block->hasTranslation('it'), 'A block translation was not created when only the label was translatable.');
 
     // Enable translation for block_content type 'bundle_with_section_field'.
     \Drupal::service('content_translation.manager')->setEnabled('block_content', 'basic', TRUE);
@@ -104,38 +110,121 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     $this->drupalGet('it/node/1/layout');
     $this->assertNonTranslationActionsRemoved();
 
-    $this->clickContextualLink(static::INLINE_BLOCK_LOCATOR, 'Translate block');
-    $textarea = $assert_session->waitForElement('css', '[name="settings[block_form][body][0][value]"]');
-    $this->assertNotEmpty($textarea);
-    $this->assertEquals('Block en body', $textarea->getValue());
-    $textarea->setValue('Block it body');
+    $this->updateTranslatedBlock('Block it label', 'Block en body', 'Block updated it label', 'Block it body');
 
-    $label_input = $assert_session->elementExists('css', '#drupal-off-canvas [name="settings[label]"]');
-    $this->assertNotEmpty($label_input);
-    $this->assertEquals('Block it label', $label_input->getValue());
-    $label_input->setValue('Block Updated it label');
-    $page->pressButton('Translate');
+    $this->assertEquals($block_id, $this->getLatestBlockEntityId(), 'A new block was not created.');
+    $this->blockStorage->resetCache([$block_id]);
+    /** @var \Drupal\block_content\BlockContentInterface $block */
+    $block = $this->blockStorage->load($block_id);
+    $this->assertFalse($block->hasTranslation('it'), 'A block translation was not created before the layout was saved.');
 
-    $this->assertNoElementAfterWait('#drupal-off-canvas');
-    $assert_session->assertWaitOnAjaxRequest();
 
-    $assert_session->pageTextContains('Block Updated it label');
-    $assert_session->pageTextContains('Block it body');
-    $assert_session->pageTextNotContains('Block en label');
-    $assert_session->pageTextNotContains('Block en body');
     $this->assertSaveLayout();
+    $this->assertEquals($block_id, $this->getLatestBlockEntityId(), 'A new block was not created');
+    $this->blockStorage->resetCache([$block_id]);
+    /** @var \Drupal\block_content\BlockContentInterface $block */
+    $block = $this->blockStorage->load($block_id);
+    $this->assertTrue($block->hasTranslation('it'), 'A block translation was created when the layout was saved.');
+    $block_translation = $block->getTranslation('it');
+    $this->assertEquals('Block it body', $block_translation->get('body')->get(0)->getValue()['value'], 'The translated block body field was created correctly.');
 
     $assert_session->addressEquals('it/node/1');
     $assert_session->pageTextContains('Block it body');
-    $assert_session->pageTextContains('Block Updated it label');
+    $assert_session->pageTextContains('Block updated it label');
     $assert_session->pageTextNotContains('Block en body');
     $assert_session->pageTextNotContains('Block en label');
 
     $this->drupalGet('node/1');
     $assert_session->pageTextNotContains('Block it body');
-    $assert_session->pageTextNotContains('Block Updated it label');
+    $assert_session->pageTextNotContains('Block updated it label');
     $assert_session->pageTextContains('Block en body');
     $assert_session->pageTextContains('Block en label');
+
+    $this->drupalGet('it/node/1/layout');
+    $this->updateTranslatedBlock('Block updated it label', 'Block it body', 'Block newer updated it label', 'Block updated it body');
+    $this->assertSaveLayout();
+
+    $this->assertEquals($block_id, $this->getLatestBlockEntityId(), 'A new block was not created.');
+    $this->blockStorage->resetCache([$block_id]);
+    $block = $this->blockStorage->load($block_id);
+    $block_translation = $block->getTranslation('it');
+    $this->assertEquals('Block updated it body', $block_translation->get('body')->get(0)->getValue()['value'], 'The translated block body field was created correctly.');
+
+    $assert_session->addressEquals('it/node/1');
+    $assert_session->pageTextContains('Block updated it body');
+    $assert_session->pageTextContains('Block newer updated it label');
+    $assert_session->pageTextNotContains('Block en body');
+    $assert_session->pageTextNotContains('Block en label');
+
+    $this->drupalGet('node/1');
+    $assert_session->pageTextNotContains('Block updated it body');
+    $assert_session->pageTextNotContains('Block newer updated it label');
+    $assert_session->pageTextContains('Block en body');
+    $assert_session->pageTextContains('Block en label');
+
+    // Update the default translation's version of the block.
+    $this->drupalGet('node/1/layout');
+    $this->configureInlineBlock('Block en body', 'Block updated en body');
+    $this->assertSaveLayout();
+
+    $assert_session->addressEquals('node/1');
+    $assert_session->pageTextNotContains('Block updated it body');
+    $assert_session->pageTextNotContains('Block newer updated it label');
+    $assert_session->pageTextContains('Block updated en body');
+    $assert_session->pageTextContains('Block en label');
+
+    $this->drupalGet('it/node/1');
+    $assert_session->pageTextContains('Block updated it body');
+    $assert_session->pageTextContains('Block newer updated it label');
+    $assert_session->pageTextNotContains('Block updated en body');
+    $assert_session->pageTextNotContains('Block en label');
+
+    // Update the translation block after updating default translation block.
+    $this->drupalGet('it/node/1/layout');
+    $this->updateTranslatedBlock('Block newer updated it label', 'Block updated it body', 'Block even newer updated it label', 'Block newer updated it body');
+    $this->assertSaveLayout();
+
+    $assert_session->addressEquals('it/node/1');
+    $assert_session->pageTextContains('Block newer updated it body');
+    $assert_session->pageTextContains('Block even newer updated it label');
+    $assert_session->pageTextNotContains('Block updated en body');
+    $assert_session->pageTextNotContains('Block en label');
+
+    $this->drupalGet('node/1');
+    $assert_session->pageTextNotContains('Block newer updated it body');
+    $assert_session->pageTextNotContains('Block even newer updated it label');
+    $assert_session->pageTextContains('Block updated en body');
+    $assert_session->pageTextContains('Block en label');
+  }
+
+  /**
+   * @param string $expected_label
+   * @param string $expected_body
+   * @param string $new_label
+   * @param string $new_body
+   */
+  protected function updateTranslatedBlock($expected_label, $expected_body, $new_label, $new_body) {
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    $this->clickContextualLink(static::INLINE_BLOCK_LOCATOR, 'Translate block');
+    $textarea = $assert_session->waitForElement('css', '[name="settings[block_form][body][0][value]"]');
+    $this->assertNotEmpty($textarea);
+    $this->assertEquals($expected_body, $textarea->getValue());
+    $textarea->setValue($new_body);
+
+    $label_input = $assert_session->elementExists('css', '#drupal-off-canvas [name="settings[label]"]');
+    $this->assertNotEmpty($label_input);
+    $this->assertEquals($expected_label, $label_input->getValue());
+    $label_input->setValue($new_label);
+    $page->pressButton('Translate');
+
+    $this->assertNoElementAfterWait('#drupal-off-canvas');
+    $assert_session->assertWaitOnAjaxRequest();
+
+    $assert_session->pageTextContains($new_label);
+    $assert_session->pageTextContains($new_label);
+    $assert_session->pageTextNotContains($expected_label);
+    $assert_session->pageTextNotContains($expected_body);
   }
 
 }

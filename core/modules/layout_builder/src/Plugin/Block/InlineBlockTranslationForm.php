@@ -4,6 +4,7 @@ namespace Drupal\layout_builder\Plugin\Block;
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformStateInterface;
@@ -38,6 +39,13 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
   protected $entityTypeManager;
 
   /**
+   * The entity repository.
+   *
+   * @var \Drupal\Core\Entity\EntityRepositoryInterface
+   */
+  protected $entityRepository;
+
+  /**
    * InlineBlockTranslationForm constructor.
    *
    * @param string $current_langcode
@@ -45,9 +53,10 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct($current_langcode, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct($current_langcode, EntityTypeManagerInterface $entity_type_manager, EntityRepositoryInterface $entity_repository) {
     parent::__construct($current_langcode);
     $this->entityTypeManager = $entity_type_manager;
+    $this->entityRepository = $entity_repository;
   }
 
   /**
@@ -56,7 +65,8 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('language_manager')->getCurrentLanguage()->getId(),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('entity.repository')
     );
   }
 
@@ -64,6 +74,19 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
    * {@inheritdoc}
    */
   protected function getEntity() {
+    if (!empty($this->translatedConfiguration)) {
+      if (!empty($this->translatedConfiguration['block_serialized'])) {
+        return unserialize($this->translatedConfiguration['block_serialized']);
+      }
+      elseif (!empty($this->translatedConfiguration['block_revision_id'])) {
+        /** @var \Drupal\block_content\BlockContentInterface $entity */
+        $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($this->translatedConfiguration['block_revision_id']);
+        $entity = $this->entityRepository->getActive('block_content', $entity->id());
+        if ($entity->hasTranslation($this->currentLangcode)) {
+          return $entity->getTranslation($this->currentLangcode);
+        }
+      }
+    }
     $configuration = $this->plugin->getConfiguration();
     if (!empty($configuration['block_serialized'])) {
       return unserialize($configuration['block_serialized']);
@@ -71,6 +94,7 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
     elseif (!empty($configuration['block_revision_id'])) {
       /** @var \Drupal\block_content\BlockContentInterface $entity */
       $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
+      $entity = $this->entityRepository->getActive('block_content', $entity->id());
       if ($entity->hasTranslation($this->currentLangcode)) {
         return $entity->getTranslation($this->currentLangcode);
       }

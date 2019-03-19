@@ -337,7 +337,6 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
     /** @var \Drupal\layout_builder\TranslatableSectionStorageInterface $section_storage */
     $section_storage = $this->getSectionStorageForEntity($entity);
     $section_storage->setTranslatedComponentConfiguration($component_uuid, $translated_component_configuration);
-
   }
 
 }

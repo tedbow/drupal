@@ -9,6 +9,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformStateInterface;
@@ -66,6 +67,13 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
   protected $isNew = TRUE;
 
   /**
+   * The entity repository.
+   *
+   * @var \Drupal\Core\Entity\EntityRepositoryInterface
+   */
+  protected $entityRepository;
+
+  /**
    * Constructs a new InlineBlock.
    *
    * @param array $configuration
@@ -78,8 +86,10 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
    *   The entity type manager service.
    * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
    *   The entity display repository.
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   *   The entity repository.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, EntityRepositoryInterface $entity_repository) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
@@ -87,6 +97,7 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
     if (!empty($this->configuration['block_revision_id']) || !empty($this->configuration['block_serialized'])) {
       $this->isNew = FALSE;
     }
+    $this->entityRepository = $entity_repository;
   }
 
   /**
@@ -98,7 +109,8 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
       $plugin_id,
       $plugin_definition,
       $container->get('entity_type.manager'),
-      $container->get('entity_display.repository')
+      $container->get('entity_display.repository'),
+      $container->get('entity.repository')
     );
   }
 
@@ -226,6 +238,7 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
       }
       elseif (!empty($this->configuration['block_revision_id'])) {
         $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($this->configuration['block_revision_id']);
+        $entity = $this->entityRepository->getActive('block_content', $entity->id());
         $this->blockContent = $entity;
       }
       else {
