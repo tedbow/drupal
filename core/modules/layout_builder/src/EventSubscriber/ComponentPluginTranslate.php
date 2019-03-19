@@ -3,17 +3,18 @@
 namespace Drupal\layout_builder\EventSubscriber;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
-use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Entity\TranslatableInterface;
 use Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent;
 use Drupal\layout_builder\LayoutBuilderEvents;
-use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
+use Drupal\layout_builder\LayoutEntityHelperTrait;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Translates the plugin configuration if needed.
  */
 class ComponentPluginTranslate implements EventSubscriberInterface {
+
+  use LayoutEntityHelperTrait;
 
   /**
    * {@inheritdoc}
@@ -37,17 +38,13 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
       return;
     }
 
-    /** @var \Drupal\Core\Entity\FieldableEntityInterface $entity */
     $entity = $contexts['layout_builder.entity']->getContextValue();
-    if ($entity instanceof FieldableEntityInterface && $entity instanceof TranslatableInterface && !$entity->isDefaultTranslation() && $entity->hasField(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)) {
-      $configuration = $plugin->getConfiguration();
-      if (!$entity->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->isEmpty()) {
-        $translated_layout_configuration = $entity->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->get(0)->getValue();
-        if (isset($translated_layout_configuration['value']['components'][$component->getUuid()])) {
-          $translated_plugin_configuration = $translated_layout_configuration['value']['components'][$component->getUuid()];
-          $translated_plugin_configuration += $configuration;
-          $plugin->setConfiguration($translated_plugin_configuration);
-        }
+    $configuration = $plugin->getConfiguration();
+    $section_storage = $this->getSectionStorageForEntity($entity);
+    if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
+      if ($translated_plugin_configuration = $section_storage->getTranslatedComponentConfiguration($component->getUuid())) {
+        $translated_plugin_configuration += $configuration;
+        $plugin->setConfiguration($translated_plugin_configuration);
       }
     }
   }
