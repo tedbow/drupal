@@ -108,7 +108,6 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     // Update the translate node's inline block.
     $this->drupalGet('it/node/1/layout');
     $this->assertNonTranslationActionsRemoved();
-
     $this->updateTranslatedBlock('Block it label', 'Block en body', 'Block updated it label', 'Block it body');
 
     $this->assertEquals($block_id, $this->getLatestBlockEntityId(), 'A new block was not created.');
@@ -215,7 +214,8 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
     $this->clickContextualLink(static::INLINE_BLOCK_LOCATOR, 'Translate block');
-    $textarea = $assert_session->waitForElement('css', '[name="settings[block_form][body][0][value]"]');
+    //$assert_session->waitForElementVisible('css', '.go', 993939393939393983983983983983983983983983);
+    $textarea = $assert_session->waitForElement('css', '[name="body[0][value]"]');
     $this->assertNotEmpty($textarea);
     $this->assertEquals($existing_body, $textarea->getValue());
     $textarea->setValue($new_body);

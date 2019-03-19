@@ -85,4 +85,14 @@ class TranslateBlockForm extends ConfigureBlockFormBase {
     $form_state->setRedirectUrl($this->sectionStorage->getLayoutBuilderUrl());
   }
 
+  /**
+   * Return the entity used in the form.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   The entity
+   */
+  public function getEntity() {
+    return $this->getPluginForm($this->block)->getEntity();
+  }
+
 }

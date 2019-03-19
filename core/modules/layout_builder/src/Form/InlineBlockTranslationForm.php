@@ -73,7 +73,7 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
   /**
    * {@inheritdoc}
    */
-  protected function getEntity() {
+  public function getEntity() {
     if (!empty($this->translatedConfiguration)) {
       if (!empty($this->translatedConfiguration['block_serialized'])) {
         return unserialize($this->translatedConfiguration['block_serialized']);
@@ -139,10 +139,11 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
   public static function processBlockForm(array $element, FormStateInterface $form_state) {
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = $element['#block'];
-    // @todo (in this issue) Look at how ContentTranslationController creates
-    //   the add/edit translation forms and determine if we need to implement
-    //   the same logic.
-    EntityFormDisplay::collectRenderDisplay($block, 'edit')->buildForm($block, $element, $form_state);
+    $element += \Drupal::service('entity.form_builder')->getForm($block, 'edit');
+    unset($element['form_token']);
+    //$element['actions']['#access'] = FALSE;
+    //$element['content_translation']['#access'] = FALSE;
+    //$element['revision']['#access'] = FALSE;
     $element['revision_log']['#access'] = FALSE;
     $element['info']['#access'] = FALSE;
     $element['langcode']['#access'] = FALSE;
