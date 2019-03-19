@@ -27,7 +27,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  category = @Translation("Inline blocks"),
  *  deriver = "Drupal\layout_builder\Plugin\Derivative\InlineBlockDeriver",
  *  forms = {
- *     "layout_builder_translation" = "\Drupal\layout_builder\Plugin\Block\InlineBlockTranslationForm",
+ *     "layout_builder_translation" = "\Drupal\layout_builder\Form\InlineBlockTranslationForm",
  *   },
  * )
  *

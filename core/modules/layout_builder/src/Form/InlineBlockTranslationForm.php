@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\layout_builder\Plugin\Block;
+namespace Drupal\layout_builder\Form;
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
@@ -8,7 +8,6 @@ use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformStateInterface;
-use Drupal\layout_builder\Form\BlockPluginTranslationForm;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
