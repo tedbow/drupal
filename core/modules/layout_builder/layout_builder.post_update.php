@@ -167,3 +167,9 @@ function layout_builder_post_update_fix_tempstore_keys() {
 function layout_builder_post_update_section_third_party_settings_schema() {
   // Empty post-update hook.
 }
+
+/**
+ * @todo.
+ */
+function layout_builder_post_update_make_layout_untranslatable() {
+}

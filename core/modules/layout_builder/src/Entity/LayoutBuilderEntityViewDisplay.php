@@ -201,6 +201,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
           'type' => 'layout_section',
           'locked' => TRUE,
         ]);
+        $field_storage->setTranslatable(FALSE);
         $field_storage->save();
       }
 
@@ -209,6 +210,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
         'bundle' => $bundle,
         'label' => t('Layout'),
       ]);
+      $field->setTranslatable(FALSE);
       $field->save();
     }
   }
