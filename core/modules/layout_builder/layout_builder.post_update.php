@@ -8,6 +8,8 @@
 use Drupal\Core\Config\Entity\ConfigEntityUpdater;
 use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
 use Drupal\layout_builder\TempStoreIdentifierInterface;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\Entity\FieldConfig;
 
 /**
  * Rebuild plugin dependencies for all entity view displays.
@@ -172,4 +174,25 @@ function layout_builder_post_update_section_third_party_settings_schema() {
  * @todo.
  */
 function layout_builder_post_update_make_layout_untranslatable() {
+  /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
+  $field_manager = \Drupal::service('entity_field.manager');
+  $field_map = $field_manager->getFieldMap();
+  $a = 'b';
+  foreach ($field_map as $entity_type_id => $field_infos) {
+    $bundle_field_has_value = FALSE;
+    if (isset($field_infos['layout_builder__layout']['bundles'])) {
+      foreach ($field_infos['layout_builder__layout']['bundles'] as $bundle) {
+        // @todo check in field has value.
+        $field_config = FieldConfig::loadByName($entity_type_id, $bundle, 'layout_builder__layout');
+
+        $field_config->setTranslatable(FALSE);
+        $field_config->save();
+      }
+      if ($bundle_field_has_value === FALSE) {
+        $field_storage = FieldStorageConfig::loadByName($entity_type_id, 'layout_builder__layout');
+        $field_storage->setTranslatable(FALSE);
+        $field_storage->save();
+      }
+    }
+  }
 }
