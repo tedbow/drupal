@@ -85,7 +85,14 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
 
     // Do not use strings directly while on the translated paths.
     $page->pressButton('edit-submit');
-    $assert_session->linkByHrefNotExists(str_replace($this->baseUrl, '', $this->getSession()->getCurrentUrl()) . '/layout');
+    $layout_href = str_replace($this->baseUrl, '', $this->getSession()->getCurrentUrl()) . '/layout';
+    if ($translated_layout_expected) {
+      $assert_session->linkByHrefExists($layout_href);
+    }
+    else {
+      $assert_session->linkByHrefNotExists($layout_href);
+    }
+
 
     $this->drupalGet($node->toUrl());
     $page->clickLink('Layout');
