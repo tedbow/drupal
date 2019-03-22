@@ -174,9 +174,9 @@ function layout_builder_post_update_section_third_party_settings_schema() {
 }
 
 /**
- * @todo.
+ * Set the layout builder field as non-translatable where possible.
  */
-function layout_builder_post_update_make_layout_untranslatable2() {
+function layout_builder_post_update_make_layout_untranslatable8() {
   /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
   $field_manager = \Drupal::service('entity_field.manager');
   $field_map = $field_manager->getFieldMap();
@@ -186,18 +186,16 @@ function layout_builder_post_update_make_layout_untranslatable2() {
     if (isset($field_infos['layout_builder__layout']['bundles'])) {
       foreach ($field_infos['layout_builder__layout']['bundles'] as $bundle) {
         if (_layout_builder_no_translated_layouts($entity_type_id, $bundle)) {
-          $entity_type_has_translated_layouts = TRUE;
-
           $field_config = FieldConfig::loadByName($entity_type_id, $bundle, OverridesSectionStorage::FIELD_NAME);
-
           $field_config->setTranslatable(FALSE);
           $field_config->save();
         }
         else {
-          $a = 'b';
+          $entity_type_has_translated_layouts = TRUE;
         }
-
       }
+      // Only set the field storage as untranslatable if no bundles had
+      // translated layout.
       if ($entity_type_has_translated_layouts === FALSE) {
         $field_storage = FieldStorageConfig::loadByName($entity_type_id, OverridesSectionStorage::FIELD_NAME);
         $field_storage->setTranslatable(FALSE);
@@ -207,32 +205,57 @@ function layout_builder_post_update_make_layout_untranslatable2() {
   }
 }
 
+/**
+ * Determines if there are no translated layout for a bundle.
+ *
+ * @param string $entity_type_id
+ *   The entity type.
+ * @param $bundle
+ *   The bundle name.
+ *
+ * @return bool
+ *   TRUE if there no translated layout, otherwise FALSE.
+ */
 function _layout_builder_no_translated_layouts($entity_type_id, $bundle) {
   $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
-  $revision_key = $entity_type->getKey('revision');
   $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
+  $schema = \Drupal::database()->schema();
   /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
   $field_manager = \Drupal::service('entity_field.manager');
   if ($storage instanceof SqlContentEntityStorage) {
     $table_mapping = $storage->getTableMapping();
-    // We are only able determine the field revision table using
+    // We are only able determine the field revision and data tables using
     // DefaultTableMapping.
     // @todo Check for \Drupal\Core\Entity\Sql\TableMappingInterface in
-    //    https://www.drupal.org/node/2955442.
+    //   https://www.drupal.org/node/2955442.
     if ($table_mapping instanceof DefaultTableMapping) {
       /** @var \Drupal\Core\Field\FieldStorageDefinitionInterface[] $field */
       $fields = $field_manager->getFieldStorageDefinitions($entity_type_id);
       $field_storage = $fields[OverridesSectionStorage::FIELD_NAME];
-      $revision_field_table = $table_mapping->getDedicatedRevisionTableName($field_storage);
-      $revision_data_table = $table_mapping->getRevisionDataTable();
-      $select = Drupal::database()->select($revision_data_table, 'r');
-      $select->condition('r.default_langcode', 0);
-      $select->innerJoin($revision_field_table, 'rf', "r.$revision_key = rf.revision_id");
-      $select->condition('rf.bundle', $bundle);
-      $select->isNotNull('rf.layout_builder__layout_section');
-      $count = $select->countQuery()->execute()->fetchField();
+      if ($entity_type->hasKey('revision')) {
+        $revision_key = $entity_type->getKey('revision');
+        $data_table = $table_mapping->getRevisionDataTable();
+        $field_table = $table_mapping->getDedicatedRevisionTableName($field_storage);
+        $join_condition = "d.$revision_key = f.revision_id";
+      }
+      else {
+        $data_table = $table_mapping->getDataTable();
+        $field_table = $table_mapping->getFieldTableName(OverridesSectionStorage::FIELD_NAME);
+        $join_condition = "d.{$entity_type->getKey('id')} = f.entity_id";
+      }
+      if (!($schema->tableExists($data_table) && $schema->tableExists($field_table))) {
+        return FALSE;
+      }
+      $select = Drupal::database()->select($data_table, 'd');
+      $select->innerJoin($field_table, 'f', $join_condition);
+      $select->condition('d.default_langcode', 0);
+      $select->condition('f.bundle', $bundle);
+      $select->isNotNull('f.layout_builder__layout_section');
+      $count = (int) $select->countQuery()->execute()->fetchField();
       return empty($count);
     }
   }
+  // If we were not able to execute the query assume there are translated
+  // layouts.
   return FALSE;
 }
