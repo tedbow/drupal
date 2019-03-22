@@ -10,6 +10,9 @@ use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
 use Drupal\layout_builder\TempStoreIdentifierInterface;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Entity\FieldConfig;
+use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
+use Drupal\Core\Entity\Sql\DefaultTableMapping;
 
 /**
  * Rebuild plugin dependencies for all entity view displays.
@@ -173,26 +176,63 @@ function layout_builder_post_update_section_third_party_settings_schema() {
 /**
  * @todo.
  */
-function layout_builder_post_update_make_layout_untranslatable() {
+function layout_builder_post_update_make_layout_untranslatable2() {
   /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
   $field_manager = \Drupal::service('entity_field.manager');
   $field_map = $field_manager->getFieldMap();
   $a = 'b';
   foreach ($field_map as $entity_type_id => $field_infos) {
-    $bundle_field_has_value = FALSE;
+    $entity_type_has_translated_layouts = FALSE;
     if (isset($field_infos['layout_builder__layout']['bundles'])) {
       foreach ($field_infos['layout_builder__layout']['bundles'] as $bundle) {
-        // @todo check in field has value.
-        $field_config = FieldConfig::loadByName($entity_type_id, $bundle, 'layout_builder__layout');
+        if (_layout_builder_no_translated_layouts($entity_type_id, $bundle)) {
+          $entity_type_has_translated_layouts = TRUE;
 
-        $field_config->setTranslatable(FALSE);
-        $field_config->save();
+          $field_config = FieldConfig::loadByName($entity_type_id, $bundle, OverridesSectionStorage::FIELD_NAME);
+
+          $field_config->setTranslatable(FALSE);
+          $field_config->save();
+        }
+        else {
+          $a = 'b';
+        }
+
       }
-      if ($bundle_field_has_value === FALSE) {
-        $field_storage = FieldStorageConfig::loadByName($entity_type_id, 'layout_builder__layout');
+      if ($entity_type_has_translated_layouts === FALSE) {
+        $field_storage = FieldStorageConfig::loadByName($entity_type_id, OverridesSectionStorage::FIELD_NAME);
         $field_storage->setTranslatable(FALSE);
         $field_storage->save();
       }
     }
   }
+}
+
+function _layout_builder_no_translated_layouts($entity_type_id, $bundle) {
+  $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
+  $revision_key = $entity_type->getKey('revision');
+  $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
+  /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
+  $field_manager = \Drupal::service('entity_field.manager');
+  if ($storage instanceof SqlContentEntityStorage) {
+    $table_mapping = $storage->getTableMapping();
+    // We are only able determine the field revision table using
+    // DefaultTableMapping.
+    // @todo Check for \Drupal\Core\Entity\Sql\TableMappingInterface in
+    //    https://www.drupal.org/node/2955442.
+    if ($table_mapping instanceof DefaultTableMapping) {
+      /** @var \Drupal\Core\Field\FieldStorageDefinitionInterface[] $field */
+      $fields = $field_manager->getFieldStorageDefinitions($entity_type_id);
+      $field_storage = $fields[OverridesSectionStorage::FIELD_NAME];
+      $revision_field_table = $table_mapping->getDedicatedRevisionTableName($field_storage);
+      $revision_data_table = $table_mapping->getRevisionDataTable();
+      $select = Drupal::database()->select($revision_data_table, 'r');
+      $select->condition('r.default_langcode', 0);
+      $select->innerJoin($revision_field_table, 'rf', "r.$revision_key = rf.revision_id");
+      $select->condition('rf.bundle', $bundle);
+      $select->isNotNull('rf.layout_builder__layout_section');
+      $count = $select->countQuery()->execute()->fetchField();
+      return empty($count);
+    }
+  }
+  return FALSE;
 }
