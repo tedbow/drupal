@@ -363,7 +363,10 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     $default_section_storage = $this->getDefaultSectionStorage();
     $result = AccessResult::allowedIf($default_section_storage->isLayoutBuilderEnabled())->addCacheableDependency($default_section_storage);
     $entity = $this->getEntity();
-    $result = $result->andIf(AccessResult::allowedIf(!($entity instanceof TranslatableInterface && !$entity->isDefaultTranslation())))->addCacheableDependency($entity);
+    $result = $result->andIf(AccessResult::allowedIf(
+      $entity->getFieldDefinition(OverridesSectionStorage::FIELD_NAME)->isTranslatable()
+      || !($entity instanceof TranslatableInterface && !$entity->isDefaultTranslation())));
+    $result->addCacheableDependency($entity);
     return $return_as_object ? $result : $result->isAllowed();
   }
 

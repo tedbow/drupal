@@ -334,3 +334,15 @@ function layout_builder_system_breadcrumb_alter(Breadcrumb &$breadcrumb, RouteMa
     $breadcrumb->addCacheableDependency($cacheability);
   }
 }
+
+/**
+ * Implements hook_entity_translation_create().
+ */
+function layout_builder_entity_translation_create(EntityInterface $translation) {
+  /** @var \Drupal\Core\Entity\FieldableEntityInterface $translation */
+  if ($translation->hasField(OverridesSectionStorage::FIELD_NAME) && $translation->getFieldDefinition(OverridesSectionStorage::FIELD_NAME)->isTranslatable()) {
+    // When creating a new translation do not copy untranslated section because
+    // layout translations are not supported..
+    $translation->set(OverridesSectionStorage::FIELD_NAME, []);
+  }
+}
