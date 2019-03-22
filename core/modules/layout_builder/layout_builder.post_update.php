@@ -176,7 +176,7 @@ function layout_builder_post_update_section_third_party_settings_schema() {
 /**
  * Set the layout builder field as non-translatable where possible.
  */
-function layout_builder_post_update_make_layout_untranslatable8() {
+function layout_builder_post_update_make_layout_untranslatable() {
   /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
   $field_manager = \Drupal::service('entity_field.manager');
   $field_map = $field_manager->getFieldMap();
