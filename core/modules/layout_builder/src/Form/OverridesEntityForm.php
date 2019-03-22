@@ -93,6 +93,11 @@ class OverridesEntityForm extends ContentEntityForm {
   public function buildForm(array $form, FormStateInterface $form_state, SectionStorageInterface $section_storage = NULL) {
     $entity = $this->getEntity();
     if ($entity instanceof TranslatableInterface && !$entity->isDefaultTranslation()) {
+      // Layouts are not actually translatable but if the section field is set
+      // as translatable because
+      // layout_builder_post_update_make_layout_untranslatable() could set it
+      // as untranslatable provide a message to the user about how to fix this
+      // situation.
       return [
         // @todo Create actual message to that they have a translated layout values.
         '#markup' => $this->t("Whoops we couldn't set field to non-translatable. Our bad."),
