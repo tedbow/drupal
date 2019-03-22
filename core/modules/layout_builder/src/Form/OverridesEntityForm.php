@@ -94,7 +94,8 @@ class OverridesEntityForm extends ContentEntityForm {
     $entity = $this->getEntity();
     if ($entity instanceof TranslatableInterface && !$entity->isDefaultTranslation()) {
       return [
-        '#markup' => $this->t("Oh you would like to translate your layout? That's cool. I get it. Well but it's a little more complicated than that. So, well we tried. But you know there is translation and then localization and well it is really hard to know what you want. Also like what if you want both but maybe only sometimes. And what if you want to switch between one and the other on the same content. Or like what if you want to have some languages be translated and then some languages localized and on THE VERY SAME CONTENT. Like come on can't you see how this is really really complicated. And I haven't mentioned defaults and I wasn't going to mention them. But you know you are probably going to want to translate those and well maybe even localize them. Come on give us a break. But anyways we tried like I said. And you know we are going to do it and it is going to be awesome. So sorry you will just have to wait a little longer. Sorry."),
+        // @todo Create actual message to that they have a translated layout values.
+        '#markup' => $this->t("Whoops we couldn't set field to non-translatable. Our bad."),
       ];
     }
     $this->sectionStorage = $section_storage;
