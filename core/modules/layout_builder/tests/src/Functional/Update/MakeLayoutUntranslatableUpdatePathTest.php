@@ -85,7 +85,10 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
 
     // Do not use strings directly while on the translated paths.
     $page->pressButton('edit-submit');
+    file_put_contents("/Users/ted.bowman/Sites/www/test-$type.html", $page->getOuterHtml());
+
     $layout_href = str_replace($this->baseUrl, '', $this->getSession()->getCurrentUrl()) . '/layout';
+    file_put_contents("/Users/ted.bowman/Sites/www/href-$type.txt", $layout_href);
     if ($translated_layout_expected) {
       $assert_session->linkByHrefExists($layout_href);
     }
