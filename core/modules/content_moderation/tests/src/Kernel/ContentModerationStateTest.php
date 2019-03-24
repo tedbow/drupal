@@ -531,7 +531,7 @@ class ContentModerationStateTest extends KernelTestBase {
     \Drupal::state()->set('entity_test_rev.entity_type', $entity_type);
 
     // Update the entity type in order to remove the 'langcode' field.
-    \Drupal::entityDefinitionUpdateManager()->updateFieldableEntityType($entity_type, \Drupal::service('entity_field.manager')->getFieldStorageDefinitions($entity_type->id()));
+    $this->applyEntityUpdates('entity_test_rev');
 
     $workflow = $this->createEditorialWorkflow();
     $workflow->getTypePlugin()->addEntityTypeAndBundle('entity_test_rev', 'entity_test_rev');
