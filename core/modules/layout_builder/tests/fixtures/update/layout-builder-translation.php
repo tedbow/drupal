@@ -164,8 +164,5 @@ foreach ($nodes as $bundle => $node_info) {
       ->fields(array_keys($values_es))
       ->values($values_es)
       ->execute();
-
-
   }
-
 }
