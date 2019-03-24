@@ -43,6 +43,11 @@ $connection->insert('config')
   ])
   ->values([
     'collection' => '',
+    'name' => 'field.field.node.page.layout_builder__layout',
+    'data' => 'a:16:{s:4:"uuid";s:36:"6439079b-0f6f-43aa-8e08-1ae42ba1333f";s:8:"langcode";s:2:"en";s:6:"status";b:1;s:12:"dependencies";a:2:{s:6:"config";a:2:{i:0;s:41:"field.storage.node.layout_builder__layout";i:1;s:14:"node.type.page";}s:6:"module";a:1:{i:0;s:14:"layout_builder";}}s:2:"id";s:32:"node.page.layout_builder__layout";s:10:"field_name";s:22:"layout_builder__layout";s:11:"entity_type";s:4:"node";s:6:"bundle";s:4:"page";s:5:"label";s:6:"Layout";s:11:"description";s:0:"";s:8:"required";b:0;s:12:"translatable";b:1;s:13:"default_value";a:0:{}s:22:"default_value_callback";s:0:"";s:8:"settings";a:0:{}s:10:"field_type";s:14:"layout_section";}',
+  ])
+  ->values([
+    'collection' => '',
     'name' => 'field.storage.node.layout_builder__layout',
     'data' => 'a:16:{s:4:"uuid";s:36:"65b11331-3cd9-4c45-b7a3-6bcfbfd56c6e";s:8:"langcode";s:2:"en";s:6:"status";b:1;s:12:"dependencies";a:1:{s:6:"module";a:2:{i:0;s:14:"layout_builder";i:1;s:4:"node";}}s:2:"id";s:27:"node.layout_builder__layout";s:10:"field_name";s:22:"layout_builder__layout";s:11:"entity_type";s:4:"node";s:4:"type";s:14:"layout_section";s:8:"settings";a:0:{}s:6:"module";s:14:"layout_builder";s:6:"locked";b:1;s:11:"cardinality";i:1;s:12:"translatable";b:1;s:7:"indexes";a:0:{}s:22:"persist_with_no_fields";b:0;s:14:"custom_storage";b:0;}',
   ])
@@ -59,6 +64,11 @@ $connection->insert('key_value')
     'value' => 'a:1:{i:0;s:47:"field.field.node.article.layout_builder__layout";}',
   ])
   ->values([
+    'collection' => 'config.entity.key_store.field_config',
+    'name' => 'uuid:6439079b-0f6f-43aa-8e08-1ae42ba1333f',
+    'value' => 'a:1:{i:0;s:44:"field.field.node.page.layout_builder__layout";}";}',
+  ])
+  ->values([
     'collection' => 'config.entity.key_store.field_storage_config',
     'name' => 'uuid:65b11331-3cd9-4c45-b7a3-6bcfbfd56c6e',
     'value' => 'a:1:{i:0;s:41:"field.storage.node.layout_builder__layout";}',
@@ -73,7 +83,7 @@ $connection->update('key_value')
   ->fields([
     'collection' => 'entity.definitions.bundle_field_map',
     'name' => 'node',
-    'value' => 'a:5:{s:11:"field_image";a:2:{s:4:"type";s:5:"image";s:7:"bundles";a:1:{s:7:"article";s:7:"article";}}s:7:"comment";a:2:{s:4:"type";s:7:"comment";s:7:"bundles";a:1:{s:7:"article";s:7:"article";}}s:10:"field_tags";a:2:{s:4:"type";s:16:"entity_reference";s:7:"bundles";a:1:{s:7:"article";s:7:"article";}}s:4:"body";a:2:{s:4:"type";s:17:"text_with_summary";s:7:"bundles";a:2:{s:4:"page";s:4:"page";s:7:"article";s:7:"article";}}s:22:"layout_builder__layout";a:2:{s:4:"type";s:14:"layout_section";s:7:"bundles";a:1:{s:7:"article";s:7:"article";}}}',
+    'value' => 'a:5:{s:11:"field_image";a:2:{s:4:"type";s:5:"image";s:7:"bundles";a:1:{s:7:"article";s:7:"article";}}s:7:"comment";a:2:{s:4:"type";s:7:"comment";s:7:"bundles";a:1:{s:7:"article";s:7:"article";}}s:10:"field_tags";a:2:{s:4:"type";s:16:"entity_reference";s:7:"bundles";a:1:{s:7:"article";s:7:"article";}}s:4:"body";a:2:{s:4:"type";s:17:"text_with_summary";s:7:"bundles";a:2:{s:4:"page";s:4:"page";s:7:"article";s:7:"article";}}s:22:"layout_builder__layout";a:2:{s:4:"type";s:14:"layout_section";s:7:"bundles";a:2:{s:7:"article";s:7:"article";s:4:"page";s:4:"page";}}}',
   ])
   ->condition('collection', 'entity.definitions.bundle_field_map')
   ->condition('name', 'node')
