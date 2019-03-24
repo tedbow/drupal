@@ -92,7 +92,7 @@ $nodes = [
     'vid' => 2,
   ],
   'page' => [
-    'has_translated_layout' => TRUE,
+    'has_translated_layout' => FALSE,
     'nid' => 4,
     'vid' => 5,
   ],
@@ -124,7 +124,8 @@ foreach ($nodes as $bundle => $node_info) {
     ->execute()
     ->fetchAssoc();
 
-  $node_field_data['title'] = "Test $bundle - Spanish title";
+  $title = 'Test ' . ucwords($bundle) . ' - Spanish title';
+  $node_field_data['title'] = $title;
   $node_field_data['langcode'] = 'es';
   $node_field_data['default_langcode'] = 0;
   $node_field_data['revision_translation_affected'] = NULL;
@@ -140,7 +141,7 @@ foreach ($nodes as $bundle => $node_info) {
     ->condition('vid', $node_info['vid'])
     ->execute()
     ->fetchAssoc();
-  $node_field_revision['title'] = "Test $bundle - Spanish title";
+  $node_field_revision['title'] = $title;
   $node_field_revision['langcode'] = 'es';
   $node_field_revision['default_langcode'] = 0;
   $node_field_revision['revision_translation_affected'] = NULL;

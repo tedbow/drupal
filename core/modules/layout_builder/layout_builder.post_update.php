@@ -209,7 +209,7 @@ function layout_builder_post_update_make_layout_untranslatable() {
  *
  * @param string $entity_type_id
  *   The entity type.
- * @param $bundle
+ * @param string $bundle
  *   The bundle name.
  *
  * @return bool

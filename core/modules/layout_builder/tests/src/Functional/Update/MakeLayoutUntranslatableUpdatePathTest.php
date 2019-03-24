@@ -42,27 +42,27 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
     // correct labels for the Layout Builder blocks.
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('Test Article - New title');
-    $assert_session->pageTextNotContains('Test article - New title');
+    $assert_session->pageTextNotContains('Test Article - Spanish title');
     $assert_session->pageTextContains('This is in English');
     $assert_session->pageTextNotContains('This is in Spanish');
 
     $this->drupalGet('es/node/1');
-    $assert_session->pageTextNotContains('Test article - New title');
+    $assert_session->pageTextNotContains('Test Article - New title');
     $assert_session->pageTextContains('Test Article - Spanish title');
     $assert_session->pageTextNotContains('This is in English');
     $assert_session->pageTextContains('This is in Spanish');
 
     $this->drupalGet('node/4');
     $assert_session->pageTextContains('Test page');
-    $assert_session->pageTextNotContains('Test page - Spanish title');
+    $assert_session->pageTextNotContains('Test Page - Spanish title');
     $assert_session->pageTextContains('This is in English');
     $assert_session->pageTextNotContains('This is in Spanish');
 
     $this->drupalGet('es/node/4');
-    $assert_session->pageTextNotContains('Test page - Spanish title');
-    $assert_session->pageTextContains('Test page');
-    $assert_session->pageTextNotContains('This is in English');
+    $assert_session->pageTextContains('Test Page - Spanish title');
+    //$assert_session->pageTextContains('Test page');
     // The page not translation does not have a translated layout.
+    $assert_session->pageTextContains('This is in English');
     $assert_session->pageTextNotContains('This is in Spanish');
 
     // Set up a new content type that is translatable and overridable.
