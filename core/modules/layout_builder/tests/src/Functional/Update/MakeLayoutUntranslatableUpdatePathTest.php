@@ -37,7 +37,6 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
     $this->drupalLogin($this->rootUser);
 
     $this->drupalGet('node/1');
-
     $assert_session->pageTextContains('Test Article - New title');
     $assert_session->pageTextNotContains('Test Article - Spanish title');
     $assert_session->pageTextContains('This is in English');
