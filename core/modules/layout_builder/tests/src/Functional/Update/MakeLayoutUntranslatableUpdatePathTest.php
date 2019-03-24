@@ -38,17 +38,32 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
     $assert_session = $this->assertSession();
     $this->drupalLogin($this->rootUser);
 
+    // Test that nodes translations set up in the fixture are loadable and have
+    // correct labels for the Layout Builder blocks.
     $this->drupalGet('node/1');
     $assert_session->pageTextContains('Test Article - New title');
-    $assert_session->pageTextNotContains('Test Article - Spanish title');
+    $assert_session->pageTextNotContains('Test article - New title');
     $assert_session->pageTextContains('This is in English');
     $assert_session->pageTextNotContains('This is in Spanish');
 
     $this->drupalGet('es/node/1');
-    $assert_session->pageTextNotContains('Test Article - New title');
+    $assert_session->pageTextNotContains('Test article - New title');
     $assert_session->pageTextContains('Test Article - Spanish title');
     $assert_session->pageTextNotContains('This is in English');
     $assert_session->pageTextContains('This is in Spanish');
+
+    $this->drupalGet('node/4');
+    $assert_session->pageTextContains('Test page');
+    $assert_session->pageTextNotContains('Test page - Spanish title');
+    $assert_session->pageTextContains('This is in English');
+    $assert_session->pageTextNotContains('This is in Spanish');
+
+    $this->drupalGet('es/node/4');
+    $assert_session->pageTextNotContains('Test page - Spanish title');
+    $assert_session->pageTextContains('Test page');
+    $assert_session->pageTextNotContains('This is in English');
+    // The page not translation does not have a translated layout.
+    $assert_session->pageTextNotContains('This is in Spanish');
 
     // Set up a new content type that is translatable and overridable.
     $this->createContentType(['type' => 'new_content_type']);
@@ -60,6 +75,7 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
 
     // Test both an existing and new content type.
     $this->assertTranslatedLayoutWorkflow('article', TRUE);
+    $this->assertTranslatedLayoutWorkflow('page', FALSE);
     $this->assertTranslatedLayoutWorkflow('new_content_type', FALSE);
   }
 
