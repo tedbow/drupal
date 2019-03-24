@@ -99,11 +99,10 @@ $node_field_data = $connection->select('node_field_data')
   ->condition('vid', '2')
   ->execute()
   ->fetchAssoc();
-$this->assertNotEmpty($node_field_data);
 $node_field_data['title'] = 'Test Article - Spanish title';
 $node_field_data['langcode'] = 'es';
 $node_field_data['default_langcode'] = 0;
-$node_field_data['revision_translation_affected'] = 1;
+$node_field_data['revision_translation_affected'] = NULL;
 $node_field_data['content_translation_source'] = 'en';
 $connection->insert('node_field_data')
   ->fields(array_keys($node_field_data))
@@ -119,7 +118,7 @@ $node_field_revision = $connection->select('node_field_revision')
 $node_field_revision['title'] = 'Test Article - Spanish title';
 $node_field_revision['langcode'] = 'es';
 $node_field_revision['default_langcode'] = 0;
-$node_field_revision['revision_translation_affected'] = 1;
+$node_field_revision['revision_translation_affected'] = NULL;
 $node_field_revision['content_translation_source'] = 'en';
 $connection->insert('node_field_revision')
   ->fields(array_keys($node_field_revision))
