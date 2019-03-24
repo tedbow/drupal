@@ -29,8 +29,10 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
 
   /**
    * Tests the upgrade path for translatable layouts.
+   *
+   * @see layout_builder_post_update_make_layout_untranslatable()
    */
-  public function testRunUpdates() {
+  public function testDisableTranslationOnLayouts() {
     $this->runUpdates();
 
     $assert_session = $this->assertSession();
@@ -92,7 +94,6 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
     else {
       $assert_session->linkByHrefNotExists($layout_href);
     }
-
 
     $this->drupalGet($node->toUrl());
     $page->clickLink('Layout');

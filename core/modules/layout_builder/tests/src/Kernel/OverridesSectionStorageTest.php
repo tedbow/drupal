@@ -86,7 +86,6 @@ class OverridesSectionStorageTest extends KernelTestBase {
         ->save();
     }
 
-
     $entity = EntityTest::create([OverridesSectionStorage::FIELD_NAME => $section_data]);
     $entity->save();
 
@@ -96,7 +95,6 @@ class OverridesSectionStorageTest extends KernelTestBase {
       $field->setTranslatable($is_translatable);
       $field->save();
     }
-
 
     $this->plugin->setContext('entity', EntityContext::fromEntity($entity));
     $this->plugin->setContext('view_mode', new Context(new ContextDefinition('string'), 'default'));

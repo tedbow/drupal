@@ -11,8 +11,6 @@ use Drupal\layout_builder\TempStoreIdentifierInterface;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
-use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
-use Drupal\Core\Entity\Sql\DefaultTableMapping;
 
 /**
  * Rebuild plugin dependencies for all entity view displays.
@@ -209,53 +207,34 @@ function layout_builder_post_update_make_layout_untranslatable() {
  *
  * @param string $entity_type_id
  *   The entity type.
- * @param $bundle
+ * @param string $bundle
  *   The bundle name.
  *
  * @return bool
- *   TRUE if there no translated layout, otherwise FALSE.
+ *   TRUE if there are no translated layout, FALSE otherwise.
  */
 function _layout_builder_no_translated_layouts($entity_type_id, $bundle) {
-  $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
-  $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
-  $langcode_key = $entity_type->getKey('langcode');
-  $schema = \Drupal::database()->schema();
-  /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
-  $field_manager = \Drupal::service('entity_field.manager');
-  if ($storage instanceof SqlContentEntityStorage) {
-    $table_mapping = $storage->getTableMapping();
-    // We are only able determine the field revision and data tables using
-    // DefaultTableMapping.
-    // @todo Check for \Drupal\Core\Entity\Sql\TableMappingInterface in
-    //   https://www.drupal.org/node/2955442.
-    if ($table_mapping instanceof DefaultTableMapping) {
-      /** @var \Drupal\Core\Field\FieldStorageDefinitionInterface[] $field */
-      $fields = $field_manager->getFieldStorageDefinitions($entity_type_id);
-      $field_storage = $fields[OverridesSectionStorage::FIELD_NAME];
-      if ($entity_type->hasKey('revision')) {
-        $revision_key = $entity_type->getKey('revision');
-        $data_table = $table_mapping->getRevisionDataTable();
-        $field_table = $table_mapping->getDedicatedRevisionTableName($field_storage);
-        $join_condition = "d.$revision_key = f.revision_id AND d.$langcode_key = f.$langcode_key";
-      }
-      else {
-        $data_table = $table_mapping->getDataTable();
-        $field_table = $table_mapping->getFieldTableName(OverridesSectionStorage::FIELD_NAME);
-        $join_condition = "d.{$entity_type->getKey('id')} = f.entity_id AND d.$langcode_key = f.$langcode_key";
-      }
-      if (!($schema->tableExists($data_table) && $schema->tableExists($field_table))) {
-        return TRUE;
-      }
-      $select = Drupal::database()->select($data_table, 'd');
-      $select->innerJoin($field_table, 'f', $join_condition);
-      $select->condition('d.' . $entity_type->getKey('default_langcode'), 0);
-      $select->condition('f.bundle', $bundle);
-      $select->isNotNull('f.layout_builder__layout_section');
-      $count = (int) $select->countQuery()->execute()->fetchField();
-      return empty($count);
-    }
+  $entity_type = \Drupal::entityDefinitionUpdateManager()->getEntityType($entity_type_id);
+  $field_storage_definitions = \Drupal::service('entity.last_installed_schema.repository')->getLastInstalledFieldStorageDefinitions($entity_type_id);
+
+  if (!$entity_type->isTranslatable() || !isset($field_storage_definitions[OverridesSectionStorage::FIELD_NAME])) {
+    return TRUE;
   }
-  // If we were not able to execute the query assume there are translated
-  // layouts.
-  return FALSE;
+
+  $query = \Drupal::entityTypeManager()->getStorage($entity_type_id)->getQuery();
+  if ($entity_type->isRevisionable()) {
+    $query->allRevisions();
+  }
+
+  if ($bundle_key = $entity_type->getKey('bundle')) {
+    $query->condition($bundle_key, $bundle);
+  }
+
+  $query
+    ->condition($entity_type->getKey('default_langcode'), 0)
+    ->exists(OverridesSectionStorage::FIELD_NAME);
+
+  $result = $query->count()->execute();
+
+  return empty($result);
 }
