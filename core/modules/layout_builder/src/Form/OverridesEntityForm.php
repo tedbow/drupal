@@ -100,8 +100,8 @@ class OverridesEntityForm extends ContentEntityForm {
       // Layouts are not actually translatable but if the section field is set
       // as translatable because
       // layout_builder_post_update_make_layout_untranslatable() could set it
-      // as untranslatable provide a message to the user about how to fix this
-      // situation.
+      // as untranslatable provide a message to the user that links the
+      // documentation.
       return [
         '#markup' => $this->t('Layout builder does not support layout translations, read the <a href="https://www.drupal.org/node/3043164" >documentation</a> for more details.'),
       ];

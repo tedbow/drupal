@@ -364,6 +364,11 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     $result = AccessResult::allowedIf($default_section_storage->isLayoutBuilderEnabled())->addCacheableDependency($default_section_storage);
     if ($default_section_storage->isOverridable()) {
       $entity = $this->getEntity();
+      // If the layout field is translatable this means that
+      // layout_builder_post_update_make_layout_untranslatable() was not able to
+      // set the field as untranslatable. We provide access on translations in
+      // that case to provide a link to the documentation for this.
+      // @see \Drupal\layout_builder\Form\OverridesEntityForm::buildForm()
       $result = $result->andIf(AccessResult::allowedIf(
         $entity->getFieldDefinition(OverridesSectionStorage::FIELD_NAME)->isTranslatable()
         || !($entity instanceof TranslatableInterface && !$entity->isDefaultTranslation())));

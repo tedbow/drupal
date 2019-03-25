@@ -360,8 +360,8 @@ function layout_builder_quickedit_render_field(EntityInterface $entity, $field_n
 function layout_builder_entity_translation_create(EntityInterface $translation) {
   /** @var \Drupal\Core\Entity\FieldableEntityInterface $translation */
   if ($translation->hasField(OverridesSectionStorage::FIELD_NAME) && $translation->getFieldDefinition(OverridesSectionStorage::FIELD_NAME)->isTranslatable()) {
-    // When creating a new translation do not copy untranslated section because
-    // layout translations are not supported..
+    // When creating a new translation do not copy untranslated sections because
+    // layout translations are not supported.
     $translation->set(OverridesSectionStorage::FIELD_NAME, []);
   }
 }
@@ -378,51 +378,6 @@ function layout_builder_form_language_content_settings_form_alter(array &$form, 
           $layout_field_checkbox['#description'] = t('<strong>Warning:<strong> Layout Builder does not support layout translations, read the <a href="https://www.drupal.org/node/3043164" >documentation</a> for more details.');
         }
       }
-    }
-  }
-}
-
-/**
- * Implements hook_requirements().
- */
-function layout_builder_requirements($phase) {
-  if ($phase === 'runtime') {
-    /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
-    $field_manager = \Drupal::service('entity_field.manager');
-    $field_map = $field_manager->getFieldMap();
-    $translatable_bundles = [];
-    $entity_type_manager = \Drupal::entityTypeManager();
-    /** @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info_service */
-    $bundle_info_service = \Drupal::service('entity_type.bundle.info');
-    $build = [];
-    foreach ($field_map as $entity_type_id => $field_infos) {
-      $entity_type_has_translated_layouts = FALSE;
-      $bundle_info = $bundle_info_service->getBundleInfo($entity_type_id);
-      if (isset($field_infos[OverridesSectionStorage::FIELD_NAME]['bundles'])) {
-        $bundle_labels = [];
-        foreach ($field_infos[OverridesSectionStorage::FIELD_NAME]['bundles'] as $bundle) {
-          $field_config = FieldConfig::loadByName($entity_type_id, $bundle, OverridesSectionStorage::FIELD_NAME);
-          if ($field_config->isTranslatable()) {
-            $bundle_labels[] = $bundle_info[$bundle]['label'];
-          }
-        }
-        if ($bundle_labels) {
-          $build[] = [
-            '#theme' => 'item_list',
-            '#title' => $entity_type_manager->getDefinition($entity_type_id)->getLabel(),
-            '#items' => $bundle_labels,
-          ];
-        }
-      }
-    }
-    if ($build) {
-      $bundle_issues = \Drupal::service('renderer')->renderPlain($build);
-      $requirements['layout_builder_translations'] = [
-        'title' => t('Layout Builder translation support'),
-        'description' => t('Layout Builder does not support layout translations, read the <a href="https://www.drupal.org/node/3043164" >documentation</a>. Layout translation support is currently enabled for the following. @bundle_issues', ['@bundle_issues' => $bundle_issues]),
-        'severity' => REQUIREMENT_ERROR,
-      ];
-      return $requirements;
     }
   }
 }
