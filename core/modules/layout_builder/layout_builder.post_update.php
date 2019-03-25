@@ -8,6 +8,12 @@
 use Drupal\Core\Config\Entity\ConfigEntityUpdater;
 use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
 use Drupal\layout_builder\TempStoreIdentifierInterface;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
+use Drupal\Core\Entity\Sql\DefaultTableMapping;
+use Drupal\Core\Database\Query\Condition;
 
 /**
  * Rebuild plugin dependencies for all entity view displays.
@@ -174,3 +180,88 @@ function layout_builder_post_update_section_third_party_settings_schema() {
 function layout_builder_post_update_layout_builder_dependency_change() {
   // Empty post-update hook.
 }
+
+/**
+ * Set the layout builder field as non-translatable where possible.
+ */
+function layout_builder_post_update_make_layout_untranslatable() {
+  /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
+  $field_manager = \Drupal::service('entity_field.manager');
+  $field_map = $field_manager->getFieldMap();
+  foreach ($field_map as $entity_type_id => $field_infos) {
+    $entity_type_has_translated_layouts = FALSE;
+    if (isset($field_infos[OverridesSectionStorage::FIELD_NAME]['bundles'])) {
+      foreach ($field_infos[OverridesSectionStorage::FIELD_NAME]['bundles'] as $bundle) {
+        if (_layout_builder_no_entities_with_layouts_and_translations($entity_type_id, $bundle)) {
+          $field_config = FieldConfig::loadByName($entity_type_id, $bundle, OverridesSectionStorage::FIELD_NAME);
+          $field_config->setTranslatable(FALSE);
+          $field_config->save();
+        }
+        else {
+          $entity_type_has_translated_layouts = TRUE;
+        }
+      }
+      // Only set the field storage as untranslatable if no bundles had
+      // translated layout.
+      if (!$entity_type_has_translated_layouts) {
+        $field_storage = FieldStorageConfig::loadByName($entity_type_id, OverridesSectionStorage::FIELD_NAME);
+        $field_storage->setTranslatable(FALSE);
+        $field_storage->save();
+      }
+    }
+  }
+}
+
+/**
+ * Determines if there are no entities with both layouts and translations.
+ *
+ * @param string $entity_type_id
+ *   The entity type.
+ * @param string $bundle
+ *   The bundle name.
+ *
+ * @return bool
+ *   TRUE if there no entities with both layouts and translations, otherwise
+ *   FALSE.
+ */
+function _layout_builder_no_entities_with_layouts_and_translations($entity_type_id, $bundle) {
+  $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
+  $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
+  $schema = \Drupal::database()->schema();
+  /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
+  $field_manager = \Drupal::service('entity_field.manager');
+  if ($storage instanceof SqlContentEntityStorage) {
+    $table_mapping = $storage->getTableMapping();
+    // We are only able determine the field revision and data tables using
+    // DefaultTableMapping.
+    // @todo Check for \Drupal\Core\Entity\Sql\TableMappingInterface in
+    //   https://www.drupal.org/node/2955442.
+    if ($table_mapping instanceof DefaultTableMapping) {
+      /** @var \Drupal\Core\Field\FieldStorageDefinitionInterface[] $field */
+      $fields = $field_manager->getFieldStorageDefinitions($entity_type_id);
+      $field_storage = $fields[OverridesSectionStorage::FIELD_NAME];
+      if ($entity_type->hasKey('revision')) {
+        $data_table = $table_mapping->getRevisionDataTable();
+        $field_table = $table_mapping->getDedicatedRevisionTableName($field_storage);
+      }
+      else {
+        $data_table = $table_mapping->getDataTable();
+        $field_table = $table_mapping->getFieldTableName(OverridesSectionStorage::FIELD_NAME);
+      }
+      if (!($schema->tableExists($data_table) && $schema->tableExists($field_table))) {
+        return TRUE;
+      }
+      $id_key = $entity_type->getKey('id');
+      $select = Drupal::database()->select($data_table, 'd');
+      $select->fields('d', [$id_key]);
+      $select->innerJoin($field_table, 'f', "d.$id_key = f.entity_id");
+      $select->condition('d.' . $entity_type->getKey('default_langcode'), 0);
+      $select->condition('f.bundle', $bundle);
+      return empty($select->range(0, 1)->execute()->fetchCol());
+    }
+  }
+  // If we were not able to execute the query assume there are translated
+  // layouts.
+  return FALSE;
+}
+

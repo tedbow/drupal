@@ -67,10 +67,12 @@ class OverridesSectionStorageTest extends KernelTestBase {
    *   The operation to pass to ::access().
    * @param bool $is_enabled
    *   Whether Layout Builder is enabled for this display.
+   * @param $is_translatable
+   *   Whether the Layout Builder field is translatable.
    * @param array $section_data
    *   Data to store as the sections value for Layout Builder.
    */
-  public function testAccess($expected, $operation, $is_enabled, array $section_data) {
+  public function testAccess($expected, $operation, $is_enabled, $is_translatable, array $section_data) {
     $display = LayoutBuilderEntityViewDisplay::create([
       'targetEntityType' => 'entity_test',
       'bundle' => 'entity_test',
@@ -79,13 +81,20 @@ class OverridesSectionStorageTest extends KernelTestBase {
     ]);
     if ($is_enabled) {
       $display->enableLayoutBuilder();
+      $display
+        ->setOverridable()
+        ->save();
     }
-    $display
-      ->setOverridable()
-      ->save();
 
     $entity = EntityTest::create([OverridesSectionStorage::FIELD_NAME => $section_data]);
     $entity->save();
+
+    if ($is_enabled) {
+      /** @var \Drupal\Core\Field\FieldConfigInterface $field */
+      $field = $entity->getFieldDefinition(OverridesSectionStorage::FIELD_NAME);
+      $field->setTranslatable($is_translatable);
+      $field->save();
+    }
 
     $this->plugin->setContext('entity', EntityContext::fromEntity($entity));
     $this->plugin->setContext('view_mode', new Context(new ContextDefinition('string'), 'default'));
@@ -107,12 +116,15 @@ class OverridesSectionStorageTest extends KernelTestBase {
     // - the expected outcome of the call to ::access()
     // - the operation
     // - whether Layout Builder has been enabled for this display
+    // - whether the Layout Builder field is translatable.
     // - whether this display has any section data.
     $data = [];
-    $data['view, disabled, no data'] = [FALSE, 'view', FALSE, []];
-    $data['view, enabled, no data'] = [TRUE, 'view', TRUE, []];
-    $data['view, disabled, data'] = [FALSE, 'view', FALSE, $section_data];
-    $data['view, enabled, data'] = [TRUE, 'view', TRUE, $section_data];
+    $data['view, disabled, no data'] = [FALSE, 'view', FALSE, FALSE, []];
+    $data['view, enabled, no data'] = [TRUE, 'view', TRUE, FALSE, []];
+    $data['view, disabled, non-translatable, data'] = [FALSE, 'view', FALSE, FALSE, $section_data];
+    $data['view, disabled, translatable, data'] = [FALSE, 'view', FALSE, TRUE, $section_data];
+    $data['view, enabled, non-translatable, data'] = [TRUE, 'view', TRUE, FALSE, $section_data];
+    $data['view, enabled, translatable, data'] = [TRUE, 'view', TRUE, TRUE, $section_data];
     return $data;
   }
 
