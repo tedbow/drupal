@@ -254,6 +254,12 @@ function _layout_builder_no_entities_with_layouts_and_translations($entity_type_
       $id_key = $entity_type->getKey('id');
       $select = Drupal::database()->select($data_table, 'd');
       $select->fields('d', [$id_key]);
+      // We want to know if an entity has both at least one translation (for
+      // any revision) and at least one layout override (for any revision, for
+      // any language). We do not care whether the layout override is for the
+      // translation, nor do we care if it is for the same revision as the
+      // revision that has a translation. Therefore, join only on the entity ID
+      // and not on the revision ID or langcode.
       $select->innerJoin($field_table, 'f', "d.$id_key = f.entity_id");
       $select->condition('d.' . $entity_type->getKey('default_langcode'), 0);
       $select->condition('f.bundle', $bundle);
