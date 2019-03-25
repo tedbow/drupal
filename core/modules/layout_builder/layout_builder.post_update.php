@@ -13,6 +13,7 @@ use Drupal\field\Entity\FieldConfig;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 use Drupal\Core\Entity\Sql\DefaultTableMapping;
+use Drupal\Core\Database\Query\Condition;
 
 /**
  * Rebuild plugin dependencies for all entity view displays.
@@ -218,7 +219,6 @@ function layout_builder_post_update_make_layout_untranslatable() {
 function _layout_builder_no_translated_layouts($entity_type_id, $bundle) {
   $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
   $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
-  $langcode_key = $entity_type->getKey('langcode');
   $schema = \Drupal::database()->schema();
   /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
   $field_manager = \Drupal::service('entity_field.manager');
@@ -233,24 +233,20 @@ function _layout_builder_no_translated_layouts($entity_type_id, $bundle) {
       $fields = $field_manager->getFieldStorageDefinitions($entity_type_id);
       $field_storage = $fields[OverridesSectionStorage::FIELD_NAME];
       if ($entity_type->hasKey('revision')) {
-        $revision_key = $entity_type->getKey('revision');
         $data_table = $table_mapping->getRevisionDataTable();
         $field_table = $table_mapping->getDedicatedRevisionTableName($field_storage);
-        $join_condition = "d.$revision_key = f.revision_id AND d.$langcode_key = f.$langcode_key";
       }
       else {
         $data_table = $table_mapping->getDataTable();
         $field_table = $table_mapping->getFieldTableName(OverridesSectionStorage::FIELD_NAME);
-        $join_condition = "d.{$entity_type->getKey('id')} = f.entity_id AND d.$langcode_key = f.$langcode_key";
       }
       if (!($schema->tableExists($data_table) && $schema->tableExists($field_table))) {
         return TRUE;
       }
       $select = Drupal::database()->select($data_table, 'd');
-      $select->innerJoin($field_table, 'f', $join_condition);
+      $select->innerJoin($field_table, 'f', "d.{$entity_type->getKey('id')} = f.entity_id");
       $select->condition('d.' . $entity_type->getKey('default_langcode'), 0);
       $select->condition('f.bundle', $bundle);
-      $select->isNotNull('f.layout_builder__layout_section');
       $count = (int) $select->countQuery()->execute()->fetchField();
       return empty($count);
     }

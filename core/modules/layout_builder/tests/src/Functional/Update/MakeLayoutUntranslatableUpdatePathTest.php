@@ -77,7 +77,7 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
 
     // Test both an existing and new content type.
     $this->assertTranslatedLayoutWorkflow('article', TRUE);
-    $this->assertTranslatedLayoutWorkflow('page', FALSE);
+    $this->assertTranslatedLayoutWorkflow('page', TRUE);
     $this->assertTranslatedLayoutWorkflow('new_content_type', FALSE);
   }
 
