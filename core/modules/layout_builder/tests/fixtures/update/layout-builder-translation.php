@@ -129,7 +129,7 @@ foreach ($nodes as $bundle => $node_info) {
   $node_field_data['title'] = $node_info['title'];
   $node_field_data['langcode'] = 'es';
   $node_field_data['default_langcode'] = 0;
-  $node_field_data['revision_translation_affected'] = NULL;
+  $node_field_data['revision_translation_affected'] = 1;
   $node_field_data['content_translation_source'] = 'en';
   $connection->insert('node_field_data')
     ->fields(array_keys($node_field_data))
@@ -145,7 +145,7 @@ foreach ($nodes as $bundle => $node_info) {
   $node_field_revision['title'] = $node_info['title'];
   $node_field_revision['langcode'] = 'es';
   $node_field_revision['default_langcode'] = 0;
-  $node_field_revision['revision_translation_affected'] = NULL;
+  $node_field_revision['revision_translation_affected'] = 1;
   $node_field_revision['content_translation_source'] = 'en';
   $connection->insert('node_field_revision')
     ->fields(array_keys($node_field_revision))

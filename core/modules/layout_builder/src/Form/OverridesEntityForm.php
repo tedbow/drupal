@@ -99,8 +99,7 @@ class OverridesEntityForm extends ContentEntityForm {
       // as untranslatable provide a message to the user about how to fix this
       // situation.
       return [
-        // @todo Create actual message to that they have a translated layout values.
-        '#markup' => $this->t("Whoops we couldn't set field to non-translatable. Our bad."),
+        '#markup' => $this->t("Layout builder does not support layout translations, read the <a href='https://www.drupal.org/node/3043164 >documentation</a> for more details."),
       ];
     }
     $this->sectionStorage = $section_storage;

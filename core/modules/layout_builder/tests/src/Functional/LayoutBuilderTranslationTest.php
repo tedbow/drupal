@@ -48,7 +48,7 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
 
     $this->addEntityTranslation();
 
-    $entity_url = $this->entity->toUrl('canonical')->toString();
+    $entity_url = $this->entity->toUrl()->toString();
     $language = \Drupal::languageManager()->getLanguage($this->langcodes[2]);
     $translated_entity_url = $this->entity->toUrl('canonical', ['language' => $language])->toString();
     $translated_layout_url = $translated_entity_url . '/layout';
@@ -86,7 +86,7 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
   public function testLayoutOverrideBeforeTranslation() {
     $assert_session = $this->assertSession();
 
-    $entity_url = $this->entity->toUrl('canonical')->toString();
+    $entity_url = $this->entity->toUrl()->toString();
     $language = \Drupal::languageManager()->getLanguage($this->langcodes[2]);
 
     $this->addLayoutOverride();
@@ -178,7 +178,7 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
    * Adds an entity translation.
    */
   protected function addEntityTranslation() {
-    // Create a translation.
+    $user = $this->loggedInUser;
     $this->drupalLogin($this->translator);
     $add_translation_url = Url::fromRoute("entity.$this->entityTypeId.content_translation_add", [
       $this->entityTypeId => $this->entity->id(),
@@ -188,6 +188,7 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
     $this->drupalPostForm($add_translation_url, [
       "{$this->fieldName}[0][value]" => 'The translated field value',
     ], 'Save');
+    $this->drupalLogin($user);
   }
 
   /**
@@ -196,7 +197,7 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
   protected function addLayoutOverride() {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
-    $entity_url = $this->entity->toUrl('canonical')->toString();
+    $entity_url = $this->entity->toUrl()->toString();
     $layout_url = $entity_url . '/layout';
     $this->drupalGet($layout_url);
     $assert_session->pageTextNotContains('The translated field value');

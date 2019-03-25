@@ -99,8 +99,6 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
       $translated_layout_expected ? "Field on $type not set to translatable." : "Field on $type set to translatable."
     );
 
-    $this->drupalGet("admin/structure/types/manage/$type/display");
-
     $node = $this->createNode(['title' => "$type: Default language", 'type' => $type]);
     $this->drupalGet($node->toUrl());
     $page->clickLink('Layout');
@@ -114,6 +112,9 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
     $layout_href = str_replace($this->baseUrl, '', $this->getSession()->getCurrentUrl()) . '/layout';
     if ($translated_layout_expected) {
       $assert_session->linkByHrefExists($layout_href);
+      $page->find('css', "[href=\"$layout_href\"]")->click();
+      $assert_session->elementNotExists('css', '.node-layout-builder-form input');
+      $assert_session->pageTextContains('Layout builder does not support layout translations');
     }
     else {
       $assert_session->linkByHrefNotExists($layout_href);
