@@ -3,7 +3,9 @@
 namespace Drupal\Tests\layout_builder\Functional\Update;
 
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
+use Drupal\field\Entity\FieldConfig;
 use Drupal\FunctionalTests\Update\UpdatePathTestBase;
+use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 
 /**
  * Tests the upgrade path for translatable layouts.
@@ -90,6 +92,12 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
   private function assertTranslatedLayoutWorkflow($type, $translated_layout_expected) {
     $page = $this->getSession()->getPage();
     $assert_session = $this->assertSession();
+
+    $this->assertEquals(
+      $translated_layout_expected,
+      FieldConfig::loadByName('node', $type, OverridesSectionStorage::FIELD_NAME)->isTranslatable(),
+      $translated_layout_expected ? "Field on $type not set to translatable." : "Field on $type set to translatable."
+    );
 
     $this->drupalGet("admin/structure/types/manage/$type/display");
 
