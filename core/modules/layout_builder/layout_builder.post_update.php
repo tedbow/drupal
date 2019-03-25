@@ -185,7 +185,7 @@ function layout_builder_post_update_make_layout_untranslatable() {
     $entity_type_has_translated_layouts = FALSE;
     if (isset($field_infos['layout_builder__layout']['bundles'])) {
       foreach ($field_infos['layout_builder__layout']['bundles'] as $bundle) {
-        if (_layout_builder_no_translated_layouts($entity_type_id, $bundle)) {
+        if (_layout_builder_no_entities_with_layouts_and_translations($entity_type_id, $bundle)) {
           $field_config = FieldConfig::loadByName($entity_type_id, $bundle, OverridesSectionStorage::FIELD_NAME);
           $field_config->setTranslatable(FALSE);
           $field_config->save();
@@ -216,7 +216,7 @@ function layout_builder_post_update_make_layout_untranslatable() {
  * @return bool
  *   TRUE if there no translated layout, otherwise FALSE.
  */
-function _layout_builder_no_translated_layouts($entity_type_id, $bundle) {
+function _layout_builder_no_entities_with_layouts_and_translations($entity_type_id, $bundle) {
   $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
   $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
   $schema = \Drupal::database()->schema();
