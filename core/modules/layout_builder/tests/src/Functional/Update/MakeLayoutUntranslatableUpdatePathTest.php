@@ -101,13 +101,13 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
 
     $this->drupalGet("admin/structure/types/manage/$type/display");
 
-    $node = $this->createNode(['title' => 'Default language', 'type' => $type]);
+    $node = $this->createNode(['title' => "$type: Default language", 'type' => $type]);
     $this->drupalGet($node->toUrl());
     $page->clickLink('Layout');
     $page->pressButton('Save layout');
     $page->clickLink('Translate');
     $page->clickLink('Add');
-    $page->fillField('title[0][value]', 'Spanish translation');
+    $page->fillField('title[0][value]', "$type: Spanish translation");
 
     // Do not use strings directly while on the translated paths.
     $page->pressButton('edit-submit');
@@ -129,8 +129,8 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
     $page->checkField('settings[label_display]');
     $page->pressButton('Add Block');
     $page->pressButton('Save layout');
-    $assert_session->pageTextContains('Custom block label on default language');
-    $this->drupalGet('es' . $node->toUrl()->toString());
+    $this->clickLink('Translate');
+    $this->clickLink("$type: Spanish translation");
     if ($translated_layout_expected) {
       $assert_session->pageTextNotContains('Custom block label on default language');
     }
