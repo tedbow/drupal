@@ -225,6 +225,12 @@ function layout_builder_post_update_make_layout_untranslatable() {
  */
 function _layout_builder_no_entities_with_layouts_and_translations($entity_type_id, $bundle) {
   $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
+  if (!$entity_type->isTranslatable()) {
+    return TRUE;
+  }
+  if ($bundle_type = $entity_type->getBundleEntityType()) {
+
+  }
   $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
   $schema = \Drupal::database()->schema();
   /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
@@ -250,6 +256,7 @@ function _layout_builder_no_entities_with_layouts_and_translations($entity_type_
       if (!($schema->tableExists($data_table) && $schema->tableExists($field_table))) {
         return TRUE;
       }
+      if ($schema->fieldExists())
       $id_key = $entity_type->getKey('id');
       $select = Drupal::database()->select($data_table, 'd');
       $select->fields('d', [$id_key]);

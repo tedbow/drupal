@@ -51,13 +51,11 @@ function layout_builder_requirements($phase) {
     /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
     $field_manager = \Drupal::service('entity_field.manager');
     $field_map = $field_manager->getFieldMap();
-    $translatable_bundles = [];
     $entity_type_manager = \Drupal::entityTypeManager();
     /** @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info_service */
     $bundle_info_service = \Drupal::service('entity_type.bundle.info');
     $build = [];
     foreach ($field_map as $entity_type_id => $field_infos) {
-      $entity_type_has_translated_layouts = FALSE;
       $bundle_info = $bundle_info_service->getBundleInfo($entity_type_id);
       if (isset($field_infos[OverridesSectionStorage::FIELD_NAME]['bundles'])) {
         $bundle_labels = [];
@@ -80,7 +78,7 @@ function layout_builder_requirements($phase) {
       $bundle_issues = \Drupal::service('renderer')->renderPlain($build);
       $requirements['layout_builder_translations'] = [
         'title' => t('Layout Builder translation support'),
-        'description' => t('Layout Builder does not support layout translations, read the <a href="https://www.drupal.org/node/3043164" >documentation</a>. Layout translation support is currently enabled for the following. @bundle_issues', ['@bundle_issues' => $bundle_issues]),
+        'description' => t('Layout Builder does not support layout translations, read the <a href="https://www.drupal.org/node/3043164" >documentation</a>. Layout translation support is currently enabled for the following items. @bundle_issues', ['@bundle_issues' => $bundle_issues]),
         'severity' => REQUIREMENT_ERROR,
       ];
       return $requirements;

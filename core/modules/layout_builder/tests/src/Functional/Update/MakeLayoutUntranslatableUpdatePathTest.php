@@ -38,6 +38,7 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
     $this->runUpdates();
 
     $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
     $this->drupalLogin($this->rootUser);
 
     // Test that nodes translations set up in the fixture are loadable and have
@@ -68,12 +69,20 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
     $assert_session->pageTextNotContains('This is in Spanish');
 
     // Set up a new content type that is translatable and overridable.
-    $this->createContentType(['type' => 'new_content_type']);
+    $this->createContentType(['type' => 'new_content_type', 'name' => 'New Content Type']);
     $this->container->get('content_translation.manager')->setEnabled('node', 'new_content_type', TRUE);
     EntityViewDisplay::load('node.new_content_type.default')
       ->enableLayoutBuilder()
       ->setOverridable()
       ->save();
+
+    $this->drupalGet('admin/reports/status');
+    $status_element_selector = '.system-status-report__entry:contains("Layout Builder translation support")';
+    //  $status_element = $page->find('css', '.system-status-report__entry:contains("Layout Builder translation support")');
+    $assert_session->elementContains('css', $status_element_selector, 'Layout Builder does not support layout translations');
+    $assert_session->elementContains('css', $status_element_selector, 'Article');
+    $assert_session->elementContains('css', $status_element_selector, 'Basic page');
+    $assert_session->elementNotContains('css', $status_element_selector, 'New Content Type');
 
     // Test both an existing and new content type.
     $this->assertTranslatedLayoutWorkflow('article', TRUE);
