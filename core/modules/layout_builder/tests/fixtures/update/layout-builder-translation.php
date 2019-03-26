@@ -47,61 +47,102 @@ $connection->insert('config')
     'data' => 'a:10:{s:4:"uuid";s:36:"2b8b721e-59e9-4b57-a026-c4444fd28196";s:8:"langcode";s:2:"en";s:6:"status";b:1;s:12:"dependencies";a:2:{s:6:"config";a:1:{i:0;s:14:"node.type.page";}s:6:"module";a:1:{i:0;s:19:"content_translation";}}s:20:"third_party_settings";a:1:{s:19:"content_translation";a:2:{s:7:"enabled";b:1;s:15:"bundle_settings";a:1:{s:26:"untranslatable_fields_hide";s:1:"0";}}}s:2:"id";s:9:"node.page";s:21:"target_entity_type_id";s:4:"node";s:13:"target_bundle";s:4:"page";s:16:"default_langcode";s:12:"site_default";s:18:"language_alterable";b:1;}',
   ])
   ->execute();
+foreach (['article', 'page', 'test_content_type'] as $bundle) {
 
-// Add Layout Builder sections to an existing entity view display.
-$display = $connection->select('config')
-  ->fields('config', ['data'])
-  ->condition('collection', '')
-  ->condition('name', 'core.entity_view_display.node.article.default')
-  ->execute()
-  ->fetchField();
-$display = unserialize($display);
-$display['third_party_settings']['layout_builder']['sections'][] = $section_array_default;
-$connection->update('config')
-  ->fields([
-    'data' => serialize($display),
-    'collection' => '',
-    'name' => 'core.entity_view_display.node.article.default',
-  ])
-  ->condition('collection', '')
-  ->condition('name', 'core.entity_view_display.node.article.default')
-  ->execute();
+  // Add Layout Builder sections to an existing entity view display.
+  $display = $connection->select('config')
+    ->fields('config', ['data'])
+    ->condition('collection', '')
+    ->condition('name', "core.entity_view_display.node.$bundle.default")
+    ->execute()
+    ->fetchField();
+  $display = unserialize($display);
+  $display['third_party_settings']['layout_builder']['sections'][] = $section_array_default;
+  $connection->update('config')
+    ->fields([
+      'data' => serialize($display),
+      'collection' => '',
+      'name' => "core.entity_view_display.node.$bundle.default",
+    ])
+    ->condition('collection', '')
+    ->condition('name', "core.entity_view_display.node.$bundle.default")
+    ->execute();
+}
 
-$display = $connection->select('config')
-  ->fields('config', ['data'])
-  ->condition('collection', '')
-  ->condition('name', 'core.entity_view_display.node.page.default')
-  ->execute()
-  ->fetchField();
-$display = unserialize($display);
-$display['third_party_settings']['layout_builder']['sections'][] = $section_array_default;
-$connection->update('config')
+$connection->insert('node')
+  ->fields(
+    [
+      'nid' => 9,
+      'vid' => 11,
+      'type' => 'test_content_type',
+      'uuid' => 'a804c0a2-c4e2-4bfc-a19d-e534ceab5176',
+      'langcode' => 'en',
+    ]
+  )->execute();
+
+$connection->insert('node_field_data')
   ->fields([
-    'data' => serialize($display),
-    'collection' => '',
-    'name' => 'core.entity_view_display.node.page.default',
+    'nid',
+    'vid',
+    'type',
+    'langcode',
+    'title',
+    'uid',
+    'status',
+    'created',
+    'changed',
+    'promote',
+    'sticky',
+    'revision_translation_affected',
+    'default_langcode',
+    'content_translation_source',
+    'content_translation_outdated',
   ])
-  ->condition('collection', '')
-  ->condition('name', 'core.entity_view_display.node.page.default')
+  ->values([
+    'nid' => '9',
+    'vid' => '11',
+    'type' => 'test_content_type',
+    'langcode' => 'en',
+    'title' => 'Test title',
+    'uid' => '1',
+    'status' => '1',
+    'created' => '1439731773',
+    'changed' => '1439732036',
+    'promote' => '1',
+    'sticky' => '0',
+    'revision_translation_affected' => NULL,
+    'default_langcode' => '1',
+    'content_translation_source' => 'und',
+    'content_translation_outdated' => '0',
+    ])
   ->execute();
 
 $nodes = [
   'article' => [
+    'bundle' => 'article',
     'has_translated_layout' => TRUE,
     'nid' => 1,
     'vid' => 2,
     'title' => 'Test Article - Spanish title',
   ],
   'page' => [
+    'bundle' => 'page',
     'has_translated_layout' => FALSE,
     'nid' => 4,
     'vid' => 5,
     'title' => 'Page Test - Spanish title',
   ],
+  'test_content_type_with_layout' => [
+    'bundle' => 'test_content_type  ',
+    'has_translated_layout' => FALSE,
+    'nid' => 9,
+    'vid' => 11,
+  ],
 ];
-foreach ($nodes as $bundle => $node_info) {
+foreach ($nodes as $node_info) {
+
   $values_en = [
-    'bundle' => $bundle,
+    'bundle' => $node_info['bundle'],
     'deleted' => '0',
     'entity_id' => $node_info['nid'],
     'revision_id' => $node_info['vid'],
@@ -126,31 +167,34 @@ foreach ($nodes as $bundle => $node_info) {
     ->execute()
     ->fetchAssoc();
 
-  $node_field_data['title'] = $node_info['title'];
-  $node_field_data['langcode'] = 'es';
-  $node_field_data['default_langcode'] = 0;
-  $node_field_data['revision_translation_affected'] = 1;
-  $node_field_data['content_translation_source'] = 'en';
-  $connection->insert('node_field_data')
-    ->fields(array_keys($node_field_data))
-    ->values($node_field_data)
-    ->execute();
+  if (isset($node_info['title'])) {
+    $node_field_data['title'] = $node_info['title'];
+    $node_field_data['langcode'] = 'es';
+    $node_field_data['default_langcode'] = 0;
+    $node_field_data['revision_translation_affected'] = 1;
+    $node_field_data['content_translation_source'] = 'en';
+    $connection->insert('node_field_data')
+      ->fields(array_keys($node_field_data))
+      ->values($node_field_data)
+      ->execute();
 
-  $node_field_revision = $connection->select('node_field_revision')
-    ->fields('node_field_revision')
-    ->condition('nid', $node_info['nid'])
-    ->condition('vid', $node_info['vid'])
-    ->execute()
-    ->fetchAssoc();
-  $node_field_revision['title'] = $node_info['title'];
-  $node_field_revision['langcode'] = 'es';
-  $node_field_revision['default_langcode'] = 0;
-  $node_field_revision['revision_translation_affected'] = 1;
-  $node_field_revision['content_translation_source'] = 'en';
-  $connection->insert('node_field_revision')
-    ->fields(array_keys($node_field_revision))
-    ->values($node_field_revision)
-    ->execute();
+      $node_field_revision = $connection->select('node_field_revision')
+      ->fields('node_field_revision')
+      ->condition('nid', $node_info['nid'])
+      ->condition('vid', $node_info['vid'])
+      ->execute()
+      ->fetchAssoc();
+    $node_field_revision['title'] = $node_info['title'];
+    $node_field_revision['langcode'] = 'es';
+    $node_field_revision['default_langcode'] = 0;
+    $node_field_revision['revision_translation_affected'] = 1;
+    $node_field_revision['content_translation_source'] = 'en';
+    $connection->insert('node_field_revision')
+      ->fields(array_keys($node_field_revision))
+      ->values($node_field_revision)
+      ->execute();
+  }
+
 
   if ($node_info['has_translated_layout']) {
     $values_es = $values_en;

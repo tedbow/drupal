@@ -184,7 +184,6 @@ function layout_builder_post_update_layout_builder_dependency_change() {
  * Set the layout builder field as non-translatable where possible.
  */
 function layout_builder_post_update_make_layout_untranslatable() {
-  throw new Exception("we got begin");
   /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
   $field_manager = \Drupal::service('entity_field.manager');
   $field_map = $field_manager->getFieldMap();
@@ -210,7 +209,6 @@ function layout_builder_post_update_make_layout_untranslatable() {
       }
     }
   }
-  throw new Exception("we got here");
 }
 
 /**
@@ -225,57 +223,32 @@ function layout_builder_post_update_make_layout_untranslatable() {
  *   TRUE if there no entities with both layouts and translations, otherwise
  *   FALSE.
  */
-function _layout_builder_no_entities_with_layouts_and_translations($entity_type_id, $bundle) {
-  $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
+function _layout_builder_no_entity_revisions_with_layouts_and_translations($entity_type_id, $bundle) {
+  $entity_type = \Drupal::entityDefinitionUpdateManager()->getEntityType($entity_type_id);
+  $field_storage_definitions = \Drupal::service('entity.last_installed_schema.repository')->getLastInstalledFieldStorageDefinitions($entity_type_id);
+
   if (!$entity_type->isTranslatable()) {
     return TRUE;
   }
-  if ($bundle_type = $entity_type->getBundleEntityType()) {
 
+  $query = \Drupal::entityTypeManager()->getStorage($entity_type_id)->getQuery();
+  if ($entity_type->isRevisionable()) {
+    $query->allRevisions();
   }
-  $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
-  $schema = \Drupal::database()->schema();
-  /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
-  $field_manager = \Drupal::service('entity_field.manager');
-  if ($storage instanceof SqlContentEntityStorage) {
-    $table_mapping = $storage->getTableMapping();
-    // We are only able determine the field revision and data tables using
-    // DefaultTableMapping.
-    // @todo Check for \Drupal\Core\Entity\Sql\TableMappingInterface in
-    //   https://www.drupal.org/node/2955442.
-    if ($table_mapping instanceof DefaultTableMapping) {
-      /** @var \Drupal\Core\Field\FieldStorageDefinitionInterface[] $field */
-      $fields = $field_manager->getFieldStorageDefinitions($entity_type_id);
-      $field_storage = $fields[OverridesSectionStorage::FIELD_NAME];
-      if ($entity_type->hasKey('revision')) {
-        $data_table = $table_mapping->getRevisionDataTable();
-        $field_table = $table_mapping->getDedicatedRevisionTableName($field_storage);
-      }
-      else {
-        $data_table = $table_mapping->getDataTable();
-        $field_table = $table_mapping->getFieldTableName(OverridesSectionStorage::FIELD_NAME);
-      }
-      if (!($schema->tableExists($data_table) && $schema->tableExists($field_table))) {
-        return TRUE;
-      }
-      if ($schema->fieldExists())
-      $id_key = $entity_type->getKey('id');
-      $select = Drupal::database()->select($data_table, 'd');
-      $select->fields('d', [$id_key]);
-      // We want to know if an entity has both at least one translation (for
-      // any revision) and at least one layout override (for any revision, for
-      // any language). We do not care whether the layout override is for the
-      // translation, nor do we care if it is for the same revision as the
-      // revision that has a translation. Therefore, join only on the entity ID
-      // and not on the revision ID or langcode.
-      $select->innerJoin($field_table, 'f', "d.$id_key = f.entity_id");
-      $select->condition('d.' . $entity_type->getKey('default_langcode'), 0);
-      $select->condition('f.bundle', $bundle);
-      return empty($select->range(0, 1)->execute()->fetchCol());
-    }
+
+  if ($bundle_key = $entity_type->getKey('bundle')) {
+    $query->condition($bundle_key, $bundle);
   }
-  // If we were not able to execute the query assume there are translated
-  // layouts.
-  return FALSE;
+
+  $group_translation = $query->andConditionGroup();
+  $group_translation->condition($entity_type->getKey('default_langcode'), 0);
+  $group_layout = $query->andConditionGroup();
+  $group_layout->exists(OverridesSectionStorage::FIELD_NAME);
+  $query->condition($group_translation);
+  $query->condition($group_layout);
+
+  $result = $query->count()->execute();
+
+  return empty($result);
 }
 
