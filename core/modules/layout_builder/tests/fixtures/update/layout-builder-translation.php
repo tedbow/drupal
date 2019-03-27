@@ -151,18 +151,5 @@ foreach ($nodes as $bundle => $node_info) {
     ->fields(array_keys($node_field_revision))
     ->values($node_field_revision)
     ->execute();
-
-  if ($node_info['has_translated_layout']) {
-    $values_es = $values_en;
-    $values_es['langcode'] = 'es';
-    $values_es['layout_builder__layout_section'] = serialize(Section::fromArray($section_array_translation));
-    $connection->insert('node__layout_builder__layout')
-      ->fields(array_keys($values_es))
-      ->values($values_es)
-      ->execute();
-    $connection->insert('node_revision__layout_builder__layout')
-      ->fields(array_keys($values_es))
-      ->values($values_es)
-      ->execute();
   }
 }
