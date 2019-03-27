@@ -8,7 +8,7 @@ namespace Drupal\Tests\layout_builder\Functional\Update\Translatability;
  * @group layout_builder
  * @group legacy
  */
-class LayoutFieldTranslateUpdateCase1 extends MakeLayoutUntranslatableUpdatePathTestBase {
+class LayoutFieldTranslateUpdateConfigAndStorage extends MakeLayoutUntranslatableUpdatePathTestBase {
 
   /**
    * {@inheritdoc}
