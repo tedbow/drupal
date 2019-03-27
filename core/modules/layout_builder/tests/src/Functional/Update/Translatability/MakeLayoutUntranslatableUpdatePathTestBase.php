@@ -1,60 +1,54 @@
 <?php
 
-namespace Drupal\Tests\layout_builder\Functional\Update;
+namespace Drupal\Tests\layout_builder\Functional\Update\Translatability;
 
 use Drupal\field\Entity\FieldConfig;
 use Drupal\FunctionalTests\Update\UpdatePathTestBase;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 
 /**
- * Tests the upgrade path for translatable layouts.
+ * Base class for upgrade path for translatable layouts.
+ *
+ * Each class that extends this class will test 1 case for including 2 content
+ * types.
  *
  * @see layout_builder_post_update_make_layout_untranslatable()
  *
  * @group layout_builder
  * @group legacy
  */
+abstract class MakeLayoutUntranslatableUpdatePathTestBase extends UpdatePathTestBase {
 
-class MakeLayoutUntranslatableUpdatePathTestBase extends UpdatePathTestBase {
-
-  /**
-   * @var array
-   */
-  protected $layout_builder_test_cases = [
-    'article' => [
-      'has_translation' => TRUE,
-      'has_layout' => FALSE,
-      'nid' => 1,
-      'vid' => 2,
-      'title' => 'Test Article - Spanish title',
-    ],
-    'page' => [
-      'has_translation' => FALSE,
-      'has_layout' => TRUE,
-      'nid' => 4,
-      'vid' => 5,
-      'title' => 'Page Test - Spanish title',
-    ],
-  ];
 
   /**
+   * Layout builder test cases.
+   *
+   * Keys are bundle names. Values are test cases including keys:
+   *   - has_translation
+   *   - has_layout
+   *   - vid
+   *   - nid
+   *
    * @var array
    */
-  protected $expected_bundle_updates = [
-    'article' => TRUE,
-    'page' => TRUE,
-  ];
+  protected $layout_builder_test_cases;
 
+  /**
+   * Expectations of field updates by bundles.
+   *
+   * @var array
+   */
+  protected $expected_bundle_updates;
 
   /**
    * {@inheritdoc}
    */
   protected function setDatabaseDumpFiles() {
     $this->databaseDumpFiles = [
-      __DIR__ . '/../../../../../system/tests/fixtures/update/drupal-8.filled.standard.php.gz',
-      __DIR__ . '/../../../fixtures/update/layout-builder.php',
-      __DIR__ . '/../../../fixtures/update/layout-builder-field-schema.php',
-      __DIR__ . '/../../../fixtures/update/layout-builder-translation.php',
+      __DIR__ . '/../../../../../../system/tests/fixtures/update/drupal-8.filled.standard.php.gz',
+      __DIR__ . '/../../../../fixtures/update/layout-builder.php',
+      __DIR__ . '/../../../../fixtures/update/layout-builder-field-schema.php',
+      __DIR__ . '/../../../../fixtures/update/layout-builder-translation.php',
     ];
   }
 
@@ -72,5 +66,7 @@ class MakeLayoutUntranslatableUpdatePathTestBase extends UpdatePathTestBase {
         $field_update_expected ? "Field on $bundle set to be non-translatable." : "Field on $bundle not set to non-translatable."
       );
     }
+
+    $this->assertEquals();
   }
 }
