@@ -85,23 +85,7 @@ $connection->update('config')
   ->condition('name', 'core.entity_view_display.node.page.default')
   ->execute();
 
-$test_cases = [
-  'article' => [
-    'has_translation' => TRUE,
-    'has_layout' => FALSE,
-    'nid' => 1,
-    'vid' => 2,
-    'title' => 'Test Article - Spanish title',
-  ],
-  'page' => [
-    'has_translation' => FALSE,
-    'has_layout' => TRUE,
-    'nid' => 4,
-    'vid' => 5,
-    'title' => 'Page Test - Spanish title',
-  ],
-];
-foreach ($test_cases as $bundle => $test_case) {
+foreach ($this->layout_builder_test_cases as $bundle => $test_case) {
   if ($test_case['has_layout']) {
     $values_en = [
       'bundle' => $bundle,

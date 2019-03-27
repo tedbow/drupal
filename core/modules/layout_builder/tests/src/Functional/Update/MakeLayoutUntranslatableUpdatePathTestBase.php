@@ -14,7 +14,37 @@ use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
  * @group layout_builder
  * @group legacy
  */
-class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
+
+class MakeLayoutUntranslatableUpdatePathTestBase extends UpdatePathTestBase {
+
+  /**
+   * @var array
+   */
+  protected $layout_builder_test_cases = [
+    'article' => [
+      'has_translation' => TRUE,
+      'has_layout' => FALSE,
+      'nid' => 1,
+      'vid' => 2,
+      'title' => 'Test Article - Spanish title',
+    ],
+    'page' => [
+      'has_translation' => FALSE,
+      'has_layout' => TRUE,
+      'nid' => 4,
+      'vid' => 5,
+      'title' => 'Page Test - Spanish title',
+    ],
+  ];
+
+  /**
+   * @var array
+   */
+  protected $expected_bundle_updates = [
+    'article' => TRUE,
+    'page' => TRUE,
+  ];
+
 
   /**
    * {@inheritdoc}
@@ -35,11 +65,7 @@ class MakeLayoutUntranslatableUpdatePathTest extends UpdatePathTestBase {
    */
   public function testDisableTranslationOnLayouts() {
     $this->runUpdates();
-    $expected_bundle_updates = [
-      'article' => TRUE,
-      'page' => TRUE,
-    ];
-    foreach ($expected_bundle_updates as $bundle => $field_update_expected) {
+    foreach ($this->expected_bundle_updates as $bundle => $field_update_expected) {
       $this->assertEquals(
         $field_update_expected,
         !FieldConfig::loadByName('node', $bundle, OverridesSectionStorage::FIELD_NAME)->isTranslatable(),
