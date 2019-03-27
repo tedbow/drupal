@@ -218,8 +218,6 @@ abstract class UpdatePathTestBase extends BrowserTestBase {
    * {@inheritdoc}
    */
   protected function doInstall() {
-    var_dump($this->getProvidedData());
-    exit;
     $this->runDbTasks();
     // Allow classes to set database dump files.
     $this->setDatabaseDumpFiles();
