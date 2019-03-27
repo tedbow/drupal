@@ -256,7 +256,6 @@ function _content_translation_preprocess_language_content_settings_table(&$varia
           ],
         ],
         '#field_name' => $field_name,
-        '#bundle' => $bundle,
         'class' => ['field-settings'],
       ];
 
