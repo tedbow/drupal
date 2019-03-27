@@ -85,71 +85,61 @@ $connection->update('config')
   ->condition('name', 'core.entity_view_display.node.page.default')
   ->execute();
 
-$nodes = [
-  'article' => [
-    'has_translated_layout' => TRUE,
-    'nid' => 1,
-    'vid' => 2,
-    'title' => 'Test Article - Spanish title',
-  ],
-  'page' => [
-    'has_translated_layout' => FALSE,
-    'nid' => 4,
-    'vid' => 5,
-    'title' => 'Page Test - Spanish title',
-  ],
-];
-foreach ($nodes as $bundle => $node_info) {
-  $values_en = [
-    'bundle' => $bundle,
-    'deleted' => '0',
-    'entity_id' => $node_info['nid'],
-    'revision_id' => $node_info['vid'],
-    'langcode' => 'en',
-    'delta' => '0',
-    'layout_builder__layout_section' => serialize(Section::fromArray($section_array_default)),
-  ];
+foreach ($this->layout_builder_test_cases as $bundle => $test_case) {
+  if ($test_case['has_layout']) {
+    $values_en = [
+      'bundle' => $bundle,
+      'deleted' => '0',
+      'entity_id' => $test_case['nid'],
+      'revision_id' => $test_case['vid'],
+      'langcode' => 'en',
+      'delta' => '0',
+      'layout_builder__layout_section' => serialize(Section::fromArray($section_array_default)),
+    ];
 
-  // Add the layout data to the node.
-  $connection->insert('node__layout_builder__layout')
-    ->fields(array_keys($values_en))
-    ->values($values_en)
-    ->execute();
-  $connection->insert('node_revision__layout_builder__layout')
-    ->fields(array_keys($values_en))
-    ->values($values_en)
-    ->execute();
-  $node_field_data = $connection->select('node_field_data')
-    ->fields('node_field_data')
-    ->condition('nid', $node_info['nid'])
-    ->condition('vid', $node_info['vid'])
-    ->execute()
-    ->fetchAssoc();
+    // Add the layout data to the node.
+    $connection->insert('node__layout_builder__layout')
+      ->fields(array_keys($values_en))
+      ->values($values_en)
+      ->execute();
+    $connection->insert('node_revision__layout_builder__layout')
+      ->fields(array_keys($values_en))
+      ->values($values_en)
+      ->execute();
+  }
 
-  $node_field_data['title'] = $node_info['title'];
-  $node_field_data['langcode'] = 'es';
-  $node_field_data['default_langcode'] = 0;
-  $node_field_data['revision_translation_affected'] = 1;
-  $node_field_data['content_translation_source'] = 'en';
-  $connection->insert('node_field_data')
-    ->fields(array_keys($node_field_data))
-    ->values($node_field_data)
-    ->execute();
+  if ($test_case['has_translation']) {
+    $node_field_data = $connection->select('node_field_data')
+      ->fields('node_field_data')
+      ->condition('nid', $test_case['nid'])
+      ->condition('vid', $test_case['vid'])
+      ->execute()
+      ->fetchAssoc();
 
-  $node_field_revision = $connection->select('node_field_revision')
-    ->fields('node_field_revision')
-    ->condition('nid', $node_info['nid'])
-    ->condition('vid', $node_info['vid'])
-    ->execute()
-    ->fetchAssoc();
-  $node_field_revision['title'] = $node_info['title'];
-  $node_field_revision['langcode'] = 'es';
-  $node_field_revision['default_langcode'] = 0;
-  $node_field_revision['revision_translation_affected'] = 1;
-  $node_field_revision['content_translation_source'] = 'en';
-  $connection->insert('node_field_revision')
-    ->fields(array_keys($node_field_revision))
-    ->values($node_field_revision)
-    ->execute();
+    $node_field_data['title'] = $test_case['title'];
+    $node_field_data['langcode'] = 'es';
+    $node_field_data['default_langcode'] = 0;
+    $node_field_data['revision_translation_affected'] = 1;
+    $node_field_data['content_translation_source'] = 'en';
+    $connection->insert('node_field_data')
+      ->fields(array_keys($node_field_data))
+      ->values($node_field_data)
+      ->execute();
+
+    $node_field_revision = $connection->select('node_field_revision')
+      ->fields('node_field_revision')
+      ->condition('nid', $test_case['nid'])
+      ->condition('vid', $test_case['vid'])
+      ->execute()
+      ->fetchAssoc();
+    $node_field_revision['title'] = $test_case['title'];
+    $node_field_revision['langcode'] = 'es';
+    $node_field_revision['default_langcode'] = 0;
+    $node_field_revision['revision_translation_affected'] = 1;
+    $node_field_revision['content_translation_source'] = 'en';
+    $connection->insert('node_field_revision')
+      ->fields(array_keys($node_field_revision))
+      ->values($node_field_revision)
+      ->execute();
   }
 }
