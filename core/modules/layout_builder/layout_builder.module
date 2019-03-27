@@ -447,6 +447,7 @@ function _layout_builder_form_language_content_settings_form_alter(&$form, FormS
           // Add warning to label. If translations are enabled on the field,
           // the message should display as an error instead of just a warning.
           if (isset($form['settings'][$entity_type_id][$bundle]['fields'][$name]['#label'])) {
+            $label = $form['settings'][$entity_type_id][$bundle]['fields'][$name]['#label'];
             $form['settings'][$entity_type_id][$bundle]['fields'][$name]['#label'] = t('@field_label (* unsupported)', ['@field_label' => $form['settings'][$entity_type_id][$bundle]['fields'][$name]['#label']]);
           }
           if (!empty($form['settings'][$entity_type_id][$bundle]['fields'][$name]['#default_value'])) {
@@ -457,3 +458,5 @@ function _layout_builder_form_language_content_settings_form_alter(&$form, FormS
     }
   }
 }
+
+function
