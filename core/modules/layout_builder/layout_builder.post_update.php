@@ -12,8 +12,6 @@ use Drupal\user\Entity\Role;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
-use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
-use Drupal\Core\Entity\Sql\DefaultTableMapping;
 
 /**
  * Rebuild plugin dependencies for all entity view displays.

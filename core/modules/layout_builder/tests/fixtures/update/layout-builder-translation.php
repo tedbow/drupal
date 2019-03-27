@@ -85,11 +85,8 @@ $connection->update('config')
   ->condition('name', 'core.entity_view_display.node.page.default')
   ->execute();
 
-/**
- * Loop over test cases defined in the test class.
- *
- * @see \Drupal\Tests\layout_builder\Functional\Update\Translatability\MakeLayoutUntranslatableUpdatePathTestBase
- */
+// Loop over test cases defined in the test class.
+// @see \Drupal\Tests\layout_builder\Functional\Update\Translatability\MakeLayoutUntranslatableUpdatePathTestBase
 foreach ($this->layoutBuilderTestCases as $bundle => $test_case) {
   if ($test_case['has_layout']) {
     $values_en = [
@@ -121,7 +118,7 @@ foreach ($this->layoutBuilderTestCases as $bundle => $test_case) {
       ->execute()
       ->fetchAssoc();
 
-    $node_field_data['title'] = $test_case['title'];
+    $node_field_data['title'] = "Test: $bundle";
     $node_field_data['langcode'] = 'es';
     $node_field_data['default_langcode'] = 0;
     $node_field_data['revision_translation_affected'] = 1;
@@ -137,7 +134,7 @@ foreach ($this->layoutBuilderTestCases as $bundle => $test_case) {
       ->condition('vid', $test_case['vid'])
       ->execute()
       ->fetchAssoc();
-    $node_field_revision['title'] = $test_case['title'];
+    $node_field_revision['title'] = "Test: $bundle";
     $node_field_revision['langcode'] = 'es';
     $node_field_revision['default_langcode'] = 0;
     $node_field_revision['revision_translation_affected'] = 1;

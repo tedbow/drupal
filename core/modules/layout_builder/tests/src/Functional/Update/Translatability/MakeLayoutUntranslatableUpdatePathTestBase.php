@@ -13,14 +13,13 @@ use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
  * Each class that extends this class will test 1 case for including 2 content
  * types.
  *
- * This method of testing is used instead of a @dataProvider method because test
+ * This method of testing is used instead of a data provider method because test
  * fixtures do not have access to the provide data. This allows varying fixture
  * data per test case.
  *
  * @see layout_builder_post_update_make_layout_untranslatable()
  */
 abstract class MakeLayoutUntranslatableUpdatePathTestBase extends UpdatePathTestBase {
-
 
   /**
    * Layout builder test cases.

@@ -19,14 +19,12 @@ class LayoutFieldTranslateUpdateConfig extends MakeLayoutUntranslatableUpdatePat
       'has_layout' => TRUE,
       'nid' => 1,
       'vid' => 2,
-      'title' => 'Test Article - Spanish title',
     ],
     'page' => [
       'has_translation' => FALSE,
       'has_layout' => FALSE,
       'nid' => 4,
       'vid' => 5,
-      'title' => 'Page Test - Spanish title',
     ],
   ];
 
