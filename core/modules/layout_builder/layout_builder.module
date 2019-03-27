@@ -456,13 +456,4 @@ function _layout_builder_form_language_content_settings_form_alter(&$form, FormS
       }
     }
   }
-
-  $form['settings']['lb_message'] = [
-    '#type' => 'container',
-    '#markup' => $message_text,
-    '#attributes' => [
-      'class' => ['messages messages--' . $message_display],
-    ],
-    '#weight' => 0,
-  ];
 }
