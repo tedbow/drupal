@@ -3,6 +3,7 @@
 namespace Drupal\Tests\layout_builder\Functional\Update\Translatability;
 
 use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\FunctionalTests\Update\UpdatePathTestBase;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 
@@ -12,10 +13,11 @@ use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
  * Each class that extends this class will test 1 case for including 2 content
  * types.
  *
- * @see layout_builder_post_update_make_layout_untranslatable()
+ * This method of testing is used instead of a @dataProvider method because test
+ * fixtures do not have access to the provide data. This allows varying fixture
+ * data per test case.
  *
- * @group layout_builder
- * @group legacy
+ * @see layout_builder_post_update_make_layout_untranslatable()
  */
 abstract class MakeLayoutUntranslatableUpdatePathTestBase extends UpdatePathTestBase {
 
@@ -31,14 +33,21 @@ abstract class MakeLayoutUntranslatableUpdatePathTestBase extends UpdatePathTest
    *
    * @var array
    */
-  protected $layout_builder_test_cases;
+  protected $layoutBuilderTestCases;
 
   /**
    * Expectations of field updates by bundles.
    *
    * @var array
    */
-  protected $expected_bundle_updates;
+  protected $expectedBundleUpdates;
+
+  /**
+   * Whether the field storage should be updated.
+   *
+   * @var bool
+   */
+  protected $expectedFieldStorageUpdate;
 
   /**
    * {@inheritdoc}
@@ -59,7 +68,7 @@ abstract class MakeLayoutUntranslatableUpdatePathTestBase extends UpdatePathTest
    */
   public function testDisableTranslationOnLayouts() {
     $this->runUpdates();
-    foreach ($this->expected_bundle_updates as $bundle => $field_update_expected) {
+    foreach ($this->expectedBundleUpdates as $bundle => $field_update_expected) {
       $this->assertEquals(
         $field_update_expected,
         !FieldConfig::loadByName('node', $bundle, OverridesSectionStorage::FIELD_NAME)->isTranslatable(),
@@ -67,6 +76,10 @@ abstract class MakeLayoutUntranslatableUpdatePathTestBase extends UpdatePathTest
       );
     }
 
-    $this->assertEquals();
+    $this->assertEquals(
+      $this->expectedFieldStorageUpdate,
+      !FieldStorageConfig::loadByName('node', OverridesSectionStorage::FIELD_NAME)->isTranslatable()
+    );
   }
+
 }

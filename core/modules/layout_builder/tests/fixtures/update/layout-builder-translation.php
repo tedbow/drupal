@@ -85,7 +85,12 @@ $connection->update('config')
   ->condition('name', 'core.entity_view_display.node.page.default')
   ->execute();
 
-foreach ($this->layout_builder_test_cases as $bundle => $test_case) {
+/**
+ * Loop over test cases defined in the test class.
+ *
+ * @see \Drupal\Tests\layout_builder\Functional\Update\Translatability\MakeLayoutUntranslatableUpdatePathTestBase
+ */
+foreach ($this->layoutBuilderTestCases as $bundle => $test_case) {
   if ($test_case['has_layout']) {
     $values_en = [
       'bundle' => $bundle,
