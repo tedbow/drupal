@@ -9,6 +9,11 @@ use Drupal\Core\Config\Entity\ConfigEntityUpdater;
 use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
 use Drupal\layout_builder\TempStoreIdentifierInterface;
 use Drupal\user\Entity\Role;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
+use Drupal\Core\Entity\Sql\DefaultTableMapping;
 
 /**
  * Rebuild plugin dependencies for all entity view displays.
@@ -186,3 +191,73 @@ function layout_builder_post_update_update_permissions() {
     }
   }
 }
+
+/**
+ * Set the layout builder field as non-translatable where possible.
+ */
+function layout_builder_post_update_make_layout_untranslatable() {
+  /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
+  $field_manager = \Drupal::service('entity_field.manager');
+  $field_map = $field_manager->getFieldMap();
+  foreach ($field_map as $entity_type_id => $field_infos) {
+    $entity_type_has_translated_layouts = FALSE;
+    if (isset($field_infos[OverridesSectionStorage::FIELD_NAME]['bundles'])) {
+      foreach ($field_infos[OverridesSectionStorage::FIELD_NAME]['bundles'] as $bundle) {
+        if (_layout_builder_no_layouts_or_no_translations($entity_type_id, $bundle)) {
+          $field_config = FieldConfig::loadByName($entity_type_id, $bundle, OverridesSectionStorage::FIELD_NAME);
+          $field_config->setTranslatable(FALSE);
+          $field_config->save();
+        }
+        else {
+          $entity_type_has_translated_layouts = TRUE;
+        }
+      }
+      // Only set the field storage as untranslatable if no bundles had
+      // translated layout.
+      if (!$entity_type_has_translated_layouts) {
+        $field_storage = FieldStorageConfig::loadByName($entity_type_id, OverridesSectionStorage::FIELD_NAME);
+        $field_storage->setTranslatable(FALSE);
+        $field_storage->save();
+      }
+    }
+  }
+}
+
+/**
+ * Determines if either no translations or no layouts for the bundle.
+ *
+ * @param string $entity_type_id
+ *   The entity type.
+ * @param string $bundle
+ *   The bundle name.
+ *
+ * @return bool
+ *   TRUE if either no translations or no bundles, otherwise FALSE.
+ */
+function _layout_builder_no_layouts_or_no_translations($entity_type_id, $bundle) {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $entity_type = $entity_type_manager->getDefinition($entity_type_id);
+  $query = $entity_type_manager->getStorage($entity_type_id)->getQuery();
+  $bundle_key = $entity_type->getKey('bundle');
+  if ($entity_type->hasKey('default_langcode')) {
+    if ($bundle_key) {
+      $query->condition($bundle_key, $bundle);
+    }
+    $query->condition($entity_type->getKey('default_langcode'), 0)
+      ->allRevisions()
+      ->range(0, 1);
+    $results = $query->execute();
+    if (empty($results)) {
+      // There are no translations.
+      return TRUE;
+    }
+  }
+  $query = $entity_type_manager->getStorage($entity_type_id)->getQuery();
+  $query->exists(OverridesSectionStorage::FIELD_NAME)
+    ->allRevisions()
+    ->range(0, 1);
+  $results = $query->execute();
+  // If results are empty we have no layout overrides.
+  return empty($results);
+}
+
