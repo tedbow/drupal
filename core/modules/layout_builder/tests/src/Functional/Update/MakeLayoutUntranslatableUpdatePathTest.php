@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\layout_builder\Functional\Update;
 
-use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\FunctionalTests\Update\UpdatePathTestBase;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;

@@ -101,7 +101,7 @@ $test_cases = [
     'title' => 'Page Test - Spanish title',
   ],
 ];
-foreach ($test_casesf as $bundle => $test_case) {
+foreach ($test_cases as $bundle => $test_case) {
   if ($test_case['has_layout']) {
     $values_en = [
       'bundle' => $bundle,
