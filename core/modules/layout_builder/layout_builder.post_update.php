@@ -253,6 +253,9 @@ function _layout_builder_no_layouts_or_no_translations($entity_type_id, $bundle)
     }
   }
   $query = $entity_type_manager->getStorage($entity_type_id)->getQuery();
+  if ($bundle_key) {
+    $query->condition($bundle_key, $bundle);
+  }
   $query->exists(OverridesSectionStorage::FIELD_NAME)
     ->allRevisions()
     ->range(0, 1);
