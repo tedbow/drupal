@@ -408,3 +408,41 @@ function layout_builder_form_language_content_settings_form_alter(&$form, FormSt
   }
 }
 
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function layout_builder_theme_registry_alter(&$theme_registry) {
+  if (!empty($theme_registry['language_content_settings_table']['preprocess functions'])) {
+    $preprocess_functions = &$theme_registry['language_content_settings_table']['preprocess functions'];
+    $key = array_search('layout_builder_preprocess_language_content_settings_table', $preprocess_functions);
+    if ($key !== FALSE) {
+      unset($preprocess_functions[$key]);
+      $preprocess_functions[] = 'layout_builder_preprocess_language_content_settings_table';
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for language-content-settings-table.html.twig.
+ */
+function layout_builder_preprocess_language_content_settings_table(&$variables) {
+  foreach ($variables['build']['#rows'] as &$row) {
+    if (isset($row['#field_name']) && $row['#field_name'] === OverridesSectionStorage::FIELD_NAME) {
+      if (isset($row['data'][1]['data']['field']['#plain_text'])) {
+        $field = &$row['data'][1]['data']['field'];
+        $field['label'] = ['#plain_text' => $field['#plain_text']];
+        $field[] = [
+          '#type' => 'container',
+          '#markup' => t('Warning: The Layout Builder does not support translating layouts.'),
+          // @todo our render for link images etc would have to go here.
+          //   _content_translation_preprocess_language_content_settings_table
+          //  make any solution using this preprocess a very bad solution
+          //  it also so makes it so _layout_builder_form_language_content_settings_form_alter
+          // won't work either. ☹️
+          // And if even this solution needs a change to _content_translation_preprocess_language_content_settings_table
+        ];
+        unset($field['#plain_text']);
+      }
+    }
+  }
+}
