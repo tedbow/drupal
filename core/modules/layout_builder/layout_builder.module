@@ -15,7 +15,6 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Drupal\field\FieldConfigInterface;
-use Drupal\field\FieldStorageConfigInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplayStorage;
 use Drupal\layout_builder\Form\DefaultsEntityForm;
@@ -187,30 +186,14 @@ function layout_builder_entity_build_defaults_alter(array &$build, EntityInterfa
  * Implements hook_builder_module_implements_alter().
  */
 function layout_builder_module_implements_alter(&$implementations, $hook) {
-  switch ($hook) {
+  if ($hook === 'entity_view_alter') {
     // Ensure that this module's implementation of hook_entity_view_alter() runs
     // last so that other modules that use this hook to render extra fields will
     // run before it.
-    case 'entity_view_alter':
       $group = $implementations['layout_builder'];
       unset($implementations['layout_builder']);
       $implementations['layout_builder'] = $group;
-      break;
-
-    // The form_alter hook in the content_translation module needs to run
-    // before Layout Builder's so field information is available in the form.
-    //
-    // The hook here can't be more specific, as the $hook that's passed in to
-    // this function is form_alter, and not form_FORM_ID_alter.
-    case 'form_alter':
-      if (isset($implementations['content_translation'])) {
-        $group = $implementations['layout_builder'];
-        unset($implementations['layout_builder']);
-        $implementations['layout_builder'] = $group;
-      }
-      break;
   }
-
 }
 
 /**
