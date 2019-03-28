@@ -15,6 +15,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Drupal\field\FieldConfigInterface;
+use Drupal\field\FieldStorageConfigInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplayStorage;
 use Drupal\layout_builder\Form\DefaultsEntityForm;
@@ -365,5 +366,74 @@ function layout_builder_entity_translation_create(EntityInterface $translation) 
     // When creating a new translation do not copy untranslated sections because
     // per-language layouts are not supported.
     $translation->set(OverridesSectionStorage::FIELD_NAME, []);
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * @see layout_builder_module_implements_alter()
+ */
+function layout_builder_form_language_content_settings_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if (isset($form['settings'])) {
+    $form['settings']['#process'][] = '_layout_builder_process_language_content_settings_form';
+  }
+}
+
+function _layout_builder_process_language_content_settings_form(&$element, &$form_state, &$form) {
+  // Add a new wrapper around the element.
+  foreach (Element::children($element) as $entity_type_id) {
+    foreach (Element::children($element[$entity_type_id]) as $bundle) {
+      if (!empty($element[$entity_type_id][$bundle]['fields'][OverridesSectionStorage::FIELD_NAME])) {
+        $layout_field_checkbox = &$element[$entity_type_id][$bundle]['fields'][OverridesSectionStorage::FIELD_NAME];
+        $layout_field_checkbox['#original_label'] = $layout_field_checkbox['#label'];
+        // Change #label to a placeholder value that we can find later in
+        // layout_builder_preprocess_language_content_settings_table().
+        // We will replace the title with #original_label in that function.
+        $layout_field_checkbox['#label'] = "__LAYOUT_BUILDER_LABEL_PLACE_HOLDER:$entity_type_id:$bundle";
+        $layout_field_checkbox['#attached']['library'][] = 'layout_builder/drupal.layout_builder_content_translation_admin';
+      }
+    }
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function layout_builder_theme_registry_alter(&$theme_registry) {
+  if (!empty($theme_registry['language_content_settings_table']['preprocess functions'])) {
+    $preprocess_functions = &$theme_registry['language_content_settings_table']['preprocess functions'];
+    $key = array_search('layout_builder_preprocess_language_content_settings_table', $preprocess_functions);
+    if ($key !== FALSE) {
+      unset($preprocess_functions[$key]);
+      $preprocess_functions[] = 'layout_builder_preprocess_language_content_settings_table';
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for language-content-settings-table.html.twig.
+ */
+function layout_builder_preprocess_language_content_settings_table(&$variables) {
+  foreach ($variables['build']['#rows'] as &$row) {
+    if (isset($row['data'][1]['data']['field']['#plain_text'])  && strpos($row['data'][1]['data']['field']['#plain_text'], '__LAYOUT_BUILDER_LABEL_PLACE_HOLDER:') === 0) {
+      list(, $entity_type_id, $bundle) = explode(':', $row['data'][1]['data']['field']['#plain_text']);
+      $checkbox = $variables["element"][$bundle]["fields"][OverridesSectionStorage::FIELD_NAME];
+
+      $field_element = &$row['data'][1]['data']['field'];
+      $field_element = [
+        'label' => [
+          '#plain_text' => $checkbox['#original_label'],
+        ],
+        'description' => [
+          '#type' => 'container',
+          '#markup' => t('<strong>Warning</strong>: Layout Builder does not support translating layouts. (<a href="https://www.drupal.org/project/drupal/issues/3041659">online documentation</a>.'),
+          '#attributes' => [
+            'class' => ['layout-builder-translation-warning'],
+          ],
+        ],
+      ];
+    }
   }
 }
