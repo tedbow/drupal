@@ -265,7 +265,6 @@ function _content_translation_preprocess_language_content_settings_table(&$varia
             'class' => ['operations'],
           ],
         ],
-        '#field_name' => $field_name,
         'class' => ['field-settings'],
       ];
 
