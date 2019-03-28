@@ -1,6 +1,4 @@
-.language-content-settings-form .field-settings-layout_builder__layout .description {
-  background-image: url(../../../misc/icons/e29700/warning.svg);
-  background-repeat: no-repeat;
+.layout-builder-translation-warning {
+  background: left 2px url(../../../misc/icons/e29700/warning.svg) no-repeat;
   padding-left: 20px;
 }
-

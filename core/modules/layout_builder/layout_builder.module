@@ -375,18 +375,27 @@ function layout_builder_entity_translation_create(EntityInterface $translation) 
  * @see layout_builder_module_implements_alter()
  */
 function layout_builder_form_language_content_settings_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  if (!isset($form['settings'])) {
-    return;
+  if (isset($form['settings'])) {
+    $form['settings']['#process'][] = '_layout_builder_process_language_content_settings_form';
   }
-  foreach (Element::children($form['settings']) as $entity_type_id) {
-    foreach (Element::children($form['settings'][$entity_type_id]) as $bundle) {
-      if (!empty($form['settings'][$entity_type_id][$bundle]['fields'][OverridesSectionStorage::FIELD_NAME])) {
-        $layout_field_checkbox = &$form['settings'][$entity_type_id][$bundle]['fields'][OverridesSectionStorage::FIELD_NAME];
-        $layout_field_checkbox['#description'] = t('<strong>Warning</strong>: Layout Builder does not support translating layouts. (<a href="https://www.drupal.org/project/drupal/issues/3041659" >online documentation</a>.');
+}
+
+function _layout_builder_process_language_content_settings_form(&$element, &$form_state, &$form) {
+  // Add a new wrapper around the element.
+  foreach (Element::children($element) as $entity_type_id) {
+    foreach (Element::children($element[$entity_type_id]) as $bundle) {
+      if (!empty($element[$entity_type_id][$bundle]['fields'][OverridesSectionStorage::FIELD_NAME])) {
+        $layout_field_checkbox = &$element[$entity_type_id][$bundle]['fields'][OverridesSectionStorage::FIELD_NAME];
+        $layout_field_checkbox['#original_label'] = $layout_field_checkbox['#label'];
+        // Change #label to a placeholder value that we can find later in
+        // layout_builder_preprocess_language_content_settings_table().
+        // We will replace the title with #original_label in that function.
+        $layout_field_checkbox['#label'] = "__LAYOUT_BUILDER_LABEL_PLACE_HOLDER:$entity_type_id:$bundle";
         $layout_field_checkbox['#attached']['library'][] = 'layout_builder/drupal.layout_builder_content_translation_admin';
       }
     }
   }
+  return $element;
 }
 
 /**
@@ -408,22 +417,23 @@ function layout_builder_theme_registry_alter(&$theme_registry) {
  */
 function layout_builder_preprocess_language_content_settings_table(&$variables) {
   foreach ($variables['build']['#rows'] as &$row) {
-    if (isset($row['#field_name']) && $row['#field_name'] === OverridesSectionStorage::FIELD_NAME) {
-      if (isset($row['data'][1]['data']['field']['#plain_text'])) {
-        $field = &$row['data'][1]['data']['field'];
-        $field['label'] = ['#plain_text' => $field['#plain_text']];
-        $field[] = [
+    if (isset($row['data'][1]['data']['field']['#plain_text'])  && strpos($row['data'][1]['data']['field']['#plain_text'], '__LAYOUT_BUILDER_LABEL_PLACE_HOLDER:') === 0) {
+      list(, $entity_type_id, $bundle) = explode(':', $row['data'][1]['data']['field']['#plain_text']);
+      $checkbox = $variables["element"][$bundle]["fields"][OverridesSectionStorage::FIELD_NAME];
+
+      $field_element = &$row['data'][1]['data']['field'];
+      $field_element = [
+        'label' => [
+          '#plain_text' => $checkbox['#original_label'],
+        ],
+        'description' => [
           '#type' => 'container',
-          '#markup' => t('Warning: The Layout Builder does not support translating layouts.'),
-          // @todo our render for link images etc would have to go here.
-          //   _content_translation_preprocess_language_content_settings_table
-          //  make any solution using this preprocess a very bad solution
-          //  it also so makes it so _layout_builder_form_language_content_settings_form_alter
-          // won't work either. ☹️
-          // And if even this solution needs a change to _content_translation_preprocess_language_content_settings_table
-        ];
-        unset($field['#plain_text']);
-      }
+          '#markup' => t('<strong>Warning</strong>: Layout Builder does not support translating layouts. (<a href="https://www.drupal.org/project/drupal/issues/3041659">online documentation</a>.'),
+          '#attributes' => [
+            'class' => ['layout-builder-translation-warning'],
+          ],
+        ],
+      ];
     }
   }
 }
