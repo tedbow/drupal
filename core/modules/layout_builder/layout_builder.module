@@ -394,64 +394,17 @@ function layout_builder_entity_translation_create(EntityInterface $translation) 
  * @see layout_builder_module_implements_alter()
  */
 function layout_builder_form_language_content_settings_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  if (!\Drupal::hasService('content_translation.manager')) {
+  if (!isset($form['settings'])) {
     return;
   }
-
-  $content_translation_manager = \Drupal::service('content_translation.manager');
-  $message_display = 'warning';
-  $message_text = t('(* unsupported) The Layout field does not support translation.');
-  $map = \Drupal::service('entity_field.manager')->getFieldMapByFieldType('layout_section');
-  foreach ($map as $entity_type_id => $info) {
-    if (!$content_translation_manager->isEnabled($entity_type_id)) {
-      continue;
-    }
-    $field_storage_definitions = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions($entity_type_id);
-
-    /* @var \Drupal\Core\Field\FieldStorageDefinitionInterface  $storage_definition */
-    foreach ($field_storage_definitions as $name => $storage_definition) {
-      if ($storage_definition->getType() == 'layout_section') {
-
-        // For configurable fields, check all bundles on which the field exists,
-        // for base fields that are translatable, check all bundles,
-        // untranslatable base fields do not show up at all.
-        $bundles = [];
-        if ($storage_definition instanceof FieldStorageConfigInterface) {
-          $bundles = $storage_definition->getBundles();
-        }
-        elseif ($storage_definition->isTranslatable()) {
-          $bundles = Element::children($form['settings'][$entity_type_id]);
-        }
-        foreach ($bundles as $bundle) {
-          if (!$content_translation_manager->isEnabled($entity_type_id, $bundle)) {
-            continue;
-          }
-
-          // Add warning to label. If translations are enabled on the field,
-          // the message should display as an error instead of just a warning.
-          if (isset($form['settings'][$entity_type_id][$bundle]['fields'][$name]['#label'])) {
-            $label = $form['settings'][$entity_type_id][$bundle]['fields'][$name]['#label'];
-            $form['settings'][$entity_type_id][$bundle]['fields'][$name]['#label'] = t('@field_label (* unsupported)', ['@field_label' => $form['settings'][$entity_type_id][$bundle]['fields'][$name]['#label']]);
-          }
-        }
+  foreach (Element::children($form['settings']) as $entity_type_id) {
+    foreach (Element::children($form['settings'][$entity_type_id]) as $bundle) {
+      if (!empty($form['settings'][$entity_type_id][$bundle]['fields'][OverridesSectionStorage::FIELD_NAME])) {
+        $layout_field_checkbox = &$form['settings'][$entity_type_id][$bundle]['fields'][OverridesSectionStorage::FIELD_NAME];
+        $layout_field_checkbox['#label'] .= t("(Warning: Layout Builder doesn't translated layouts.)") . '<h3>HTML is escaped!</h3>';
       }
     }
+
   }
 }
-
-/**
- * This acts as if it implements hook_form_FORM_ID_alter().
- *
- * In most cases, Layout fields are not included in the content translation
- * settings form. This is good because they are not translatable.  However,
- * they may appear on some sites that began using Layout Builder in Drupal 8.6.
- * For those cases, the form is altered to add warning messages to alert the
- * user that content translation is not supported on these fields.
- *
- * @see layout_builder_form_alter()
- */
-function _layout_builder_form_language_content_settings_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-
-}
-
 
