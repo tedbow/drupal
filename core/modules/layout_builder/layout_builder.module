@@ -401,10 +401,9 @@ function layout_builder_form_language_content_settings_form_alter(&$form, FormSt
     foreach (Element::children($form['settings'][$entity_type_id]) as $bundle) {
       if (!empty($form['settings'][$entity_type_id][$bundle]['fields'][OverridesSectionStorage::FIELD_NAME])) {
         $layout_field_checkbox = &$form['settings'][$entity_type_id][$bundle]['fields'][OverridesSectionStorage::FIELD_NAME];
-        $layout_field_checkbox['#label'] .= t("(Warning: Layout Builder doesn't translated layouts.)") . '<h3>HTML is escaped!</h3>';
+        $layout_field_checkbox['#description'] = t('Warning: Layout Builder does not support translating layouts. (<a href="https://www.drupal.org/project/drupal/issues/3041659" >online documentation</a>.');
       }
     }
-
   }
 }
 

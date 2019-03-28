@@ -229,6 +229,8 @@ function _content_translation_preprocess_language_content_settings_table(&$varia
 
     foreach ($field_names as $field_name) {
       $field_element = &$element[$bundle]['fields'][$field_name];
+      $column_description = isset($field_element['#description']) ? $field_element['#description'] : '';
+      unset($field_element['#description']);
       $rows[] = [
         'data' => [
           [
@@ -245,7 +247,15 @@ function _content_translation_preprocess_language_content_settings_table(&$varia
                 '#plain_text' => $element[$bundle]['settings']['#label'],
               ],
               'field' => [
-                '#plain_text' => $field_element['#label'],
+                [
+                  'label' => [
+                    '#plain_text' => $field_element['#label'],
+                    'description' => [
+                      '#type' => 'container',
+                      '#markup' => $column_description,
+                    ],
+                  ],
+                ],
               ],
             ],
             'class' => ['field'],
@@ -296,7 +306,6 @@ function _content_translation_preprocess_language_content_settings_table(&$varia
               ],
             ],
             'class' => ['column-settings'],
-            '#_field_name' => $field_name,
           ];
         }
       }
