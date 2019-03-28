@@ -253,6 +253,9 @@ function _content_translation_preprocess_language_content_settings_table(&$varia
                     'description' => [
                       '#type' => 'container',
                       '#markup' => $column_description,
+                      '#attributes' => [
+                        'class' => ['description'],
+                      ],
                     ],
                   ],
                 ],
@@ -265,7 +268,7 @@ function _content_translation_preprocess_language_content_settings_table(&$varia
             'class' => ['operations'],
           ],
         ],
-        'class' => ['field-settings'],
+        'class' => ['field-settings', "field-settings-$field_name"],
       ];
 
       if (!empty($element[$bundle]['columns'][$field_name])) {
