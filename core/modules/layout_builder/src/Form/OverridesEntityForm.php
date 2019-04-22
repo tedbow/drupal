@@ -3,6 +3,7 @@
 namespace Drupal\layout_builder\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityInterface;
@@ -13,6 +14,7 @@ use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\SectionStorageInterface;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -82,12 +84,20 @@ class OverridesEntityForm extends ContentEntityForm {
     parent::init($form_state);
 
     $form_display = EntityFormDisplay::collectRenderDisplay($this->entity, $this->getOperation(), FALSE);
-    $form_display->setComponent(OverridesSectionStorage::FIELD_NAME, [
-      'type' => 'layout_builder_widget',
-      'weight' => -10,
-      'settings' => [],
-    ]);
-
+    if ($this->sectionStorage instanceof TranslatableSectionStorageInterface && !$this->sectionStorage->isDefaultTranslation()) {
+      $form_display->setComponent(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME, [
+        'type' => 'layout_builder_widget',
+        'weight' => -10,
+        'settings' => [],
+      ]);
+    }
+    else {
+      $form_display->setComponent(OverridesSectionStorage::FIELD_NAME, [
+        'type' => 'layout_builder_widget',
+        'weight' => -10,
+        'settings' => [],
+      ]);
+    }
     $this->setFormDisplay($form_display, $form_state);
   }
 

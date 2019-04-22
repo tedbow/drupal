@@ -14,6 +14,7 @@ use Drupal\layout_builder\LayoutBuilderHighlightTrait;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\SectionStorageInterface;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -83,6 +84,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
   public function getInfo() {
     return [
       '#section_storage' => NULL,
+      '#language' => NULL,
       '#pre_render' => [
         [$this, 'preRender'],
       ],
@@ -94,7 +96,9 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    */
   public function preRender($element) {
     if ($element['#section_storage'] instanceof SectionStorageInterface) {
-      $element['layout_builder'] = $this->layout($element['#section_storage']);
+      $language = !empty($element['#lanuauge']) ? $element['#lanuauge'] : NULL;
+      $element['layout_builder'] = $this->layout($element['#section_storage'], $language);
+
     }
     return $element;
   }
@@ -110,6 +114,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    */
   protected function layout(SectionStorageInterface $section_storage) {
     $this->prepareLayout($section_storage);
+    $sections_editable = !($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation());
 
     $output = [];
     if ($this->isAjax()) {
@@ -119,11 +124,17 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     }
     $count = 0;
     for ($i = 0; $i < $section_storage->count(); $i++) {
-      $output[] = $this->buildAddSectionLink($section_storage, $count);
+      if ($sections_editable) {
+        $output[] = $this->buildAddSectionLink($section_storage, $count);
+      }
+
       $output[] = $this->buildAdministrativeSection($section_storage, $count);
       $count++;
     }
-    $output[] = $this->buildAddSectionLink($section_storage, $count);
+    if ($sections_editable) {
+      $output[] = $this->buildAddSectionLink($section_storage, $count);
+    }
+
     $output['#attached']['library'][] = 'layout_builder/drupal.layout_builder';
     // As the Layout Builder UI is typically displayed using the frontend theme,
     // it is not marked as an administrative page at the route level even though
@@ -135,6 +146,10 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     $output['#attributes']['class'][] = 'layout-builder';
     // Mark this UI as uncacheable.
     $output['#cache']['max-age'] = 0;
+
+    // @todo Add message if not components have translate links!
+    //    "There are no settings to translate"
+
     return $output;
   }
 
@@ -148,6 +163,14 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     // If the layout has pending changes, add a warning.
     if ($this->layoutTempstoreRepository->has($section_storage)) {
       $this->messenger->addWarning($this->t('You have unsaved changes.'));
+      if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
+        // @todo Copy in any change from the default translation and then
+        //   reapply any translated labels where the original labels has not
+        //   changed. This should avoid data loss if the layout has been
+        //   updated since this layout override has started. This probably also
+        //   needs to be done on save to avoid overriding the layout if it was
+        //   saved since the last time this page was opened.
+      }
     }
     // If the layout is an override that has not yet been overridden, copy the
     // sections from the corresponding default.
@@ -242,7 +265,8 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     $storage_type = $section_storage->getStorageType();
     $storage_id = $section_storage->getStorageId();
     $section = $section_storage->getSection($delta);
-
+    $is_translation = $section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation();
+    $sections_editable = !$is_translation;
     $layout = $section->getLayout();
     $build = $section->toRenderArray($this->getAvailableContexts($section_storage), TRUE);
     $layout_definition = $layout->getPluginDefinition();
@@ -353,6 +377,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
       ],
       'remove' => [
         '#type' => 'link',
+        '#access' => $sections_editable,
         '#title' => $this->t('Remove section <span class="visually-hidden">@section</span>', ['@section' => $delta + 1]),
         '#url' => Url::fromRoute('layout_builder.remove_section', [
           'section_storage_type' => $storage_type,
@@ -382,7 +407,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
         // .layout-builder__section-label is only visible when the
         // move block dialog is open and it is not seen by screen readers.
         '#title' => $this->t('Configure section <span class="visually-hidden">@section</span><span aria-hidden="true" class="layout-builder__section-label">@section</span>', ['@section' => $delta + 1]),
-        '#access' => $layout instanceof PluginFormInterface,
+        '#access' => $layout instanceof PluginFormInterface && $sections_editable,
         '#url' => Url::fromRoute('layout_builder.configure_section', [
           'section_storage_type' => $storage_type,
           'section_storage' => $storage_id,
