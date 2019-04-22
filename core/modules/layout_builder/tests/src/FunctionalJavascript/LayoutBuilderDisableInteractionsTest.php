@@ -18,6 +18,7 @@ use WebDriver\Exception\UnknownError;
 class LayoutBuilderDisableInteractionsTest extends WebDriverTestBase {
 
   use ContextualLinkClickTrait;
+  use LayoutBuilderTestTrait;
 
   /**
    * {@inheritdoc}
@@ -298,28 +299,6 @@ class LayoutBuilderDisableInteractionsTest extends WebDriverTestBase {
     $driver_session = $this->getSession()->getDriver()->getWebDriverSession();
     $element = $driver_session->element('css selector', $selector);
     $driver_session->moveto(['element' => $element->getID()]);
-  }
-
-  /**
-   * Waits for an element to be removed from the page.
-   *
-   * @param string $selector
-   *   CSS selector.
-   * @param int $timeout
-   *   (optional) Timeout in milliseconds, defaults to 10000.
-   * @param string $message
-   *   (optional) Custom message to display with the assertion.
-   *
-   * @todo: Remove after https://www.drupal.org/project/drupal/issues/2892440
-   */
-  public function assertNoElementAfterWait($selector, $timeout = 10000, $message = '') {
-    $page = $this->getSession()->getPage();
-    if ($message === '') {
-      $message = "Element '$selector' was not on the page after wait.";
-    }
-    $this->assertTrue($page->waitFor($timeout / 1000, function () use ($page, $selector) {
-      return empty($page->find('css', $selector));
-    }), $message);
   }
 
 }
