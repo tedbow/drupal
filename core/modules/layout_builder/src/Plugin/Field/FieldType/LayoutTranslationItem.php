@@ -17,7 +17,8 @@ use Drupal\Core\TypedData\DataDefinition;
  *   label = @Translation("Layout Translation"),
  *   description = @Translation("Layout Translation"),
  *   no_ui = TRUE,
- *   cardinality = 1
+ *   cardinality = 1,
+ *   list_class = "\Drupal\layout_builder\Field\LayoutTranslationItemList",
  * )
  */
 class LayoutTranslationItem extends FieldItemBase {
