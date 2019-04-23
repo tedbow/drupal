@@ -11,7 +11,7 @@ use Drupal\Core\Url;
  *
  * @group layout_builder
  */
-class LayoutBuilderTranslationOldTest extends ContentTranslationTestBase {
+class LayoutBuilderTranslationOrder extends ContentTranslationTestBase {
 
   /**
    * {@inheritdoc}
