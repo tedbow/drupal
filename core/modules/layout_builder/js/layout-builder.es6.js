@@ -111,10 +111,10 @@
   behaviors.layoutBuilderBlockDrag = {
     attach(context) {
       $(context)
-        .find('.js-layout-builder-region:has(.js-layout-builder-block)')
+        .find('.js-layout-builder-region')
         .sortable({
           items: '> .js-layout-builder-block',
-          connectWith: '.js-layout-builder-region:has(.js-layout-builder-block)',
+          connectWith: '.js-layout-builder-region',
           placeholder: 'ui-state-drop',
 
           /**
