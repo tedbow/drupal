@@ -113,6 +113,7 @@ class OverridesEntityForm extends ContentEntityForm {
     //   restricts all access to the field, explicitly allow access here until
     //   https://www.drupal.org/node/2942975 is resolved.
     $form[OverridesSectionStorage::FIELD_NAME]['#access'] = TRUE;
+    $form[OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME]['#access'] = TRUE;
 
     $form['layout_builder_message'] = $this->buildMessage($section_storage->getContextValue('entity'), $section_storage);
     return $form;

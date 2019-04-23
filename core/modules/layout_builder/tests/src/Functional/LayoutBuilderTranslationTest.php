@@ -63,7 +63,7 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
     // If there is not a layout override the layout translation is not
     // accessible.
     $this->drupalGet($translated_layout_url);
-    // ---
+    $assert_session->pageTextContains('Access denied');
 
     // Ensure that the tempstore varies per-translation.
     $this->drupalGet($layout_url);
@@ -81,7 +81,7 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
 
     // Confirm the tempstore for the translated layout is not affected.
     $this->drupalGet($translated_layout_url);
-    // --
+    $assert_session->pageTextContains('Access denied');
 
     $this->drupalGet($layout_url);
     $assert_session->pageTextContains('Powered by Drupal');
@@ -115,7 +115,7 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
   /**
    * Tests that access is denied to a layout translation if there is override.
    */
-  public function xtestLayoutTranslationNoOverride() {
+  public function testLayoutTranslationNoOverride() {
     $assert_session = $this->assertSession();
 
     $entity_url = $this->entity->toUrl('canonical')->toString();
