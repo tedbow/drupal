@@ -24,8 +24,8 @@ trait LayoutBuilderTestTrait {
     $page = $this->getSession()->getPage();
 
     // Add a new block.
-    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#layout-builder a:contains(\'Add Block\')'));
-    $this->clickLink('Add Block');
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#layout-builder a:contains(\'Add block\')'));
+    $this->clickLink('Add block');
     $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#drupal-off-canvas'));
     $assert_session->assertWaitOnAjaxRequest();
 
@@ -41,7 +41,7 @@ trait LayoutBuilderTestTrait {
     if ($label !== NULL) {
       $page->fillField('settings[label]', $label);
     }
-    $page->pressButton('Add Block');
+    $page->pressButton('Add block');
 
     // Wait for block form to be rendered in the Layout Builder.
     $this->assertNotEmpty($assert_session->waitForElement('css', $rendered_locator));
