@@ -15,7 +15,7 @@ trait TranslationTestTrait {
     $assert_session = $this->assertSession();
     // Confirm that links do not exist to change the layout.
     $assert_session->linkNotExists('Add Section');
-    $assert_session->linkNotExists('Add Block');
+    $assert_session->linkNotExists('Add block');
     $assert_session->linkNotExists('Remove section');
     $assert_session->elementNotExists('css', '[data-contextual-id^="layout_builder_block:"]');
   }
