@@ -150,7 +150,7 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
    */
   public function blockForm($form, FormStateInterface $form_state) {
     $block = $this->getEntity();
-    if (!$this->isNew) {
+    if (!$this->isNew && !$block->isNew()) {
       // Get the active block for editing purposes.
       $block = $this->entityRepository->getActive('block_content', $block->id());
     }
