@@ -3,10 +3,13 @@
 namespace Drupal\layout_builder\EventSubscriber;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent;
 use Drupal\layout_builder\LayoutBuilderEvents;
 use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Drupal\layout_builder\TranslatableSectionStorageInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -15,6 +18,24 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class ComponentPluginTranslate implements EventSubscriberInterface {
 
   use LayoutEntityHelperTrait;
+
+  /**
+   * The language manager.
+   *
+   * @var \Drupal\Core\Language\LanguageManagerInterface
+   */
+  protected $languageManager;
+
+  /**
+   * Creates a ComponentPluginTranslate object.
+   *
+   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager.
+   */
+  public function __construct(LanguageManagerInterface $language_manager) {
+    $this->languageManager = $language_manager;
+  }
+
 
   /**
    * {@inheritdoc}
@@ -31,6 +52,9 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
    *   The section component render event.
    */
   public function onBuildRender(SectionComponentBuildRenderArrayEvent $event) {
+    if (!$this->languageManager->isMultilingual()) {
+      return;
+    }
     $plugin = $event->getPlugin();
     $contexts = $event->getContexts();
     $component = $event->getComponent();
@@ -48,5 +72,4 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
       }
     }
   }
-
 }
