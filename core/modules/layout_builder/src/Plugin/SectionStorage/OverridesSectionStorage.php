@@ -40,8 +40,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   handles_permission_check = TRUE,
  *   context_definitions = {
  *     "entity" = @ContextDefinition("entity", constraints = {
- *       "EntityHasField" =
- *   \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage::FIELD_NAME,
+ *       "EntityHasField" = \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage::FIELD_NAME,
  *     }),
  *     "view_mode" = @ContextDefinition("string"),
  *   }
