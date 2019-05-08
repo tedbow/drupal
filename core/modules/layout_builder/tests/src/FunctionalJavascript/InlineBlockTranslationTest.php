@@ -50,6 +50,7 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
       'administer node fields',
       'translate bundle_with_section_field node',
       'create content translations',
+      'create and edit custom blocks',
     ]));
 
     // Allow layout overrides.
@@ -230,7 +231,7 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     $assert_session->assertWaitOnAjaxRequest();
 
     $assert_session->pageTextContains($new_label);
-    $assert_session->pageTextContains($new_label);
+    $assert_session->pageTextContains($new_body);
     $assert_session->pageTextNotContains($existing_label);
     $assert_session->pageTextNotContains($existing_body);
   }
