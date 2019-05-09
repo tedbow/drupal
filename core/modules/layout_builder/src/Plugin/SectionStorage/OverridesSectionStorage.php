@@ -2,7 +2,6 @@
 
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
-use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
@@ -19,7 +18,6 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
-use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface;
 use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
