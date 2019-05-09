@@ -141,9 +141,9 @@ class InlineBlockTranslationForm extends BlockPluginTranslationForm {
     $block = $element['#block'];
     $element += \Drupal::service('entity.form_builder')->getForm($block, 'edit');
     unset($element['form_token']);
-    //$element['actions']['#access'] = FALSE;
-    //$element['content_translation']['#access'] = FALSE;
-    //$element['revision']['#access'] = FALSE;
+    // $element['actions']['#access'] = FALSE;
+    // $element['content_translation']['#access'] = FALSE;
+    $element['revision']['#access'] = FALSE;
     $element['revision_log']['#access'] = FALSE;
     $element['info']['#access'] = FALSE;
     $element['langcode']['#access'] = FALSE;
