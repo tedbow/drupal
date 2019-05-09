@@ -81,7 +81,6 @@ class TranslationTest extends WebDriverTestBase {
       'body[0][value]' => 'The translated node body',
     ], 'Save');
 
-
     // Allow layout overrides.
     $this->drupalPostForm(
       static::FIELD_UI_PREFIX . '/display/default',
@@ -93,7 +92,6 @@ class TranslationTest extends WebDriverTestBase {
       ['layout[allow_custom]' => TRUE],
       'Save'
     );
-
   }
 
   /**
@@ -109,7 +107,7 @@ class TranslationTest extends WebDriverTestBase {
       // @todo should you need this permission? You don't actually save the
       //   entity translation because labels are stored with untranslated
       //   layout.
-      //'translate bundle_with_section_field node',
+      //   'translate bundle_with_section_field node'.
     ]));
 
     // Add a new inline block to the original node.

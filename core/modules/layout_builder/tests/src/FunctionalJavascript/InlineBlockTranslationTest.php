@@ -215,7 +215,6 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
     $this->clickContextualLink(static::INLINE_BLOCK_LOCATOR, 'Translate block');
-    //$assert_session->waitForElementVisible('css', '.go', 993939393939393983983983983983983983983983);
     $textarea = $assert_session->waitForElement('css', '[name="body[0][value]"]');
     $this->assertNotEmpty($textarea);
     $this->assertEquals($existing_body, $textarea->getValue());

@@ -3,13 +3,11 @@
 namespace Drupal\layout_builder\EventSubscriber;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent;
 use Drupal\layout_builder\LayoutBuilderEvents;
 use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Drupal\layout_builder\TranslatableSectionStorageInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -35,7 +33,6 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
   public function __construct(LanguageManagerInterface $language_manager) {
     $this->languageManager = $language_manager;
   }
-
 
   /**
    * {@inheritdoc}
@@ -72,4 +69,5 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
       }
     }
   }
+
 }
