@@ -220,11 +220,11 @@ class InlineBlockTranslationTest extends InlineBlockTestBase {
     $this->assertEquals($existing_body, $textarea->getValue());
     $textarea->setValue($new_body);
 
-    $label_input = $assert_session->elementExists('css', '#drupal-off-canvas [name="settings[label]"]');
+    $label_input = $assert_session->elementExists('css', '#drupal-off-canvas [name="info[0][value]"]');
     $this->assertNotEmpty($label_input);
     $this->assertEquals($existing_label, $label_input->getValue());
     $label_input->setValue($new_label);
-    $page->pressButton('Translate');
+    $page->pressButton('Save');
 
     $this->assertNoElementAfterWait('#drupal-off-canvas');
     $assert_session->assertWaitOnAjaxRequest();
