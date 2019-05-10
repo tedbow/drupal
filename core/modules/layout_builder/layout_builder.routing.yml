@@ -126,6 +126,21 @@ layout_builder.translate_block:
       section_storage:
         layout_builder_tempstore: TRUE
 
+layout_builder.translate_inline_block:
+  path: '/layout_builder/translate/inline-block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}'
+  defaults:
+    _entity_form: 'block_content.layout_builder_translate'
+    _title: 'Translate block'
+  requirements:
+    _permission: 'configure any layout'
+    _layout_builder_access: 'view'
+    _layout_builder_translation_access: 'translated'
+  options:
+    _admin_route: TRUE
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
 layout_builder.move_block_form:
   path: '/layout_builder/move/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}'
   defaults:

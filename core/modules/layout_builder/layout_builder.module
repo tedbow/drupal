@@ -17,6 +17,7 @@ use Drupal\Core\Url;
 use Drupal\field\FieldConfigInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplayStorage;
+use Drupal\layout_builder\Form\BlockContentInlineBlockTranslateForm;
 use Drupal\layout_builder\Form\BlockPluginTranslationForm;
 use Drupal\layout_builder\Form\DefaultsEntityForm;
 use Drupal\layout_builder\Form\LayoutBuilderEntityViewDisplayForm;
@@ -83,6 +84,10 @@ function layout_builder_entity_type_alter(array &$entity_types) {
     if ($entity_type->entityClassImplements(FieldableEntityInterface::class)) {
       $entity_type->setFormClass('layout_builder', OverridesEntityForm::class);
     }
+  }
+
+  if (isset($entity_types['block_content'])) {
+    $entity_types['block_content']->setFormClass('layout_builder_translate', BlockContentInlineBlockTranslateForm::class);
   }
 }
 

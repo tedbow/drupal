@@ -2,7 +2,9 @@
 
 namespace Drupal\layout_builder\Element;
 
+use Drupal\Component\Plugin\DerivativeInspectionInterface;
 use Drupal\Core\Ajax\AjaxHelperTrait;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
@@ -46,6 +48,12 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
   protected $messenger;
 
   /**
+   * The entity type manager.
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a new LayoutBuilder.
    *
    * @param array $configuration
@@ -58,11 +66,14 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    *   The layout tempstore repository.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->layoutTempstoreRepository = $layout_tempstore_repository;
     $this->messenger = $messenger;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -74,7 +85,8 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
       $plugin_id,
       $plugin_definition,
       $container->get('layout_builder.tempstore_repository'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -300,10 +312,26 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
               'layout_builder_block' => $contextual_link_settings,
             ];
           }
-          elseif ($is_translation && $section->getComponent($uuid)->hasTranslatableConfiguration()) {
-            $build[$region][$uuid]['#contextual_links'] = [
-              'layout_builder_block_translation' => $contextual_link_settings,
-            ];
+          elseif ($is_translation) {
+            $component = $section->getComponent($uuid);
+            if ($component->hasTranslatableConfiguration()) {
+              /** @var \Drupal\layout_builder\Plugin\Block\InlineBlock $plugin */
+              $plugin = $component->getPlugin();
+              if ($plugin instanceof DerivativeInspectionInterface && $plugin->getBaseId() === 'inline_block') {
+                $configuration = $plugin->getConfiguration();
+                /** @var \Drupal\block_content\Entity\BlockContent $block */
+                $block = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
+                $build[$region][$uuid]['#contextual_links'] = [
+                  $block->isTranslatable() ? 'layout_builder_inline_block_translation' : 'layout_builder_block_translation' => $contextual_link_settings,
+                ];
+              }
+              else {
+                $build[$region][$uuid]['#contextual_links'] = [
+                  'layout_builder_block_translation' => $contextual_link_settings,
+                ];
+              }
+
+            }
           }
         }
       }
