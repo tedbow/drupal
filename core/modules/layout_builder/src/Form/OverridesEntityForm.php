@@ -209,14 +209,16 @@ class OverridesEntityForm extends ContentEntityForm {
       '#submit' => ['::redirectOnSubmit'],
       '#redirect' => 'discard_changes',
     ];
-    // @todo This button should be conditionally displayed, see
-    //   https://www.drupal.org/node/2917777.
-    $actions['revert'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Revert to defaults'),
-      '#submit' => ['::redirectOnSubmit'],
-      '#redirect' => 'revert',
-    ];
+    if (!$this->sectionStorage instanceof TranslatableSectionStorageInterface || $this->sectionStorage->isDefaultTranslation()) {
+      // @todo This button should be conditionally displayed, see
+      //   https://www.drupal.org/node/2917777.
+      $actions['revert'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Revert to defaults'),
+        '#submit' => ['::redirectOnSubmit'],
+        '#redirect' => 'revert',
+      ];
+    }
     $actions['preview_toggle'] = $this->buildContentPreviewToggle();
     return $actions;
   }
