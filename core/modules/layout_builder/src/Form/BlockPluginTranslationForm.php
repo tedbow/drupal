@@ -5,6 +5,7 @@ namespace Drupal\layout_builder\Form;
 use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
 use Drupal\Core\Plugin\PluginFormBase;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -48,7 +49,7 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('language_manager')->getCurrentLanguage()->getId()
+      $container->get('language_manager')->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId()
     );
   }
 
