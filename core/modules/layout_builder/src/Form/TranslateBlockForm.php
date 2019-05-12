@@ -63,7 +63,6 @@ class TranslateBlockForm extends ConfigureBlockFormBase {
         $plugin_form->setTranslatedConfiguration($this->sectionStorage->getTranslatedComponentConfiguration($this->uuid));
       }
       return $plugin_form;
-
     }
     return $block;
   }
@@ -83,16 +82,6 @@ class TranslateBlockForm extends ConfigureBlockFormBase {
 
     $this->layoutTempstoreRepository->set($this->sectionStorage);
     $form_state->setRedirectUrl($this->sectionStorage->getLayoutBuilderUrl());
-  }
-
-  /**
-   * Return the entity used in the form.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface
-   *   The entity
-   */
-  public function getEntity() {
-    return $this->getPluginForm($this->block)->getEntity();
   }
 
 }
