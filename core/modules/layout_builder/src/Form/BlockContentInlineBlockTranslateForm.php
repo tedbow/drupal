@@ -4,15 +4,18 @@ namespace Drupal\layout_builder\Form;
 
 use Drupal\block_content\BlockContentForm;
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Language\LanguageInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Provides a form class for translating inline blocks in the Layout Builder.
+ */
 class BlockContentInlineBlockTranslateForm extends BlockContentForm {
 
   /**
@@ -25,7 +28,7 @@ class BlockContentInlineBlockTranslateForm extends BlockContentForm {
   /**
    * The component UUID.
    *
-   * @var string;
+   * @var string
    */
   protected $uuid;
 
@@ -44,15 +47,23 @@ class BlockContentInlineBlockTranslateForm extends BlockContentForm {
   protected $sectionStorage;
 
   /**
+   * The language manager.
+   *
+   * @var \Drupal\Core\Language\LanguageManagerInterface
+   */
+  protected $languageManager;
+
+  /**
    * {@inheritdoc}
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, RouteMatchInterface $route_match, LayoutTempstoreRepositoryInterface $tempstore) {
+  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, RouteMatchInterface $route_match = NULL, LayoutTempstoreRepositoryInterface $tempstore = NULL, LanguageManagerInterface $language_manager = NULL) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
     $this->routeMatch = $route_match;
     $this->layoutTempstoreRepository = $tempstore;
     $this->uuid = $route_match->getParameter('uuid');
     $this->delta = $route_match->getParameter('delta');
     $this->sectionStorage = $route_match->getParameter('section_storage');
+    $this->languageManager = $language_manager;
   }
 
   /**
@@ -64,20 +75,18 @@ class BlockContentInlineBlockTranslateForm extends BlockContentForm {
       $container->get('entity_type.bundle.info'),
       $container->get('datetime.time'),
       $container->get('current_route_match'),
-      $container->get('layout_builder.tempstore_repository')
+      $container->get('layout_builder.tempstore_repository'),
+      $container->get('language_manager')
     );
   }
 
-
-
-
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function getEntityFromRouteMatch(RouteMatchInterface $route_match, $entity_type_id) {
     /** @var \Drupal\layout_builder\TranslatableSectionStorageInterface $section_storage */
     $translated_configuration = $this->sectionStorage->getTranslatedComponentConfiguration($this->uuid);
-    $current_langcode = \Drupal::languageManager()->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
+    $current_langcode = $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
 
     if (!empty($translated_configuration)) {
       if (!empty($translated_configuration['block_serialized'])) {
@@ -93,10 +102,7 @@ class BlockContentInlineBlockTranslateForm extends BlockContentForm {
       }
     }
     $configuration = $this->sectionStorage->getSection($this->delta)->getComponent($this->uuid)->getPlugin()->getConfiguration();
-    if (!empty($configuration['block_serialized'])) {
-      return unserialize($configuration['block_serialized']);
-    }
-    elseif (!empty($configuration['block_revision_id'])) {
+    if (!empty($configuration['block_revision_id'])) {
       /** @var \Drupal\block_content\BlockContentInterface $entity */
       $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
       $entity = $this->entityRepository->getActive('block_content', $entity->id());
@@ -108,7 +114,6 @@ class BlockContentInlineBlockTranslateForm extends BlockContentForm {
         if (!empty($translated_configuration['label'])) {
           $translation->setInfo($translated_configuration['label']);
         }
-
         return $translation;
       }
     }
@@ -118,13 +123,10 @@ class BlockContentInlineBlockTranslateForm extends BlockContentForm {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
     $entity = $this->entity;
-    /** @var \Drupal\layout_builder\Plugin\Block\InlineBlock $inline_block */
-    $inline_block = $this->sectionStorage->getSection($this->delta)->getComponent($this->uuid)->getPlugin();
-
     $translated_configuration = $this->sectionStorage->getTranslatedComponentConfiguration($this->uuid);
     $translated_configuration['block_serialized'] = serialize($entity);
     $translated_configuration['label'] = $entity->label();
@@ -133,19 +135,14 @@ class BlockContentInlineBlockTranslateForm extends BlockContentForm {
   }
 
   /**
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *
-   * @return \Drupal\layout_builder\Plugin\Block\InlineBlock
+   * {@inheritdoc}
    */
-  protected function getInlineBlockPlugin(RouteMatchInterface $route_match) {
-    /** @var \Drupal\layout_builder\SectionStorageInterface $section_storage */
-    $section_storage = $route_match->getParameter('section_storage');
-    $section = $section_storage->getSection($route_match->getParameter('delta'));
-    $component = $section->getComponent($route_match->getParameter('uuid'));
-    /** @var \Drupal\layout_builder\Plugin\Block\InlineBlock $inline_block */
-    $inline_block = $component->getPlugin();
-    return $inline_block;
+  public function form(array $form, FormStateInterface $form_state) {
+    $form = parent::form($form, $form_state);
+    $form['langcode']['#access'] = FALSE;
+    $form['revision_log']['#access'] = FALSE;
+    $form['revision']['#access'] = FALSE;
+    return $form;
   }
-
 
 }
