@@ -331,8 +331,7 @@ class SectionComponent {
     }
     elseif ($plugin instanceof ConfigurableInterface) {
       // For all plugins that do not implement
-      // LayoutBuilderTranslatablePluginInterface only allow label
-      // translation.
+      // LayoutBuilderTranslatablePluginInterface only allow label translation.
       $configuration = $plugin->getConfiguration();
       return !empty($configuration['label_display']) && !empty($configuration['label']);
     }
