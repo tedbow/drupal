@@ -136,6 +136,7 @@ class TranslationTest extends WebDriverTestBase {
     $page->pressButton('Save layout');
     $assert_session->addressEquals('it/node/1');
     $assert_session->pageTextContains('label in translation');
+    $assert_session->pageTextNotContains('untranslated label');
     // @todo this will fail until https://www.drupal.org/node/3039185
     // $assert_session->pageTextContains('field label translated');
 
@@ -146,6 +147,20 @@ class TranslationTest extends WebDriverTestBase {
     // @todo this will fail until https://www.drupal.org/node/3039185
     // $assert_session->pageTextContains('field label translated');
     // $assert_session->pageTextNotContains('field label untranslated');
+
+    // Update the translations block label.
+    $this->drupalGet('it/node/1/layout');
+    $this->assertNonTranslationActionsRemoved();
+    $this->updateBlockTranslation('.block-system-powered-by-block', 'label in translation', 'label updated in translation');
+    // @todo this will fail until https://www.drupal.org/node/3039185
+    // $this->updateBlockTranslation('.block-field-blocknodebundle-with-section-fieldbody', 'field label untranslated', 'field label translated');
+    $assert_session->buttonExists('Save layout');
+    $page->pressButton('Save layout');
+    $assert_session->addressEquals('it/node/1');
+    $assert_session->pageTextContains('label updated in translation');
+    $assert_session->pageTextNotContains('label in translation');
+    // @todo this will fail until https://www.drupal.org/node/3039185
+    // $assert_session->pageTextContains('field label translated');
   }
 
 }
