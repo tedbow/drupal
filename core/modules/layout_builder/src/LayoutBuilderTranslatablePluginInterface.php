@@ -4,8 +4,6 @@ namespace Drupal\layout_builder;
 
 /**
  * Provides an interface for plugins with Layout Builder translatable settings.
- *
- * @package Drupal\layout_builder
  */
 interface LayoutBuilderTranslatablePluginInterface {
 
