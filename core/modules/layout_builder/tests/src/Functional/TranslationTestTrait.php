@@ -18,6 +18,7 @@ trait TranslationTestTrait {
     $assert_session->linkNotExists('Add block');
     $assert_session->linkNotExists('Remove section');
     $assert_session->elementNotExists('css', '[data-contextual-id^="layout_builder_block:"]');
+    $assert_session->buttonNotExists('Revert to defaults');
   }
 
 }
