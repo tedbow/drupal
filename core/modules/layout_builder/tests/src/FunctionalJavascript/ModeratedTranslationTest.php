@@ -133,7 +133,6 @@ class ModeratedTranslationTest extends WebDriverTestBase {
     $page->fillField('new_state', 'published');
     $page->pressButton('Apply');
 
-
     // Create a draft layout override.
     $this->drupalGet($node->toUrl());
     $page->clickLink('Layout');
@@ -195,8 +194,6 @@ class ModeratedTranslationTest extends WebDriverTestBase {
     $page->fillField('moderation_state[0][state]', 'draft');
     $page->pressButton('Save layout');
 
-
-
     $this->drupalGet('it/node/1');
     $this->clickLink('Layout');
     $assert_session->pageTextContains('label in translation');
@@ -225,7 +222,6 @@ class ModeratedTranslationTest extends WebDriverTestBase {
     $assert_session->pageTextNotContains('untranslated new label');
     $page->fillField('moderation_state[0][state]', 'published');
     $page->pressButton('Save layout');
-
 
     $assert_session->addressEquals('it/node/1');
     $assert_session->pageTextContains('label in translation');
