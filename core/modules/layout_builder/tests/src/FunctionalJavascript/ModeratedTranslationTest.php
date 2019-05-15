@@ -46,6 +46,7 @@ class ModeratedTranslationTest extends WebDriverTestBase {
    */
   protected function setUp() {
     parent::setUp();
+    $page = $this->getSession()->getPage();
 
     // @todo The Layout Builder UI relies on local tasks; fix in
     //   https://www.drupal.org/project/drupal/issues/2917777.
@@ -78,7 +79,7 @@ class ModeratedTranslationTest extends WebDriverTestBase {
       'use editorial transition publish',
     ]));
 
-    $this->createNode([
+    $node = $this->createNode([
       'type' => 'bundle_with_section_field',
       'title' => 'The node title',
       'body' => [
@@ -113,17 +114,8 @@ class ModeratedTranslationTest extends WebDriverTestBase {
       ['layout[allow_custom]' => TRUE],
       'Save'
     );
-  }
 
-  /**
-   * Tests a layout overrides that are moderated and translated.
-   */
-  public function testModerationTranslatedOverrides() {
-    $page = $this->getSession()->getPage();
-    $assert_session = $this->assertSession();
-
-    $node = Node::load(1);
-
+    // Publish both nodes.
     $this->drupalGet($node->toUrl());
     $page->fillField('new_state', 'published');
     $page->pressButton('Apply');
@@ -132,6 +124,16 @@ class ModeratedTranslationTest extends WebDriverTestBase {
     $this->drupalGet('it/node/1');
     $page->fillField('new_state', 'published');
     $page->pressButton('Apply');
+  }
+
+  /**
+   * Tests a layout overrides that are moderated and translated.
+   */
+  public function testModerationTranslatedOverrides() {
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+
+    $node = Node::load(1);
 
     // Create a draft layout override.
     $this->drupalGet($node->toUrl());
