@@ -12,6 +12,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Translates the plugin configuration if needed.
+ *
+ * @internal
+ *   Tagged services are internal.
  */
 class ComponentPluginTranslate implements EventSubscriberInterface {
 

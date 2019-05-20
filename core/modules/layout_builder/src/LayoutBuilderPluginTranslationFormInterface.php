@@ -3,7 +3,7 @@
 namespace Drupal\layout_builder;
 
 /**
- * An interface for layout builder plugin translation.
+ * An interface for layout builder plugin translation forms.
  */
 interface LayoutBuilderPluginTranslationFormInterface {
 

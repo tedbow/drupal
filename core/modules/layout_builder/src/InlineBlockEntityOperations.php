@@ -64,15 +64,16 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    * @param \Drupal\Core\Block\BlockManagerInterface|null $block_manager
    *   (optional) The block manager;
    *
-   * @todo This constructor has one optional parameter, $section_storage_manager
-   *    and one totally unused $database parameter. Deprecate the current
-   *    constructor signature in https://www.drupal.org/node/3031492 after the
-   *    general policy for constructor backwards compatibility is determined in
+   * @todo This constructor has two optional parameters,
+   *    $section_storage_manager and $block_manager, and one totally unused
+   *    $database parameter. Deprecate the current constructor signature in
+   *    https://www.drupal.org/node/3031492 after the general policy for
+   *    constructor backwards compatibility is determined in
    *    https://www.drupal.org/node/3030640.
    *
    * @todo The current constructor signature is deprecated:
-   *   - The $section_storage_manager parameter is optional, but should become
-   *   required.
+   *   - The $section_storage_manager and $block_manager parameters are optional
+   *     but should become required.
    *   - The $database parameter is unused and should be removed.
    *   Deprecate in https://www.drupal.org/node/3031492.
    */

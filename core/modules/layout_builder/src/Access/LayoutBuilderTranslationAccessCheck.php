@@ -12,10 +12,10 @@ use Symfony\Component\Routing\Route;
 /**
  * Provides an access check for the Layout Builder translations.
  *
- * When accessing the layout builder for a translation only translating labels
- * and inline blocks are supported.
+ * @ingroup layout_builder_access
  *
  * @internal
+ *   Tagged services are internal.
  */
 class LayoutBuilderTranslationAccessCheck implements AccessInterface {
 

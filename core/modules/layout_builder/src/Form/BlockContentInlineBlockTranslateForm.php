@@ -15,6 +15,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form class for translating inline blocks in the Layout Builder.
+ *
+ * @internal
+ *   Form classes are internal.
  */
 class BlockContentInlineBlockTranslateForm extends BlockContentForm {
 

@@ -5,6 +5,7 @@
  * Provides hook implementations for Layout Builder.
  */
 
+use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityInterface;
@@ -422,7 +423,7 @@ function layout_builder_block_alter(&$definitions) {
   foreach ($definitions as &$definition) {
     // If a block plugin does not define its own 'layout_builder_translation'
     // form use the one provided by this module.
-    if (!isset($definition['forms']['layout_builder_translation'])) {
+    if (!isset($definition['forms']['layout_builder_translation']) && !empty($definition['class']) && in_array(ConfigurableInterface::class, class_implements($definition['class']))) {
       $definition['forms']['layout_builder_translation'] = BlockPluginTranslationForm::class;
     }
   }

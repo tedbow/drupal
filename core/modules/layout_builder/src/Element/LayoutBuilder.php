@@ -96,7 +96,6 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
   public function getInfo() {
     return [
       '#section_storage' => NULL,
-      '#language' => NULL,
       '#pre_render' => [
         [$this, 'preRender'],
       ],

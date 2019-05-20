@@ -447,14 +447,15 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   }
 
   /**
-   * {@inheritdoc}
+   * Indicates if the layout is translatable.
+   *
+   * @return bool
+   *   TRUE if the layout is translatable, otherwise FALSE.
    */
-  public function isTranslatable() {
+  protected function isTranslatable() {
     $entity = $this->getEntity();
     if ($entity instanceof TranslatableInterface) {
       return $entity->isTranslatable();
-      /*$translatable_fields = $entity->getTranslatableFields(FALSE);
-      return array_key_exists(static::FIELD_NAME, $translatable_fields) && $entity->isTranslatable();*/
     }
     return FALSE;
   }

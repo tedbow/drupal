@@ -8,14 +8,6 @@ namespace Drupal\layout_builder;
 interface TranslatableSectionStorageInterface extends SectionStorageInterface {
 
   /**
-   * Indicates if the layout is translatable.
-   *
-   * @return bool
-   *   TRUE if the layout is translatable, otherwise FALSE.
-   */
-  public function isTranslatable();
-
-  /**
    * Indicates if the layout is default translation layout.
    *
    * @return bool

@@ -83,20 +83,14 @@ class OverridesEntityForm extends ContentEntityForm {
     parent::init($form_state);
 
     $form_display = EntityFormDisplay::collectRenderDisplay($this->entity, $this->getOperation(), FALSE);
-    if ($this->sectionStorage instanceof TranslatableSectionStorageInterface && !$this->sectionStorage->isDefaultTranslation()) {
-      $form_display->setComponent(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME, [
-        'type' => 'layout_builder_widget',
-        'weight' => -10,
-        'settings' => [],
-      ]);
-    }
-    else {
-      $form_display->setComponent(OverridesSectionStorage::FIELD_NAME, [
-        'type' => 'layout_builder_widget',
-        'weight' => -10,
-        'settings' => [],
-      ]);
-    }
+    $field_name = $this->sectionStorage instanceof TranslatableSectionStorageInterface && !$this->sectionStorage->isDefaultTranslation() ?
+      OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME :
+      OverridesSectionStorage::FIELD_NAME;
+    $form_display->setComponent($field_name, [
+      'type' => 'layout_builder_widget',
+      'weight' => -10,
+      'settings' => [],
+    ]);
     $this->setFormDisplay($form_display, $form_state);
   }
 

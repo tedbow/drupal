@@ -11,7 +11,10 @@ use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\layout_builder\TranslatableSectionStorageInterface;
 
 /**
- * Provides a form to translate a block in the Layout Builder.
+ * Provides a form to translate a block plugin in the Layout Builder.
+ *
+ * @internal
+ *   Form classes are internal.
  */
 class TranslateBlockForm extends ConfigureBlockFormBase {
 

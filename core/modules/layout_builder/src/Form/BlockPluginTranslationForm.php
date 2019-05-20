@@ -2,7 +2,6 @@
 
 namespace Drupal\layout_builder\Form;
 
-use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Language\LanguageInterface;
@@ -14,6 +13,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a block plugin form for translatable settings in the Layout Builder.
+ *
+ * This form only allows translation of the 'label' string if it is displayed in
+ * the Layout Builder. If a plugin needs other configuration options it should
+ * provide its own 'layout_builder_translation' plugin form.
+ *
+ * @internal
+ *   Form classes are internal.
  */
 class BlockPluginTranslationForm extends PluginFormBase implements ContainerInjectionInterface, LayoutBuilderPluginTranslationFormInterface {
 
@@ -57,15 +63,13 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    if ($this->plugin instanceof ConfigurableInterface) {
-      $configuration = $this->plugin->getConfiguration();
-      $form['label'] = [
-        '#title' => $this->t('Label'),
-        '#type' => 'textfield',
-        '#default_value' => isset($this->translatedConfiguration['label']) ? $this->translatedConfiguration['label'] : $configuration['label'],
-        '#required' => TRUE,
-      ];
-    }
+    $configuration = $this->plugin->getConfiguration();
+    $form['label'] = [
+      '#title' => $this->t('Label'),
+      '#type' => 'textfield',
+      '#default_value' => isset($this->translatedConfiguration['label']) ? $this->translatedConfiguration['label'] : $configuration['label'],
+      '#required' => TRUE,
+    ];
     return $form;
   }
 
