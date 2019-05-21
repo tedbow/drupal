@@ -39,6 +39,7 @@ class ModeratedTranslationTest extends WebDriverTestBase {
     'node',
     'contextual',
     'layout_builder_test',
+    'block_test',
   ];
 
   /**
@@ -47,6 +48,7 @@ class ModeratedTranslationTest extends WebDriverTestBase {
   protected function setUp() {
     parent::setUp();
     $page = $this->getSession()->getPage();
+    $this->container->get('state')->set('test_block_access', TRUE);
 
     // @todo The Layout Builder UI relies on local tasks; fix in
     //   https://www.drupal.org/project/drupal/issues/2917777.
@@ -188,7 +190,7 @@ class ModeratedTranslationTest extends WebDriverTestBase {
     // Add a new block to the default translation override.
     $this->drupalGet($node->toUrl());
     $page->clickLink('Layout');
-    $this->addBlock('Simple Block', '#layout-builder .block-test-simple-block', TRUE, 'untranslated new label');
+    $this->addBlock('Test block access', '#layout-builder .block-test-access', TRUE, 'untranslated new label');
     $page->fillField('moderation_state[0][state]', 'draft');
     $page->pressButton('Save layout');
 
