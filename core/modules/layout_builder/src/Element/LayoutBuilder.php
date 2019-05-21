@@ -123,7 +123,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    */
   protected function layout(SectionStorageInterface $section_storage) {
     $this->prepareLayout($section_storage);
-    $sections_editable = !($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation());
+    $is_translation = $section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation();
 
     $output = [];
     if ($this->isAjax()) {
@@ -133,14 +133,14 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     }
     $count = 0;
     for ($i = 0; $i < $section_storage->count(); $i++) {
-      if ($sections_editable) {
+      if (!$is_translation) {
         $output[] = $this->buildAddSectionLink($section_storage, $count);
       }
 
       $output[] = $this->buildAdministrativeSection($section_storage, $count);
       $count++;
     }
-    if ($sections_editable) {
+    if (!$is_translation) {
       $output[] = $this->buildAddSectionLink($section_storage, $count);
     }
 
@@ -156,8 +156,20 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     // Mark this UI as uncacheable.
     $output['#cache']['max-age'] = 0;
 
-    // @todo Add message if not components have translate links!
-    //    "There are no settings to translate"
+    if ($is_translation) {
+      $has_translatable_component = FALSE;
+      foreach ($section_storage->getSections() as $section) {
+        foreach ($section->getComponents() as $uuid => $component) {
+          if ($component->hasTranslatableConfiguration()) {
+            $has_translatable_component = TRUE;
+            break 2;
+          }
+        }
+      }
+      if (!$has_translatable_component) {
+        $this->messenger()->addStatus($this->t('There are currently no settings that can be translated'));
+      }
+    }
 
     return $output;
   }
@@ -172,14 +184,6 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     // If the layout has pending changes, add a warning.
     if ($this->layoutTempstoreRepository->has($section_storage)) {
       $this->messenger->addWarning($this->t('You have unsaved changes.'));
-      if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
-        // @todo Copy in any change from the default translation and then
-        //   reapply any translated labels where the original labels has not
-        //   changed. This should avoid data loss if the layout has been
-        //   updated since this layout override has started. This probably also
-        //   needs to be done on save to avoid overriding the layout if it was
-        //   saved since the last time this page was opened.
-      }
     }
     // If the layout is an override that has not yet been overridden, copy the
     // sections from the corresponding default.
@@ -299,7 +303,23 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
               'uuid' => $uuid,
             ],
           ];
-          if ($sections_editable) {
+          if ($is_translation) {
+            $component = $section->getComponent($uuid);
+            if ($component->hasTranslatableConfiguration()) {
+              $contextual_group = 'layout_builder_block_translation';
+              /** @var \Drupal\layout_builder\Plugin\Block\InlineBlock $plugin */
+              $plugin = $component->getPlugin();
+              if ($plugin instanceof DerivativeInspectionInterface && $plugin->getBaseId() === 'inline_block') {
+                $configuration = $plugin->getConfiguration();
+                /** @var \Drupal\block_content\Entity\BlockContent $block */
+                $block = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
+                if ($block->isTranslatable()) {
+                  $contextual_group = 'layout_builder_inline_block_translation';
+                }
+              }
+            }
+          }
+          else {
             // Add metadata about the current operations available in
             // contextual links. This will invalidate the client-side cache of
             // links that were cached before the 'move' link was added.
@@ -307,30 +327,12 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
             $contextual_link_settings['metadata'] = [
               'operations' => 'move:update:remove',
             ];
-            $build[$region][$uuid]['#contextual_links'] = [
-              'layout_builder_block' => $contextual_link_settings,
-            ];
+            $contextual_group = 'layout_builder_block';
           }
-          elseif ($is_translation) {
-            $component = $section->getComponent($uuid);
-            if ($component->hasTranslatableConfiguration()) {
-              /** @var \Drupal\layout_builder\Plugin\Block\InlineBlock $plugin */
-              $plugin = $component->getPlugin();
-              if ($plugin instanceof DerivativeInspectionInterface && $plugin->getBaseId() === 'inline_block') {
-                $configuration = $plugin->getConfiguration();
-                /** @var \Drupal\block_content\Entity\BlockContent $block */
-                $block = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
-                $build[$region][$uuid]['#contextual_links'] = [
-                  $block->isTranslatable() ? 'layout_builder_inline_block_translation' : 'layout_builder_block_translation' => $contextual_link_settings,
-                ];
-              }
-              else {
-                $build[$region][$uuid]['#contextual_links'] = [
-                  'layout_builder_block_translation' => $contextual_link_settings,
-                ];
-              }
-
-            }
+          if (isset($contextual_group)) {
+            $build[$region][$uuid]['#contextual_links'] = [
+              $contextual_group => $contextual_link_settings,
+            ];
           }
         }
       }
