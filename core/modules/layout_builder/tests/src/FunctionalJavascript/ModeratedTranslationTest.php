@@ -72,7 +72,6 @@ class ModeratedTranslationTest extends WebDriverTestBase {
       'administer node fields',
       'translate bundle_with_section_field node',
       'create content translations',
-      'create bundle_with_section_field content',
       'edit any bundle_with_section_field content',
       'view bundle_with_section_field revisions',
       'revert bundle_with_section_field revisions',
@@ -82,10 +81,15 @@ class ModeratedTranslationTest extends WebDriverTestBase {
       'use editorial transition publish',
     ]));
 
-    $this->drupalGet('node/add/bundle_with_section_field');
-    $page->fillField('title[0][value]', 'The node title');
-    $page->fillField('body[0][value]', 'The node body');
-    $page->pressButton('Save');
+    $node = $this->createNode([
+      'type' => 'bundle_with_section_field',
+      'title' => 'The node title',
+      'body' => [
+        [
+          'value' => 'The node body',
+        ],
+      ],
+    ]);
 
     $this->drupalGet('node/1');
 
@@ -114,7 +118,7 @@ class ModeratedTranslationTest extends WebDriverTestBase {
     );
 
     // Publish both nodes.
-    $this->drupalGet('node/1');
+    $this->drupalGet($node->toUrl());
     $page->fillField('new_state', 'published');
     $page->pressButton('Apply');
 
