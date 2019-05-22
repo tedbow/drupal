@@ -8,6 +8,7 @@
 use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -428,3 +429,33 @@ function layout_builder_block_alter(&$definitions) {
     }
   }
 }
+
+/**
+ * Implements hook_config_translation_info().
+ */
+function layout_builder_config_translation_info(&$info) {
+  $entity_manager = \Drupal::entityManager();
+
+  // If field UI is not enabled, the base routes of the type
+  // "entity.field_config.{$entity_type}_field_edit_form" are not defined.
+  if (\Drupal::moduleHandler()->moduleExists('field_ui')) {
+    foreach (EntityViewDisplay::loadMultiple() as $entity_view_display) {
+      if ($entity_view_display instanceof LayoutBuilderEntityViewDisplay && $entity_view_display->isLayoutBuilderEnabled()) {
+        $entity_type_id = $entity_view_display->getTargetEntityTypeId();
+        $view_mode = $entity_view_display->getMode();
+        $bundle = $entity_view_display->getTargetBundle();
+        $info[$entity_type_id . '_' . $bundle . '_'. $view_mode . '_entity_view_display'] = [
+          'base_route_name' => "entity.entity_view_display.$entity_type_id.$view_mode",
+          'entity_type' => 'entity_view_display',
+          'class' => '\Drupal\layout_builder\ConfigTranslation\EntityViewDisplayMapper',
+          'weight' => 10,
+          'names' => ['third_party.layout_builder'],
+          'target_entity_type' => $entity_type_id,
+          'target_bundle' => $bundle,
+          'view_mode' => $view_mode,
+        ];
+      }
+    }
+  }
+}
+
