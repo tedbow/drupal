@@ -17,6 +17,7 @@ use Drupal\Tests\contextual\FunctionalJavascript\ContextualLinkClickTrait;
 class LayoutBuilderDisableInteractionsTest extends WebDriverTestBase {
 
   use ContextualLinkClickTrait;
+  use LayoutBuilderTestTrait;
 
   /**
    * {@inheritdoc}
@@ -129,36 +130,6 @@ class LayoutBuilderDisableInteractionsTest extends WebDriverTestBase {
 
     // Ensure contextual links were not disabled.
     $this->assertContextualLinksClickable();
-  }
-
-  /**
-   * Adds a block in the Layout Builder.
-   *
-   * @param string $block_link_text
-   *   The link text to add the block.
-   * @param string $rendered_locator
-   *   The CSS locator to confirm the block was rendered.
-   */
-  protected function addBlock($block_link_text, $rendered_locator) {
-    $assert_session = $this->assertSession();
-    $page = $this->getSession()->getPage();
-
-    // Add a new block.
-    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#layout-builder a:contains(\'Add block\')'));
-    $this->clickLink('Add block');
-    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#drupal-off-canvas'));
-    $assert_session->assertWaitOnAjaxRequest();
-
-    $assert_session->linkExists($block_link_text);
-    $this->clickLink($block_link_text);
-
-    // Wait for off-canvas dialog to reopen with block form.
-    $this->assertNotEmpty($assert_session->waitForElementVisible('css', ".layout-builder-add-block"));
-    $assert_session->assertWaitOnAjaxRequest();
-    $page->pressButton('Add block');
-
-    // Wait for block form to be rendered in the Layout Builder.
-    $this->assertNotEmpty($assert_session->waitForElement('css', $rendered_locator));
   }
 
   /**

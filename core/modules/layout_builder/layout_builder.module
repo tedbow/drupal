@@ -5,6 +5,7 @@
  * Provides hook implementations for Layout Builder.
  */
 
+use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityInterface;
@@ -17,6 +18,8 @@ use Drupal\Core\Url;
 use Drupal\field\FieldConfigInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplayStorage;
+use Drupal\layout_builder\Form\BlockContentInlineBlockTranslateForm;
+use Drupal\layout_builder\Form\BlockPluginTranslationForm;
 use Drupal\layout_builder\Form\DefaultsEntityForm;
 use Drupal\layout_builder\Form\LayoutBuilderEntityViewDisplayForm;
 use Drupal\layout_builder\Form\OverridesEntityForm;
@@ -82,6 +85,10 @@ function layout_builder_entity_type_alter(array &$entity_types) {
     if ($entity_type->entityClassImplements(FieldableEntityInterface::class)) {
       $entity_type->setFormClass('layout_builder', OverridesEntityForm::class);
     }
+  }
+
+  if (isset($entity_types['block_content'])) {
+    $entity_types['block_content']->setFormClass('layout_builder_translate', BlockContentInlineBlockTranslateForm::class);
   }
 }
 
@@ -402,6 +409,22 @@ function layout_builder_preprocess_language_content_settings_table(&$variables) 
           ],
         ],
       ];
+    }
+  }
+}
+
+/**
+ * Implements hook_block_alter().
+ *
+ * Ensures every block plugin definition has an 'layout_builder_translation'
+ * form specified.
+ */
+function layout_builder_block_alter(&$definitions) {
+  foreach ($definitions as &$definition) {
+    // If a block plugin does not define its own 'layout_builder_translation'
+    // form use the one provided by this module.
+    if (!isset($definition['forms']['layout_builder_translation']) && !empty($definition['class']) && in_array(ConfigurableInterface::class, class_implements($definition['class']))) {
+      $definition['forms']['layout_builder_translation'] = BlockPluginTranslationForm::class;
     }
   }
 }
