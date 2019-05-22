@@ -445,8 +445,9 @@ function layout_builder_config_translation_info(&$info) {
         $view_mode = $entity_view_display->getMode();
         $bundle = $entity_view_display->getTargetBundle();
         $info[$entity_type_id . '_' . $bundle . '_'. $view_mode . '_entity_view_display'] = [
-          'base_route_name' => "entity.entity_view_display.$entity_type_id.$view_mode",
+          'base_route_name' => "entity.entity_view_display.$entity_type_id.view_mode",
           'entity_type' => 'entity_view_display',
+          'title' => t('Layout translation: @view_mode @bundle', ['@view_mode' => $view_mode, '@bundle' => $bundle]),
           'class' => '\Drupal\layout_builder\ConfigTranslation\EntityViewDisplayMapper',
           'weight' => 10,
           'names' => ['third_party.layout_builder'],
