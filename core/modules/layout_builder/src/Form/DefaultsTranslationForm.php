@@ -88,17 +88,15 @@ class DefaultsTranslationForm extends ConfigTranslationFormBase {
       '#type' => 'layout_builder',
       '#section_storage' => $section_storage,
     ];
-    return $form;
-    return [
-      'test_text' => [
-        '#type' => 'textfield',
-        '#title' => 'Test',
-      ],
-      'submit' => [
-        '#type' => 'submit',
-        '#value' => 'Translate',
-      ],
+    $form['actions'] = [
+      '#type' => 'container',
+      '#weight' => -1000,
     ];
+    $form['actions']['submit'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Save layout'),
+    ];
+    return $form;
   }
 
   /**
@@ -121,4 +119,5 @@ class DefaultsTranslationForm extends ConfigTranslationFormBase {
 
     $config_translation = $this->languageManager->getLanguageConfigOverride($this->language->getId(), $name);
   }
+
 }

@@ -9,7 +9,7 @@ use Drupal\Core\Config\Entity\ThirdPartySettingsInterface;
  *
  * @todo Refactor this interface in https://www.drupal.org/node/2985362.
  */
-interface DefaultsSectionStorageInterface extends SectionStorageInterface, ThirdPartySettingsInterface, LayoutBuilderEnabledInterface {
+interface DefaultsSectionStorageInterface extends TranslatableSectionStorageInterface, ThirdPartySettingsInterface, LayoutBuilderEnabledInterface {
 
   /**
    * Determines if the defaults allow custom overrides.

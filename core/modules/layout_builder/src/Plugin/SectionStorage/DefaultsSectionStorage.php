@@ -10,6 +10,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Plugin\Context\Context;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
@@ -33,6 +35,7 @@ use Symfony\Component\Routing\RouteCollection;
  *   weight = 20,
  *   context_definitions = {
  *     "display" = @ContextDefinition("entity:entity_view_display"),
+ *     "language" = @ContextDefinition("language", label = @Translation("Language"), required = FALSE),
  *   },
  * )
  *
@@ -277,6 +280,10 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
     if ($entity = $this->extractEntityFromRoute($value, $defaults)) {
       $contexts['display'] = EntityContext::fromEntity($entity);
     }
+    if (isset($defaults['langcode'])) {
+      $language = \Drupal::languageManager()->getLanguage($defaults['langcode']);
+      $contexts['language'] = new Context(new ContextDefinition('language', 'language'), $language);
+    }
     return $contexts;
   }
 
@@ -431,5 +438,87 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
     $cacheability->addCacheableDependency($this);
     return $this->isLayoutBuilderEnabled();
   }
+
+  /**
+   * Indicates if the layout is default translation layout.
+   *
+   * @return bool
+   *   TRUE if the layout is the default translation layout, otherwise FALSE.
+   */
+  public function isDefaultTranslation() {
+    if ($this->getLanguageContext()) {
+      return FALSE;
+    }
+    else {
+      return TRUE;
+    }
+  }
+
+  /**
+   * Sets the translated component configuration.
+   *
+   * @param string $uuid
+   *   The component UUID.
+   * @param array $configuration
+   *   The component's translated configuration.
+   */
+  public function setTranslatedComponentConfiguration($uuid, array $configuration) {
+    // TODO: Implement setTranslatedComponentConfiguration() method.
+  }
+
+  /**
+   * Gets the translated component configuration.
+   *
+   * @param string $uuid
+   *   The component UUID.
+   *
+   * @return array
+   *   The component's translated configuration.
+   */
+  public function getTranslatedComponentConfiguration($uuid) {
+    $override = $this->getTranslatedOverride();
+    // TODO: Implement getTranslatedComponentConfiguration() method.
+  }
+
+  /**
+   * Get the translated configuration for the layout.
+   *
+   * @return array
+   *   The translated configuration for the layout.
+   */
+  public function getTranslatedConfiguration() {
+    // TODO: Implement getTranslatedConfiguration() method.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTempstoreKey() {
+    $key = parent::getTempstoreKey();
+
+    if ($language = $this->getLanguageContext()) {
+      $key .= '.' . $language->getId();
+    }
+    return $key;
+  }
+
+  protected function getTranslatedOverride() {
+    $this->getDisplay()->getConfigDependencyName();
+    if ($language = $this->getLanguageContext()) {
+      $display_id = $this->getDisplay()->id();
+      $config_translation = \Drupal::languageManager()->getLanguageConfigOverride($language->getId(), $display_id);
+    }
+    return NULL;
+  }
+
+  protected function getLanguageContext() {
+    $contexts = $this->getContexts();
+    if (isset($contexts['language'])) {
+      /** @var \Drupal\Core\Language\LanguageInterface $language */
+      return $contexts['language']->getContextData()->getValue();
+    }
+    return NULL;
+  }
+
 
 }

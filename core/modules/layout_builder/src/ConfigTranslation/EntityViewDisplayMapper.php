@@ -73,13 +73,19 @@ class EntityViewDisplayMapper extends ConfigEntityMapper {
    */
   public function getAddRoute() {
     $route = parent::getAddRoute();
+    $definition = $this->getPluginDefinition();
+    $target_entity_type = $this->entityTypeManager->getDefinition($definition['target_entity_type']);
+    $bundle_type = $target_entity_type->getBundleEntityType();
+    $route->setDefault('bundle_key', $bundle_type  );
+    $route->setDefault('entity_type_id', $definition['target_entity_type']);
     $route->setDefault('_form', DefaultsTranslationForm::class);
     $route->setDefault('section_storage_type', 'defaults');
     $route->setDefault('section_storage', '');
     $route->setOption('_layout_builder', TRUE);
-//    $route->setOption('parameters', [
-//      'section_storage' => ['layout_builder_tempstore' => TRUE],
-//    ]);
+    $route->setOption('_admin_route', FALSE);
+    $route->setOption('parameters', [
+      'section_storage' => ['layout_builder_tempstore' => TRUE],
+    ]);
 
     return $route;
   }
