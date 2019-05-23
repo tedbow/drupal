@@ -74,6 +74,13 @@ class EntityViewDisplayMapper extends ConfigEntityMapper {
   public function getAddRoute() {
     $route = parent::getAddRoute();
     $route->setDefault('_form', DefaultsTranslationForm::class);
+    $route->setDefault('section_storage_type', 'defaults');
+    $route->setDefault('section_storage', '');
+    $route->setOption('_layout_builder', TRUE);
+//    $route->setOption('parameters', [
+//      'section_storage' => ['layout_builder_tempstore' => TRUE],
+//    ]);
+
     return $route;
   }
 

@@ -5,6 +5,9 @@ namespace Drupal\layout_builder\Form;
 use Drupal\config_translation\Form\ConfigTranslationFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
+use Drupal\layout_builder\Section;
+use Drupal\layout_builder\SectionStorageInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class DefaultsTranslationForm extends ConfigTranslationFormBase {
@@ -48,7 +51,7 @@ class DefaultsTranslationForm extends ConfigTranslationFormBase {
    *   Throws an exception if the language code provided as a query parameter in
    *   the request does not match an active language.
    */
-  public function buildForm(array $form, FormStateInterface $form_state, RouteMatchInterface $route_match = NULL, $plugin_id = NULL, $langcode = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, RouteMatchInterface $route_match = NULL, $plugin_id = NULL, $langcode = NULL, SectionStorageInterface $section_storage = NULL) {
     /** @var \Drupal\config_translation\ConfigMapperInterface $mapper */
     $mapper = $this->configMapperManager->createInstance($plugin_id);
     $mapper->populateFromRouteMatch($route_match);
@@ -80,6 +83,12 @@ class DefaultsTranslationForm extends ConfigTranslationFormBase {
     $form_state->set('config_translation_mapper', $this->mapper);
     $form_state->set('config_translation_language', $this->language);
     $form_state->set('config_translation_source_language', $this->sourceLanguage);
+
+    $form['layout_builder'] = [
+      '#type' => 'layout_builder',
+      '#section_storage' => $section_storage,
+    ];
+    return $form;
     return [
       'test_text' => [
         '#type' => 'textfield',
@@ -101,10 +110,15 @@ class DefaultsTranslationForm extends ConfigTranslationFormBase {
    *   The current state of the form.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->mapper->getConfigData();
+    $config_data = $this->mapper->getConfigData();
+    $name = array_keys($config_data)[0];
     // Set configuration values based on form submission and source values.
     $base_config = $this->configFactory()->getEditable($name);
+    $section_arrays = $base_config->get('third_party_settings.layout_builder.sections');
+    foreach ($section_arrays as $section_array) {
+      $section = Section::fromArray($section_array);
+    }
+
     $config_translation = $this->languageManager->getLanguageConfigOverride($this->language->getId(), $name);
-    // TODO: Implement submitForm() method.
   }
 }
