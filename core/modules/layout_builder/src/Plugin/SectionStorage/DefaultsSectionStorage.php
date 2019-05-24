@@ -446,7 +446,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
    *   TRUE if the layout is the default translation layout, otherwise FALSE.
    */
   public function isDefaultTranslation() {
-    if ($this->getLanguageContext()) {
+    if ($this->getTranslationLanguage()) {
       return FALSE;
     }
     else {
@@ -496,7 +496,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   public function getTempstoreKey() {
     $key = parent::getTempstoreKey();
 
-    if ($language = $this->getLanguageContext()) {
+    if ($language = $this->getTranslationLanguage()) {
       $key .= '.' . $language->getId();
     }
     return $key;
@@ -504,14 +504,17 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
 
   protected function getTranslatedOverride() {
     $this->getDisplay()->getConfigDependencyName();
-    if ($language = $this->getLanguageContext()) {
+    if ($language = $this->getTranslationLanguage()) {
       $display_id = $this->getDisplay()->id();
       $config_translation = \Drupal::languageManager()->getLanguageConfigOverride($language->getId(), $display_id);
     }
     return NULL;
   }
 
-  protected function getLanguageContext() {
+  /**
+   * {@inheritdoc}
+   */
+  public function getTranslationLanguage() {
     $contexts = $this->getContexts();
     if (isset($contexts['language'])) {
       /** @var \Drupal\Core\Language\LanguageInterface $language */
