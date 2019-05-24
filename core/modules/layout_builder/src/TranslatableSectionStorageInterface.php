@@ -37,11 +37,20 @@ interface TranslatableSectionStorageInterface extends SectionStorageInterface {
   public function getTranslatedComponentConfiguration($uuid);
 
   /**
-   * Get the translated configuration for the layout.
+   * Gets the translated configuration for the layout.
    *
    * @return array
    *   The translated configuration for the layout.
    */
   public function getTranslatedConfiguration();
+
+  /**
+   * Gets the language of the translation if any.
+   *
+   * @return \Drupal\Core\Language\LanguageInterface|null
+   *   The translation language if the current layout is for a translation
+   *   otherwise NULL.
+   */
+  public function getTranslationLanguage();
 
 }

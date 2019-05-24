@@ -7,8 +7,6 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Language\LanguageInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -50,23 +48,15 @@ class BlockContentInlineBlockTranslateForm extends BlockContentForm {
   protected $sectionStorage;
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * {@inheritdoc}
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, RouteMatchInterface $route_match = NULL, LayoutTempstoreRepositoryInterface $tempstore = NULL, LanguageManagerInterface $language_manager = NULL) {
+  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL, RouteMatchInterface $route_match = NULL, LayoutTempstoreRepositoryInterface $tempstore = NULL) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
     $this->routeMatch = $route_match;
     $this->layoutTempstoreRepository = $tempstore;
     $this->uuid = $route_match->getParameter('uuid');
     $this->delta = $route_match->getParameter('delta');
     $this->sectionStorage = $route_match->getParameter('section_storage');
-    $this->languageManager = $language_manager;
   }
 
   /**
@@ -78,8 +68,7 @@ class BlockContentInlineBlockTranslateForm extends BlockContentForm {
       $container->get('entity_type.bundle.info'),
       $container->get('datetime.time'),
       $container->get('current_route_match'),
-      $container->get('layout_builder.tempstore_repository'),
-      $container->get('language_manager')
+      $container->get('layout_builder.tempstore_repository')
     );
   }
 
@@ -89,7 +78,7 @@ class BlockContentInlineBlockTranslateForm extends BlockContentForm {
   public function getEntityFromRouteMatch(RouteMatchInterface $route_match, $entity_type_id) {
     /** @var \Drupal\layout_builder\TranslatableSectionStorageInterface $section_storage */
     $translated_configuration = $this->sectionStorage->getTranslatedComponentConfiguration($this->uuid);
-    $current_langcode = $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
+    $langcode = $this->sectionStorage->getTranslationLanguage()->getId();
 
     if (!empty($translated_configuration)) {
       if (!empty($translated_configuration['block_serialized'])) {
@@ -99,8 +88,8 @@ class BlockContentInlineBlockTranslateForm extends BlockContentForm {
         /** @var \Drupal\block_content\BlockContentInterface $entity */
         $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($translated_configuration['block_revision_id']);
         $entity = $this->entityRepository->getActive('block_content', $entity->id());
-        if ($entity->hasTranslation($current_langcode)) {
-          return $entity->getTranslation($current_langcode);
+        if ($entity->hasTranslation($langcode)) {
+          return $entity->getTranslation($langcode);
         }
       }
     }
@@ -109,11 +98,11 @@ class BlockContentInlineBlockTranslateForm extends BlockContentForm {
       /** @var \Drupal\block_content\BlockContentInterface $entity */
       $entity = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
       $entity = $this->entityRepository->getActive('block_content', $entity->id());
-      if ($entity->hasTranslation($current_langcode)) {
-        return $entity->getTranslation($current_langcode);
+      if ($entity->hasTranslation($langcode)) {
+        return $entity->getTranslation($langcode);
       }
       else {
-        $translation = $entity->addTranslation($current_langcode, $entity->toArray());
+        $translation = $entity->addTranslation($langcode, $entity->toArray());
         if (!empty($translated_configuration['label'])) {
           $translation->setInfo($translated_configuration['label']);
         }

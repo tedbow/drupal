@@ -112,7 +112,7 @@ layout_builder.update_block:
         layout_builder_tempstore: TRUE
 
 layout_builder.translate_block:
-  path: '/layout_builder/translate/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}'
+  path: '/layout_builder/translate/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}/{langcode}'
   defaults:
     _form: '\Drupal\layout_builder\Form\TranslateBlockForm'
     _title: 'Translate block'

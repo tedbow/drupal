@@ -506,4 +506,14 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     return $this->getEntity()->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->getValue()[0];
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getTranslationLanguage() {
+    if (!$this->isDefaultTranslation()) {
+      return $this->getEntity()->language();
+    }
+    return NULL;
+  }
+
 }
