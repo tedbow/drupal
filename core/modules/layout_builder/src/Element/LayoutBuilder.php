@@ -307,6 +307,11 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
             $component = $section->getComponent($uuid);
             if ($component->hasTranslatableConfiguration()) {
               $contextual_group = 'layout_builder_block_translation';
+              /** @var \Drupal\Core\Language\LanguageInterface $language */
+              if ($language = $section_storage->getTranslationLanguage()) {
+                $contextual_link_settings['route_parameters']['langcode'] = $language->getId();
+              }
+
               /** @var \Drupal\layout_builder\Plugin\Block\InlineBlock $plugin */
               $plugin = $component->getPlugin();
               if ($plugin instanceof DerivativeInspectionInterface && $plugin->getBaseId() === 'inline_block') {

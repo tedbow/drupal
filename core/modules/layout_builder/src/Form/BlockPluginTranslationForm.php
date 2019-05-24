@@ -21,17 +21,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @internal
  *   Form classes are internal.
  */
-class BlockPluginTranslationForm extends PluginFormBase implements ContainerInjectionInterface, LayoutBuilderPluginTranslationFormInterface {
+class BlockPluginTranslationForm extends PluginFormBase implements LayoutBuilderPluginTranslationFormInterface {
 
   use StringTranslationTrait;
   use ContextAwarePluginAssignmentTrait;
-
-  /**
-   * The current language code.
-   *
-   * @var string
-   */
-  protected $currentLangcode;
 
   /**
    * The translated configuration for the plugin.
@@ -39,25 +32,6 @@ class BlockPluginTranslationForm extends PluginFormBase implements ContainerInje
    * @var array
    */
   protected $translatedConfiguration;
-
-  /**
-   * BlockPluginTranslationForm constructor.
-   *
-   * @param string $current_langcode
-   *   The current language code.
-   */
-  public function __construct($current_langcode) {
-    $this->currentLangcode = $current_langcode;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('language_manager')->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId()
-    );
-  }
 
   /**
    * {@inheritdoc}
