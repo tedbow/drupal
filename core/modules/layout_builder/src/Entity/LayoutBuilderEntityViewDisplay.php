@@ -62,8 +62,11 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
     $this->entityFieldManager = \Drupal::service('entity_field.manager');
     parent::__construct($values, $entity_type);
 
-    $this->routeBuilder = \Drupal::service('router.builder');
-    $this->translationMapperManager = \Drupal::service('plugin.manager.config_translation.mapper');
+    if (\Drupal::hasService('plugin.manager.config_translation.mapper')) {
+      $this->routeBuilder = \Drupal::service('router.builder');
+      $this->translationMapperManager = \Drupal::service('plugin.manager.config_translation.mapper');
+    }
+
   }
 
   /**
@@ -169,9 +172,12 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
           $this->setComponent($name, $component);
         }
 
-        // Ensure the translation mapper will be available.
-        $this->routeBuilder->setRebuildNeeded();
-        $this->translationMapperManager->clearCachedDefinitions();
+        if ($this->translationMapperManager) {
+          // Ensure the translation mapper will be available.
+          $this->routeBuilder->setRebuildNeeded();
+          $this->translationMapperManager->clearCachedDefinitions();
+        }
+
       }
       else {
         // When being disabled, remove all existing section data.
