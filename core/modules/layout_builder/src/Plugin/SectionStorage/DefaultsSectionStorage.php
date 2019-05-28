@@ -2,6 +2,7 @@
 
 namespace Drupal\layout_builder\Plugin\SectionStorage;
 
+use Drupal\Component\Plugin\Context\ContextInterface as ComponentContextInterface;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
@@ -64,6 +65,11 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
    * @var \Drupal\layout_builder\Entity\SampleEntityGeneratorInterface
    */
   protected $sampleEntityGenerator;
+
+  /**
+   * @var \Drupal\language\Config\LanguageConfigOverride
+   */
+  protected $translationOverride;
 
   /**
    * {@inheritdoc}
@@ -345,6 +351,10 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
    * {@inheritdoc}
    */
   public function save() {
+    if ($language = $this->getTranslationLanguage()) {
+      $this->translationOverride->save();
+      return;
+    }
     return $this->getDisplay()->save();
   }
 
@@ -463,7 +473,11 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
    *   The component's translated configuration.
    */
   public function setTranslatedComponentConfiguration($uuid, array $configuration) {
-    // TODO: Implement setTranslatedComponentConfiguration() method.
+    foreach ($this->getSections() as $delta => $section) {
+      if ($section->getComponent($uuid)) {
+        $this->translationOverride->set("third_party_settings.layout_builder.sections.$delta.components.$uuid", $configuration);
+      }
+    }
   }
 
   /**
@@ -476,8 +490,14 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
    *   The component's translated configuration.
    */
   public function getTranslatedComponentConfiguration($uuid) {
-    $override = $this->getTranslatedOverride();
-    // TODO: Implement getTranslatedComponentConfiguration() method.
+    if ($sections_override = $this->translationOverride->get('third_party_settings.layout_builder.sections')) {
+      foreach ($sections_override as $delta => $section) {
+        if (isset($section['components'][$uuid])) {
+          return $section['components'][$uuid];
+        }
+      }
+    }
+    return [];
   }
 
   /**
@@ -506,7 +526,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
     $this->getDisplay()->getConfigDependencyName();
     if ($language = $this->getTranslationLanguage()) {
       $display_id = $this->getDisplay()->id();
-      $config_translation = \Drupal::languageManager()->getLanguageConfigOverride($language->getId(), $display_id);
+      return \Drupal::languageManager()->getLanguageConfigOverride($language->getId(), $display_id);
     }
     return NULL;
   }
@@ -521,6 +541,18 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
       return $contexts['language']->getContextData()->getValue();
     }
     return NULL;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function setContext($name, ComponentContextInterface $context) {
+    parent::setContext($name, $context);
+    if ($name === 'language' || $name === 'display') {
+      if(empty(array_diff(['language', 'display'], array_keys($this->context)))) {
+        $this->translationOverride = $this->getTranslatedOverride();
+      }
+    }
   }
 
 

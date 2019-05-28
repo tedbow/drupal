@@ -2,15 +2,51 @@
 
 namespace Drupal\layout_builder\Form;
 
+use Drupal\config_translation\ConfigMapperManagerInterface;
 use Drupal\config_translation\Form\ConfigTranslationFormBase;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\language\ConfigurableLanguageManagerInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
+use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionStorageInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class DefaultsTranslationForm extends ConfigTranslationFormBase {
+
+  /**
+   * @var \Drupal\layout_builder\SectionStorageInterface
+   */
+  protected $sectionStorage;
+
+  /**
+   * @var \Drupal\layout_builder\LayoutTempstoreRepositoryInterface
+   */
+  protected $layoutTempstoreRepository;
+
+  /**
+   * @inheritDoc
+   */
+  public function __construct(TypedConfigManagerInterface $typed_config_manager, ConfigMapperManagerInterface $config_mapper_manager, ConfigurableLanguageManagerInterface $language_manager, LayoutTempstoreRepositoryInterface $layout_tempstore_repository) {
+    parent::__construct($typed_config_manager, $config_mapper_manager, $language_manager);
+    $this->layoutTempstoreRepository = $layout_tempstore_repository;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.typed'),
+      $container->get('plugin.manager.config_translation.mapper'),
+      $container->get('language_manager'),
+      $container->get('layout_builder.tempstore_repository')
+    );
+  }
+
 
   /**
    * Returns a unique string identifying the form.
@@ -52,6 +88,7 @@ class DefaultsTranslationForm extends ConfigTranslationFormBase {
    *   the request does not match an active language.
    */
   public function buildForm(array $form, FormStateInterface $form_state, RouteMatchInterface $route_match = NULL, $plugin_id = NULL, $langcode = NULL, SectionStorageInterface $section_storage = NULL) {
+    $this->sectionStorage = $section_storage;
     /** @var \Drupal\config_translation\ConfigMapperInterface $mapper */
     $mapper = $this->configMapperManager->createInstance($plugin_id);
     $mapper->populateFromRouteMatch($route_match);
@@ -84,6 +121,9 @@ class DefaultsTranslationForm extends ConfigTranslationFormBase {
     $form_state->set('config_translation_language', $this->language);
     $form_state->set('config_translation_source_language', $this->sourceLanguage);
 
+    $names = $this->mapper->getConfigNames();
+    $translation_config = $this->configFactory()->get($names[0])->get();
+
     $form['layout_builder'] = [
       '#type' => 'layout_builder',
       '#section_storage' => $section_storage,
@@ -108,16 +148,10 @@ class DefaultsTranslationForm extends ConfigTranslationFormBase {
    *   The current state of the form.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config_data = $this->mapper->getConfigData();
-    $name = array_keys($config_data)[0];
-    // Set configuration values based on form submission and source values.
-    $base_config = $this->configFactory()->getEditable($name);
-    $section_arrays = $base_config->get('third_party_settings.layout_builder.sections');
-    foreach ($section_arrays as $section_array) {
-      $section = Section::fromArray($section_array);
-    }
-
-    $config_translation = $this->languageManager->getLanguageConfigOverride($this->language->getId(), $name);
+    $this->sectionStorage->save();
+    $this->layoutTempstoreRepository->delete($this->sectionStorage);
+    $this->messenger()->addMessage($this->t('The layout translation has been saved.'));
+    $form_state->setRedirectUrl($this->sectionStorage->getRedirectUrl());
   }
 
 }
