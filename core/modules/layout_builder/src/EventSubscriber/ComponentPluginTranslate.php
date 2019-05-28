@@ -4,6 +4,7 @@ namespace Drupal\layout_builder\EventSubscriber;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent;
 use Drupal\layout_builder\LayoutBuilderEvents;
 use Drupal\layout_builder\LayoutEntityHelperTrait;
@@ -28,13 +29,20 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
   protected $languageManager;
 
   /**
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $routeMatch;
+
+  /**
    * Creates a ComponentPluginTranslate object.
    *
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    *   The language manager.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    */
-  public function __construct(LanguageManagerInterface $language_manager) {
+  public function __construct(LanguageManagerInterface $language_manager, RouteMatchInterface $route_match) {
     $this->languageManager = $language_manager;
+    $this->routeMatch = $route_match;
   }
 
   /**
@@ -64,7 +72,13 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
 
     $entity = $contexts['layout_builder.entity']->getContextValue();
     $configuration = $plugin->getConfiguration();
-    $section_storage = $this->getSectionStorageForEntity($entity);
+    if ($event->inPreview()) {
+      $section_storage = $this->routeMatch->getParameter('section_storage');
+    }
+    else {
+      $section_storage = $this->getSectionStorageForEntity($entity);
+    }
+
     if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
       if ($translated_plugin_configuration = $section_storage->getTranslatedComponentConfiguration($component->getUuid())) {
         $translated_plugin_configuration += $configuration;
