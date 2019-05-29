@@ -29,6 +29,8 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
   protected $languageManager;
 
   /**
+   * The current route match.
+   *
    * @var \Drupal\Core\Routing\RouteMatchInterface
    */
   protected $routeMatch;
@@ -39,6 +41,7 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    *   The language manager.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The current route match.
    */
   public function __construct(LanguageManagerInterface $language_manager, RouteMatchInterface $route_match) {
     $this->languageManager = $language_manager;
