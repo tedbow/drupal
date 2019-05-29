@@ -8,6 +8,11 @@ use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\Tests\contextual\FunctionalJavascript\ContextualLinkClickTrait;
 use Drupal\Tests\layout_builder\Functional\TranslationTestTrait;
 
+/**
+ * Tests that default layouts can be translated.
+ *
+ * @group layout_builder
+ */
 class DefaultTranslationTest extends WebDriverTestBase {
 
   use LayoutBuilderTestTrait;
@@ -32,7 +37,6 @@ class DefaultTranslationTest extends WebDriverTestBase {
     'block',
     'node',
     'contextual',
-    'dblog',
   ];
 
   /**
@@ -89,6 +93,9 @@ class DefaultTranslationTest extends WebDriverTestBase {
     );
   }
 
+  /**
+   * Tests default translations.
+   */
   public function testDefaultTranslation() {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
@@ -118,12 +125,6 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $assert_session->addressEquals('admin/structure/types/manage/bundle_with_section_field/display/default/translate/it/add');
     $this->assertNonTranslationActionsRemoved();
     $this->updateBlockTranslation('.block-system-powered-by-block', 'untranslated label', 'label in translation');
-
-
-
-
-
-
   }
 
 }
