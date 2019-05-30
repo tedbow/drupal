@@ -215,20 +215,20 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     // layout or an empty layout.
     if ($delta === count($section_storage)) {
       if ($delta === 0) {
-        $title = $this->t('Add Section');
+        $title = $this->t('Add section');
       }
       else {
-        $title = $this->t('Add Section <span class="visually-hidden">at end of layout</span>');
+        $title = $this->t('Add section <span class="visually-hidden">at end of layout</span>');
       }
     }
     // If the delta and the count are different, it is either the beginning of
     // the layout or in between two sections.
     else {
       if ($delta === 0) {
-        $title = $this->t('Add Section <span class="visually-hidden">at start of layout</span>');
+        $title = $this->t('Add section <span class="visually-hidden">at start of layout</span>');
       }
       else {
-        $title = $this->t('Add Section <span class="visually-hidden">between @first and @second</span>', ['@first' => $delta, '@second' => $delta + 1]);
+        $title = $this->t('Add section <span class="visually-hidden">between @first and @second</span>', ['@first' => $delta, '@second' => $delta + 1]);
       }
     }
 
@@ -288,35 +288,65 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     foreach ($layout_definition->getRegions() as $region => $info) {
       if (!empty($build[$region])) {
         foreach (Element::children($build[$region]) as $uuid) {
-          $build[$region][$uuid]['#attributes']['class'][] = 'js-layout-builder-block';
+          if ($sections_editable) {
+            $build[$region][$uuid]['#attributes']['class'][] = 'js-layout-builder-block';
+          }
           $build[$region][$uuid]['#attributes']['class'][] = 'layout-builder-block';
           $build[$region][$uuid]['#attributes']['data-layout-block-uuid'] = $uuid;
           $build[$region][$uuid]['#attributes']['data-layout-builder-highlight-id'] = $this->blockUpdateHighlightId($uuid);
-          $build[$region][$uuid]['#contextual_links'] = [
-            'layout_builder_block' => [
-              'route_parameters' => [
-                'section_storage_type' => $storage_type,
-                'section_storage' => $storage_id,
-                'delta' => $delta,
-                'region' => $region,
-                'uuid' => $uuid,
-              ],
-              // Add metadata about the current operations available in
-              // contextual links. This will invalidate the client-side cache of
-              // links that were cached before the 'move' link was added.
-              // @see layout_builder.links.contextual.yml
-              'metadata' => [
-                'operations' => 'move:update:remove',
-              ],
+          $contextual_link_settings = [
+            'route_parameters' => [
+              'section_storage_type' => $storage_type,
+              'section_storage' => $storage_id,
+              'delta' => $delta,
+              'region' => $region,
+              'uuid' => $uuid,
             ],
           ];
+          if ($is_translation) {
+            $component = $section->getComponent($uuid);
+            if ($component->hasTranslatableConfiguration()) {
+              $contextual_group = 'layout_builder_block_translation';
+              /** @var \Drupal\Core\Language\LanguageInterface $language */
+              if ($language = $section_storage->getTranslationLanguage()) {
+                $contextual_link_settings['route_parameters']['langcode'] = $language->getId();
+              }
+
+              /** @var \Drupal\layout_builder\Plugin\Block\InlineBlock $plugin */
+              $plugin = $component->getPlugin();
+              if ($plugin instanceof DerivativeInspectionInterface && $plugin->getBaseId() === 'inline_block') {
+                $configuration = $plugin->getConfiguration();
+                /** @var \Drupal\block_content\Entity\BlockContent $block */
+                $block = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
+                if ($block->isTranslatable()) {
+                  $contextual_group = 'layout_builder_inline_block_translation';
+                }
+              }
+            }
+          }
+          else {
+            // Add metadata about the current operations available in
+            // contextual links. This will invalidate the client-side cache of
+            // links that were cached before the 'move' link was added.
+            // @see layout_builder.links.contextual.yml
+            $contextual_link_settings['metadata'] = [
+              'operations' => 'move:update:remove',
+            ];
+            $contextual_group = 'layout_builder_block';
+          }
+          if (isset($contextual_group)) {
+            $build[$region][$uuid]['#contextual_links'] = [
+              $contextual_group => $contextual_link_settings,
+            ];
+          }
         }
       }
 
       $build[$region]['layout_builder_add_block']['link'] = [
         '#type' => 'link',
+        '#access' => $sections_editable,
         // Add one to the current delta since it is zero-indexed.
-        '#title' => $this->t('Add Block <span class="visually-hidden">in section @section, @region region</span>', ['@section' => $delta + 1, '@region' => $region_labels[$region]]),
+        '#title' => $this->t('Add block <span class="visually-hidden">in section @section, @region region</span>', ['@section' => $delta + 1, '@region' => $region_labels[$region]]),
         '#url' => Url::fromRoute('layout_builder.choose_block',
           [
             'section_storage_type' => $storage_type,
@@ -407,7 +437,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
           'data-dialog-renderer' => 'off_canvas',
         ],
       ],
-      // The section label is added to sections without a "Configure Section"
+      // The section label is added to sections without a "Configure section"
       // link, and is only visible when the move block dialog is open.
       'section_label' => [
         '#markup' => $this->t('<span class="layout-builder__section-label" aria-hidden="true">Section @section</span>', ['@section' => $delta + 1]),
