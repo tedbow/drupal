@@ -2,7 +2,9 @@
 
 namespace Drupal\layout_builder\Element;
 
+use Drupal\Component\Plugin\DerivativeInspectionInterface;
 use Drupal\Core\Ajax\AjaxHelperTrait;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
@@ -14,6 +16,7 @@ use Drupal\layout_builder\LayoutBuilderHighlightTrait;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\SectionStorageInterface;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -45,6 +48,12 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
   protected $messenger;
 
   /**
+   * The entity type manager.
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a new LayoutBuilder.
    *
    * @param array $configuration
@@ -57,11 +66,14 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    *   The layout tempstore repository.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->layoutTempstoreRepository = $layout_tempstore_repository;
     $this->messenger = $messenger;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -73,7 +85,8 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
       $plugin_id,
       $plugin_definition,
       $container->get('layout_builder.tempstore_repository'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -110,6 +123,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    */
   protected function layout(SectionStorageInterface $section_storage) {
     $this->prepareLayout($section_storage);
+    $is_translation = $section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation();
 
     $output = [];
     if ($this->isAjax()) {
@@ -119,11 +133,17 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     }
     $count = 0;
     for ($i = 0; $i < $section_storage->count(); $i++) {
-      $output[] = $this->buildAddSectionLink($section_storage, $count);
+      if (!$is_translation) {
+        $output[] = $this->buildAddSectionLink($section_storage, $count);
+      }
+
       $output[] = $this->buildAdministrativeSection($section_storage, $count);
       $count++;
     }
-    $output[] = $this->buildAddSectionLink($section_storage, $count);
+    if (!$is_translation) {
+      $output[] = $this->buildAddSectionLink($section_storage, $count);
+    }
+
     $output['#attached']['library'][] = 'layout_builder/drupal.layout_builder';
     // As the Layout Builder UI is typically displayed using the frontend theme,
     // it is not marked as an administrative page at the route level even though
@@ -135,6 +155,22 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     $output['#attributes']['class'][] = 'layout-builder';
     // Mark this UI as uncacheable.
     $output['#cache']['max-age'] = 0;
+
+    if ($is_translation) {
+      $has_translatable_component = FALSE;
+      foreach ($section_storage->getSections() as $section) {
+        foreach ($section->getComponents() as $uuid => $component) {
+          if ($component->hasTranslatableConfiguration()) {
+            $has_translatable_component = TRUE;
+            break 2;
+          }
+        }
+      }
+      if (!$has_translatable_component) {
+        $this->messenger()->addStatus($this->t('There are currently no settings that can be translated'));
+      }
+    }
+
     return $output;
   }
 
@@ -242,7 +278,8 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     $storage_type = $section_storage->getStorageType();
     $storage_id = $section_storage->getStorageId();
     $section = $section_storage->getSection($delta);
-
+    $is_translation = $section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation();
+    $sections_editable = !$is_translation;
     $layout = $section->getLayout();
     $build = $section->toRenderArray($this->getAvailableContexts($section_storage), TRUE);
     $layout_definition = $layout->getPluginDefinition();
@@ -353,6 +390,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
       ],
       'remove' => [
         '#type' => 'link',
+        '#access' => $sections_editable,
         '#title' => $this->t('Remove section <span class="visually-hidden">@section</span>', ['@section' => $delta + 1]),
         '#url' => Url::fromRoute('layout_builder.remove_section', [
           'section_storage_type' => $storage_type,
@@ -382,7 +420,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
         // .layout-builder__section-label is only visible when the
         // move block dialog is open and it is not seen by screen readers.
         '#title' => $this->t('Configure section <span class="visually-hidden">@section</span><span aria-hidden="true" class="layout-builder__section-label">@section</span>', ['@section' => $delta + 1]),
-        '#access' => $layout instanceof PluginFormInterface,
+        '#access' => $layout instanceof PluginFormInterface && $sections_editable,
         '#url' => Url::fromRoute('layout_builder.configure_section', [
           'section_storage_type' => $storage_type,
           'section_storage' => $storage_id,

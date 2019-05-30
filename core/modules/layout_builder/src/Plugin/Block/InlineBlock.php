@@ -9,11 +9,13 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\layout_builder\LayoutBuilderTranslatablePluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -29,7 +31,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @internal
  *   Plugin classes are internal.
  */
-class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, RefinableDependentAccessInterface {
+class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, RefinableDependentAccessInterface, LayoutBuilderTranslatablePluginInterface {
 
   use RefinableDependentAccessTrait;
 
@@ -62,6 +64,13 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
   protected $isNew = TRUE;
 
   /**
+   * The entity repository.
+   *
+   * @var \Drupal\Core\Entity\EntityRepositoryInterface
+   */
+  protected $entityRepository;
+
+  /**
    * The current user.
    *
    * @var \Drupal\Core\Session\AccountInterface
@@ -83,8 +92,10 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
    *   The entity display repository.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   *   The entity repository.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, AccountInterface $current_user = NULL) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, AccountInterface $current_user = NULL, EntityRepositoryInterface $entity_repository = NULL) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
@@ -98,6 +109,11 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
       $current_user = \Drupal::currentUser();
     }
     $this->currentUser = $current_user;
+    if (!$entity_repository) {
+      @trigger_error('The entity.repository service must be passed to InlineBlock::__construct(), it is required before Drupal 9.0.0.', E_USER_DEPRECATED);
+      $entity_repository = \Drupal::service('entity.repository');
+    }
+    $this->entityRepository = $entity_repository;
   }
 
   /**
@@ -110,7 +126,8 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
       $plugin_definition,
       $container->get('entity_type.manager'),
       $container->get('entity_display.repository'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('entity.repository')
     );
   }
 
@@ -130,6 +147,10 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
    */
   public function blockForm($form, FormStateInterface $form_state) {
     $block = $this->getEntity();
+    if (!$this->isNew && !$block->isNew()) {
+      // Get the active block for editing purposes.
+      $block = $this->entityRepository->getActive('block_content', $block->id());
+    }
 
     // Add the entity form display in a process callback so that #parents can
     // be successfully propagated to field widgets.
@@ -170,6 +191,9 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
     EntityFormDisplay::collectRenderDisplay($block, 'edit')->buildForm($block, $element, $form_state);
     $element['revision_log']['#access'] = FALSE;
     $element['info']['#access'] = FALSE;
+    if (isset($element['langcode'])) {
+      $element['langcode']['#access'] = FALSE;
+    }
     return $element;
   }
 
@@ -295,6 +319,14 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
       $this->configuration['block_revision_id'] = $block->getRevisionId();
       $this->configuration['block_serialized'] = NULL;
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasTranslatableConfiguration() {
+    $block_content = $this->getEntity();
+    return $block_content->isTranslatable() ||  (!empty($this->configuration['label_display']) && !empty($this->configuration['label']));
   }
 
 }
