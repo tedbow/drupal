@@ -208,7 +208,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
 
       $section_storage = $this->getSectionStorageForEntity($entity);
       foreach ($this->getInlineBlockComponents($sections) as $component) {
-        if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
+        if (static::isTranslation($section_storage)) {
           $translated_component_configuration = $section_storage->getTranslatedComponentConfiguration($component->getUuid());
           if (isset($translated_component_configuration['block_serialized'])) {
             $this->saveTranslatedInlineBlock($entity, $component->getUuid(), $translated_component_configuration, $new_revision);

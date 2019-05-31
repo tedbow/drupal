@@ -13,6 +13,7 @@ use Drupal\Core\Render\Element\RenderElement;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
 use Drupal\layout_builder\LayoutBuilderHighlightTrait;
+use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -32,6 +33,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
   use AjaxHelperTrait;
   use LayoutBuilderContextTrait;
   use LayoutBuilderHighlightTrait;
+  use LayoutEntityHelperTrait;
 
   /**
    * The layout tempstore repository.
@@ -132,7 +134,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    */
   protected function layout(SectionStorageInterface $section_storage) {
     $this->prepareLayout($section_storage);
-    $is_translation = $this->isTranslation($section_storage);
+    $is_translation = static::isTranslation($section_storage);
 
     $output = [];
     if ($this->isAjax()) {
@@ -287,7 +289,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     $storage_type = $section_storage->getStorageType();
     $storage_id = $section_storage->getStorageId();
     $section = $section_storage->getSection($delta);
-    $sections_editable = !$this->isTranslation($section_storage);
+    $sections_editable = !static::isTranslation($section_storage);
     $layout = $section->getLayout();
     $build = $section->toRenderArray($this->getAvailableContexts($section_storage), TRUE);
     $layout_definition = $layout->getPluginDefinition();
@@ -302,7 +304,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
           $build[$region][$uuid]['#attributes']['class'][] = 'layout-builder-block';
           $build[$region][$uuid]['#attributes']['data-layout-block-uuid'] = $uuid;
           $build[$region][$uuid]['#attributes']['data-layout-builder-highlight-id'] = $this->blockUpdateHighlightId($uuid);
-          if ($contextual_link_element = $this->getContextualLinkElement($section_storage, $delta, $region, $uuid)) {
+          if ($contextual_link_element = $this->createContextualLinkElement($section_storage, $delta, $region, $uuid)) {
             $build[$region][$uuid]['#contextual_links'] = $contextual_link_element;
           }
         }
@@ -437,6 +439,8 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
   }
 
   /**
+   * Creates contextual link element for a component.
+   *
    * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
    *   The section storage.
    * @param $delta
@@ -446,12 +450,14 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    * @param $uuid
    *   The UUID of the component.
    * @param $is_translation
-   *   Whether the
-   * @param \Drupal\layout_builder\Section $section
+   *   Whether the section storage is handling a translation.
    *
-   * @return array
+   * @return array|null
+   *   The contextual link render array or NULL if none.
+   *
    */
-  protected function getContextualLinkElement(SectionStorageInterface $section_storage, $delta, $region, $uuid) {
+  protected function createContextualLinkElement(SectionStorageInterface $section_storage, $delta, $region, $uuid) {
+    $contextual_link_element = NULL;
     $section = $section_storage->getSection($delta);
     $contextual_link_settings = [
       'route_parameters' => [
@@ -462,7 +468,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
         'uuid' => $uuid,
       ],
     ];
-    if ($this->isTranslation($section_storage)) {
+    if (static::isTranslation($section_storage)) {
       $component = $section->getComponent($uuid);
       if ($component->hasTranslatableConfiguration()) {
         $contextual_group = 'layout_builder_block_translation';
@@ -501,15 +507,6 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
 
     }
     return $contextual_link_element;
-  }
-
-  /**
-   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
-   *
-   * @return bool
-   */
-  protected function isTranslation(SectionStorageInterface $section_storage) {
-    return $section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation();
   }
 
 }

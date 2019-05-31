@@ -3,8 +3,8 @@
 namespace Drupal\layout_builder\Access;
 
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Routing\Access\AccessInterface;
+use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\Routing\Route;
@@ -18,6 +18,8 @@ use Symfony\Component\Routing\Route;
  *   Tagged services are internal.
  */
 class LayoutBuilderTranslationAccessCheck implements AccessInterface {
+
+  use LayoutEntityHelperTrait;
 
   /**
    * Checks routing access to the default translation only layout.
@@ -36,7 +38,7 @@ class LayoutBuilderTranslationAccessCheck implements AccessInterface {
       $access = AccessResult::allowedIf(!$section_storage instanceof TranslatableSectionStorageInterface || $section_storage->isDefaultTranslation());
     }
     elseif ($translation_type === 'translated') {
-      $access = AccessResult::allowedIf($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation());
+      $access = AccessResult::allowedIf(static::isTranslation($section_storage));
     }
     else {
       throw new \UnexpectedValueException("Unexpected _layout_builder_translation_access route requirement: $translation_type");
