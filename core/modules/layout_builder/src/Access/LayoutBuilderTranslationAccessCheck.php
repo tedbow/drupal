@@ -41,9 +41,7 @@ class LayoutBuilderTranslationAccessCheck implements AccessInterface {
     else {
       throw new \UnexpectedValueException("Unexpected _layout_builder_translation_access route requirement: $translation_type");
     }
-    if ($access instanceof RefinableCacheableDependencyInterface) {
-      $access->addCacheableDependency($section_storage);
-    }
+    $access->addCacheableDependency($section_storage);
     return $access;
   }
 
