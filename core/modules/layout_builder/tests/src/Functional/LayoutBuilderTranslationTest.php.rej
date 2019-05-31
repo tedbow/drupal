@@ -1,0 +1,41 @@
+diff a/core/modules/layout_builder/tests/src/Functional/LayoutBuilderTranslationTest.php b/core/modules/layout_builder/tests/src/Functional/LayoutBuilderTranslationTest.php	(rejected hunks)
+@@ -188,31 +197,18 @@ protected function addEntityTranslation() {
+     $this->drupalPostForm($add_translation_url, [
+       "{$this->fieldName}[0][value]" => 'The translated field value',
+     ], 'Save');
+-    $this->drupalLogin($user);
+   }
+ 
+   /**
+-   * Adds a layout override.
++   * Set up the View Display.
+    */
+-  protected function addLayoutOverride() {
+-    $assert_session = $this->assertSession();
+-    $page = $this->getSession()->getPage();
+-    $entity_url = $this->entity->toUrl()->toString();
+-    $layout_url = $entity_url . '/layout';
+-    $this->drupalGet($layout_url);
+-    $assert_session->pageTextNotContains('The translated field value');
+-    $assert_session->pageTextContains('The untranslated field value');
+-
+-    // Adjust the layout.
+-    $assert_session->linkExists('Add block');
+-    $this->clickLink('Add block');
+-    $assert_session->linkExists('Powered by Drupal');
+-    $this->clickLink('Powered by Drupal');
+-    $page->pressButton('Add block');
+-
+-    $assert_session->pageTextContains('Powered by Drupal');
+-    $assert_session->buttonExists('Save layout');
+-    $page->pressButton('Save layout');
++  protected function setUpViewDisplay() {
++    EntityViewDisplay::create([
++      'targetEntityType' => $this->entityTypeId,
++      'bundle' => $this->bundle,
++      'mode' => 'default',
++      'status' => TRUE,
++    ])->setComponent($this->fieldName, ['type' => 'string'])->save();
+   }
+ 
+ }

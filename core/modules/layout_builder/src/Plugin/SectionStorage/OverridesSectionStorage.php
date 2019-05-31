@@ -19,6 +19,7 @@ use Drupal\Core\Url;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -46,14 +47,21 @@ use Symfony\Component\Routing\RouteCollection;
  * @internal
  *   Plugin classes are internal.
  */
-class OverridesSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, OverridesSectionStorageInterface, SectionStorageLocalTaskProviderInterface {
+class OverridesSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, OverridesSectionStorageInterface, TranslatableSectionStorageInterface, SectionStorageLocalTaskProviderInterface {
 
   /**
-   * The field name used by this storage.
+   * The field name for layout sections used by this storage.
    *
    * @var string
    */
   const FIELD_NAME = 'layout_builder__layout';
+
+  /**
+   * The field name for translated configuration used by this storage.
+   *
+   * @var string
+   */
+  const TRANSLATED_CONFIGURATION_FIELD_NAME = 'layout_builder__translation';
 
   /**
    * The entity type manager.
@@ -186,7 +194,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   public function getSectionListFromId($id) {
     @trigger_error('\Drupal\layout_builder\SectionStorageInterface::getSectionListFromId() is deprecated in Drupal 8.7.0 and will be removed before Drupal 9.0.0. The section list should be derived from context. See https://www.drupal.org/node/3016262.', E_USER_DEPRECATED);
     if (strpos($id, '.') !== FALSE) {
-      list($entity_type_id, $entity_id) = explode('.', $id, 2);
+      list($entity_type_id, $entity_id) = explode('.', $id);
       $entity = $this->entityRepository->getActive($entity_type_id, $entity_id);
       if ($entity instanceof FieldableEntityInterface && $entity->hasField(static::FIELD_NAME)) {
         return $entity->get(static::FIELD_NAME);
@@ -230,7 +238,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    */
   private function extractEntityFromRoute($value, array $defaults) {
     if (strpos($value, '.') !== FALSE) {
-      list($entity_type_id, $entity_id) = explode('.', $value, 2);
+      list($entity_type_id, $entity_id) = explode('.', $value);
     }
     elseif (isset($defaults['entity_type_id']) && !empty($defaults[$defaults['entity_type_id']])) {
       $entity_type_id = $defaults['entity_type_id'];
@@ -415,7 +423,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   protected function handleTranslationAccess(AccessResult $result, $operation, AccountInterface $account) {
     $entity = $this->getEntity();
     // Access is always denied on non-default translations.
-    return $result->andIf(AccessResult::allowedIf(!($entity instanceof TranslatableInterface && !$entity->isDefaultTranslation())))->addCacheableDependency($entity);
+    return $result->andIf(AccessResult::allowedIf($this->isDefaultTranslation() || ($entity instanceof TranslatableInterface && $this->isOverridden())))->addCacheableDependency($entity);
   }
 
   /**
@@ -436,6 +444,76 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     // storage has been overridden. Do not use count() as it does not include
     // blank sections.
     return !empty($this->getSections());
+  }
+
+  /**
+   * Indicates if the layout is translatable.
+   *
+   * @return bool
+   *   TRUE if the layout is translatable, otherwise FALSE.
+   */
+  protected function isTranslatable() {
+    $entity = $this->getEntity();
+    if ($entity instanceof TranslatableInterface) {
+      return $entity->isTranslatable();
+    }
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isDefaultTranslation() {
+    if ($this->isTranslatable()) {
+      /** @var \Drupal\Core\Entity\TranslatableInterface $entity */
+      $entity = $this->getEntity();
+      return $entity->isDefaultTranslation();
+    }
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setTranslatedComponentConfiguration($uuid, array $configuration) {
+    if (!$this->getEntity()->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->isEmpty()) {
+      $translation_settings = $this->getEntity()->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->getValue()[0];
+    }
+    $translation_settings['value']['components'][$uuid] = $configuration;
+    $this->getEntity()->set(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME, [$translation_settings]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTranslatedComponentConfiguration($uuid) {
+    if ($this->getEntity()->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->isEmpty()) {
+      return [];
+    }
+    else {
+      $translation_settings = $this->getEntity()->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->getValue()[0];
+    }
+    return isset($translation_settings['value']['components'][$uuid]) ? $translation_settings['value']['components'][$uuid] : [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTranslatedConfiguration() {
+    if ($this->getEntity()->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->isEmpty()) {
+      return [];
+    }
+    return $this->getEntity()->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->getValue()[0];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTranslationLanguage() {
+    if (!$this->isDefaultTranslation()) {
+      return $this->getEntity()->language();
+    }
+    return NULL;
   }
 
 }

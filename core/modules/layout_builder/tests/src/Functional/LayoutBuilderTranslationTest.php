@@ -7,11 +7,13 @@ use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Url;
 
 /**
- * Tests that the Layout Builder works with translated content.
+ * Tests that the Layout Builder UI works with translated content.
  *
  * @group layout_builder
  */
 class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
+
+  use TranslationTestTrait;
 
   /**
    * {@inheritdoc}
@@ -25,13 +27,6 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
   ];
 
   /**
-   * The entity used for testing.
-   *
-   * @var \Drupal\Core\Entity\EntityInterface
-   */
-  protected $entity;
-
-  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -41,32 +36,57 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
   }
 
   /**
-   * Tests that layout overrides work when created after a translation.
+   * Tests that the Layout Builder UI works with translated content.
    */
-  public function testTranslationBeforeLayoutOverride() {
+  public function testLayoutPerTranslation() {
     $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
 
-    $this->addEntityTranslation();
-
-    $entity_url = $this->entity->toUrl()->toString();
+    $entity_url = $this->entity->toUrl('canonical')->toString();
     $language = \Drupal::languageManager()->getLanguage($this->langcodes[2]);
     $translated_entity_url = $this->entity->toUrl('canonical', ['language' => $language])->toString();
+    $layout_url = $entity_url . '/layout';
     $translated_layout_url = $translated_entity_url . '/layout';
 
     $this->drupalGet($entity_url);
     $assert_session->pageTextNotContains('The translated field value');
     $assert_session->pageTextContains('The untranslated field value');
-    $assert_session->linkExists('Layout');
 
     $this->drupalGet($translated_entity_url);
     $assert_session->pageTextNotContains('The untranslated field value');
     $assert_session->pageTextContains('The translated field value');
-    $assert_session->linkNotExists('Layout');
 
+    $this->drupalGet($layout_url);
+    $assert_session->pageTextNotContains('The translated field value');
+    $assert_session->pageTextContains('The untranslated field value');
+
+    // If there is not a layout override the layout translation is not
+    // accessible.
     $this->drupalGet($translated_layout_url);
     $assert_session->pageTextContains('Access denied');
 
-    $this->addLayoutOverride();
+    // Ensure that the tempstore varies per-translation.
+    $this->drupalGet($layout_url);
+    $assert_session->pageTextNotContains('The translated field value');
+    $assert_session->pageTextContains('The untranslated field value');
+
+    // Adjust the layout of the original entity.
+    $assert_session->linkExists('Add block');
+    $this->clickLink('Add block');
+    $assert_session->linkExists('Powered by Drupal');
+    $this->clickLink('Powered by Drupal');
+    $page->pressButton('Add block');
+
+    $assert_session->pageTextContains('Powered by Drupal');
+
+    // Confirm the tempstore for the translated layout is not affected.
+    $this->drupalGet($translated_layout_url);
+    $assert_session->pageTextContains('Access denied');
+
+    $this->drupalGet($layout_url);
+    $assert_session->pageTextContains('Powered by Drupal');
+    $assert_session->buttonExists('Save layout');
+    $page->pressButton('Save layout');
 
     $this->drupalGet($entity_url);
     $assert_session->pageTextNotContains('The translated field value');
@@ -78,44 +98,50 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
     $assert_session->pageTextNotContains('The untranslated field value');
     $assert_session->pageTextContains('The translated field value');
     $assert_session->pageTextContains('Powered by Drupal');
+
+    // Confirm that layout translation page is accessible once the untranslated
+    // entity has a override.
+    $this->drupalGet($translated_layout_url);
+    $assert_session->pageTextNotContains('Access denied');
+    $assert_session->pageTextNotContains('The untranslated field value');
+    $assert_session->pageTextContains('The translated field value');
+    $assert_session->pageTextContains('Powered by Drupal');
+    $assert_session->buttonExists('Save layout');
+
+    $this->assertNonTranslationActionsRemoved();
+
   }
 
   /**
-   * Tests that layout overrides work when created before a translation.
+   * Tests that access is denied to a layout translation if there is override.
    */
-  public function testLayoutOverrideBeforeTranslation() {
+  public function testLayoutTranslationNoOverride() {
     $assert_session = $this->assertSession();
 
-    $entity_url = $this->entity->toUrl()->toString();
+    $entity_url = $this->entity->toUrl('canonical')->toString();
     $language = \Drupal::languageManager()->getLanguage($this->langcodes[2]);
-
-    $this->addLayoutOverride();
-
-    $this->drupalGet($entity_url);
-    $assert_session->pageTextNotContains('The translated field value');
-    $assert_session->pageTextContains('The untranslated field value');
-    $assert_session->pageTextContains('Powered by Drupal');
-    $assert_session->linkExists('Layout');
-
-    $this->addEntityTranslation();
     $translated_entity_url = $this->entity->toUrl('canonical', ['language' => $language])->toString();
     $translated_layout_url = $translated_entity_url . '/layout';
 
     $this->drupalGet($entity_url);
     $assert_session->pageTextNotContains('The translated field value');
     $assert_session->pageTextContains('The untranslated field value');
-    $assert_session->pageTextContains('Powered by Drupal');
-    $assert_session->linkExists('Layout');
 
     $this->drupalGet($translated_entity_url);
     $assert_session->pageTextNotContains('The untranslated field value');
     $assert_session->pageTextContains('The translated field value');
-    $assert_session->pageTextContains('Powered by Drupal');
-    $assert_session->linkNotExists('Layout');
 
+    // If there is not a layout override the layout translation is not
+    // accessible.
     $this->drupalGet($translated_layout_url);
-    $assert_session->pageTextContains('Access denied');
   }
+
+  /**
+   * The entity used for testing.
+   *
+   * @var \Drupal\Core\Entity\EntityInterface
+   */
+  protected $entity;
 
   /**
    * {@inheritdoc}
@@ -160,25 +186,8 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
       ->getStorage($this->entityTypeId);
     $storage->resetCache([$id]);
     $this->entity = $storage->load($id);
-  }
 
-  /**
-   * Set up the View Display.
-   */
-  protected function setUpViewDisplay() {
-    EntityViewDisplay::create([
-      'targetEntityType' => $this->entityTypeId,
-      'bundle' => $this->bundle,
-      'mode' => 'default',
-      'status' => TRUE,
-    ])->setComponent($this->fieldName, ['type' => 'string'])->save();
-  }
-
-  /**
-   * Adds an entity translation.
-   */
-  protected function addEntityTranslation() {
-    $user = $this->loggedInUser;
+    // Create a translation.
     $this->drupalLogin($this->translator);
     $add_translation_url = Url::fromRoute("entity.$this->entityTypeId.content_translation_add", [
       $this->entityTypeId => $this->entity->id(),

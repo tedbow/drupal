@@ -13,6 +13,7 @@ use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\SectionStorageInterface;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -82,12 +83,14 @@ class OverridesEntityForm extends ContentEntityForm {
     parent::init($form_state);
 
     $form_display = EntityFormDisplay::collectRenderDisplay($this->entity, $this->getOperation(), FALSE);
-    $form_display->setComponent(OverridesSectionStorage::FIELD_NAME, [
+    $field_name = $this->sectionStorage instanceof TranslatableSectionStorageInterface && !$this->sectionStorage->isDefaultTranslation() ?
+      OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME :
+      OverridesSectionStorage::FIELD_NAME;
+    $form_display->setComponent($field_name, [
       'type' => 'layout_builder_widget',
       'weight' => -10,
       'settings' => [],
     ]);
-
     $this->setFormDisplay($form_display, $form_state);
   }
 
@@ -102,6 +105,7 @@ class OverridesEntityForm extends ContentEntityForm {
     //   restricts all access to the field, explicitly allow access here until
     //   https://www.drupal.org/node/2942975 is resolved.
     $form[OverridesSectionStorage::FIELD_NAME]['#access'] = TRUE;
+    $form[OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME]['#access'] = TRUE;
 
     $form['layout_builder_message'] = $this->buildMessage($section_storage->getContextValue('entity'), $section_storage);
     return $form;
@@ -198,14 +202,16 @@ class OverridesEntityForm extends ContentEntityForm {
       '#submit' => ['::redirectOnSubmit'],
       '#redirect' => 'discard_changes',
     ];
-    // @todo This button should be conditionally displayed, see
-    //   https://www.drupal.org/node/2917777.
-    $actions['revert'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Revert to defaults'),
-      '#submit' => ['::redirectOnSubmit'],
-      '#redirect' => 'revert',
-    ];
+    if (!$this->sectionStorage instanceof TranslatableSectionStorageInterface || $this->sectionStorage->isDefaultTranslation()) {
+      // @todo This button should be conditionally displayed, see
+      //   https://www.drupal.org/node/2917777.
+      $actions['revert'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Revert to defaults'),
+        '#submit' => ['::redirectOnSubmit'],
+        '#redirect' => 'revert',
+      ];
+    }
     $actions['preview_toggle'] = $this->buildContentPreviewToggle();
     return $actions;
   }

@@ -17,6 +17,7 @@ use Drupal\Tests\contextual\FunctionalJavascript\ContextualLinkClickTrait;
 class LayoutBuilderDisableInteractionsTest extends WebDriverTestBase {
 
   use ContextualLinkClickTrait;
+  use LayoutBuilderTestTrait;
 
   /**
    * {@inheritdoc}
