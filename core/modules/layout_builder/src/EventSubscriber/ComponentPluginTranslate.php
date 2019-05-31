@@ -29,6 +29,8 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
   protected $languageManager;
 
   /**
+   * The current route match.
+   *
    * @var \Drupal\Core\Routing\RouteMatchInterface
    */
   protected $routeMatch;
@@ -70,6 +72,7 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
       return;
     }
 
+    // @todo Change to 'entity' in https://www.drupal.org/node/3018782.
     $entity = $contexts['layout_builder.entity']->getContextValue();
     $configuration = $plugin->getConfiguration();
     if ($event->inPreview()) {
