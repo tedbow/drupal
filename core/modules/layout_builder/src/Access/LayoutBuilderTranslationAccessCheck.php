@@ -6,7 +6,6 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Drupal\layout_builder\SectionStorageInterface;
-use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\Routing\Route;
 
 /**
@@ -34,16 +33,19 @@ class LayoutBuilderTranslationAccessCheck implements AccessInterface {
    */
   public function access(SectionStorageInterface $section_storage, Route $route) {
     $translation_type = $route->getRequirement('_layout_builder_translation_access');
-    if ($translation_type === 'untranslated') {
-      $access = AccessResult::allowedIf(!$section_storage instanceof TranslatableSectionStorageInterface || $section_storage->isDefaultTranslation());
+    $is_translation = static::isTranslation($section_storage);
+    switch ($translation_type) {
+      case 'untranslated':
+        $access = AccessResult::allowedIf(!$is_translation);
+        break;
+
+      case 'translated':
+        $access = AccessResult::allowedIf($is_translation);
+        break;
+
+      default:
+        throw new \UnexpectedValueException("Unexpected _layout_builder_translation_access route requirement: $translation_type");
     }
-    elseif ($translation_type === 'translated') {
-      $access = AccessResult::allowedIf(static::isTranslation($section_storage));
-    }
-    else {
-      throw new \UnexpectedValueException("Unexpected _layout_builder_translation_access route requirement: $translation_type");
-    }
-    $access->addCacheableDependency($section_storage);
     return $access;
   }
 

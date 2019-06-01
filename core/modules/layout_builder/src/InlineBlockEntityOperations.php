@@ -321,15 +321,22 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    * @param bool $new_revision
    *   Whether a new revision of the block should be created.
    */
-  protected function saveTranslatedInlineBlock($entity, $component_uuid, $translated_component_configuration, $new_revision) {
+  protected function saveTranslatedInlineBlock(EntityInterface $entity, $component_uuid, array $translated_component_configuration, $new_revision) {
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = unserialize($translated_component_configuration['block_serialized']);
+    // Create a InlineBlock plugin from the translated configuration in order to
+    // save the block.
     /** @var \Drupal\layout_builder\Plugin\Block\InlineBlock $plugin */
     $plugin = $this->blockManager->createInstance('inline_block:' . $block->bundle(), $translated_component_configuration);
     $plugin->saveBlockContent($new_revision);
-    $configuration = $plugin->getConfiguration();
+    // Remove serialized block after the block has been saved.
     unset($translated_component_configuration['block_serialized']);
+
+    // Update the block_revision_id in the translated configuration which may
+    // have changed after saving the block.
+    $configuration = $plugin->getConfiguration();
     $translated_component_configuration['block_revision_id'] = $configuration['block_revision_id'];
+
     /** @var \Drupal\layout_builder\TranslatableSectionStorageInterface $section_storage */
     $section_storage = $this->getSectionStorageForEntity($entity);
     $section_storage->setTranslatedComponentConfiguration($component_uuid, $translated_component_configuration);

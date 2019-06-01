@@ -131,8 +131,10 @@ class BlockContentInlineBlockTranslateForm extends BlockContentForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
+    // The language of the translation cannot be changed.
     $form['langcode']['#access'] = FALSE;
     $form['revision_log']['#access'] = FALSE;
+    // Creating new revisions is based on the entity with the layout.
     $form['revision']['#access'] = FALSE;
     return $form;
   }
