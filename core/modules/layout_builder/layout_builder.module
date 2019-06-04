@@ -434,26 +434,30 @@ function layout_builder_block_alter(&$definitions) {
  * Implements hook_config_translation_info().
  */
 function layout_builder_config_translation_info(&$info) {
-  $entity_manager = \Drupal::entityManager();
-
   // If field UI is not enabled, the base routes of the type
-  // "entity.field_config.{$entity_type}_field_edit_form" are not defined.
+  // "entity.entity_view_display.$entity_type_id.view_mode" are not defined.
   if (\Drupal::moduleHandler()->moduleExists('field_ui')) {
+    $entity_type_manager = \Drupal::entityTypeManager();
     foreach (EntityViewDisplay::loadMultiple() as $entity_view_display) {
       if ($entity_view_display instanceof LayoutBuilderEntityViewDisplay && $entity_view_display->isLayoutBuilderEnabled()) {
         $entity_type_id = $entity_view_display->getTargetEntityTypeId();
-        $view_mode = $entity_view_display->getMode();
-        $bundle = $entity_view_display->getTargetBundle();
-        $info[$entity_type_id . '_' . $bundle . '_'. $view_mode . '_entity_view_display'] = [
-          'base_route_name' => "entity.entity_view_display.$entity_type_id.view_mode",
-          'entity_type' => 'entity_view_display',
-          'title' => t('Layout'),
-          'class' => '\Drupal\layout_builder\ConfigTranslation\EntityViewDisplayMapper',
-          'weight' => 10,
-          //'names' => ['third_party.layout_builder'],
-          'names' => [],
-          'target_entity_type' => $entity_type_id,
-        ];
+        /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */
+        $entity_type = $entity_type_manager->getDefinition($entity_type_id);
+        // Make sure entity type has field UI enabled and has a base route.
+        if ($entity_type->get('field_ui_base_route')) {
+          $view_mode = $entity_view_display->getMode();
+          $bundle = $entity_view_display->getTargetBundle();
+          $info[$entity_type_id . '_' . $bundle . '_'. $view_mode . '_entity_view_display'] = [
+            'base_route_name' => "entity.entity_view_display.$entity_type_id.view_mode",
+            'entity_type' => 'entity_view_display',
+            'title' => t('Layout'),
+            'class' => '\Drupal\layout_builder\ConfigTranslation\EntityViewDisplayMapper',
+            'weight' => 10,
+            //'names' => ['third_party.layout_builder'],
+            'names' => [],
+            'target_entity_type' => $entity_type_id,
+          ];
+        }
       }
     }
   }
