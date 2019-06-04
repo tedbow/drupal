@@ -445,15 +445,12 @@ function layout_builder_config_translation_info(&$info) {
         $entity_type = $entity_type_manager->getDefinition($entity_type_id);
         // Make sure entity type has field UI enabled and has a base route.
         if ($entity_type->get('field_ui_base_route')) {
-          $view_mode = $entity_view_display->getMode();
-          $bundle = $entity_view_display->getTargetBundle();
-          $info[$entity_type_id . '_' . $bundle . '_'. $view_mode . '_entity_view_display'] = [
+          $info[$entity_type_id . '_' . $entity_view_display->getTargetBundle() . '_'. $entity_view_display->getMode() . '_entity_view_display'] = [
             'base_route_name' => "entity.entity_view_display.$entity_type_id.view_mode",
             'entity_type' => 'entity_view_display',
             'title' => t('Layout'),
             'class' => '\Drupal\layout_builder\ConfigTranslation\EntityViewDisplayMapper',
             'weight' => 10,
-            //'names' => ['third_party.layout_builder'],
             'names' => [],
             'target_entity_type' => $entity_type_id,
           ];

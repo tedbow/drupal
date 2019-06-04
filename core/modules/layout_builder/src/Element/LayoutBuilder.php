@@ -453,7 +453,6 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    *
    * @return array|null
    *   The contextual link render array or NULL if none.
-   *
    */
   protected function createContextualLinkElement(SectionStorageInterface $section_storage, $delta, $region, $uuid) {
     $contextual_link_element = NULL;

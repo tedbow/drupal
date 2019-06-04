@@ -450,10 +450,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   }
 
   /**
-   * Indicates if the layout is default translation layout.
-   *
-   * @return bool
-   *   TRUE if the layout is the default translation layout, otherwise FALSE.
+   * {@inheritdoc}
    */
   public function isDefaultTranslation() {
     if ($this->getTranslationLanguage()) {
@@ -465,12 +462,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   }
 
   /**
-   * Sets the translated component configuration.
-   *
-   * @param string $uuid
-   *   The component UUID.
-   * @param array $configuration
-   *   The component's translated configuration.
+   * {@inheritdoc}
    */
   public function setTranslatedComponentConfiguration($uuid, array $configuration) {
     foreach ($this->getSections() as $delta => $section) {
@@ -481,13 +473,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   }
 
   /**
-   * Gets the translated component configuration.
-   *
-   * @param string $uuid
-   *   The component UUID.
-   *
-   * @return array
-   *   The component's translated configuration.
+   * {@inheritdoc}
    */
   public function getTranslatedComponentConfiguration($uuid) {
     if ($sections_override = $this->translationOverride->get('third_party_settings.layout_builder.sections')) {
@@ -501,10 +487,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   }
 
   /**
-   * Get the translated configuration for the layout.
-   *
-   * @return array
-   *   The translated configuration for the layout.
+   * {@inheritdoc}
    */
   public function getTranslatedConfiguration() {
     // TODO: Implement getTranslatedConfiguration() method.
@@ -522,11 +505,16 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
     return $key;
   }
 
-  protected function getTranslatedOverride() {
-    $this->getDisplay()->getConfigDependencyName();
+  /**
+   * Gets the language config override if applicable.
+   *
+   * @return \Drupal\language\Config\LanguageConfigOverride|null
+   *   The language override if the sections are for a translation otherwise
+   *   NULL.
+   */
+  protected function getTranslationOverride() {
     if ($language = $this->getTranslationLanguage()) {
-      $display_id = $this->getDisplay()->id();
-      return \Drupal::languageManager()->getLanguageConfigOverride($language->getId(), $display_id);
+      return \Drupal::languageManager()->getLanguageConfigOverride($language->getId(), $this->getDisplay()->getConfigDependencyName());
     }
     return NULL;
   }
@@ -544,16 +532,15 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   }
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function setContext($name, ComponentContextInterface $context) {
     parent::setContext($name, $context);
     if ($name === 'language' || $name === 'display') {
-      if(empty(array_diff(['language', 'display'], array_keys($this->context)))) {
-        $this->translationOverride = $this->getTranslatedOverride();
+      if (empty(array_diff(['language', 'display'], array_keys($this->context)))) {
+        $this->translationOverride = $this->getTranslationOverride();
       }
     }
   }
-
 
 }

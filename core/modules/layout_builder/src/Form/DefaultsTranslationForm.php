@@ -8,9 +8,7 @@ use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\language\ConfigurableLanguageManagerInterface;
-use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
-use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -18,17 +16,21 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class DefaultsTranslationForm extends ConfigTranslationFormBase {
 
   /**
+   * The section storage.
+   *
    * @var \Drupal\layout_builder\SectionStorageInterface
    */
   protected $sectionStorage;
 
   /**
+   * The layout tempstore repository.
+   *
    * @var \Drupal\layout_builder\LayoutTempstoreRepositoryInterface
    */
   protected $layoutTempstoreRepository;
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function __construct(TypedConfigManagerInterface $typed_config_manager, ConfigMapperManagerInterface $config_mapper_manager, ConfigurableLanguageManagerInterface $language_manager, LayoutTempstoreRepositoryInterface $layout_tempstore_repository) {
     parent::__construct($typed_config_manager, $config_mapper_manager, $language_manager);
@@ -47,45 +49,15 @@ class DefaultsTranslationForm extends ConfigTranslationFormBase {
     );
   }
 
-
   /**
-   * Returns a unique string identifying the form.
-   *
-   * The returned ID should be a unique string that can be a valid PHP function
-   * name, since it's used in hook implementation names such as
-   * hook_form_FORM_ID_alter().
-   *
-   * @return string
-   *   The unique string identifying the form.
+   * {@inheritdoc}
    */
   public function getFormId() {
     return 'defaults_layout_builder_form';
   }
 
   /**
-   * Implements \Drupal\Core\Form\FormInterface::buildForm().
-   *
-   * Builds configuration form with metadata and values from the source
-   * language.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   (optional) The route match.
-   * @param string $plugin_id
-   *   (optional) The plugin ID of the mapper.
-   * @param string $langcode
-   *   (optional) The language code of the language the form is adding or
-   *   editing.
-   *
-   * @return array
-   *   The form structure.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
-   *   Throws an exception if the language code provided as a query parameter in
-   *   the request does not match an active language.
+   * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, RouteMatchInterface $route_match = NULL, $plugin_id = NULL, $langcode = NULL, SectionStorageInterface $section_storage = NULL) {
     $this->sectionStorage = $section_storage;
@@ -140,12 +112,7 @@ class DefaultsTranslationForm extends ConfigTranslationFormBase {
   }
 
   /**
-   * Form submission handler.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
+   * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->sectionStorage->save();
