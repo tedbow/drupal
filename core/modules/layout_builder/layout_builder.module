@@ -449,7 +449,7 @@ function layout_builder_config_translation_info(&$info) {
             'base_route_name' => "entity.entity_view_display.$entity_type_id.view_mode",
             'entity_type' => 'entity_view_display',
             'title' => t('Layout'),
-            'class' => '\Drupal\layout_builder\ConfigTranslation\EntityViewDisplayMapper',
+            'class' => '\Drupal\layout_builder\ConfigTranslation\LayoutEntityDisplayMapper',
             'weight' => 10,
             'names' => [],
             'target_entity_type' => $entity_type_id,

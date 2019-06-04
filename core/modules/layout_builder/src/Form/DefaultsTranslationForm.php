@@ -13,6 +13,9 @@ use Drupal\layout_builder\SectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+/**
+ * Provides a form for layout default configuration translations.
+ */
 class DefaultsTranslationForm extends ConfigTranslationFormBase {
 
   /**

@@ -8,13 +8,18 @@ use Drupal\config_translation\Event\ConfigTranslationEvents;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\layout_builder\Form\DefaultsTranslationForm;
 use Drupal\layout_builder\LayoutEntityHelperTrait;
-use \Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\Route;
 
-class EntityViewDisplayMapper extends ConfigEntityMapper {
+/**
+ * Provides a configuration mapper for entity displays Layout Builder settings.
+ */
+class LayoutEntityDisplayMapper extends ConfigEntityMapper {
 
   use LayoutEntityHelperTrait;
 
   /**
+   * Loaded entity instance to help produce the translation interface.
+   *
    * @var \Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay
    */
   protected $entity;
@@ -36,7 +41,6 @@ class EntityViewDisplayMapper extends ConfigEntityMapper {
 
     $event = new ConfigMapperPopulateEvent($this, $route_match);
     $this->eventDispatcher->dispatch(ConfigTranslationEvents::POPULATE_MAPPER, $event);
-
   }
 
   /**
@@ -94,7 +98,7 @@ class EntityViewDisplayMapper extends ConfigEntityMapper {
    * Modifies to add and edit routes to use DefaultsTranslationForm.
    *
    * @param \Symfony\Component\Routing\Route $route
-   *   The route to modify;
+   *   The route to modify.
    */
   protected function modifyAddEditRoutes(Route $route) {
     $definition = $this->getPluginDefinition();
