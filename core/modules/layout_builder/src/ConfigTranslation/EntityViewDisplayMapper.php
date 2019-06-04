@@ -8,6 +8,7 @@ use Drupal\config_translation\Event\ConfigTranslationEvents;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\layout_builder\Form\DefaultsTranslationForm;
 use Drupal\layout_builder\LayoutEntityHelperTrait;
+use \Symfony\Component\Routing\Route;
 
 class EntityViewDisplayMapper extends ConfigEntityMapper {
 
@@ -76,10 +77,30 @@ class EntityViewDisplayMapper extends ConfigEntityMapper {
    */
   public function getAddRoute() {
     $route = parent::getAddRoute();
+    $this->modifyAddEditRoutes($route);
+    return $route;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEditRoute() {
+    $route = parent::getEditRoute();
+    $this->modifyAddEditRoutes($route);
+    return $route;
+  }
+
+  /**
+   * Modifies to add and edit routes to use DefaultsTranslationForm.
+   *
+   * @param \Symfony\Component\Routing\Route $route
+   *   The route to modify;
+   */
+  protected function modifyAddEditRoutes(Route $route) {
     $definition = $this->getPluginDefinition();
     $target_entity_type = $this->entityTypeManager->getDefinition($definition['target_entity_type']);
     $bundle_type = $target_entity_type->getBundleEntityType();
-    $route->setDefault('bundle_key', $bundle_type  );
+    $route->setDefault('bundle_key', $bundle_type);
     $route->setDefault('entity_type_id', $definition['target_entity_type']);
     $route->setDefault('_form', DefaultsTranslationForm::class);
     $route->setDefault('section_storage_type', 'defaults');
@@ -89,8 +110,6 @@ class EntityViewDisplayMapper extends ConfigEntityMapper {
     $route->setOption('parameters', [
       'section_storage' => ['layout_builder_tempstore' => TRUE],
     ]);
-
-    return $route;
   }
 
   /**

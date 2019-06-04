@@ -125,6 +125,55 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $assert_session->addressEquals('admin/structure/types/manage/bundle_with_section_field/display/default/translate/it/add');
     $this->assertNonTranslationActionsRemoved();
     $this->updateBlockTranslation('.block-system-powered-by-block', 'untranslated label', 'label in translation');
+    $assert_session->buttonExists('Save layout');
+    $page->pressButton('Save layout');
+    $assert_session->pageTextContains('The layout translation has been saved.');
+
+    // Confirm the settings in the 'Add' form were saved and can be updated.
+    $this->drupalGet("$manage_display_url/translate");
+    $assert_session->linkNotExists('Add');
+    $this->getEditLink($page)->click();
+    $this->assertNonTranslationActionsRemoved();
+    $this->updateBlockTranslation('.block-system-powered-by-block', 'label in translation', 'label update1 in translation');
+    $assert_session->buttonExists('Save layout');
+    $page->pressButton('Save layout');
+    $assert_session->pageTextContains('The layout translation has been saved.');
+
+    // Confirm the settings in 'Edit' where save correctly and can be updated.
+    $this->drupalGet("$manage_display_url/translate");
+    $assert_session->linkNotExists('Add');
+    $this->getEditLink($page)->click();
+    $assert_session->addressEquals('admin/structure/types/manage/bundle_with_section_field/display/default/translate/it/edit');
+    $this->assertNonTranslationActionsRemoved();
+    $this->updateBlockTranslation('.block-system-powered-by-block', 'label update1 in translation', 'label update2 in translation');
+    $assert_session->buttonExists('Save layout');
+    $page->pressButton('Save layout');
+    $assert_session->pageTextContains('The layout translation has been saved.');
+
+    // Ensure the translation can be deleted.
+    $this->drupalGet("$manage_display_url/translate");
+    $page->find('css', '.dropbutton-arrow')->click();
+    $delete_link = $assert_session->waitForElementVisible('css', 'a:contains("Delete")');
+    $this->assertNotEmpty($delete_link);
+    $delete_link->click();
+    $assert_session->pageTextContains('This action cannot be undone.');
+    $page->pressButton('Delete');
+    $this->drupalGet("$manage_display_url/translate");
+    $assert_session->linkExists('Add');
+  }
+
+  /**
+   * Gets the edit link for the default layout translation.
+   *
+   * @return \Behat\Mink\Element\NodeElement
+   *   The edit link.
+   */
+  protected function getEditLink() {
+    $page = $this->getSession()->getPage();
+    $edit_link_locator = 'a[href$="admin/structure/types/manage/bundle_with_section_field/display/default/translate/it/edit"]';
+    $edit_link = $page->find('css', $edit_link_locator);
+    $this->assertNotEmpty($edit_link);
+    return $edit_link;
   }
 
 }
