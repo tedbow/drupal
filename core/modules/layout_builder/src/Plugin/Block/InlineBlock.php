@@ -326,7 +326,7 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
    */
   public function hasTranslatableConfiguration() {
     $block_content = $this->getEntity();
-    return $block_content->isTranslatable() ||  (!empty($this->configuration['label_display']) && !empty($this->configuration['label']));
+    return $block_content->isTranslatable() || (!empty($this->configuration['label_display']) && !empty($this->configuration['label']));
   }
 
 }

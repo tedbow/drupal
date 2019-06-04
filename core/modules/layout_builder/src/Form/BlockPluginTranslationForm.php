@@ -2,14 +2,11 @@
 
 namespace Drupal\layout_builder\Form;
 
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
 use Drupal\Core\Plugin\PluginFormBase;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\layout_builder\LayoutBuilderPluginTranslationFormInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a block plugin form for translatable settings in the Layout Builder.
@@ -55,6 +52,9 @@ class BlockPluginTranslationForm extends PluginFormBase implements LayoutBuilder
 
   /**
    * {@inheritdoc}
+   *
+   * We only saving the label translation the label the form values will be
+   * saved in \Drupal\layout_builder\Form\TranslateBlockForm::submitForm().
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
   }

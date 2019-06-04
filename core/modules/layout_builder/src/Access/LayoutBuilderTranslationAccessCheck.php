@@ -3,10 +3,9 @@
 namespace Drupal\layout_builder\Access;
 
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Routing\Access\AccessInterface;
+use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Drupal\layout_builder\SectionStorageInterface;
-use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\Routing\Route;
 
 /**
@@ -18,6 +17,8 @@ use Symfony\Component\Routing\Route;
  *   Tagged services are internal.
  */
 class LayoutBuilderTranslationAccessCheck implements AccessInterface {
+
+  use LayoutEntityHelperTrait;
 
   /**
    * Checks routing access to the default translation only layout.
@@ -32,17 +33,18 @@ class LayoutBuilderTranslationAccessCheck implements AccessInterface {
    */
   public function access(SectionStorageInterface $section_storage, Route $route) {
     $translation_type = $route->getRequirement('_layout_builder_translation_access');
-    if ($translation_type === 'untranslated') {
-      $access = AccessResult::allowedIf(!$section_storage instanceof TranslatableSectionStorageInterface || $section_storage->isDefaultTranslation());
-    }
-    elseif ($translation_type === 'translated') {
-      $access = AccessResult::allowedIf($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation());
-    }
-    else {
-      throw new \UnexpectedValueException("Unexpected _layout_builder_translation_access route requirement: $translation_type");
-    }
-    if ($access instanceof RefinableCacheableDependencyInterface) {
-      $access->addCacheableDependency($section_storage);
+    $is_translation = static::isTranslation($section_storage);
+    switch ($translation_type) {
+      case 'untranslated':
+        $access = AccessResult::allowedIf(!$is_translation);
+        break;
+
+      case 'translated':
+        $access = AccessResult::allowedIf($is_translation);
+        break;
+
+      default:
+        throw new \UnexpectedValueException("Unexpected _layout_builder_translation_access route requirement: $translation_type");
     }
     return $access;
   }

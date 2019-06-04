@@ -8,7 +8,6 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent;
 use Drupal\layout_builder\LayoutBuilderEvents;
 use Drupal\layout_builder\LayoutEntityHelperTrait;
-use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -73,6 +72,7 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
       return;
     }
 
+    // @todo Change to 'entity' in https://www.drupal.org/node/3018782.
     $entity = $contexts['layout_builder.entity']->getContextValue();
     $configuration = $plugin->getConfiguration();
     if ($event->inPreview()) {
@@ -82,7 +82,7 @@ class ComponentPluginTranslate implements EventSubscriberInterface {
       $section_storage = $this->getSectionStorageForEntity($entity);
     }
 
-    if ($section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation()) {
+    if (static::isTranslation($section_storage)) {
       if ($translated_plugin_configuration = $section_storage->getTranslatedComponentConfiguration($component->getUuid())) {
         $translated_plugin_configuration += $configuration;
         $plugin->setConfiguration($translated_plugin_configuration);

@@ -13,10 +13,10 @@ use Drupal\Core\Render\Element\RenderElement;
 use Drupal\Core\Url;
 use Drupal\layout_builder\Context\LayoutBuilderContextTrait;
 use Drupal\layout_builder\LayoutBuilderHighlightTrait;
+use Drupal\layout_builder\LayoutEntityHelperTrait;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\SectionStorageInterface;
-use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -32,6 +32,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
   use AjaxHelperTrait;
   use LayoutBuilderContextTrait;
   use LayoutBuilderHighlightTrait;
+  use LayoutEntityHelperTrait;
 
   /**
    * The layout tempstore repository.
@@ -49,6 +50,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
 
   /**
    * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
@@ -67,12 +69,20 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
+   *   (optional) The entity type manager.
+   *
+   * @todo The current constructor signature is deprecated:
+   *   - The $entity_type_manager parameter is optional but should become
+   *   required. Deprecate in https://www.drupal.org/node/3058490.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, LayoutTempstoreRepositoryInterface $layout_tempstore_repository, MessengerInterface $messenger, EntityTypeManagerInterface $entity_type_manager = NULL) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->layoutTempstoreRepository = $layout_tempstore_repository;
     $this->messenger = $messenger;
+    if ($entity_type_manager === NULL) {
+      @trigger_error('The entity_type.manager service must be passed to \Drupal\layout_builder\Element\LayoutBuilder::__construct(). It was added in Drupal 8.8.0 and will be required before Drupal 9.0.0.', E_USER_DEPRECATED);
+      $entity_type_manager = \Drupal::service('entity_type.manager');
+    }
     $this->entityTypeManager = $entity_type_manager;
   }
 
@@ -123,7 +133,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
    */
   protected function layout(SectionStorageInterface $section_storage) {
     $this->prepareLayout($section_storage);
-    $is_translation = $section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation();
+    $is_translation = static::isTranslation($section_storage);
 
     $output = [];
     if ($this->isAjax()) {
@@ -278,8 +288,7 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
     $storage_type = $section_storage->getStorageType();
     $storage_id = $section_storage->getStorageId();
     $section = $section_storage->getSection($delta);
-    $is_translation = $section_storage instanceof TranslatableSectionStorageInterface && !$section_storage->isDefaultTranslation();
-    $sections_editable = !$is_translation;
+    $sections_editable = !static::isTranslation($section_storage);
     $layout = $section->getLayout();
     $build = $section->toRenderArray($this->getAvailableContexts($section_storage), TRUE);
     $layout_definition = $layout->getPluginDefinition();
@@ -294,50 +303,8 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
           $build[$region][$uuid]['#attributes']['class'][] = 'layout-builder-block';
           $build[$region][$uuid]['#attributes']['data-layout-block-uuid'] = $uuid;
           $build[$region][$uuid]['#attributes']['data-layout-builder-highlight-id'] = $this->blockUpdateHighlightId($uuid);
-          $contextual_link_settings = [
-            'route_parameters' => [
-              'section_storage_type' => $storage_type,
-              'section_storage' => $storage_id,
-              'delta' => $delta,
-              'region' => $region,
-              'uuid' => $uuid,
-            ],
-          ];
-          if ($is_translation) {
-            $component = $section->getComponent($uuid);
-            if ($component->hasTranslatableConfiguration()) {
-              $contextual_group = 'layout_builder_block_translation';
-              /** @var \Drupal\Core\Language\LanguageInterface $language */
-              if ($language = $section_storage->getTranslationLanguage()) {
-                $contextual_link_settings['route_parameters']['langcode'] = $language->getId();
-              }
-
-              /** @var \Drupal\layout_builder\Plugin\Block\InlineBlock $plugin */
-              $plugin = $component->getPlugin();
-              if ($plugin instanceof DerivativeInspectionInterface && $plugin->getBaseId() === 'inline_block') {
-                $configuration = $plugin->getConfiguration();
-                /** @var \Drupal\block_content\Entity\BlockContent $block */
-                $block = $this->entityTypeManager->getStorage('block_content')->loadRevision($configuration['block_revision_id']);
-                if ($block->isTranslatable()) {
-                  $contextual_group = 'layout_builder_inline_block_translation';
-                }
-              }
-            }
-          }
-          else {
-            // Add metadata about the current operations available in
-            // contextual links. This will invalidate the client-side cache of
-            // links that were cached before the 'move' link was added.
-            // @see layout_builder.links.contextual.yml
-            $contextual_link_settings['metadata'] = [
-              'operations' => 'move:update:remove',
-            ];
-            $contextual_group = 'layout_builder_block';
-          }
-          if (isset($contextual_group)) {
-            $build[$region][$uuid]['#contextual_links'] = [
-              $contextual_group => $contextual_link_settings,
-            ];
+          if ($contextual_link_element = $this->createContextualLinkElement($section_storage, $delta, $region, $uuid)) {
+            $build[$region][$uuid]['#contextual_links'] = $contextual_link_element;
           }
         }
       }
@@ -468,6 +435,77 @@ class LayoutBuilder extends RenderElement implements ContainerFactoryPluginInter
       ],
       'layout-builder__section' => $build,
     ];
+  }
+
+  /**
+   * Creates contextual link element for a component.
+   *
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   *   The section storage.
+   * @param $delta
+   *   The section delta.
+   * @param $region
+   *   The region.
+   * @param $uuid
+   *   The UUID of the component.
+   * @param $is_translation
+   *   Whether the section storage is handling a translation.
+   *
+   * @return array|null
+   *   The contextual link render array or NULL if none.
+   *
+   */
+  protected function createContextualLinkElement(SectionStorageInterface $section_storage, $delta, $region, $uuid) {
+    $contextual_link_element = NULL;
+    $section = $section_storage->getSection($delta);
+    $contextual_link_settings = [
+      'route_parameters' => [
+        'section_storage_type' => $section_storage->getStorageType(),
+        'section_storage' => $section_storage->getStorageId(),
+        'delta' => $delta,
+        'region' => $region,
+        'uuid' => $uuid,
+      ],
+    ];
+    if (static::isTranslation($section_storage)) {
+      $component = $section->getComponent($uuid);
+      if ($component->hasTranslatableConfiguration()) {
+        $contextual_group = 'layout_builder_block_translation';
+        /** @var \Drupal\Core\Language\LanguageInterface $language */
+        if ($language = $section_storage->getTranslationLanguage()) {
+          $contextual_link_settings['route_parameters']['langcode'] = $language->getId();
+        }
+
+        /** @var \Drupal\layout_builder\Plugin\Block\InlineBlock $plugin */
+        $plugin = $component->getPlugin();
+        if ($plugin instanceof DerivativeInspectionInterface && $plugin->getBaseId() === 'inline_block') {
+          $configuration = $plugin->getConfiguration();
+          /** @var \Drupal\block_content\Entity\BlockContent $block */
+          $block = $this->entityTypeManager->getStorage('block_content')
+            ->loadRevision($configuration['block_revision_id']);
+          if ($block->isTranslatable()) {
+            $contextual_group = 'layout_builder_inline_block_translation';
+          }
+        }
+      }
+    }
+    else {
+      // Add metadata about the current operations available in
+      // contextual links. This will invalidate the client-side cache of
+      // links that were cached before the 'move' link was added.
+      // @see layout_builder.links.contextual.yml
+      $contextual_link_settings['metadata'] = [
+        'operations' => 'move:update:remove',
+      ];
+      $contextual_group = 'layout_builder_block';
+    }
+    if (isset($contextual_group)) {
+      $contextual_link_element = [
+        $contextual_group => $contextual_link_settings,
+      ];
+
+    }
+    return $contextual_link_element;
   }
 
 }

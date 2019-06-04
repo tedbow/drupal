@@ -490,9 +490,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
     if ($this->getEntity()->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->isEmpty()) {
       return [];
     }
-    else {
-      $translation_settings = $this->getEntity()->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->getValue()[0];
-    }
+    $translation_settings = $this->getEntity()->get(OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)->getValue()[0];
     return isset($translation_settings['value']['components'][$uuid]) ? $translation_settings['value']['components'][$uuid] : [];
   }
 
