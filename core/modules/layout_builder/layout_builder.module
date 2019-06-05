@@ -8,7 +8,6 @@
 use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Cache\CacheableMetadata;
-use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -438,7 +437,7 @@ function layout_builder_config_translation_info(&$info) {
   // "entity.entity_view_display.$entity_type_id.view_mode" are not defined.
   if (\Drupal::moduleHandler()->moduleExists('field_ui')) {
     $entity_type_manager = \Drupal::entityTypeManager();
-    foreach (EntityViewDisplay::loadMultiple() as $entity_view_display) {
+    foreach (LayoutBuilderEntityViewDisplay::loadMultiple() as $entity_view_display) {
       if ($entity_view_display instanceof LayoutBuilderEntityViewDisplay && $entity_view_display->isLayoutBuilderEnabled()) {
         $entity_type_id = $entity_view_display->getTargetEntityTypeId();
         /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */
