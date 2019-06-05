@@ -17,8 +17,15 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Update language overrides when components move to different sections.
  *
+ * If the language overrides are not updated so that translate component
+ * configuration is nested under the new section then override data will be
+ * filtered out and the override may be deleted.
+ *
+ * @see \Drupal\language\Config\LanguageConfigFactoryOverride::onConfigSave()
+ *
  * @todo Right now this is called on presave but could also be an eventSubscriber
- *    that runs before \Drupal\language\Config\LanguageConfigFactoryOverride::onConfigSave()
+ *    that runs before
+ *    \Drupal\language\Config\LanguageConfigFactoryOverride::onConfigSave().
  */
 class LayoutEntityDisplayUpdater implements ContainerInjectionInterface {
 
@@ -33,6 +40,9 @@ class LayoutEntityDisplayUpdater implements ContainerInjectionInterface {
 
   /**
    * LayoutEntityDisplayUpdater constructor.
+   *
+   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager.
    */
   public function __construct(LanguageManagerInterface $language_manager) {
     // The overrides can only be update if the language manager is configurable.
@@ -72,9 +82,10 @@ class LayoutEntityDisplayUpdater implements ContainerInjectionInterface {
                 }
                 $storage->setContext('language', new Context(new ContextDefinition('language', 'language'), $language));
                 foreach ($moved_uuids as $moved_uuid) {
-                  $config = $storage->getTranslatedComponentConfiguration($moved_uuid);
-                  $storage->setTranslatedComponentConfiguration($moved_uuid, $config);
-                  $storage->save();
+                  if ($config = $storage->getTranslatedComponentConfiguration($moved_uuid)) {
+                    $storage->setTranslatedComponentConfiguration($moved_uuid, $config);
+                    $storage->save();
+                  }
                 }
               }
             }
