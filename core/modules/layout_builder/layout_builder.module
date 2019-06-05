@@ -460,14 +460,13 @@ function layout_builder_config_translation_info(&$info) {
   }
 }
 
+
 /**
- * Implements hook_ENTITY_TYPE_insert().
+ * Implements hook_ENTITY_TYPE_presave().
  */
-function layout_builder_entity_view_display_update(EntityViewDisplayInterface $entity) {
+function layout_builder_entity_view_display_presave(EntityViewDisplayInterface $entity) {
   /** @var \Drupal\layout_builder\ConfigTranslation\LayoutEntityDisplayUpdater $translation_updater */
   $translation_updater = \Drupal::classResolver(LayoutEntityDisplayUpdater::class);
   $translation_updater->onUpdate($entity);
-
-
 }
 

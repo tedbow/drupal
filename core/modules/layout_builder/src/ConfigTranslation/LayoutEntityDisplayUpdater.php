@@ -5,11 +5,24 @@ namespace Drupal\layout_builder\ConfigTranslation;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Plugin\Context\Context;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\language\ConfigurableLanguageManagerInterface;
 use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
+use Drupal\layout_builder\LayoutEntityHelperTrait;
+use Drupal\layout_builder\Section;
+use Drupal\layout_builder\TranslatableSectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Update language overrides when components move to different sections.
+ *
+ * @todo Right now this is called on presave but could also be an event subscriber
+ *    that runs before \Drupal\language\Config\LanguageConfigFactoryOverride::onConfigSave()
+ */
 class LayoutEntityDisplayUpdater implements ContainerInjectionInterface {
+
+  use LayoutEntityHelperTrait;
 
   /**
    * The language manager.
@@ -43,9 +56,23 @@ class LayoutEntityDisplayUpdater implements ContainerInjectionInterface {
     }
     if ($display instanceof LayoutEntityDisplayInterface) {
       if ($display->isLayoutBuilderEnabled() && $display->original->isLayoutBuilderEnabled()) {
-        $moved_uuids = $this->componentsInNewSections($display);
-        foreach ($this->languageManager->getLanguages() as $language) {
-
+        if ($moved_uuids = $this->componentsInNewSections($display)) {
+          $storage = $this->getSectionStorageForEntity($display);
+          if ($storage instanceof TranslatableSectionStorageInterface) {
+            foreach ($this->languageManager->getLanguages() as $language) {
+              if ($override = $this->languageManager->getLanguageConfigOverride($language->getId(), $display->getConfigDependencyName())) {
+                if ($override->isNew()) {
+                  continue;
+                }
+                $storage->setContext('language', new Context(new ContextDefinition('language', 'language'), $language));
+                foreach ($moved_uuids as $moved_uuid) {
+                  $config = $storage->getTranslatedComponentConfiguration($moved_uuid);
+                  $storage->setTranslatedComponentConfiguration($moved_uuid, $config);
+                  $storage->save();
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -56,8 +83,11 @@ class LayoutEntityDisplayUpdater implements ContainerInjectionInterface {
     /** @var \Drupal\layout_builder\Entity\LayoutEntityDisplayInterface $original_display */
     $original_display = $display->original;
     $original_sections = $original_display->getSections();
+    $all_original_uuids = [];
     /// fix to loop through sections.
-    $all_original_uuids = array_keys($original_display->getComponents());
+    array_walk($original_sections, function (Section $section) use (&$all_original_uuids) {
+      $all_original_uuids = array_merge($all_original_uuids, array_keys($section->getComponents()));
+    });
     foreach ($display->getSections() as $delta => $section) {
       $original_section_uuids = isset($original_sections[$delta]) ? array_keys($original_sections[$delta]->getComponents()) : [];
       foreach (array_keys($section->getComponents()) as $uuid) {

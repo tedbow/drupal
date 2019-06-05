@@ -466,7 +466,8 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
    */
   public function setTranslatedComponentConfiguration($uuid, array $configuration) {
     foreach ($this->getSections() as $delta => $section) {
-      if ($section->getComponent($uuid)) {
+      $components = $section->getComponents();
+      if (isset($components[$uuid])) {
         $this->translationOverride->set("third_party_settings.layout_builder.sections.$delta.components.$uuid.configuration", $configuration);
       }
       else {
