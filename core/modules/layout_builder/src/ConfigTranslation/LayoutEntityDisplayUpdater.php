@@ -50,7 +50,13 @@ class LayoutEntityDisplayUpdater implements ContainerInjectionInterface {
     );
   }
 
-  public function onUpdate(EntityViewDisplayInterface $display) {
+  /**
+   * Updates language overrides if any components have moved to new sections.
+   *
+   * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display
+   *   The display entity.
+   */
+  public function presaveUpdateOverrides(EntityViewDisplayInterface $display) {
     if (empty($this->languageManager)) {
       return;
     }
@@ -78,13 +84,22 @@ class LayoutEntityDisplayUpdater implements ContainerInjectionInterface {
     }
   }
 
+  /**
+   * Gets the uuids for any components that have been moved to new section.
+   *
+   * @param \Drupal\layout_builder\Entity\LayoutEntityDisplayInterface $display
+   *   The display entity.
+   *
+   * @return string[]
+   *   The uuids.
+   */
   private function componentsInNewSections(LayoutEntityDisplayInterface $display) {
     $moved_uuids = [];
     /** @var \Drupal\layout_builder\Entity\LayoutEntityDisplayInterface $original_display */
     $original_display = $display->original;
     $original_sections = $original_display->getSections();
     $all_original_uuids = [];
-    /// fix to loop through sections.
+
     array_walk($original_sections, function (Section $section) use (&$all_original_uuids) {
       $all_original_uuids = array_merge($all_original_uuids, array_keys($section->getComponents()));
     });
@@ -95,9 +110,8 @@ class LayoutEntityDisplayUpdater implements ContainerInjectionInterface {
           $moved_uuids[] = $uuid;
         }
       }
-
     }
     return $moved_uuids;
-
   }
+
 }
