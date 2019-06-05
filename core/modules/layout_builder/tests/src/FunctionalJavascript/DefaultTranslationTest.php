@@ -74,17 +74,6 @@ class DefaultTranslationTest extends WebDriverTestBase {
       'translate configuration',
     ]));
 
-    // Create a translation.
-    $add_translation_url = Url::fromRoute("entity.node.content_translation_add", [
-      'node' => 1,
-      'source' => 'en',
-      'target' => 'it',
-    ]);
-    $this->drupalPostForm($add_translation_url, [
-      'title[0][value]' => 'The translated node title',
-      'body[0][value]' => 'The translated node body',
-    ], 'Save');
-
     // Allow layout overrides.
     $this->drupalPostForm(
       static::FIELD_UI_PREFIX . '/display/default',
@@ -94,11 +83,39 @@ class DefaultTranslationTest extends WebDriverTestBase {
   }
 
   /**
-   * Tests default translations.
+   * Dataprovider for testDefaultTranslation().
    */
-  public function testDefaultTranslation() {
+  public function providerDefaultTranslation() {
+    return [
+      'has translated node' => [TRUE],
+      'no translated node' => [FALSE],
+    ];
+  }
+
+  /**
+   * Tests default translations.
+   *
+   * @dataProvider providerDefaultTranslation
+   */
+  public function testDefaultTranslation($translate_node = FALSE) {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
+
+    $expected_it_body = 'The node body';
+    if ($translate_node) {
+      // Create a translation.
+      $add_translation_url = Url::fromRoute("entity.node.content_translation_add", [
+        'node' => 1,
+        'source' => 'en',
+        'target' => 'it',
+      ]);
+      $expected_it_body = 'The translated node body';
+      $this->drupalPostForm($add_translation_url, [
+        'title[0][value]' => 'The translated node title',
+        'body[0][value]' => $expected_it_body,
+      ], 'Save');
+
+    }
     $manage_display_url = static::FIELD_UI_PREFIX . '/display/default';
     $this->drupalGet($manage_display_url);
     $assert_session->linkExists('Manage layout');
@@ -120,7 +137,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $assert_session->pageTextContains('The node body');
     $assert_session->pageTextContains('untranslated label');
     $this->drupalGet('it/node/1');
-    $assert_session->pageTextContains('The translated node body');
+    $assert_session->pageTextContains($expected_it_body);
     $assert_session->pageTextContains('untranslated label');
 
 
@@ -142,7 +159,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $assert_session->pageTextContains('The node body');
     $assert_session->pageTextContains('untranslated label');
     $this->drupalGet('it/node/1');
-    $assert_session->pageTextContains('The translated node body');
+    $assert_session->pageTextContains($expected_it_body);
     $assert_session->pageTextContains('label in translation');
 
 
@@ -160,7 +177,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $assert_session->pageTextContains('The node body');
     $assert_session->pageTextContains('untranslated label');
     $this->drupalGet('it/node/1');
-    $assert_session->pageTextContains('The translated node body');
+    $assert_session->pageTextContains($expected_it_body);
     $assert_session->pageTextContains('label update1 in translation');
 
     // Confirm the settings in 'Edit' where save correctly and can be updated.
@@ -178,7 +195,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $assert_session->pageTextContains('The node body');
     $assert_session->pageTextContains('untranslated label');
     $this->drupalGet('it/node/1');
-    $assert_session->pageTextContains('The translated node body');
+    $assert_session->pageTextContains($expected_it_body);
     $assert_session->pageTextContains('label update2 in translation');
 
     // Ensure the translation can be deleted.
@@ -194,7 +211,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $assert_session->pageTextContains('The node body');
     $assert_session->pageTextContains('untranslated label');
     $this->drupalGet('it/node/1');
-    $assert_session->pageTextContains('The translated node body');
+    $assert_session->pageTextContains($expected_it_body);
     $assert_session->pageTextContains('untranslated label');
 
     $this->drupalGet("$manage_display_url/translate");
