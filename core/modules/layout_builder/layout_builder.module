@@ -16,6 +16,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Drupal\field\FieldConfigInterface;
+use Drupal\layout_builder\ConfigTranslation\LayoutEntityDisplayUpdater;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplayStorage;
 use Drupal\layout_builder\Form\BlockContentInlineBlockTranslateForm;
@@ -457,5 +458,16 @@ function layout_builder_config_translation_info(&$info) {
       }
     }
   }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ */
+function layout_builder_entity_view_display_update(EntityViewDisplayInterface $entity) {
+  /** @var \Drupal\layout_builder\ConfigTranslation\LayoutEntityDisplayUpdater $translation_updater */
+  $translation_updater = \Drupal::classResolver(LayoutEntityDisplayUpdater::class);
+  $translation_updater->onUpdate($entity);
+
+
 }
 

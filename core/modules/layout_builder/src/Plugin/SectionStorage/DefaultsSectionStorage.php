@@ -469,6 +469,14 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
       if ($section->getComponent($uuid)) {
         $this->translationOverride->set("third_party_settings.layout_builder.sections.$delta.components.$uuid.configuration", $configuration);
       }
+      else {
+        $components = $this->translationOverride->get("third_party_settings.layout_builder.sections.$delta.components");
+        // Check if this component was previously in this section.
+        if (isset($components[$uuid])) {
+          unset($components[$uuid]);
+          $this->translationOverride->set("third_party_settings.layout_builder.sections.$delta.components", $components);
+        }
+      }
     }
   }
 
