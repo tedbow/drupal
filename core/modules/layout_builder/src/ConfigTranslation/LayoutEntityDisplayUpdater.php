@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Update language overrides when components move to different sections.
  *
- * @todo Right now this is called on presave but could also be an event subscriber
+ * @todo Right now this is called on presave but could also be an eventSubscriber
  *    that runs before \Drupal\language\Config\LanguageConfigFactoryOverride::onConfigSave()
  */
 class LayoutEntityDisplayUpdater implements ContainerInjectionInterface {

@@ -162,7 +162,6 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $assert_session->pageTextContains($expected_it_body);
     $assert_session->pageTextContains('label in translation');
 
-
     // Confirm the settings in the 'Add' form were saved and can be updated.
     $this->drupalGet("$manage_display_url/translate");
     $assert_session->linkNotExists('Add');
@@ -197,6 +196,51 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $this->drupalGet('it/node/1');
     $assert_session->pageTextContains($expected_it_body);
     $assert_session->pageTextContains('label update2 in translation');
+
+    // Move block to different section.
+    $this->drupalGet($manage_display_url);
+    $assert_session->linkExists('Manage layout');
+    $page->clickLink('Manage layout');
+    $this->clickLink('Add section', 1);
+    $this->assertNotEmpty($assert_session->waitForElementVisible('named', ['link', 'Two column']));
+
+    $this->clickLink('Two column');
+    $assert_session->assertWaitOnAjaxRequest();
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '#drupal-off-canvas [data-drupal-selector="edit-actions-submit"]'));
+    $page->pressButton('Add section');
+    $assert_session->assertNoElementAfterWait('css', '#drupal-off-canvas');
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '.layout__region--second'));
+
+    // Drag the block to a region in different section.
+    $page->find('css', '.layout__region--content .block-system-powered-by-block')->dragTo($page->find('css', '.layout__region--second'));
+    $assert_session->assertWaitOnAjaxRequest();
+    $page->pressButton('Save layout');
+    $assert_session->addressEquals($manage_display_url);
+
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The node body');
+    $assert_session->elementTextContains('css', '.layout__region--second', 'untranslated label');
+    $this->drupalGet('it/node/1');
+    $assert_session->pageTextContains($expected_it_body);
+    $assert_session->elementTextContains('css', '.layout__region--second', 'label update2 in translation');
+
+    // Confirm translated configuration can be edited in the new section.
+    $this->drupalGet("$manage_display_url/translate");
+    $assert_session->linkNotExists('Add');
+    $this->getEditLink($page)->click();
+    $assert_session->addressEquals('admin/structure/types/manage/bundle_with_section_field/display/default/translate/it/edit');
+    $this->assertNonTranslationActionsRemoved();
+    $this->updateBlockTranslation('.layout__region--second .block-system-powered-by-block', 'label update2 in translation', 'label update3 in translation');
+    $assert_session->buttonExists('Save layout');
+    $page->pressButton('Save layout');
+    $assert_session->pageTextContains('The layout translation has been saved.');
+
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The node body');
+    $assert_session->elementTextContains('css', '.layout__region--second', 'untranslated label');
+    $this->drupalGet('it/node/1');
+    $assert_session->pageTextContains($expected_it_body);
+    $assert_session->elementTextContains('css', '.layout__region--second', 'label update3 in translation');
 
     // Ensure the translation can be deleted.
     $this->drupalGet("$manage_display_url/translate");
