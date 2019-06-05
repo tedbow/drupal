@@ -467,7 +467,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   public function setTranslatedComponentConfiguration($uuid, array $configuration) {
     foreach ($this->getSections() as $delta => $section) {
       if ($section->getComponent($uuid)) {
-        $this->translationOverride->set("third_party_settings.layout_builder.sections.$delta.components.$uuid", $configuration);
+        $this->translationOverride->set("third_party_settings.layout_builder.sections.$delta.components.$uuid.configuration", $configuration);
       }
     }
   }
@@ -479,7 +479,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
     if ($sections_override = $this->translationOverride->get('third_party_settings.layout_builder.sections')) {
       foreach ($sections_override as $delta => $section) {
         if (isset($section['components'][$uuid])) {
-          return $section['components'][$uuid];
+          return $section['components'][$uuid]['configuration'];
         }
       }
     }
