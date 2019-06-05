@@ -116,10 +116,19 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $page->pressButton('Save layout');
     $assert_session->addressEquals($manage_display_url);
 
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The node body');
+    $assert_session->pageTextContains('untranslated label');
+    $this->drupalGet('it/node/1');
+    $assert_session->pageTextContains('The translated node body');
+    $assert_session->pageTextContains('untranslated label');
+
+
     $this->drupalGet("$manage_display_url/translate");
     // Assert that translation is  available when there are settings to
     // translate.
     $assert_session->pageTextNotContains('You are not authorized to access this page.');
+
 
     $page->clickLink('Add');
     $assert_session->addressEquals('admin/structure/types/manage/bundle_with_section_field/display/default/translate/it/add');
@@ -128,6 +137,14 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $assert_session->buttonExists('Save layout');
     $page->pressButton('Save layout');
     $assert_session->pageTextContains('The layout translation has been saved.');
+
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The node body');
+    $assert_session->pageTextContains('untranslated label');
+    $this->drupalGet('it/node/1');
+    $assert_session->pageTextContains('The translated node body');
+    $assert_session->pageTextContains('label in translation');
+
 
     // Confirm the settings in the 'Add' form were saved and can be updated.
     $this->drupalGet("$manage_display_url/translate");
@@ -138,6 +155,13 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $assert_session->buttonExists('Save layout');
     $page->pressButton('Save layout');
     $assert_session->pageTextContains('The layout translation has been saved.');
+
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The node body');
+    $assert_session->pageTextContains('untranslated label');
+    $this->drupalGet('it/node/1');
+    $assert_session->pageTextContains('The translated node body');
+    $assert_session->pageTextContains('label update1 in translation');
 
     // Confirm the settings in 'Edit' where save correctly and can be updated.
     $this->drupalGet("$manage_display_url/translate");
@@ -150,6 +174,13 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $page->pressButton('Save layout');
     $assert_session->pageTextContains('The layout translation has been saved.');
 
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The node body');
+    $assert_session->pageTextContains('untranslated label');
+    $this->drupalGet('it/node/1');
+    $assert_session->pageTextContains('The translated node body');
+    $assert_session->pageTextContains('label update2 in translation');
+
     // Ensure the translation can be deleted.
     $this->drupalGet("$manage_display_url/translate");
     $page->find('css', '.dropbutton-arrow')->click();
@@ -158,6 +189,14 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $delete_link->click();
     $assert_session->pageTextContains('This action cannot be undone.');
     $page->pressButton('Delete');
+
+    $this->drupalGet('node/1');
+    $assert_session->pageTextContains('The node body');
+    $assert_session->pageTextContains('untranslated label');
+    $this->drupalGet('it/node/1');
+    $assert_session->pageTextContains('The translated node body');
+    $assert_session->pageTextContains('untranslated label');
+
     $this->drupalGet("$manage_display_url/translate");
     $assert_session->linkExists('Add');
   }
