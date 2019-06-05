@@ -140,12 +140,10 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $assert_session->pageTextContains($expected_it_body);
     $assert_session->pageTextContains('untranslated label');
 
-
     $this->drupalGet("$manage_display_url/translate");
     // Assert that translation is  available when there are settings to
     // translate.
     $assert_session->pageTextNotContains('You are not authorized to access this page.');
-
 
     $page->clickLink('Add');
     $assert_session->addressEquals('admin/structure/types/manage/bundle_with_section_field/display/default/translate/it/add');
