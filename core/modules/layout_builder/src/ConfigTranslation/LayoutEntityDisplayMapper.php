@@ -61,13 +61,6 @@ class LayoutEntityDisplayMapper extends ConfigEntityMapper {
   /**
    * {@inheritdoc}
    */
-  public function hasSchema() {
-    return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getBaseRouteParameters() {
     $target_entity_type = $this->entityTypeManager->getDefinition($this->entity->getTargetEntityTypeId());
     $bundle_type = $target_entity_type->getBundleEntityType();
