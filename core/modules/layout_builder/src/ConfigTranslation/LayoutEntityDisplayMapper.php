@@ -66,8 +66,10 @@ class LayoutEntityDisplayMapper extends ConfigEntityMapper {
    */
   public function getBaseRouteParameters() {
     $target_entity_type = $this->entityTypeManager->getDefinition($this->entity->getTargetEntityTypeId());
-    $bundle_type = $target_entity_type->getBundleEntityType();
-    $parameters[$bundle_type] = $this->entity->getTargetBundle();
+    if ($bundle_type = $target_entity_type->getBundleEntityType()) {
+      $parameters[$bundle_type] = $this->entity->getTargetBundle();
+    }
+
     $parameters['view_mode_name'] = $this->entity->getMode();
     return $parameters;
   }
@@ -99,8 +101,13 @@ class LayoutEntityDisplayMapper extends ConfigEntityMapper {
   protected function modifyAddEditRoutes(Route $route) {
     $definition = $this->getPluginDefinition();
     $target_entity_type = $this->entityTypeManager->getDefinition($definition['target_entity_type']);
-    $bundle_type = $target_entity_type->getBundleEntityType();
-    $route->setDefault('bundle_key', $bundle_type);
+    if ($bundle_type = $target_entity_type->getBundleEntityType()) {
+      $route->setDefault('bundle_key', $bundle_type);
+    }
+    else {
+      $route->setDefault('bundle', $definition['target_entity_type']);
+    }
+
     $route->setDefault('entity_type_id', $definition['target_entity_type']);
     $route->setDefault('_form', DefaultsTranslationForm::class);
     $route->setDefault('section_storage_type', 'defaults');
