@@ -80,6 +80,13 @@ class DefaultTranslationTest extends WebDriverTestBase {
       ['layout[enabled]' => TRUE],
       'Save'
     );
+
+    // Allow layout overrides.
+    $this->drupalPostForm(
+      static::FIELD_UI_PREFIX . '/display/default',
+      ['layout[enabled]' => TRUE],
+      'Save'
+    );
   }
 
   /**
@@ -87,8 +94,8 @@ class DefaultTranslationTest extends WebDriverTestBase {
    */
   public function providerDefaultTranslation() {
     return [
-      'has translated node' => [TRUE],
-      'no translated node' => [FALSE],
+      'has translated node' => ['node', TRUE],
+      'no translated node' => ['node', FALSE],
     ];
   }
 
@@ -97,7 +104,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
    *
    * @dataProvider providerDefaultTranslation
    */
-  public function testDefaultTranslation($translate_node = FALSE) {
+  public function testDefaultTranslation($entity_type, $translate_node = FALSE) {
     $assert_session = $this->assertSession();
     $page = $this->getSession()->getPage();
 
@@ -133,12 +140,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $page->pressButton('Save layout');
     $assert_session->addressEquals($manage_display_url);
 
-    $this->drupalGet('node/1');
-    $assert_session->pageTextContains('The node body');
-    $assert_session->pageTextContains('untranslated label');
-    $this->drupalGet('it/node/1');
-    $assert_session->pageTextContains($expected_it_body);
-    $assert_session->pageTextContains('untranslated label');
+    $this->assertEntityView($entity_type, 'untranslated label', 'untranslated label', $expected_it_body);
 
     $this->drupalGet("$manage_display_url/translate");
     // Assert that translation is  available when there are settings to
@@ -153,12 +155,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $page->pressButton('Save layout');
     $assert_session->pageTextContains('The layout translation has been saved.');
 
-    $this->drupalGet('node/1');
-    $assert_session->pageTextContains('The node body');
-    $assert_session->pageTextContains('untranslated label');
-    $this->drupalGet('it/node/1');
-    $assert_session->pageTextContains($expected_it_body);
-    $assert_session->pageTextContains('label in translation');
+    $this->assertEntityView($entity_type, 'untranslated label', 'label in translation', $expected_it_body);
 
     // Confirm the settings in the 'Add' form were saved and can be updated.
     $this->drupalGet("$manage_display_url/translate");
@@ -170,12 +167,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $page->pressButton('Save layout');
     $assert_session->pageTextContains('The layout translation has been saved.');
 
-    $this->drupalGet('node/1');
-    $assert_session->pageTextContains('The node body');
-    $assert_session->pageTextContains('untranslated label');
-    $this->drupalGet('it/node/1');
-    $assert_session->pageTextContains($expected_it_body);
-    $assert_session->pageTextContains('label update1 in translation');
+    $this->assertEntityView($entity_type, 'untranslated label', 'label update1 in translation', $expected_it_body);
 
     // Confirm the settings in 'Edit' where save correctly and can be updated.
     $this->drupalGet("$manage_display_url/translate");
@@ -188,12 +180,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $page->pressButton('Save layout');
     $assert_session->pageTextContains('The layout translation has been saved.');
 
-    $this->drupalGet('node/1');
-    $assert_session->pageTextContains('The node body');
-    $assert_session->pageTextContains('untranslated label');
-    $this->drupalGet('it/node/1');
-    $assert_session->pageTextContains($expected_it_body);
-    $assert_session->pageTextContains('label update2 in translation');
+    $this->assertEntityView($entity_type, 'untranslated label', 'label update2 in translation', $expected_it_body);
 
     // Move block to different section.
     $this->drupalGet($manage_display_url);
@@ -215,12 +202,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $page->pressButton('Save layout');
     $assert_session->addressEquals($manage_display_url);
 
-    $this->drupalGet('node/1');
-    $assert_session->pageTextContains('The node body');
-    $assert_session->elementTextContains('css', '.layout__region--second', 'untranslated label');
-    $this->drupalGet('it/node/1');
-    $assert_session->pageTextContains($expected_it_body);
-    $assert_session->elementTextContains('css', '.layout__region--second', 'label update2 in translation');
+    $this->assertEntityView($entity_type, 'untranslated label', 'label update2 in translation', $expected_it_body, '.layout__region--second');
 
     // Confirm translated configuration can be edited in the new section.
     $this->drupalGet("$manage_display_url/translate");
@@ -233,12 +215,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $page->pressButton('Save layout');
     $assert_session->pageTextContains('The layout translation has been saved.');
 
-    $this->drupalGet('node/1');
-    $assert_session->pageTextContains('The node body');
-    $assert_session->elementTextContains('css', '.layout__region--second', 'untranslated label');
-    $this->drupalGet('it/node/1');
-    $assert_session->pageTextContains($expected_it_body);
-    $assert_session->elementTextContains('css', '.layout__region--second', 'label update3 in translation');
+    $this->assertEntityView($entity_type, 'untranslated label', 'label update3 in translation', $expected_it_body, '.layout__region--second');
 
     // Ensure the translation can be deleted.
     $this->drupalGet("$manage_display_url/translate");
@@ -249,12 +226,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $assert_session->pageTextContains('This action cannot be undone.');
     $page->pressButton('Delete');
 
-    $this->drupalGet('node/1');
-    $assert_session->pageTextContains('The node body');
-    $assert_session->pageTextContains('untranslated label');
-    $this->drupalGet('it/node/1');
-    $assert_session->pageTextContains($expected_it_body);
-    $assert_session->pageTextContains('untranslated label');
+    $this->assertEntityView($entity_type, 'untranslated label', 'untranslated label', $expected_it_body, '.layout__region--second');
 
     $this->drupalGet("$manage_display_url/translate");
     $assert_session->linkExists('Add');
@@ -272,6 +244,32 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $edit_link = $page->find('css', $edit_link_locator);
     $this->assertNotEmpty($edit_link);
     return $edit_link;
+  }
+
+  /**
+   * Assert the entity view for both untranslated and translated.
+   *
+   * @param string $entity_type
+   *   The entity type.
+   * @param string $expected_untranslated_label
+   *   The expected untranslated label.
+   * @param string $expected_translated_label
+   *   The expected translated label.
+   * @param null|string $expected_translated_body
+   *   (optional) The expected translated body.
+   * @param string $selector
+   *   (optional) The CSS locator for the label.
+   */
+  private function assertEntityView($entity_type, $expected_untranslated_label, $expected_translated_label, $expected_translated_body = NULL, $selector = '.layout__region--content') {
+    $assert_session = $this->assertSession();
+    $this->drupalGet("$entity_type/1");
+    if ($expected_translated_body) {
+      $assert_session->pageTextContains('The node body');
+    }
+    $assert_session->elementTextContains('css', $selector, $expected_untranslated_label);
+    $this->drupalGet("it/$entity_type/1");
+    $assert_session->pageTextContains($expected_translated_body);
+    $assert_session->elementTextContains('css', $selector, $expected_translated_label);
   }
 
 }
