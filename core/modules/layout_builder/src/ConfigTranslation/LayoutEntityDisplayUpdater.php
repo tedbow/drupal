@@ -67,7 +67,7 @@ class LayoutEntityDisplayUpdater implements ContainerInjectionInterface {
    *   The display entity.
    */
   public function presaveUpdateOverrides(EntityViewDisplayInterface $display) {
-    if (empty($this->languageManager)) {
+    if (empty($this->languageManager) || !isset($display->original)) {
       return;
     }
     if ($display instanceof LayoutEntityDisplayInterface) {
