@@ -30,11 +30,14 @@ class LayoutEntityDisplayMapper extends ConfigEntityMapper {
   public function populateFromRouteMatch(RouteMatchInterface $route_match) {
     $view_mode = $route_match->getParameter('view_mode_name');
     $definition = $this->getPluginDefinition();
-    $target_entity_type = $this->entityTypeManager->getDefinition($definition['target_entity_type']);
-    $bundle_type = $target_entity_type->getBundleEntityType();
-    $entity_type = $definition['target_entity_type'];
-    $bundle = $route_match->getParameter($bundle_type);
-    $entity = $this->entityTypeManager->getStorage('entity_view_display')->load($entity_type . '.' . $bundle . '.' . $view_mode);
+
+    $target_entity_type_id = $definition['target_entity_type'];
+    $target_entity_type = $this->entityTypeManager->getDefinition($target_entity_type_id);
+    $bundle_entity_type = $target_entity_type->getBundleEntityType();
+    $bundle = $route_match->getParameter($bundle_entity_type ?: 'bundle') ?: $target_entity_type_id;
+
+
+    $entity = $this->entityTypeManager->getStorage('entity_view_display')->load($target_entity_type_id . '.' . $bundle . '.' . $view_mode);
     $this->setEntity($entity);
 
     $this->langcode = $route_match->getParameter('langcode');
