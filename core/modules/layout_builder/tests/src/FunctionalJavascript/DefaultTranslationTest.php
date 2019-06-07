@@ -148,7 +148,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $assert_session->pageTextNotContains('You are not authorized to access this page.');
 
     $page->clickLink('Add');
-    $assert_session->addressEquals('admin/structure/types/manage/bundle_with_section_field/display/default/translate/it/add');
+    $assert_session->addressEquals("$manage_display_url/translate/it/add");
     $this->assertNonTranslationActionsRemoved();
     $this->updateBlockTranslation('.block-system-powered-by-block', 'untranslated label', 'label in translation');
     $assert_session->buttonExists('Save layout');
@@ -173,7 +173,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $this->drupalGet("$manage_display_url/translate");
     $assert_session->linkNotExists('Add');
     $this->getEditLink($page)->click();
-    $assert_session->addressEquals('admin/structure/types/manage/bundle_with_section_field/display/default/translate/it/edit');
+    $assert_session->addressEquals("$manage_display_url/translate/it/edit");
     $this->assertNonTranslationActionsRemoved();
     $this->updateBlockTranslation('.block-system-powered-by-block', 'label update1 in translation', 'label update2 in translation');
     $assert_session->buttonExists('Save layout');
@@ -208,7 +208,7 @@ class DefaultTranslationTest extends WebDriverTestBase {
     $this->drupalGet("$manage_display_url/translate");
     $assert_session->linkNotExists('Add');
     $this->getEditLink($page)->click();
-    $assert_session->addressEquals('admin/structure/types/manage/bundle_with_section_field/display/default/translate/it/edit');
+    $assert_session->addressEquals("$manage_display_url/translate/it/edit");
     $this->assertNonTranslationActionsRemoved();
     $this->updateBlockTranslation('.layout__region--second .block-system-powered-by-block', 'label update2 in translation', 'label update3 in translation');
     $assert_session->buttonExists('Save layout');
@@ -268,7 +268,10 @@ class DefaultTranslationTest extends WebDriverTestBase {
     }
     $assert_session->elementTextContains('css', $selector, $expected_untranslated_label);
     $this->drupalGet("it/$entity_type/1");
-    $assert_session->pageTextContains($expected_translated_body);
+    if ($expected_translated_body) {
+      $assert_session->pageTextContains($expected_translated_body);
+    }
+
     $assert_session->elementTextContains('css', $selector, $expected_translated_label);
   }
 
