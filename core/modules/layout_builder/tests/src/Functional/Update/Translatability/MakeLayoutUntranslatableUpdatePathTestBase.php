@@ -73,6 +73,7 @@ abstract class MakeLayoutUntranslatableUpdatePathTestBase extends UpdatePathTest
         !FieldConfig::loadByName('node', $bundle, OverridesSectionStorage::FIELD_NAME)->isTranslatable(),
         $field_update_expected ? "Field on $bundle set to be non-translatable." : "Field on $bundle not set to non-translatable."
       );
+      $this->assertNotEmpty(FieldConfig::loadByName('node', $bundle, OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME), "Translation field for $bundle was created");
     }
 
     $this->assertEquals(

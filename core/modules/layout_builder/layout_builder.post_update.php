@@ -302,38 +302,28 @@ function _layout_builder_bundle_has_no_translations($entity_type_id, $bundle) {
 
 
 /**
- * Set the layout builder field as non-translatable where possible.
+ * Adds the layout translation settings field.
  */
-function lxayout_builder_post_update_add_translation_field() {
+function layout_builder_post_update_add_translation_field() {
   /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */
   $field_manager = \Drupal::service('entity_field.manager');
   $field_map = $field_manager->getFieldMap();
   foreach ($field_map as $entity_type_id => $field_infos) {
-    if (isset($field_infos[\Drupal\layout_builder_st\Plugin\SectionStorage\OverridesSectionStorage::FIELD_NAME]['bundles'])) {
+    if (isset($field_infos[OverridesSectionStorage::FIELD_NAME]['bundles'])) {
       $non_translatable_bundle_count = 0;
       foreach ($field_infos[OverridesSectionStorage::FIELD_NAME]['bundles'] as $bundle) {
+        $bundles_not_added = [];
         // The field map can contain stale information. If the field does not
         // exist, ignore it. The field map will be rebuilt when the cache is
         // cleared at the end of the update process.
-        if (!$field_config = FieldConfig::loadByName($entity_type_id, $bundle, OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME)) {
+        if (!$field_config = FieldConfig::loadByName($entity_type_id, $bundle, OverridesSectionStorage::FIELD_NAME)) {
           continue;
         }
-        if (!$field_config->isTranslatable()) {
-          $non_translatable_bundle_count++;
-          _layout_builder_st_add_translation_field($entity_type_id, $bundle, OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME);
-          continue;
-        }
+        _layout_builder_add_translation_field($entity_type_id, $bundle);
 
       }
-      // Set the field storage to untranslatable if the field config for each
-      // bundle is now untranslatable. This removes layout fields for the
-      // entity type from the Content Translation configuration form.
-      if (count($field_infos[OverridesSectionStorage::FIELD_NAME]['bundles']) === $non_translatable_bundle_count) {
-        $field_storage = FieldStorageConfig::loadByName($entity_type_id, OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME);
-        $field_storage->setTranslatable(FALSE);
-        $field_storage->save();
-      }
     }
+
   }
 }
 
@@ -344,10 +334,9 @@ function lxayout_builder_post_update_add_translation_field() {
  *   The entity type ID.
  * @param string $bundle
  *   The bundle.
- * @param string $field_name
- *   The name for the translation field.
  */
-function _layout_builder_add_translation_field($entity_type_id, $bundle, $field_name) {
+function _layout_builder_add_translation_field($entity_type_id, $bundle) {
+  $field_name = OverridesSectionStorage::TRANSLATED_CONFIGURATION_FIELD_NAME;
   $field = FieldConfig::loadByName($entity_type_id, $bundle, $field_name);
   if (!$field) {
     $field_storage = FieldStorageConfig::loadByName($entity_type_id, $field_name);
