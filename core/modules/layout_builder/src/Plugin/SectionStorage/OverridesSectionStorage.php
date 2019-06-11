@@ -16,6 +16,7 @@ use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
+use Drupal\field\Entity\FieldConfig;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface;
@@ -422,10 +423,12 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    */
   protected function handleTranslationAccess(AccessResult $result, $operation, AccountInterface $account) {
     $entity = $this->getEntity();
-    $field_definition = $entity->getFieldDefinition(OverridesSectionStorage::FIELD_NAME);
-    $result = $result->andIf(AccessResult::allowedIf(!$field_definition->isTranslatable()))->addCacheableDependency($field_definition);
-    // Access is always denied on non-default translations.
-    return $result->andIf(AccessResult::allowedIf($this->isDefaultTranslation() || ($entity instanceof TranslatableInterface && $this->isOverridden())))->addCacheableDependency($entity);
+    $field_config = $entity->getFieldDefinition(static::FIELD_NAME)->getConfig($entity->bundle());
+    // Access is allow if one of the following conditions is true:
+    // 1. This is the default translation.
+    // 2. The entity is translatable and the layout is overridden and the layout
+    //    field is not translatable.
+    return $result->andIf(AccessResult::allowedIf($this->isDefaultTranslation() || ($entity instanceof TranslatableInterface && $this->isOverridden() && !$field_config->isTranslatable())))->addCacheableDependency($entity)->addCacheableDependency($field_config);
   }
 
   /**

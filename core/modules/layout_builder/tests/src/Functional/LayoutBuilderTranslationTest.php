@@ -2,6 +2,10 @@
 
 namespace Drupal\Tests\layout_builder\Functional;
 
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\FieldConfigStorage;
+use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\Tests\content_translation\Functional\ContentTranslationTestBase;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Url;
@@ -134,8 +138,88 @@ class LayoutBuilderTranslationTest extends ContentTranslationTestBase {
     // If there is not a layout override the layout translation is not
     // accessible.
     $this->drupalGet($translated_layout_url);
+    $assert_session->pageTextContains('Access denied');
   }
 
+  /**
+   * Tests access to layout translation if the layout field is translatable.
+   */
+  public function testTranslatableLayoutField() {
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+
+    $field_storage = FieldStorageConfig::loadByName('entity_test_mul', OverridesSectionStorage::FIELD_NAME);
+    $this->assertNotEmpty($field_storage);
+    $field_storage->setTranslatable(TRUE);
+    $this->assertNotEmpty($field_storage->save());
+    $field_config = FieldConfig::loadByName('entity_test_mul', 'entity_test_mul', OverridesSectionStorage::FIELD_NAME);
+    $this->assertNotEmpty($field_config);
+    $field_config->setTranslatable(TRUE);
+    $this->assertNotEmpty($field_config->save());
+
+
+    $entity_url = $this->entity->toUrl('canonical')->toString();
+    $layout_url = $entity_url . '/layout';
+    $language = \Drupal::languageManager()->getLanguage($this->langcodes[2]);
+    $translated_entity_url = $this->entity->toUrl('canonical', ['language' => $language])->toString();
+    $translated_layout_url = $translated_entity_url . '/layout';
+
+    $this->drupalGet($entity_url);
+    $assert_session->pageTextNotContains('The translated field value');
+    $assert_session->pageTextContains('The untranslated field value');
+
+    $this->drupalGet($translated_entity_url);
+    $assert_session->pageTextNotContains('The untranslated field value');
+    $assert_session->pageTextContains('The translated field value');
+
+    // If there is not a layout override the layout translation is not
+    // accessible.
+    $this->drupalGet($translated_layout_url);
+    $assert_session->pageTextContains('Access denied');
+
+    // Ensure that the tempstore varies per-translation.
+    $this->drupalGet($layout_url);
+    $assert_session->pageTextNotContains('The translated field value');
+    $assert_session->pageTextContains('The untranslated field value');
+
+    // Adjust the layout of the original entity.
+    $assert_session->linkExists('Add block');
+    $this->clickLink('Add block');
+    $assert_session->linkExists('Powered by Drupal');
+    $this->clickLink('Powered by Drupal');
+    $page->pressButton('Add block');
+
+    $assert_session->pageTextContains('Powered by Drupal');
+
+    // Confirm the tempstore for the translated layout is not affected.
+    $this->drupalGet($translated_layout_url);
+    $assert_session->pageTextContains('Access denied');
+
+    $this->drupalGet($layout_url);
+    $assert_session->pageTextContains('Powered by Drupal');
+    $assert_session->buttonExists('Save layout');
+    $page->pressButton('Save layout');
+
+    $this->drupalGet($entity_url);
+    $assert_session->pageTextContains('Powered by Drupal');
+
+
+    // Confirm the translation layout is still not allowed.
+    $this->drupalGet($translated_layout_url);
+
+    $assert_session->pageTextContains('Access denied');
+
+    // Update the layout field to be not translatable.
+    $field_config = FieldConfig::loadByName('entity_test_mul', 'entity_test_mul', OverridesSectionStorage::FIELD_NAME);
+    $this->assertNotEmpty($field_config);
+    $field_config->setTranslatable(FALSE);
+    $this->assertNotEmpty($field_config->save());
+
+    // Confirm the translation layout is still not allowed.
+    $this->drupalGet($translated_layout_url);
+    $assert_session->pageTextNotContains('Access denied');
+    $assert_session->buttonExists('Save layout');
+  }
   /**
    * The entity used for testing.
    *
