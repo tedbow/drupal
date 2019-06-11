@@ -422,6 +422,8 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    */
   protected function handleTranslationAccess(AccessResult $result, $operation, AccountInterface $account) {
     $entity = $this->getEntity();
+    $field_definition = $entity->getFieldDefinition(OverridesSectionStorage::FIELD_NAME);
+    $result = $result->andIf(AccessResult::allowedIf(!$field_definition->isTranslatable()))->addCacheableDependency($field_definition);
     // Access is always denied on non-default translations.
     return $result->andIf(AccessResult::allowedIf($this->isDefaultTranslation() || ($entity instanceof TranslatableInterface && $this->isOverridden())))->addCacheableDependency($entity);
   }
