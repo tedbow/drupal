@@ -1,0 +1,6 @@
+name: 'System compatible core 8.0.x version test'
+type: module
+description: 'Support module for testing system dependencies.'
+package: Testing
+version: VERSION
+core: 8.0.x

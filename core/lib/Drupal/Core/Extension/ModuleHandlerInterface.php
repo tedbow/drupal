@@ -398,4 +398,15 @@ interface ModuleHandlerInterface {
    */
   public function getName($module);
 
+  /**
+   * Check a module's core compatibility
+   *
+   * @param string $core
+   *   The value of the core key in a module .info.yml file.
+   *
+   * @return bool
+   *   FALSE if invalid or incompatible, TRUE otherwise.
+   */
+  public function isCoreCompatible($core);
+
 }

@@ -756,4 +756,11 @@ class ModuleHandler implements ModuleHandlerInterface {
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function isCoreCompatible($core) {
+    return substr(\Drupal::CORE_COMPATIBILITY, 0, 1) == substr($core, 0, 1) && !version_compare(\Drupal::VERSION, $core, '<');
+  }
+
 }

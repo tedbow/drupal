@@ -103,6 +103,24 @@ class DependencyTest extends ModuleTestBase {
   }
 
   /**
+   * Tests enabling modules with different core version specifications.
+   */
+  function testCoreVersionDependency() {
+    $this->drupalGet('admin/modules');
+    $checkbox = $this->xpath('//input[@type="checkbox" and @disabled="disabled" and @name="modules[Testing][system_incompatible_core_version_test_9x][enable]"]');
+    $this->assert(count($checkbox) == 1, 'Checkbox for the 9.x module is disabled.');
+    $checkbox = $this->xpath('//input[@type="checkbox" and @disabled="disabled" and @name="modules[Testing][system_compatible_core_version_test_80x][enable]"]');
+    $this->assert(count($checkbox) == 0, 'Checkbox for the 8.0.x module is not disabled.');
+    $checkbox = $this->xpath('//input[@type="checkbox"  and @name="modules[Testing][system_compatible_core_version_test_80x][enable]"]');
+    $this->assert(count($checkbox) == 1, 'Checkbox for the 8.0.x module is present.');
+    // Attempt to install the module.
+    $edit = array();
+    $edit['modules[Testing][system_compatible_core_version_test_80x][enable]'] = 'system_compatible_core_version_test_80x';
+    $this->drupalPostForm('admin/modules', $edit, t('Save configuration'));
+    $this->assertModules(array('system_compatible_core_version_test_80x'), TRUE);
+  }
+
+  /**
    * Tests enabling a module that depends on a module which fails hook_requirements().
    */
   public function testEnableRequirementsFailureDependency() {

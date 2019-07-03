@@ -506,4 +506,42 @@ class ModuleHandlerTest extends UnitTestCase {
     $this->assertEquals(['module' => $this->root . '/place'], $module_handler->getModuleDirectories());
   }
 
+  /**
+   * @dataProvider providerIsCoreCompatible
+   * @covers ::isCoreCompatible
+   */
+  public function testIsCoreCompatible($version, $compatible) {
+    $this->assertEquals($compatible, $this->getModuleHandler()->isCoreCompatible($version));
+  }
+
+  /**
+   * Provides data for the invalid core test.
+   *
+   * @return array
+   *   An array of versions and whether they should be valid.
+   */
+  public function providerIsCoreCompatible() {
+    $current = \Drupal::VERSION;
+    list($major, $minor) = explode('.', $current);
+
+    // Calculate older and newer.
+    $older = $major - 1;
+    $newer = $major + 1;
+    $newer_minor = $major . '.' . ($minor + 1);
+
+    // Core version => valid.
+    $versions = [
+      // Invalid.
+      ["{$older}.x", FALSE],
+      ["{$older}.24", FALSE],
+      ["{$newer_minor}.x", FALSE],
+      ["{$newer}.0.x", FALSE],
+      // Valid.
+      ["{$major}.x", TRUE],
+      ["{$major}.{$minor}.x", TRUE],
+    ];
+
+    return $versions;
+  }
+
 }

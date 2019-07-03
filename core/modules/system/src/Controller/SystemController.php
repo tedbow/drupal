@@ -223,7 +223,7 @@ class SystemController extends ControllerBase {
 
       if (empty($theme->status)) {
         // Ensure this theme is compatible with this version of core.
-        $theme->incompatible_core = !isset($theme->info['core']) || ($theme->info['core'] != \DRUPAL::CORE_COMPATIBILITY);
+        $theme->incompatible_core = !isset($theme->info['core']) || !$this->moduleHandler()->isCoreCompatible($theme->info['core']) || !isset($theme->info['regions']['content']);
         // Require the 'content' region to make sure the main page
         // content has a common place in all themes.
         $theme->incompatible_region = !isset($theme->info['regions']['content']);
