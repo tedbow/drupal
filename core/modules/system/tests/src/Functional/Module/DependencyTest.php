@@ -105,19 +105,23 @@ class DependencyTest extends ModuleTestBase {
   /**
    * Tests enabling modules with different core version specifications.
    */
-  function testCoreVersionDependency() {
+  public function testCoreVersionDependency() {
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    list($major, $minor) = explode('.', \Drupal::VERSION);
+    print "vvv==$major." . ((int) $minor + 1) . ".x";
+    \Drupal::state()->set('dependency_test.core_version_requirement', "$major." . ((int) $minor + 1) . ".x");
     $this->drupalGet('admin/modules');
-    $checkbox = $this->xpath('//input[@type="checkbox" and @disabled="disabled" and @name="modules[Testing][system_incompatible_core_version_test_9x][enable]"]');
-    $this->assert(count($checkbox) == 1, 'Checkbox for the 9.x module is disabled.');
-    $checkbox = $this->xpath('//input[@type="checkbox" and @disabled="disabled" and @name="modules[Testing][system_compatible_core_version_test_80x][enable]"]');
-    $this->assert(count($checkbox) == 0, 'Checkbox for the 8.0.x module is not disabled.');
-    $checkbox = $this->xpath('//input[@type="checkbox"  and @name="modules[Testing][system_compatible_core_version_test_80x][enable]"]');
-    $this->assert(count($checkbox) == 1, 'Checkbox for the 8.0.x module is present.');
-    // Attempt to install the module.
-    $edit = array();
-    $edit['modules[Testing][system_compatible_core_version_test_80x][enable]'] = 'system_compatible_core_version_test_80x';
-    $this->drupalPostForm('admin/modules', $edit, t('Save configuration'));
-    $this->assertModules(array('system_compatible_core_version_test_80x'), TRUE);
+    $assert_session->fieldDisabled('modules[system_incompatible_core_version_test_9x][enable]');
+    $assert_session->fieldDisabled('modules[common_test][enable]');
+
+    \Drupal::state()->set('dependency_test.core_version_requirement', "$major.$minor.x");
+    $this->drupalGet('admin/modules');
+    $checkbox = $page->find('css', '[name="modules[common_test][enable]"]');
+    $this->assertFalse($checkbox->hasAttribute('disabled'));
+    $edit['modules[common_test][enable]'] = 'common_test';
+    $this->drupalPostForm('admin/modules', $edit, t('Install'));
+    $this->assertModules(array('common_test'), TRUE);
   }
 
   /**
