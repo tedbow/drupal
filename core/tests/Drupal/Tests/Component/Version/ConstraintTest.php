@@ -81,12 +81,46 @@ class ConstraintTest extends TestCase {
     $tests['(<8.x-4.x,>8.x-1.x)-2.1'] = [$less_and_greater, '2.1', TRUE];
     $tests['(<8.x-4.x,>8.x-1.x)-1.9'] = [$less_and_greater, '1.9', FALSE];
 
+    // Test greater than or equals and equals minor version. Both of these
+    // conditions will pass.
+    $greater_and_equal_major = new Constraint('=8.x-2.x, >=2.4-alpha2', '8.x');
+    $tests['(=8.x-2.x, >=2.4-alpha2)-8.x-2.4-beta3'] = [$greater_and_equal_major, '2.4-beta3', TRUE];
+
+    // Test greater than  or equals and equals exact version.
+    $greater_and_equal_exact = new Constraint('=8.x-2.0, >=2.4-alpha2', '8.x');
+    $tests['(=8.x-2.0, >=2.4-alpha2)-8.x-2.4-beta3'] = [$greater_and_equal_exact, '2.4-beta3', FALSE];
+
     // Test a nonsensical greater than and less than - no compatible versions.
     $less_and_greater = new Constraint('>8.x-4.x,<8.x-1.x', '8.x');
     $tests['(<8.x-4.x,>8.x-1.x)-4.0'] = [$less_and_greater, '4.0', FALSE];
     $tests['(<8.x-4.x,>8.x-1.x)-3.9'] = [$less_and_greater, '3.9', FALSE];
     $tests['(<8.x-4.x,>8.x-1.x)-2.1'] = [$less_and_greater, '2.1', FALSE];
     $tests['(<8.x-4.x,>8.x-1.x)-1.9'] = [$less_and_greater, '1.9', FALSE];
+
+    // Test greater than and less than with an incorrect core compatbility.
+    $less_and_greater = new Constraint('<8.x-4.x,>8.x-1.x', '7.x');
+    $tests['(<8.x-4.x,>8.x-1.x)-4.0-7.x'] = [$less_and_greater, '4.0', FALSE];
+    $tests['(<8.x-4.x,>8.x-1.x)-3.9-7.x'] = [$less_and_greater, '3.9', FALSE];
+    $tests['(<8.x-4.x,>8.x-1.x)-2.1-7.x'] = [$less_and_greater, '2.1', FALSE];
+    $tests['(<8.x-4.x,>8.x-1.x)-1.9-7.x'] = [$less_and_greater, '1.9', FALSE];
+
+    // Test 2 equals with 1 that matching and with nonsensical missing a dash.
+    $tests['(=8.x2.x,=2.4-beta3)-2.4-beta3'] = [new Constraint('=8.x2.x,=2.4-beta3', '8.x'), '2.4-beta3', FALSE];
+
+    $tests['(=8.x2)-8.0.0.0'] = [new Constraint('=8.x2', '8.x'), '8.0.0.0', TRUE];
+    $tests['(=8.x2)-8.0.0'] = [new Constraint('=8.x2', '8.x'), '8.0.0', TRUE];
+    $tests['(=8.x2)-8.7'] = [new Constraint('=8.x2', '8.x'), '8.7', TRUE];
+
+    $equals_x3 = new Constraint('=8.x-2.1,=8.x-2.3,8.x.2.5', '8.x');
+    $tests['(=8.x-2.1,=8.x-2.3,8.x.2.5)-2.1'] = [$equals_x3, '2.1', FALSE];
+    $tests['(=8.x-2.1,=8.x-2.3,8.x.2.5)-2.1'] = [$equals_x3, '2.2', FALSE];
+
+    $greater_less_not_exact = new Constraint('>1.0, <=3.2, !=3.0', '8.x');
+    $tests['(>1.0, <=3.2, !=3.0)-1.1'] = [$greater_less_not_exact, '1.1', TRUE];
+    $tests['(>1.0, <=3.2, !=3.0)-3.1'] = [$greater_less_not_exact, '3.1', TRUE];
+    $tests['(>1.0, <=3.2, !=3.0)-2.1'] = [$greater_less_not_exact, '2.1', TRUE];
+    $tests['(>1.0, <=3.2, !=3.0)-3.0'] = [$greater_less_not_exact, '3.0', FALSE];
+
 
     return $tests;
   }
