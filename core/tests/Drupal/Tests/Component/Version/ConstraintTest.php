@@ -129,14 +129,22 @@ class ConstraintTest extends TestCase {
     $tests['(>1.0, <=3.2, !=3.0)-2.7'] = [$greater_less_not_exact, '2.7', FALSE];
     $tests['(>1.0, <=3.2, !=3.0)-3.3'] = [$greater_less_not_exact, '3.3', FALSE];
 
+    $original_tests = $tests;
     foreach ($tests as $key => $test) {
       if (strpos($test[0][0], ' ') !== FALSE) {
         $tests["$key-no-space"] = $test;
-        $tests["$key-no-space"][0][0] = str_replace(' ', '', $tests["$key-no-space"][0][0]);
-      }
+        $tests["$key-no-space"][0][0] = str_replace(' ', '', $test[0][0]);
 
-      $tests["$key-extra-space"] = $test;
-      $tests["$key-extra-space"][0][0] = str_replace(' ', '     ', $tests["$key-extra-space"][0][0]);
+        $tests["$key-extra-space"] = $test;
+        $tests["$key-extra-space"][0][0] = str_replace(' ', '     ', $test[0][0]);
+      }
+    }
+    foreach ($original_tests as $key => $original_test) {
+      if (strpos($original_test[0][0], '!=') !== FALSE) {
+        $new_key = str_replace('!=', '<>', $key);
+        $tests[$new_key] = $original_test;
+        $tests[$new_key][0][0] = str_replace('!=', '<>', $original_test[0][0]);
+      }
     }
     return $tests;
   }
