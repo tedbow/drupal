@@ -107,20 +107,22 @@ class ConstraintTest extends TestCase {
     // Test 2 equals with 1 that matching and with nonsensical missing a dash.
     $tests['(=8.x2.x,=2.4-beta3)-2.4-beta3'] = [new Constraint('=8.x2.x,=2.4-beta3', '8.x'), '2.4-beta3', FALSE];
 
-    $tests['(=8.x2)-8.0.0.0'] = [new Constraint('=8.x2', '8.x'), '8.0.0.0', TRUE];
-    $tests['(=8.x2)-8.0.0'] = [new Constraint('=8.x2', '8.x'), '8.0.0', TRUE];
-    $tests['(=8.x2)-8.7'] = [new Constraint('=8.x2', '8.x'), '8.7', TRUE];
+    // Test with a missing dash.
+    $tests['(=8.x2)-8.x'] = [new Constraint('=8.x2', '8.x'), '8.x', TRUE];
 
+    // Test multiple equals which will always be false.
     $equals_x3 = new Constraint('=8.x-2.1,=8.x-2.3,8.x.2.5', '8.x');
     $tests['(=8.x-2.1,=8.x-2.3,8.x.2.5)-2.1'] = [$equals_x3, '2.1', FALSE];
     $tests['(=8.x-2.1,=8.x-2.3,8.x.2.5)-2.1'] = [$equals_x3, '2.2', FALSE];
 
-    $greater_less_not_exact = new Constraint('>1.0, <=3.2, !=3.0', '8.x');
+    // Test with a range and multiple exclusions.
+    $greater_less_not_exact = new Constraint('>1.0, <=3.2, !=3.0, !=1.5, !=2.7', '8.x');
     $tests['(>1.0, <=3.2, !=3.0)-1.1'] = [$greater_less_not_exact, '1.1', TRUE];
     $tests['(>1.0, <=3.2, !=3.0)-3.1'] = [$greater_less_not_exact, '3.1', TRUE];
     $tests['(>1.0, <=3.2, !=3.0)-2.1'] = [$greater_less_not_exact, '2.1', TRUE];
     $tests['(>1.0, <=3.2, !=3.0)-3.0'] = [$greater_less_not_exact, '3.0', FALSE];
-
+    $tests['(>1.0, <=3.2, !=3.0)-1.5'] = [$greater_less_not_exact, '1.5', FALSE];
+    $tests['(>1.0, <=3.2, !=3.0)-2.7'] = [$greater_less_not_exact, '2.7', FALSE];
 
     return $tests;
   }
