@@ -114,20 +114,20 @@ class ConstraintTest extends TestCase {
           $tests["({$equal_operator}{$space}8.x2)-8.x"] = [new Constraint("{$equal_operator}{$space}8.x2", '8.x'), '8.x', TRUE];
 
           // Test multiple equals which will always be false.
-          $equals_x3 = new Constraint("{$equal_operator}{$space}8.x-2.1,{$space}{$equal_operator}{$space}8.x-2.3, 8.x.2.5", '8.x');
-          $tests["({$equal_operator}{$space}8.x-2.1,{$equal_operator}8.x-2.3,8.x.2.5)-2.1"] = [$equals_x3, '2.1', FALSE];
-          $tests["({$equal_operator}{$space}8.x-2.1,{$equal_operator}8.x-2.3,8.x.2.5)-2.1"] = [$equals_x3, '2.2', FALSE];
+          $equals_x3 = new Constraint("{$equal_operator}{$space}8.x-2.1,{$space}{$equal_operator}{$space}8.x-2.3,\"(>{$space}1.0,$space<={$space}3.2,{$space}{$not_equals_operator}{$space}3.0)-8.x.2.5", '8.x');
+          $tests["({$equal_operator}{$space}8.x-2.1,$space{$equal_operator}{$space}8.x-2.3,8.x.2.5)-2.1"] = [$equals_x3, '2.1', FALSE];
+          $tests["({$equal_operator}{$space}8.x-2.1,$space{$equal_operator}{$space}8.x-2.3,8.x.2.5)-2.2"] = [$equals_x3, '2.2', FALSE];
 
           // Test with a range and multiple exclusions.
-          $greater_less_not_exact = new Constraint("> 1.0, <= 3.2, $not_equals_operator 3.0, $not_equals_operator 1.5, $not_equals_operator 2.7", '8.x');
+          $greater_less_not_exact = new Constraint(">{$space}1.0,$space<= 3.2,$space$not_equals_operator{$space}3.0,$space$not_equals_operator{$space}1.5,$space$not_equals_operator{$space}2.7", '8.x');
 
-          $tests["(>1.0,$space<=3.2,{$space}{$not_equals_operator}3.0)-1.1"] = [$greater_less_not_exact, '1.1', TRUE];
-          $tests["(>1.0,$space<=3.2,{$space}{$not_equals_operator}3.0)-3.1"] = [$greater_less_not_exact, '3.1', TRUE];
-          $tests["(>1.0,$space<=3.2,{$space}{$not_equals_operator}3.0)-2.1"] = [$greater_less_not_exact, '2.1', TRUE];
-          $tests["(>1.0,$space<=3.2,{$space}{$not_equals_operator}3.0)-3.0"] = [$greater_less_not_exact, '3.0', FALSE];
-          $tests["(>1.0,$space<=3.2,{$space}{$not_equals_operator}3.0)-1.5"] = [$greater_less_not_exact, '1.5', FALSE];
-          $tests["(>1.0,$space<=3.2,{$space}{$not_equals_operator}3.0)-2.7"] = [$greater_less_not_exact, '2.7', FALSE];
-          $tests["(>1.0,$space<=3.2,{$space}{$not_equals_operator}3.0)-3.3"] = [$greater_less_not_exact, '3.3', FALSE];
+          $tests["(>{$space}1.0,$space<={$space}3.2,{$space}{$not_equals_operator}{$space}3.0)-1.1"] = [$greater_less_not_exact, '1.1', TRUE];
+          $tests["(>{$space}1.0,$space<={$space}3.2,{$space}{$not_equals_operator}{$space}3.0)-3.1"] = [$greater_less_not_exact, '3.1', TRUE];
+          $tests["(>{$space}1.0,$space<={$space}3.2,{$space}{$not_equals_operator}{$space}3.0)-2.1"] = [$greater_less_not_exact, '2.1', TRUE];
+          $tests["(>{$space}1.0,$space<={$space}3.2,{$space}{$not_equals_operator}{$space}3.0)-3.0"] = [$greater_less_not_exact, '3.0', FALSE];
+          $tests["(>{$space}1.0,$space<={$space}3.2,{$space}{$not_equals_operator}{$space}3.0)-1.5"] = [$greater_less_not_exact, '1.5', FALSE];
+          $tests["(>{$space}1.0,$space<={$space}3.2,{$space}{$not_equals_operator}{$space}3.0)-2.7"] = [$greater_less_not_exact, '2.7', FALSE];
+          $tests["(>{$space}1.0,$space<={$space}3.2,{$space}{$not_equals_operator}{$space}3.0)-3.3"] = [$greater_less_not_exact, '3.3', FALSE];
         }
       }
     }
