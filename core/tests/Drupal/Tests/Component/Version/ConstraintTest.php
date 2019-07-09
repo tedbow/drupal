@@ -229,10 +229,10 @@ class ConstraintTest extends TestCase {
    * This proves all the original test cases are within the new cases.
    */
   public function testTempToProveAllOldCasesCovered() {
-    $original_tests = $this->original_providerIsCompatible();
-    $new_tests = $this->providerIsCompatible();
+    $original_tests = array_map( 'serialize', $this->original_providerIsCompatible());
+    $new_tests = array_map('serialize', $this->providerIsCompatible());
     foreach ($original_tests as $key => $original_test) {
-      $this->assertTrue(in_array($original_test, $new_tests), "Test case covered: $key");
+      $this->assertTrue(in_array($original_test, $new_tests, TRUE), "Test case covered: $key");
     }
   }
 
