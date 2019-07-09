@@ -75,6 +75,18 @@ class ConstraintTest extends TestCase {
           $tests += $this->createTestsForVersions($constraint, ['4.0', '1.9'], FALSE);
           $tests += $this->createTestsForVersions($constraint, ['3.9', '2.1'], TRUE);
 
+          // Test greater than and less than with an incorrect core
+          // compatibility.
+          $tests += $this->createTestsForVersions($constraint, ['4.0', '3.9', '2.1', '1.9'], FALSE, '7.x');
+          $tests += $this->createTestsForVersions($constraint, ['4.0', '3.9', '2.1', '1.9'], FALSE, '9.x');
+
+          // Test greater than and less than with no core version in constraint.
+          $constraint = "<{$space}4.x,{$space}>{$space}1.x";
+          foreach (['7.x', '8.x', '9.x'] as $core_compatibility) {
+            $tests += $this->createTestsForVersions($constraint, ['4.0', '1.9'], FALSE, $core_compatibility);
+            $tests += $this->createTestsForVersions($constraint, ['3.9', '2.1'], TRUE, $core_compatibility);
+          }
+
           // Test greater than or equals and equals minor version. Both of these
           // conditions will pass.
           $constraint = "{$equal_operator}{$space}8.x-2.x,{$space}>={$space}2.4-alpha2";
@@ -87,10 +99,6 @@ class ConstraintTest extends TestCase {
           // Test unsatisfiable greater than and less than.
           $constraint = ">{$space}8.x-4.x,{$space}<{$space}8.x-1.x";
           $tests += $this->createTestsForVersions($constraint, ['4.0', '3.9', '2.1', '1.9'], FALSE);
-
-          // Test greater than and less than with an incorrect core
-          // compatibility.
-          $tests += $this->createTestsForVersions($constraint, ['4.0', '3.9', '2.1', '1.9'], FALSE, '7.x');
 
           // Test 2 equals with 1 that matching and with nonsensical missing a
           // dash.
