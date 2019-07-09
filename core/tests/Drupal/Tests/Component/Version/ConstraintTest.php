@@ -31,82 +31,84 @@ class ConstraintTest extends TestCase {
       foreach (['!=', '<>'] as $not_equals_operator) {
         foreach (['', ' '] as $space) {
           // Stable version.
-          $constraints = "{$equal_operator}{$space}8.x-1.0";
-          $tests += $this->createTestsForVersions($constraints, ['1.0'], TRUE);
-          $tests += $this->createTestsForVersions($constraints, ['1.1', '0.9'], FALSE);
+          $constraint = "{$equal_operator}{$space}8.x-1.0";
+          $tests += $this->createTestsForVersions($constraint, ['1.0'], TRUE);
+          $tests += $this->createTestsForVersions($constraint, ['1.1', '0.9'], FALSE);
 
           // Alpha version.
-          $constraints = "{$equal_operator}{$space}8.x-1.1-alpha12";
-          $tests += $this->createTestsForVersions($constraints, ['1.1-alpha12'], TRUE);
-          $tests += $this->createTestsForVersions($constraints, ['1.1-alpha10', '1.1-beta1'], FALSE);
+          $constraint = "{$equal_operator}{$space}8.x-1.1-alpha12";
+          $tests += $this->createTestsForVersions($constraint, ['1.1-alpha12'], TRUE);
+          $tests += $this->createTestsForVersions($constraint, ['1.1-alpha10', '1.1-beta1'], FALSE);
 
           // Beta version.
-          $constraints = "{$equal_operator}{$space}8.x-1.1-beta8";
-          $tests += $this->createTestsForVersions($constraints, ['1.1-beta8'], TRUE);
-          $tests += $this->createTestsForVersions($constraints, ['1.1-beta4'], FALSE);
+          $constraint = "{$equal_operator}{$space}8.x-1.1-beta8";
+          $tests += $this->createTestsForVersions($constraint, ['1.1-beta8'], TRUE);
+          $tests += $this->createTestsForVersions($constraint, ['1.1-beta4'], FALSE);
 
           // RC version.
-          $constraints = "{$equal_operator}{$space}8.x-1.1-rc11";
-          $tests += $this->createTestsForVersions($constraints, ['1.1-rc11'], TRUE);
-          $tests += $this->createTestsForVersions($constraints, ['1.1-rc2'], FALSE);
+          $constraint = "{$equal_operator}{$space}8.x-1.1-rc11";
+          $tests += $this->createTestsForVersions($constraint, ['1.1-rc11'], TRUE);
+          $tests += $this->createTestsForVersions($constraint, ['1.1-rc2'], FALSE);
 
           // Test greater than.
-          $constraints = ">{$space}8.x-1.x";
-          $tests += $this->createTestsForVersions($constraints, ['2.0'], TRUE);
-          $tests += $this->createTestsForVersions($constraints, ['1.1', '0.9'], FALSE);
+          $constraint = ">{$space}8.x-1.x";
+          $tests += $this->createTestsForVersions($constraint, ['2.0'], TRUE);
+          $tests += $this->createTestsForVersions($constraint, ['1.1', '0.9'], FALSE);
 
           // Test greater than or equal.
           $tests += $this->createTestsForVersions(">={$space}8.x-1.0", ['1.1', '1.0'], TRUE);
           $tests += $this->createTestsForVersions(">={$space}8.x-1.1", ['1.0'], FALSE);
 
           // Test less than.
-          $constraints = "<{$space}8.x-1.1";
-          $tests += $this->createTestsForVersions($constraints, ['1.1'], FALSE);
-          $tests += $this->createTestsForVersions($constraints, ['1.0'], TRUE);
+          $constraint = "<{$space}8.x-1.1";
+          $tests += $this->createTestsForVersions($constraint, ['1.1'], FALSE);
+          $tests += $this->createTestsForVersions($constraint, ['1.0'], TRUE);
           $tests += $this->createTestsForVersions("<{$space}8.x-1.0", ['1.1'], FALSE);
 
           // Test less than or equal.
-          $constraints = "<={$space}8.x-1.x";
-          $tests += $this->createTestsForVersions($constraints, ['2.0'], FALSE);
-          $tests += $this->createTestsForVersions($constraints, ['1.9', '1.1', '0.9'], TRUE);
+          $constraint = "<={$space}8.x-1.x";
+          $tests += $this->createTestsForVersions($constraint, ['2.0'], FALSE);
+          $tests += $this->createTestsForVersions($constraint, ['1.9', '1.1', '0.9'], TRUE);
 
           // Test greater than and less than.
-          $constraints = "<{$space}8.x-4.x,{$space}>{$space}8.x-1.x";
-          $tests += $this->createTestsForVersions($constraints, ['4.0', '1.9'], FALSE);
-          $tests += $this->createTestsForVersions($constraints, ['3.9', '2.1'], TRUE);
+          $constraint = "<{$space}8.x-4.x,{$space}>{$space}8.x-1.x";
+          $tests += $this->createTestsForVersions($constraint, ['4.0', '1.9'], FALSE);
+          $tests += $this->createTestsForVersions($constraint, ['3.9', '2.1'], TRUE);
 
           // Test greater than or equals and equals minor version. Both of these
           // conditions will pass.
-          $constraints = "{$equal_operator}{$space}8.x-2.x,{$space}>={$space}2.4-alpha2";
-          $tests += $this->createTestsForVersions($constraints, ['2.4-beta3'], TRUE);
+          $constraint = "{$equal_operator}{$space}8.x-2.x,{$space}>={$space}2.4-alpha2";
+          $tests += $this->createTestsForVersions($constraint, ['2.4-beta3'], TRUE);
 
-          // Test greater than  or equals and equals exact version.
-          $constraints = "{$equal_operator}{$space}8.x-2.0,$space>={$space}2.4-alpha2";
-          $tests += $this->createTestsForVersions($constraints, ['2.4-beta3'], FALSE);
+          // Test greater than or equals and equals exact version.
+          $constraint = "{$equal_operator}{$space}8.x-2.0,$space>={$space}2.4-alpha2";
+          $tests += $this->createTestsForVersions($constraint, ['2.4-beta3'], FALSE);
 
-          // Test a nonsensical greater than and less than - no compatible versions.
-          $constraints = ">{$space}8.x-4.x,{$space}<{$space}8.x-1.x";
-          $tests += $this->createTestsForVersions($constraints, ['4.0', '3.9', '2.1', '1.9'], FALSE);
+          // Test unsatisfiable greater than and less than.
+          $constraint = ">{$space}8.x-4.x,{$space}<{$space}8.x-1.x";
+          $tests += $this->createTestsForVersions($constraint, ['4.0', '3.9', '2.1', '1.9'], FALSE);
 
-          // Test greater than and less than with an incorrect core compatbility.
-          $tests += $this->createTestsForVersions($constraints, ['4.0', '3.9', '2.1', '1.9'], FALSE, '7.x');
+          // Test greater than and less than with an incorrect core
+          // compatibility.
+          $tests += $this->createTestsForVersions($constraint, ['4.0', '3.9', '2.1', '1.9'], FALSE, '7.x');
 
-          // Test 2 equals with 1 that matching and with nonsensical missing a dash.
-          $constraints = "{$equal_operator}{$space}8.x2.x,{$space}{$equal_operator}{$space}2.4-beta3";
-          $tests += $this->createTestsForVersions($constraints, ['2.4-beta3'], FALSE);
+          // Test 2 equals with 1 that matching and with nonsensical missing a
+          // dash.
+          $constraint = "{$equal_operator}{$space}8.x2.x,{$space}{$equal_operator}{$space}2.4-beta3";
+          $tests += $this->createTestsForVersions($constraint, ['2.4-beta3'], FALSE);
 
           // Test with a missing dash.
-          $constraints = "{$equal_operator}{$space}8.x2";
-          $tests += $this->createTestsForVersions($constraints, ['8.x'], TRUE);
+          $constraint = "{$equal_operator}{$space}8.x2";
+          $tests += $this->createTestsForVersions($constraint, ['8.x'], TRUE);
 
-          // Test multiple equals which will always be false.
-          $constraints = "{$equal_operator}{$space}8.x-2.1,{$space}{$equal_operator}{$space}8.x-2.3,\"(>{$space}1.0,$space<={$space}3.2,{$space}{$not_equals_operator}{$space}3.0)-8.x.2.5";
-          $tests += $this->createTestsForVersions($constraints, ['2.1', '2.2', '2.3'], FALSE);
+          // Test unsatisfiable multiple equals.
+          $constraint = "{$equal_operator}{$space}8.x-2.1,{$space}{$equal_operator}{$space}8.x-2.3,\"(>{$space}1.0,$space<={$space}3.2,{$space}{$not_equals_operator}{$space}3.0)-8.x.2.5";
+          $tests += $this->createTestsForVersions($constraint, ['2.1', '2.2', '2.3'], FALSE);
 
           // Test with a range and multiple exclusions.
-          $constraints = ">{$space}1.0,$space<={$space}3.2,$space$not_equals_operator{$space}3.0,$space$not_equals_operator{$space}1.5,$space$not_equals_operator{$space}2.7";
-          $tests += $this->createTestsForVersions($constraints, ['1.1', '3.1', '2.1'], TRUE);
-          $tests += $this->createTestsForVersions($constraints, ['3.0','1.5', '2.7', '3.3'], FALSE);
+          $constraint = ">{$space}1.0,$space<={$space}3.2,$space$not_equals_operator{$space}3.0,$space$not_equals_operator{$space}1.5,$space$not_equals_operator{$space}2.7";
+          $tests += $this->createTestsForVersions($constraint, ['1.1', '3.1', '2.1'], TRUE);
+          $tests += $this->createTestsForVersions($constraint, ['3.0','1.5', '2.7', '3.3'], FALSE);
         }
       }
     }
