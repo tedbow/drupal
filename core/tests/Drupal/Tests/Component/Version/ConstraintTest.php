@@ -142,19 +142,18 @@ class ConstraintTest extends TestCase {
           $tests += $this->createTestsForVersions($constraint, ['2.0'], FALSE);
           $tests += $this->createTestsForVersions($constraint, ['1.9', '1.1', '0.9'], TRUE);
 
-          // Test greater than and less than.
-          $constraint = "<{$space}8.x-4.x,{$space}>{$space}8.x-1.x";
-          $tests += $this->createTestsForVersions($constraint, ['4.0', '1.9'], FALSE);
-          $tests += $this->createTestsForVersions($constraint, ['3.9', '2.1'], TRUE);
-
           // Test greater than and less than with an incorrect core
           // compatibility.
           $tests += $this->createTestsForVersions($constraint, ['4.0', '3.9', '2.1', '1.9'], FALSE, '7.x');
           $tests += $this->createTestsForVersions($constraint, ['4.0', '3.9', '2.1', '1.9'], FALSE, '9.x');
 
           // Test greater than and less than with no core version in constraint.
-          $constraint = "<{$space}4.x,{$space}>{$space}1.x";
-          foreach (['7.x', '8.x', '9.x'] as $core_compatibility) {
+          foreach (['8.x', '9.x', '10.x'] as $core_compatibility) {
+            $constraint = "<{$space}4.x,{$space}>{$space}1.x";
+            $tests += $this->createTestsForVersions($constraint, ['4.0', '1.9'], FALSE, $core_compatibility);
+            $tests += $this->createTestsForVersions($constraint, ['3.9', '2.1'], TRUE, $core_compatibility);
+
+            $constraint = "<{$space}$core_compatibility-4.x,{$space}>{$space}$core_compatibility-1.x";
             $tests += $this->createTestsForVersions($constraint, ['4.0', '1.9'], FALSE, $core_compatibility);
             $tests += $this->createTestsForVersions($constraint, ['3.9', '2.1'], TRUE, $core_compatibility);
           }
