@@ -370,7 +370,7 @@ class ThemeTest extends BrowserTestBase {
     // Check for the error text of a theme with the wrong core version
     // using 7.x and ^7.
     $incompatible_core_message = 'This theme is not compatible with Drupal ' . \Drupal::VERSION . ". Check that the .info.yml file contains a compatible 'core' value.";
-    $this->assertThemeIncompatibleText('Theme test with invalid core version 8.8.0-dev', $incompatible_core_message);
+    $this->assertThemeIncompatibleText('Theme test with invalid core version', $incompatible_core_message);
     $this->assertThemeIncompatibleText('Theme test with invalid semver core version', $incompatible_core_message);
     // Check for the error text of a theme without a content region.
     $this->assertText("This theme is missing a 'content' region.");
@@ -478,6 +478,14 @@ class ThemeTest extends BrowserTestBase {
     $this->assertText('The configuration options have been saved.');
   }
 
+  /**
+   * Asserts that expected incompatibility text is displayed for a theme.
+   *
+   * @param string $theme_name
+   *   Theme name to select element on page. This can be a partial name.
+   * @param $expected_text
+   *   The expected incompatibility text.
+   */
   private function assertThemeIncompatibleText($theme_name, $expected_text) {
     $this->assertSession()->elementExists('css', ".theme-info:contains(\"$theme_name\") .incompatible:contains(\"$expected_text\")");
   }
