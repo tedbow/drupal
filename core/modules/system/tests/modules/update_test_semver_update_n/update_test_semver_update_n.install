@@ -5,10 +5,6 @@
  * Update hooks for the update_test_semver_update_n module.
  */
 
-use Drupal\Core\Database\Database;
-use Drupal\Core\Url;
-use Drupal\Component\Render\FormattableMarkup;
-
 /**
  * Update 8002.
  */
