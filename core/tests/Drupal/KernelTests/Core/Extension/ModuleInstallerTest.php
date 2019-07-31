@@ -3,6 +3,7 @@
 namespace Drupal\KernelTests\Core\Extension;
 
 use Drupal\Core\Database\Database;
+use Drupal\Core\Extension\MissingDependencyException;
 use Drupal\KernelTests\KernelTestBase;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
@@ -83,6 +84,30 @@ class ModuleInstallerTest extends KernelTestBase {
     \Drupal::state()->set('module_test_install:rebuild_container', TRUE);
     $module_installer = $this->container->get('module_installer');
     $this->assertTrue($module_installer->install(['module_test']));
+  }
+
+  /**
+   * Tests install with a module with an invalid core version.
+   *
+   * @covers ::install
+   */
+  public function testInvalidCoreInstall() {
+    $module_installer = $this->container->get('module_installer');
+    $this->expectException(MissingDependencyException::class);
+    $this->expectExceptionMessage("Unable to install 'system_incompatible_core_version_test_99x' because it is incompatible with this version of Drupal core.");
+    $module_installer->install(['system_incompatible_core_version_test_99x']);
+  }
+
+  /**
+   * Tests install with a module dependency with an invalid core version.
+   *
+   * @covers ::install
+   */
+  public function testDependencyInvalidCoreInstall() {
+    $module_installer = $this->container->get('module_installer');
+    $this->expectException(MissingDependencyException::class);
+    $this->expectExceptionMessage("Unable to install modules: module 'system_incompatible_core_version_dependencies_test'. Its dependency module 'system_incompatible_core_version_test' is incompatible with this version of Drupal core.");
+    $module_installer->install(['system_incompatible_core_version_dependencies_test']);
   }
 
 }

@@ -2,6 +2,7 @@
 
 namespace Drupal\Core\Extension;
 
+use Drupal\Component\Version\DrupalSemver;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\DrupalKernelInterface;
@@ -81,11 +82,11 @@ class ModuleInstaller implements ModuleInstallerInterface {
    */
   public function install(array $module_list, $enable_dependencies = TRUE) {
     $extension_config = \Drupal::configFactory()->getEditable('core.extension');
+    // Get all module data so we can find dependencies and sort.
+    // The module list needs to be reset so that it can re-scan and include
+    // any new modules that may have been added directly into the filesystem.
+    $module_data = \Drupal::service('extension.list.module')->reset()->getList();
     if ($enable_dependencies) {
-      // Get all module data so we can find dependencies and sort.
-      // The module list needs to be reset so that it can re-scan and include
-      // any new modules that may have been added directly into the filesystem.
-      $module_data = \Drupal::service('extension.list.module')->reset()->getList();
       $module_list = $module_list ? array_combine($module_list, $module_list) : [];
       if ($missing_modules = array_diff_key($module_list, $module_data)) {
         // One or more of the given modules doesn't exist.
@@ -99,9 +100,12 @@ class ModuleInstaller implements ModuleInstallerInterface {
         return TRUE;
       }
 
-      // Add dependencies to the list. The new modules will be processed as
-      // the foreach loop continues.
       foreach ($module_list as $module => $value) {
+        if (!DrupalSemver::satisfies(\Drupal::VERSION, $module_data[$module]->info['core'])) {
+          throw new MissingDependencyException("Unable to install '$module' because it is incompatible with this version of Drupal core.");
+        }
+        // Add dependencies to the list. The new modules will be processed as
+        // the foreach loop continues.
         foreach (array_keys($module_data[$module]->requires) as $dependency) {
           if (!isset($module_data[$dependency])) {
             // The dependency does not exist.
@@ -110,6 +114,9 @@ class ModuleInstaller implements ModuleInstallerInterface {
 
           // Skip already installed modules.
           if (!isset($module_list[$dependency]) && !isset($installed_modules[$dependency])) {
+            if (!DrupalSemver::satisfies(\Drupal::VERSION, $module_data[$dependency]->info['core'])) {
+              throw new MissingDependencyException("Unable to install modules: module '$module'. Its dependency module '$dependency' is incompatible with this version of Drupal core.");
+            }
             $module_list[$dependency] = $dependency;
           }
         }
