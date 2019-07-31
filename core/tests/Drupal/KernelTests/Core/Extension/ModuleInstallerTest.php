@@ -89,25 +89,40 @@ class ModuleInstallerTest extends KernelTestBase {
   /**
    * Tests install with a module with an invalid core version.
    *
+   * @dataProvider providerTestInvalidCoreInstall
    * @covers ::install
    */
-  public function testInvalidCoreInstall() {
-    $module_installer = $this->container->get('module_installer');
+  public function testInvalidCoreInstall($install_dependencies) {
     $this->expectException(MissingDependencyException::class);
-    $this->expectExceptionMessage("Unable to install 'system_incompatible_core_version_test_99x' because it is incompatible with this version of Drupal core.");
-    $module_installer->install(['system_incompatible_core_version_test_99x']);
+    $this->expectExceptionMessage("Unable to install modules: module 'system_incompatible_core_version_test_99x' is incompatible with this version of Drupal core.");
+    $this->container->get('module_installer')->install(['system_incompatible_core_version_test_99x'], $install_dependencies);
   }
 
   /**
-   * Tests install with a module dependency with an invalid core version.
+   * Tests install with a dependency with invalid core.
    *
    * @covers ::install
    */
   public function testDependencyInvalidCoreInstall() {
-    $module_installer = $this->container->get('module_installer');
     $this->expectException(MissingDependencyException::class);
     $this->expectExceptionMessage("Unable to install modules: module 'system_incompatible_core_version_dependencies_test'. Its dependency module 'system_incompatible_core_version_test' is incompatible with this version of Drupal core.");
-    $module_installer->install(['system_incompatible_core_version_dependencies_test']);
+    $this->container->get('module_installer')->install(['system_incompatible_core_version_dependencies_test']);
+  }
+
+  /**
+   * Tests no dependencies install with a dependency with invalid core.
+   *
+   * @covers ::install
+   */
+  public function testDependencyInvalidCoreInstallNoDependencies() {
+    $this->assertTrue($this->container->get('module_installer')->install(['system_incompatible_core_version_dependencies_test'], FALSE));
+  }
+
+  public function providerTestInvalidCoreInstall() {
+    return [
+      'no dependencies' => [FALSE],
+      'install_dependencies' => [TRUE],
+    ];
   }
 
 }
