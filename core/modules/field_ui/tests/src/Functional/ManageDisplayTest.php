@@ -56,8 +56,6 @@ class ManageDisplayTest extends BrowserTestBase {
     ]);
     $vocabulary->save();
     $this->vocabulary = $vocabulary->id();
-    $this->assertTrue(\Drupal::moduleHandler()->moduleExists('field_test'));
-    $this->assertTrue(\Drupal::moduleHandler()->moduleExists('field_third_party_test'));
   }
 
   /**
@@ -181,7 +179,6 @@ class ManageDisplayTest extends BrowserTestBase {
     ])->save();
 
     $this->drupalGet('admin/structure/types/manage/no_fields/display');
-    file_put_contents('/Users/ted.bowman/Sites/www/test.html', $this->getSession()->getPage()->getOuterHtml());
     $this->assertRaw(t('There are no fields yet added. You can add new fields on the <a href=":link">Manage fields</a> page.', [':link' => Url::fromRoute('entity.node.field_ui_fields', ['node_type' => 'no_fields'])->toString()]));
   }
 
