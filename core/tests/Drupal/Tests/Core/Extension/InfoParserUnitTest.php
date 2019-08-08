@@ -98,8 +98,66 @@ MISSINGKEYS;
     ]);
     $filename = vfsStream::url('modules/fixtures/missing_keys.info.txt');
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
-    $this->expectExceptionMessage('Missing required keys (type, core, name) in vfs://modules/fixtures/missing_keys.info.txt');
+    $this->expectExceptionMessage('Missing required keys (type, name) in vfs://modules/fixtures/missing_keys.info.txt');
     $this->infoParser->parse($filename);
+  }
+
+  /**
+   * Tests that missing 'core' and 'core_dependency' keys are detected.
+   *
+   * @covers ::parse
+   */
+  public function testMissingCoreCoreDependency() {
+    $missing_keys = <<<MISSINGKEYS
+# info.yml for testing missing name, description, and type keys.
+package: Core
+version: VERSION
+type: module
+name: Really Cool Module
+dependencies:
+  - field
+MISSINGKEYS;
+
+    vfsStream::setup('modules');
+    vfsStream::create([
+      'fixtures' => [
+        'missing_keys.info.txt' => $missing_keys,
+      ],
+    ]);
+    $filename = vfsStream::url('modules/fixtures/missing_keys.info.txt');
+    $this->expectException('\Drupal\Core\Extension\InfoParserException');
+    $this->expectExceptionMessage("The 'core' or the 'core_dependency' key must be present in vfs://modules/fixtures/missing_keys.info.txt");
+    $this->infoParser->parse($filename);
+  }
+
+  /**
+   * Tests that 'core' and 'core_dependency' retain their values.
+   *
+   * @covers ::parse
+   */
+  public function testCoreCoreDependency() {
+    $core_and_core_dependency = <<<BOTHCORECOREDEPENDENCY
+# info.yml for testing core and core_dependency keys.
+package: Core
+core: 8.x
+core_dependency: ^8.8
+version: VERSION
+type: module
+name: Really Cool Module
+dependencies:
+  - field
+BOTHCORECOREDEPENDENCY;
+
+    vfsStream::setup('modules');
+    vfsStream::create([
+      'fixtures' => [
+        'core_and_core_dependency.info.txt' => $core_and_core_dependency,
+      ],
+    ]);
+    $filename = vfsStream::url('modules/fixtures/core_and_core_dependency.info.txt');
+    $info_values = $this->infoParser->parse($filename);
+    $this->assertSame($info_values['core'], '8.x');
+    $this->assertSame($info_values['core_dependency'], '^8.8');
   }
 
   /**
@@ -132,6 +190,36 @@ MISSINGKEY;
   }
 
   /**
+   * Tests that 'core_dependency' throws an exception if constraint is invalid.
+   *
+   * @covers ::parse
+   */
+  public function testCoreDependencyInvalid() {
+    $core_dependency = <<<COREDEPENDENCY
+# info.yml for core_dependency validation.
+name: Big Forms 
+description: 'Alters all forms to a little bit bigger.'
+package: Core
+type: module
+version: VERSION
+core_dependency: '^8.7'
+dependencies:
+  - field
+COREDEPENDENCY;
+
+    vfsStream::setup('modules');
+    vfsStream::create([
+      'fixtures' => [
+        'core_dependency.info.txt' => $core_dependency,
+      ],
+    ]);
+    $filename = vfsStream::url('modules/fixtures/core_dependency.info.txt');
+    $this->expectException('\Drupal\Core\Extension\InfoParserException');
+    $this->expectExceptionMessage("The 'core_dependency' can not be used to specify compatibility specific version before 8.7.7 in vfs://modules/fixtures/core_dependency.info.txt");
+    $this->infoParser->parse($filename);
+  }
+
+  /**
    * Tests common info file.
    *
    * @covers ::parse
@@ -156,6 +244,7 @@ COMMONTEST;
     $info_values = $this->infoParser->parse(vfsStream::url('modules/fixtures/common_test.info.txt'));
     $this->assertEquals($info_values['simple_string'], 'A simple string', 'Simple string value was parsed correctly.');
     $this->assertEquals($info_values['version'], \Drupal::VERSION, 'Constant value was parsed correctly.');
+    $this->assertSame($info_values['core_dependency'], '8.x');
     $this->assertEquals($info_values['double_colon'], 'dummyClassName::method', 'Value containing double-colon was parsed correctly.');
   }
 
