@@ -700,7 +700,7 @@ function update_verify_update_archive($project, $archive_file, $directory) {
     $info = \Drupal::service('info_parser')->parse($file->uri);
 
     // If the module or theme is incompatible with Drupal core, set an error.
-    if (empty($info['core']) || !DrupalSemver::satisfies(\Drupal::VERSION, $info['core'])) {
+    if (empty($info['core_dependency']) || !DrupalSemver::satisfies(\Drupal::VERSION, $info['core_dependency'])) {
       $incompatible[] = !empty($info['name']) ? $info['name'] : t('Unknown');
     }
     else {

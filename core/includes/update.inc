@@ -59,8 +59,8 @@ function update_check_incompatibility($name, $type = 'module') {
     $file = $themes[$name];
   }
   if (!isset($file)
-      || !isset($file->info['core'])
-      || !DrupalSemver::satisfies(\Drupal::VERSION, $file->info['core'])
+      || !isset($file->info['core_dependency'])
+      || !DrupalSemver::satisfies(\Drupal::VERSION, $file->info['core_dependency'])
       || version_compare(phpversion(), $file->info['php']) < 0) {
     return TRUE;
   }

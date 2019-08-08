@@ -94,8 +94,8 @@ class ModuleInstallerTest extends KernelTestBase {
    */
   public function testInvalidCoreInstall($install_dependencies) {
     $this->expectException(MissingDependencyException::class);
-    $this->expectExceptionMessage("Unable to install modules: module 'system_incompatible_core_version_test_99x' is incompatible with this version of Drupal core.");
-    $this->container->get('module_installer')->install(['system_incompatible_core_version_test_99x'], $install_dependencies);
+    $this->expectExceptionMessage("Unable to install modules: module 'system_incompatible_core_version_test_1x' is incompatible with this version of Drupal core.");
+    $this->container->get('module_installer')->install(['system_incompatible_core_version_test_1x'], $install_dependencies);
   }
 
   /**

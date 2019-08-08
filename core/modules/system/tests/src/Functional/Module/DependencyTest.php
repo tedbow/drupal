@@ -115,7 +115,7 @@ class DependencyTest extends ModuleTestBase {
     // Test the next minor release.
     \Drupal::state()->set('dependency_test.core_version_requirement', "~$major.$next_minor");
     $this->drupalGet('admin/modules');
-    $assert_session->fieldDisabled('modules[system_incompatible_core_version_test_99x][enable]');
+    $assert_session->fieldDisabled('modules[system_incompatible_core_version_test_1x][enable]');
     $assert_session->fieldDisabled('modules[common_test][enable]');
 
     // Test either current major or the next one.

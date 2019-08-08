@@ -2,4 +2,4 @@ name: 'Theme test with invalid semver core version'
 type: theme
 description: 'Test theme which has an invalid semver core version.'
 version: VERSION
-core: ^7
+core_dependency: ^7

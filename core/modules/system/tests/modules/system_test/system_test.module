@@ -63,7 +63,7 @@ function system_test_system_info_alter(&$info, Extension $file, $type) {
   }
 
   if (($core_requirement = \Drupal::state()->get('dependency_test.core_version_requirement')) && $file->getName() === 'common_test') {
-    $info['core'] = $core_requirement;
+    $info['core_dependency'] = $core_requirement;
   }
 
   // Make the system_dependencies_test visible by default.
@@ -75,7 +75,7 @@ function system_test_system_info_alter(&$info, Extension $file, $type) {
     'system_incompatible_core_version_dependencies_test',
     'system_incompatible_module_version_test',
     'system_incompatible_core_version_test',
-    'system_incompatible_core_version_test_99x',
+    'system_incompatible_core_version_test_1x',
   ])) {
     $info['hidden'] = FALSE;
   }

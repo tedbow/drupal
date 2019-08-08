@@ -294,7 +294,7 @@ function template_preprocess_system_themes_page(&$variables) {
       // Make sure to provide feedback on compatibility.
       $current_theme['incompatible'] = '';
       if (!empty($theme->incompatible_core)) {
-        $current_theme['incompatible'] = t("This theme is not compatible with Drupal @core_version. Check that the .info.yml file contains a compatible 'core' value.", ['@core_version' => \Drupal::VERSION]);
+        $current_theme['incompatible'] = t("This theme is not compatible with Drupal @core_version. Check that the .info.yml file contains a compatible 'core' or 'core_dependency' value.", ['@core_version' => \Drupal::VERSION]);
       }
       elseif (!empty($theme->incompatible_region)) {
         $current_theme['incompatible'] = t("This theme is missing a 'content' region.");

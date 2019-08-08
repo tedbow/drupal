@@ -3,6 +3,7 @@
 namespace Drupal\Core\Extension;
 
 use Drupal\Component\Serialization\Exception\InvalidDataTypeException;
+use Drupal\Component\Version\DrupalSemver;
 use Drupal\Core\Serialization\Yaml;
 
 /**
@@ -27,6 +28,20 @@ class InfoParserDynamic implements InfoParserInterface {
       $missing_keys = array_diff($this->getRequiredKeys(), array_keys($parsed_info));
       if (!empty($missing_keys)) {
         throw new InfoParserException('Missing required keys (' . implode(', ', $missing_keys) . ') in ' . $filename);
+      }
+      if (!isset($parsed_info['core']) && !isset($parsed_info['core_dependency'])) {
+        throw new InfoParserException("The 'core' or the 'core_dependency' key must be present in " . $filename);
+      }
+      if (isset($parsed_info['core']) && !preg_match("/^\d\.x$/", $parsed_info['core'])) {
+        throw new InfoParserException("The {$parsed_info['core']} is not valid value for  'core' in " . $filename);
+      }
+      if (isset($parsed_info['core_dependency'])) {
+        if (DrupalSemver::satisfies('8.7.6', $parsed_info['core_dependency']) && !DrupalSemver::satisfies('8.0.0', $parsed_info['core_dependency'])) {
+          throw new InfoParserException("The 'core_dependency' can not be used to specify compatibility specific version before 8.7.7 in " . $filename);
+        }
+      }
+      else {
+        $parsed_info['core_dependency'] = $parsed_info['core'];
       }
       if (isset($parsed_info['version']) && $parsed_info['version'] === 'VERSION') {
         $parsed_info['version'] = \Drupal::VERSION;
@@ -60,7 +75,7 @@ class InfoParserDynamic implements InfoParserInterface {
    *   An array of required keys.
    */
   protected function getRequiredKeys() {
-    return ['type', 'core', 'name'];
+    return ['type', 'name'];
   }
 
 }

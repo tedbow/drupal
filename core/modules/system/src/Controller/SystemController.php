@@ -224,7 +224,7 @@ class SystemController extends ControllerBase {
 
       if (empty($theme->status)) {
         // Ensure this theme is compatible with this version of core.
-        $theme->incompatible_core = !isset($theme->info['core']) || !DrupalSemver::satisfies(\Drupal::VERSION, $theme->info['core']);
+        $theme->incompatible_core = !isset($theme->info['core_dependency']) || !DrupalSemver::satisfies(\Drupal::VERSION, $theme->info['core_dependency']);
         // Require the 'content' region to make sure the main page
         // content has a common place in all themes.
         $theme->incompatible_region = !isset($theme->info['regions']['content']);
