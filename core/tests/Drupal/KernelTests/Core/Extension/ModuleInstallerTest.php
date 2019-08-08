@@ -87,7 +87,7 @@ class ModuleInstallerTest extends KernelTestBase {
   }
 
   /**
-   * Tests install with a module with an invalid core version.
+   * Tests install with a module with an invalid core version constraint.
    *
    * @dataProvider providerTestInvalidCoreInstall
    * @covers ::install
@@ -99,7 +99,7 @@ class ModuleInstallerTest extends KernelTestBase {
   }
 
   /**
-   * Tests install with a dependency with invalid core.
+   * Tests install with a dependency with an invalid core version constraint.
    *
    * @covers ::install
    */

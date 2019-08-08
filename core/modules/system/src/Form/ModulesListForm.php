@@ -301,7 +301,6 @@ class ModulesListForm extends FormBase {
         '@core_version' => \Drupal::VERSION,
       ]);
       $row['#requires']['core'] = $this->t('Drupal Core (@core_requirement) (<span class="admin-missing">incompatible with</span> version @core_version)', [
-        '@module' => $module->getName(),
         '@core_requirement' => $module->info['core'],
         '@core_version' => \Drupal::VERSION,
       ]);

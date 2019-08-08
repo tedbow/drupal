@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Partial database to mimic the installation of the update_test_schema module.
+ * Database to mimic the installation of the update_test_semver_update_n module.
  */
 
 use Drupal\Core\Database\Database;

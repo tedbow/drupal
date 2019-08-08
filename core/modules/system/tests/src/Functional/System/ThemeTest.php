@@ -449,7 +449,7 @@ class ThemeTest extends BrowserTestBase {
       $this->getSession()->getPage()->findLink("Install $theme_name as default theme")->click();
       // Test the confirmation message.
       $this->assertText("$theme_name is now the default theme.");
-      // Make sure Bartik is now set as the default theme in config.
+      // Make sure the theme is now set as the default theme in config.
       $this->assertEqual($this->config('system.theme')->get('default'), $theme_machine_name);
 
       // This checks for a regression. See https://www.drupal.org/node/2498691.
@@ -458,11 +458,10 @@ class ThemeTest extends BrowserTestBase {
       $themes = \Drupal::service('theme_handler')->rebuildThemeData();
       $version = $themes[$theme_machine_name]->info['version'];
 
-      // Confirm Bartik is indicated as the default theme.
+      // Confirm the theme is indicated as the default theme.
       $out = $this->getSession()->getPage()->getContent();
       $this->assertTrue((bool) preg_match("/$theme_name " . preg_quote($version) . '\s{2,}\(default theme\)/', $out));
     }
-
   }
 
   /**
