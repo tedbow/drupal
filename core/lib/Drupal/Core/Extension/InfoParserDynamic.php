@@ -51,7 +51,7 @@ class InfoParserDynamic implements InfoParserInterface {
         // Do not throw the exception if the constraint also is satisfied by
         // 8.0.0-alpha1 to allow constraints such as '^8' or '^8 || ^9'.
         if ($supports_pre_core_dependency_version && !DrupalSemver::satisfies('8.0.0-alpha1', $parsed_info['core_dependency'])) {
-          throw new InfoParserException("The 'core_dependency' can not be used to specify compatibility specific version before 8.7.7 in " . $filename);
+          throw new InfoParserException("The 'core_dependency' can not be used to specify compatibility specific version before {$this->first_core_dependency_supported_version} in " . $filename);
         }
       }
       else {
