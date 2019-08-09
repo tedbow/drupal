@@ -11,6 +11,8 @@ use Drupal\Core\Serialization\Yaml;
  */
 class InfoParserDynamic implements InfoParserInterface {
 
+  private $first_core_dependency_supported_version = '8.7.7';
+
   /**
    * {@inheritdoc}
    */
@@ -36,7 +38,12 @@ class InfoParserDynamic implements InfoParserInterface {
         throw new InfoParserException("The {$parsed_info['core']} is not valid value for  'core' in " . $filename);
       }
       if (isset($parsed_info['core_dependency'])) {
-        if (DrupalSemver::satisfies('8.7.6', $parsed_info['core_dependency']) && !DrupalSemver::satisfies('8.0.0', $parsed_info['core_dependency'])) {
+        $supports_pre_core_dependency_version = $this->constraintsSupportsPreCoreDependency($parsed_info['core_dependency']);
+        if (!$supports_pre_core_dependency_version && isset($parsed_info['core'])) {
+          throw new InfoParserException("The 'core_dependency' constraint ({$parsed_info['core_dependency']}) requires the 'core' not be set in " . $filename);
+        }
+        // 'core_dependency' can not be used to specify Drupal 8 versions before
+        if ($supports_pre_core_dependency_version && !DrupalSemver::satisfies('8.0.0-alpha1', $parsed_info['core_dependency'])) {
           throw new InfoParserException("The 'core_dependency' can not be used to specify compatibility specific version before 8.7.7 in " . $filename);
         }
       }
@@ -76,6 +83,32 @@ class InfoParserDynamic implements InfoParserInterface {
    */
   protected function getRequiredKeys() {
     return ['type', 'name'];
+  }
+
+  /**
+   * @param string $constraint
+   */
+  private function constraintsSupportsPreCoreDependency($constraint) {
+    foreach (range(0, 7) as $minor) {
+      foreach (range(0, 20) as $patch) {
+        $minor_version = "8.$minor.$patch";
+        if ($minor_version === $first)
+        if (DrupalSemver::satisfies($minor_version, $constraint)) {
+          return TRUE;
+        }
+        if ($patch === 0) {
+          foreach (['aplha1', 'beta1', 'rc1'] as $suffix) {
+            $pre_release_version = "$minor_version-$suffix";
+            if (DrupalSemver::satisfies($minor_version, $pre_release_version)) {
+              return TRUE;
+            }
+          }
+        }
+
+      }
+    }
+    return FALSE;
+
   }
 
 }

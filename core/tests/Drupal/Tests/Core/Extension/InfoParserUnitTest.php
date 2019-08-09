@@ -198,7 +198,7 @@ MISSINGKEY;
     $core_dependency = <<<COREDEPENDENCY
 # info.yml for core_dependency validation.
 name: Big Forms 
-description: 'Alters all forms to a little bit bigger.'
+description: 'Alters all forms to be a little bit bigger.'
 package: Core
 type: module
 version: VERSION
