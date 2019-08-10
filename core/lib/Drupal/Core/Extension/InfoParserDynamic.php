@@ -11,7 +11,7 @@ use Drupal\Core\Serialization\Yaml;
  */
 class InfoParserDynamic implements InfoParserInterface {
 
-  private $first_core_dependency_supported_version = '8.7.7';
+  const FIRST_CORE_DEPENDENCY_SUPPORTED_VERSION = '8.7.7';
 
   /**
    * {@inheritdoc}
@@ -38,7 +38,7 @@ class InfoParserDynamic implements InfoParserInterface {
         throw new InfoParserException("The {$parsed_info['core']} is not valid value for  'core' in " . $filename);
       }
       if (isset($parsed_info['core_dependency'])) {
-        $supports_pre_core_dependency_version = $this->constraintsSupportsPreCoreDependency($parsed_info['core_dependency']);
+        $supports_pre_core_dependency_version = $this->isConstraintSatisfiedByPreCoreDependencyCoreVersion($parsed_info['core_dependency']);
         // If the 'core_dependency' constraint does not satisfy any Drupal 8
         // versions before 8.7.7 then the 'core' cannot be set or it will
         // effectively support all version of Drupal 8 because 'core_dependency'
@@ -51,7 +51,7 @@ class InfoParserDynamic implements InfoParserInterface {
         // Do not throw the exception if the constraint also is satisfied by
         // 8.0.0-alpha1 to allow constraints such as '^8' or '^8 || ^9'.
         if ($supports_pre_core_dependency_version && !DrupalSemver::satisfies('8.0.0-alpha1', $parsed_info['core_dependency'])) {
-          throw new InfoParserException("The 'core_dependency' can not be used to specify compatibility specific version before {$this->first_core_dependency_supported_version} in " . $filename);
+          throw new InfoParserException("The 'core_dependency' can not be used to specify compatibility specific version before " . static::FIRST_CORE_DEPENDENCY_SUPPORTED_VERSION . " in $filename");
         }
       }
       else {
@@ -93,31 +93,43 @@ class InfoParserDynamic implements InfoParserInterface {
   }
 
   /**
+   * Determines if a constraint is satisfied by core without 'core_dependency'.
+   *
    * @param string $constraint
+   *   A core semantic version constraint.
+   *
+   * @return bool
+   *   TRUE if the constraint is satisfied by a core version that does not
+   *   support the 'core_dependency' key in info.yml files.
    */
-  private function constraintsSupportsPreCoreDependency($constraint) {
-    foreach (range(0, 7) as $minor) {
-      foreach (range(0, 20) as $patch) {
-        $minor_version = "8.$minor.$patch";
-        if ($minor_version === $this->first_core_dependency_supported_version) {
-          return FALSE;
-        }
-        if (DrupalSemver::satisfies($minor_version, $constraint)) {
-          return TRUE;
-        }
-        if ($patch === 0) {
-          foreach (['alpha1', 'beta1', 'rc1'] as $suffix) {
-            $pre_release_version = "$minor_version-$suffix";
-            if (DrupalSemver::satisfies($minor_version, $pre_release_version)) {
-              return TRUE;
+  private function isConstraintSatisfiedByPreCoreDependencyCoreVersion($constraint) {
+    static $evaluated_constraints = [];
+    if (!isset($evaluated_constraints[$constraint])) {
+      foreach (range(0, 7) as $minor) {
+        foreach (range(0, 20) as $patch) {
+          $minor_version = "8.$minor.$patch";
+          if ($minor_version === static::FIRST_CORE_DEPENDENCY_SUPPORTED_VERSION) {
+            $evaluated_constraints[$constraint] = FALSE;
+            return $evaluated_constraints[$constraint];
+          }
+          if (DrupalSemver::satisfies($minor_version, $constraint)) {
+            $evaluated_constraints[$constraint] = TRUE;
+            return $evaluated_constraints[$constraint];
+          }
+          if ($patch === 0) {
+            foreach (['alpha1', 'beta1', 'rc1'] as $suffix) {
+              $pre_release_version = "$minor_version-$suffix";
+              if (DrupalSemver::satisfies($minor_version, $pre_release_version)) {
+                $evaluated_constraints[$constraint] = TRUE;
+                return $evaluated_constraints[$constraint];
+              }
             }
           }
         }
-
       }
     }
-    return FALSE;
-
+    $evaluated_constraints[$constraint] = FALSE;
+    return $evaluated_constraints[$constraint];
   }
 
 }
