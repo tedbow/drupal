@@ -102,7 +102,7 @@ class InfoParserDynamic implements InfoParserInterface {
    *   TRUE if the constraint is satisfied by a core version that does not
    *   support the 'core_dependency' key in info.yml files.
    */
-  private function isConstraintSatisfiedByPreCoreDependencyCoreVersion($constraint) {
+  protected function isConstraintSatisfiedByPreCoreDependencyCoreVersion($constraint) {
     static $evaluated_constraints = [];
     if (!isset($evaluated_constraints[$constraint])) {
       foreach (range(0, 7) as $minor) {
