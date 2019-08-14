@@ -35,14 +35,14 @@ class InfoParserDynamic implements InfoParserInterface {
         throw new InfoParserException("The 'core' or the 'core_dependency' key must be present in " . $filename);
       }
       if (isset($parsed_info['core']) && !preg_match("/^\d\.x$/", $parsed_info['core'])) {
-        throw new InfoParserException("The {$parsed_info['core']} is not valid value for  'core' in " . $filename);
+        throw new InfoParserException("Invalid 'core' value \"{$parsed_info['core']}\" in " . $filename);
       }
       if (isset($parsed_info['core_dependency'])) {
         $supports_pre_core_dependency_version = $this->isConstraintSatisfiedByPreCoreDependencyCoreVersion($parsed_info['core_dependency']);
         // If the 'core_dependency' constraint does not satisfy any Drupal 8
-        // versions before 8.7.7 then the 'core' cannot be set or it will
-        // effectively support all version of Drupal 8 because 'core_dependency'
-        // will be ignored.
+        // versions before 8.7.7 then 'core' cannot be set or it will
+        // effectively support all versions of Drupal 8 because
+        // 'core_dependency' will be ignored in previous versions.
         if (!$supports_pre_core_dependency_version && isset($parsed_info['core'])) {
           throw new InfoParserException("The 'core_dependency' constraint ({$parsed_info['core_dependency']}) requires the 'core' not be set in " . $filename);
         }

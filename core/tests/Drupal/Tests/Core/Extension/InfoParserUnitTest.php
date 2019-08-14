@@ -108,7 +108,7 @@ MISSINGKEYS;
    * @covers ::parse
    */
   public function testMissingCoreCoreDependency() {
-    $missing_keys = <<<MISSINGKEYS
+    $missing_core_and_core_dependency = <<<MISSING_CORE_AND_CORE_DEPENDENCY
 # info.yml for testing missing name, description, and type keys.
 package: Core
 version: VERSION
@@ -116,17 +116,17 @@ type: module
 name: Really Cool Module
 dependencies:
   - field
-MISSINGKEYS;
+MISSING_CORE_AND_CORE_DEPENDENCY;
 
     vfsStream::setup('modules');
     vfsStream::create([
       'fixtures' => [
-        'missing_keys.info.txt' => $missing_keys,
+        'missing_core_and_core_dependency.info.txt' => $missing_core_and_core_dependency,
       ],
     ]);
-    $filename = vfsStream::url('modules/fixtures/missing_keys.info.txt');
+    $filename = vfsStream::url('modules/fixtures/missing_core_and_core_dependency.info.txt');
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
-    $this->expectExceptionMessage("The 'core' or the 'core_dependency' key must be present in vfs://modules/fixtures/missing_keys.info.txt");
+    $this->expectExceptionMessage("The 'core' or the 'core_dependency' key must be present in vfs://modules/fixtures/missing_core_and_core_dependency.info.txt");
     $this->infoParser->parse($filename);
   }
 
@@ -136,7 +136,7 @@ MISSINGKEYS;
    * @covers ::parse
    */
   public function testCoreDependency88() {
-    $core_and_core_dependency = <<<BOTHCORECOREDEPENDENCY
+    $core_dependency = <<<BOTH_CORE_DEPENDENCY
 # info.yml for testing core and core_dependency keys.
 package: Core
 core_dependency: ^8.8
@@ -145,15 +145,15 @@ type: module
 name: Really Cool Module
 dependencies:
   - field
-BOTHCORECOREDEPENDENCY;
+BOTH_CORE_DEPENDENCY;
 
     vfsStream::setup('modules');
     vfsStream::create([
       'fixtures' => [
-        'core_and_core_dependency.info.txt' => $core_and_core_dependency,
+        'core_dependency.info.txt' => $core_dependency,
       ],
     ]);
-    $filename = vfsStream::url('modules/fixtures/core_and_core_dependency.info.txt');
+    $filename = vfsStream::url('modules/fixtures/core_dependency.info.txt');
     $info_values = $this->infoParser->parse($filename);
     $this->assertSame($info_values['core_dependency'], '^8.8');
   }
@@ -164,7 +164,7 @@ BOTHCORECOREDEPENDENCY;
    * @covers ::parse
    */
   public function testCoreCoreDependency88() {
-    $core_and_core_dependency_88 = <<<BOTHCORECOREDEPENDENCY88
+    $core_and_core_dependency_88 = <<<BOTH_CORE_CORE_DEPENDENCY_88
 # info.yml for testing core and core_dependency keys.
 package: Core
 core: 8.x
@@ -174,7 +174,7 @@ type: module
 name: Really Cool Module
 dependencies:
   - field
-BOTHCORECOREDEPENDENCY88;
+BOTH_CORE_CORE_DEPENDENCY_88;
 
     vfsStream::setup('modules');
     vfsStream::create([
@@ -185,6 +185,37 @@ BOTHCORECOREDEPENDENCY88;
     $filename = vfsStream::url('modules/fixtures/core_and_core_dependency_88.info.txt');
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
     $this->expectExceptionMessage("The 'core_dependency' constraint (^8.8) requires the 'core' not be set in vfs://modules/fixtures/core_and_core_dependency_88.info.txt");
+    $this->infoParser->parse($filename);
+  }
+
+  /**
+   * Tests that 'core_dependency: ^8.8' is invalid with a 'core' key.
+   *
+   * @covers ::parse
+   */
+  public function testInvalidCore() {
+    $invalid_core = <<<INVALID_CORE
+# info.yml for testing invalid core key.
+package: Core
+core: ^8
+version: VERSION
+type: module
+name: Llama or Alpaca
+description: Tells whether an image is of a Llama or Alpaca
+dependencies:
+  - llama_detector
+  - alpaca_detector
+INVALID_CORE;
+
+    vfsStream::setup('modules');
+    vfsStream::create([
+      'fixtures' => [
+        'invalid_core.info.txt' => $invalid_core,
+      ],
+    ]);
+    $filename = vfsStream::url('modules/fixtures/invalid_core.info.txt');
+    $this->expectException('\Drupal\Core\Extension\InfoParserException');
+    $this->expectExceptionMessage("Invalid 'core' value \"^8\" in vfs://modules/fixtures/invalid_core.info.txt");
     $this->infoParser->parse($filename);
   }
 
@@ -223,27 +254,27 @@ MISSINGKEY;
    * @covers ::parse
    */
   public function testCoreDependencyInvalid() {
-    $core_dependency_invalid = <<<COREDEPENDENCYINVALID
+    $invalid_core_dependency = <<<INVALID_CORE_DEPENDENCY
 # info.yml for core_dependency validation.
-name: Big Forms 
-description: 'Alters all forms to be a little bit bigger.'
+name: Gracie Evaluator  
+description: 'Determines if Gracie is a "Good Dog". The answer is always "Yes".'
 package: Core
 type: module
 version: VERSION
 core_dependency: '^8.7'
 dependencies:
-  - field
-COREDEPENDENCYINVALID;
+  - goodness_api
+INVALID_CORE_DEPENDENCY;
 
     vfsStream::setup('modules');
     vfsStream::create([
       'fixtures' => [
-        'core_dependency_invalid.info.txt' => $core_dependency_invalid,
+        'invalid_core_dependency.info.txt' => $invalid_core_dependency,
       ],
     ]);
-    $filename = vfsStream::url('modules/fixtures/core_dependency_invalid.info.txt');
+    $filename = vfsStream::url('modules/fixtures/invalid_core_dependency.info.txt');
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
-    $this->expectExceptionMessage("The 'core_dependency' can not be used to specify compatibility specific version before 8.7.7 in vfs://modules/fixtures/core_dependency_invalid.info.txt");
+    $this->expectExceptionMessage("The 'core_dependency' can not be used to specify compatibility specific version before 8.7.7 in vfs://modules/fixtures/invalid_core_dependency.info.txt");
     $this->infoParser->parse($filename);
   }
 

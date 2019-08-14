@@ -21,7 +21,7 @@ class DrupalSemver {
    *   The constraints.
    *
    * @return bool
-   *   TRUE if the version satisfies the constraints.
+   *   TRUE if the version satisfies the constraints, otherwise FALSE.
    *
    * @see \Composer\Semver\Semver::satisfies()
    */
