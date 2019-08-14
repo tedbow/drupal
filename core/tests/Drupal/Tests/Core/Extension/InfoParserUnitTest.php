@@ -109,13 +109,13 @@ MISSINGKEYS;
    */
   public function testMissingCoreCoreDependency() {
     $missing_core_and_core_dependency = <<<MISSING_CORE_AND_CORE_DEPENDENCY
-# info.yml for testing missing name, description, and type keys.
+# info.yml for testing core and core_dependency.
 package: Core
 version: VERSION
 type: module
-name: Really Cool Module
+name: Skynet
 dependencies:
-  - field
+  - self_awareness
 MISSING_CORE_AND_CORE_DEPENDENCY;
 
     vfsStream::setup('modules');
@@ -142,7 +142,7 @@ package: Core
 core_dependency: ^8.8
 version: VERSION
 type: module
-name: Really Cool Module
+name: Module for That
 dependencies:
   - field
 BOTH_CORE_DEPENDENCY;
@@ -171,7 +171,7 @@ core: 8.x
 core_dependency: ^8.8
 version: VERSION
 type: module
-name: Really Cool Module
+name: Form auto submitter
 dependencies:
   - field
 BOTH_CORE_CORE_DEPENDENCY_88;
@@ -220,6 +220,36 @@ INVALID_CORE;
   }
 
   /**
+   * Tests that 'core_dependency' throws an exception if constraint is invalid.
+   *
+   * @covers ::parse
+   */
+  public function testCoreDependencyInvalid() {
+    $invalid_core_dependency = <<<INVALID_CORE_DEPENDENCY
+# info.yml for core_dependency validation.
+name: Gracie Evaluator
+description: 'Determines if Gracie is a "Good Dog". The answer is always "Yes".'
+package: Core
+type: module
+version: VERSION
+core_dependency: '^8.7'
+dependencies:
+  - goodness_api
+INVALID_CORE_DEPENDENCY;
+
+    vfsStream::setup('modules');
+    vfsStream::create([
+      'fixtures' => [
+        'invalid_core_dependency.info.txt' => $invalid_core_dependency,
+      ],
+    ]);
+    $filename = vfsStream::url('modules/fixtures/invalid_core_dependency.info.txt');
+    $this->expectException('\Drupal\Core\Extension\InfoParserException');
+    $this->expectExceptionMessage("The 'core_dependency' can not be used to specify compatibility specific version before 8.7.7 in vfs://modules/fixtures/invalid_core_dependency.info.txt");
+    $this->infoParser->parse($filename);
+  }
+
+  /**
    * Tests that missing required key is detected.
    *
    * @covers ::parse
@@ -245,36 +275,6 @@ MISSINGKEY;
     $filename = vfsStream::url('modules/fixtures/missing_key.info.txt');
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
     $this->expectExceptionMessage('Missing required keys (type) in vfs://modules/fixtures/missing_key.info.txt');
-    $this->infoParser->parse($filename);
-  }
-
-  /**
-   * Tests that 'core_dependency' throws an exception if constraint is invalid.
-   *
-   * @covers ::parse
-   */
-  public function testCoreDependencyInvalid() {
-    $invalid_core_dependency = <<<INVALID_CORE_DEPENDENCY
-# info.yml for core_dependency validation.
-name: Gracie Evaluator  
-description: 'Determines if Gracie is a "Good Dog". The answer is always "Yes".'
-package: Core
-type: module
-version: VERSION
-core_dependency: '^8.7'
-dependencies:
-  - goodness_api
-INVALID_CORE_DEPENDENCY;
-
-    vfsStream::setup('modules');
-    vfsStream::create([
-      'fixtures' => [
-        'invalid_core_dependency.info.txt' => $invalid_core_dependency,
-      ],
-    ]);
-    $filename = vfsStream::url('modules/fixtures/invalid_core_dependency.info.txt');
-    $this->expectException('\Drupal\Core\Extension\InfoParserException');
-    $this->expectExceptionMessage("The 'core_dependency' can not be used to specify compatibility specific version before 8.7.7 in vfs://modules/fixtures/invalid_core_dependency.info.txt");
     $this->infoParser->parse($filename);
   }
 
