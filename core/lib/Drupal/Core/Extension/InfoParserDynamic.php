@@ -79,6 +79,7 @@ class InfoParserDynamic implements InfoParserInterface {
         $parsed_info['dependencies'] = [];
       }
     }
+    $parsed_info['core_incompatible'] = !DrupalSemver::satisfies(\Drupal::VERSION, $parsed_info['core_dependency']);
     return $parsed_info;
   }
 

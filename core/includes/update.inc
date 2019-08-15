@@ -9,7 +9,6 @@
  */
 
 use Drupal\Component\Graph\Graph;
-use Drupal\Component\Version\DrupalSemver;
 use Drupal\Core\Update\UpdateKernel;
 use Drupal\Core\Utility\Error;
 
@@ -60,7 +59,7 @@ function update_check_incompatibility($name, $type = 'module') {
   }
   if (!isset($file)
       || !isset($file->info['core_dependency'])
-      || !DrupalSemver::satisfies(\Drupal::VERSION, $file->info['core_dependency'])
+      || $file->info['core_incompatible']
       || version_compare(phpversion(), $file->info['php']) < 0) {
     return TRUE;
   }

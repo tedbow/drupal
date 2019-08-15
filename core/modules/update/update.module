@@ -11,7 +11,6 @@
  * ability to install contributed modules and themes via an user interface.
  */
 
-use Drupal\Component\Version\DrupalSemver;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
@@ -700,7 +699,7 @@ function update_verify_update_archive($project, $archive_file, $directory) {
     $info = \Drupal::service('info_parser')->parse($file->uri);
 
     // If the module or theme is incompatible with Drupal core, set an error.
-    if (empty($info['core_dependency']) || !DrupalSemver::satisfies(\Drupal::VERSION, $info['core_dependency'])) {
+    if (empty($info['core_dependency']) || $info['core_incompatible']) {
       $incompatible[] = !empty($info['name']) ? $info['name'] : t('Unknown');
     }
     else {

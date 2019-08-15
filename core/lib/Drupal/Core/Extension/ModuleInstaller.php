@@ -2,7 +2,6 @@
 
 namespace Drupal\Core\Extension;
 
-use Drupal\Component\Version\DrupalSemver;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\DrupalKernelInterface;
@@ -88,7 +87,7 @@ class ModuleInstaller implements ModuleInstallerInterface {
     // into the filesystem.
     $module_data = \Drupal::service('extension.list.module')->reset()->getList();
     foreach ($module_list as $module) {
-      if (isset($module_data[$module]) && !DrupalSemver::satisfies(\Drupal::VERSION, $module_data[$module]->info['core_dependency'])) {
+      if (isset($module_data[$module]) && $module_data[$module]->info['core_incompatible']) {
         throw new MissingDependencyException("Unable to install modules: module '$module' is incompatible with this version of Drupal core.");
       }
     }
@@ -117,7 +116,7 @@ class ModuleInstaller implements ModuleInstallerInterface {
 
           // Skip already installed modules.
           if (!isset($module_list[$dependency]) && !isset($installed_modules[$dependency])) {
-            if (!DrupalSemver::satisfies(\Drupal::VERSION, $module_data[$dependency]->info['core_dependency'])) {
+            if ($module_data[$dependency]->info['core_incompatible']) {
               throw new MissingDependencyException("Unable to install modules: module '$module'. Its dependency module '$dependency' is incompatible with this version of Drupal core.");
             }
             $module_list[$dependency] = $dependency;
