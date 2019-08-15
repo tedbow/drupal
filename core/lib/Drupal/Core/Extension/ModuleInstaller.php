@@ -87,7 +87,7 @@ class ModuleInstaller implements ModuleInstallerInterface {
     // into the filesystem.
     $module_data = \Drupal::service('extension.list.module')->reset()->getList();
     foreach ($module_list as $module) {
-      if (isset($module_data[$module]) && $module_data[$module]->info['core_incompatible']) {
+      if (!empty($module_data[$module]->info['core_incompatible'])) {
         throw new MissingDependencyException("Unable to install modules: module '$module' is incompatible with this version of Drupal core.");
       }
     }
