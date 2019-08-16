@@ -92,11 +92,36 @@ class ModuleInstallerTest extends KernelTestBase {
    * @dataProvider providerTestInvalidCoreInstall
    * @covers ::install
    */
-  public function testInvalidCoreInstall($install_dependencies) {
+  public function testInvalidCoreInstall($module_name, $install_dependencies) {
     $this->expectException(MissingDependencyException::class);
-    $this->expectExceptionMessage("Unable to install modules: module 'system_incompatible_core_version_test_1x' is incompatible with this version of Drupal core.");
-    $this->container->get('module_installer')->install(['system_incompatible_core_version_test_1x'], $install_dependencies);
+    $this->expectExceptionMessage("Unable to install modules: module '$module_name' is incompatible with this version of Drupal core.");
+    $this->container->get('module_installer')->install([$module_name], $install_dependencies);
   }
+
+  /**
+   * Dataprovider for testInvalidCoreInstall().
+   */
+  public function providerTestInvalidCoreInstall() {
+    return [
+      'no dependencies system_incompatible_core_version_test_1x' => [
+        'system_incompatible_core_version_test_1x',
+        FALSE,
+      ],
+      'install_dependencies system_incompatible_core_version_test_1x' => [
+        'system_incompatible_core_version_test_1x',
+        TRUE,
+      ],
+      'no dependencies system_core_incompatible_semver_test' => [
+        'system_core_incompatible_semver_test',
+        FALSE,
+      ],
+      'install_dependencies system_core_incompatible_semver_test' => [
+        'system_core_incompatible_semver_test',
+        TRUE,
+      ],
+    ];
+  }
+
 
   /**
    * Tests install with a dependency with an invalid core version constraint.
@@ -116,13 +141,6 @@ class ModuleInstallerTest extends KernelTestBase {
    */
   public function testDependencyInvalidCoreInstallNoDependencies() {
     $this->assertTrue($this->container->get('module_installer')->install(['system_incompatible_core_version_dependencies_test'], FALSE));
-  }
-
-  public function providerTestInvalidCoreInstall() {
-    return [
-      'no dependencies' => [FALSE],
-      'install_dependencies' => [TRUE],
-    ];
   }
 
 }

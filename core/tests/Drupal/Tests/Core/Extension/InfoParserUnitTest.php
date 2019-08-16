@@ -307,4 +307,69 @@ COMMONTEST;
     $this->assertEquals($info_values['double_colon'], 'dummyClassName::method', 'Value containing double-colon was parsed correctly.');
   }
 
+  /**
+   * @covers ::parse
+   *
+   * @dataProvider providerCoreIncompatibility
+   */
+  public function testCoreIncompatibility($file_name, $constraint, $expected) {
+    $file_name = "core_incompatible_$file_name";
+
+    $core_incompatibility = <<<CORE_INCOMPATIBILITY
+core_dependency: $constraint
+name: common_test
+type: module
+description: 'testing info file parsing'
+simple_string: 'A simple string'
+version: "VERSION"
+double_colon: dummyClassName::method
+CORE_INCOMPATIBILITY;
+
+    vfsStream::setup('modules');
+    vfsStream::create([
+      'fixtures' => [
+        "$file_name.info.txt" => $core_incompatibility,
+      ],
+    ]);
+    $info_values = $this->infoParser->parse(vfsStream::url("modules/fixtures/$file_name.info.txt"));
+    $this->assertSame($expected, $info_values['core_incompatible']);
+  }
+
+  /**
+   * Dataprovider for testCoreIncompatibility()
+   */
+  public function providerCoreIncompatibility() {
+    list($major, $minor) = explode('.', \Drupal::VERSION);
+
+    $next_minor = $minor + 1;
+    $next_major = $major + 1;
+    return [
+      'next_minor' => [
+        'next_minor',
+        "^$major.$next_minor",
+        TRUE,
+      ],
+      'current_major_next_major' => [
+        'current_major_next_major',
+        "^$major || ^$next_major",
+        FALSE,
+      ],
+      'previous_major_next_major' => [
+        'previous_major_next_major',
+        "^1 || ^$next_major",
+        TRUE,
+      ],
+      'invalid' => [
+        'invalid',
+        'this-string-is-invalid',
+        TRUE,
+      ],
+      'current_minor' => [
+        'current_minor',
+        "~$major.$minor",
+        FALSE,
+      ],
+    ];
+  }
+
 }

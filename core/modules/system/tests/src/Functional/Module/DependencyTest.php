@@ -105,36 +105,15 @@ class DependencyTest extends ModuleTestBase {
   /**
    * Tests enabling modules with different core version specifications.
    */
-  public function testCoreVersionDependency() {
+  public function testCoreCompatibility() {
     $assert_session = $this->assertSession();
-    list($major, $minor) = explode('.', \Drupal::VERSION);
 
-    $next_minor = $minor + 1;
-    $next_major = $major + 1;
-
-    // Test the next minor release.
-    \Drupal::state()->set('dependency_test.core_version_requirement', "~$major.$next_minor");
+    // Test incompatible 'core_dependency'.
     $this->drupalGet('admin/modules');
     $assert_session->fieldDisabled('modules[system_incompatible_core_version_test_1x][enable]');
-    $assert_session->fieldDisabled('modules[common_test][enable]');
+    $assert_session->fieldDisabled('modules[system_core_incompatible_semver_test][enable]');
 
-    // Test either current major or the next one.
-    \Drupal::state()->set('dependency_test.core_version_requirement', "^$major || ^$next_major");
-    $this->drupalGet('admin/modules');
-    $assert_session->fieldEnabled('modules[common_test][enable]');
-
-    // Test either a previous major or the next one.
-    \Drupal::state()->set('dependency_test.core_version_requirement', "^1 || ^$next_major");
-    $this->drupalGet('admin/modules');
-    $assert_session->fieldDisabled('modules[common_test][enable]');
-
-    // Test an invalid major.
-    \Drupal::state()->set('dependency_test.core_version_requirement', 'this-string-is-invalid');
-    $this->drupalGet('admin/modules');
-    $assert_session->fieldDisabled('modules[common_test][enable]');
-
-    // Test the current minor.
-    \Drupal::state()->set('dependency_test.core_version_requirement', "~$major.$minor");
+    // Test compatible 'core_dependency' and compatible 'core'.
     $this->drupalGet('admin/modules');
     $assert_session->fieldEnabled('modules[common_test][enable]');
     $assert_session->fieldEnabled('modules[system_core_semver_test][enable]');

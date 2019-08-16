@@ -317,10 +317,6 @@ abstract class ExtensionList {
       // Invoke hook_system_info_alter() to give installed modules a chance to
       // modify the data in the .info.yml files if necessary.
       $this->moduleHandler->alter('system_info', $extension->info, $extension, $this->type);
-
-      // Determine if the extension is compatible with the current version of
-      // Drupal core.
-      $extension->info['core_incompatible'] = !DrupalSemver::satisfies(\Drupal::VERSION, $extension->info['core_dependency']);
     }
 
     return $extensions;
