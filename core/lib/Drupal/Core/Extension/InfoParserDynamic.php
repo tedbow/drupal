@@ -146,12 +146,15 @@ class InfoParserDynamic implements InfoParserInterface {
             return $evaluated_constraints[$constraint];
           }
           if ($patch === 0) {
-            foreach (['alpha1', 'beta1', 'rc1'] as $suffix) {
-              $pre_release_version = "$minor_version-$suffix";
-              if (static::satisfies($pre_release_version, $constraint)) {
-                $evaluated_constraints[$constraint] = TRUE;
-                return $evaluated_constraints[$constraint];
+            foreach (['alpha', 'beta', 'rc'] as $suffix) {
+              foreach (range(0, 10) as $suffix_num) {
+                $pre_release_version = "$minor_version-$suffix$suffix_num";
+                if (static::satisfies($pre_release_version, $constraint)) {
+                  $evaluated_constraints[$constraint] = TRUE;
+                  return $evaluated_constraints[$constraint];
+                }
               }
+
             }
           }
         }

@@ -223,8 +223,10 @@ INVALID_CORE;
    * Tests that 'core_dependency' throws an exception if constraint is invalid.
    *
    * @covers ::parse
+   *
+   * @dataProvider providerCoreDependencyInvalid
    */
-  public function testCoreDependencyInvalid() {
+  public function testCoreDependencyInvalid($file_name, $constraint) {
     $invalid_core_dependency = <<<INVALID_CORE_DEPENDENCY
 # info.yml for core_dependency validation.
 name: Gracie Evaluator
@@ -232,7 +234,7 @@ description: 'Determines if Gracie is a "Good Dog". The answer is always "Yes".'
 package: Core
 type: module
 version: VERSION
-core_dependency: '^8.7'
+core_dependency: '$constraint'
 dependencies:
   - goodness_api
 INVALID_CORE_DEPENDENCY;
@@ -240,13 +242,25 @@ INVALID_CORE_DEPENDENCY;
     vfsStream::setup('modules');
     vfsStream::create([
       'fixtures' => [
-        'invalid_core_dependency.info.txt' => $invalid_core_dependency,
+        "$file_name.info.txt" => $invalid_core_dependency,
       ],
     ]);
-    $filename = vfsStream::url('modules/fixtures/invalid_core_dependency.info.txt');
+    $filename = vfsStream::url("modules/fixtures/$file_name.info.txt");
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
-    $this->expectExceptionMessage("The 'core_dependency' can not be used to specify compatibility specific version before 8.7.7 in vfs://modules/fixtures/invalid_core_dependency.info.txt");
+    $this->expectExceptionMessage("The 'core_dependency' can not be used to specify compatibility specific version before 8.7.7 in vfs://modules/fixtures/$file_name.info.txt");
     $this->infoParser->parse($filename);
+  }
+
+  /**
+   * Dataprovider for testCoreDependencyInvalid().
+   */
+  public function providerCoreDependencyInvalid() {
+    return [
+      '8.0.0-alpha2' => ['alpha2', '8.0.0-alpha2'],
+      '8.6.0-rc1' => ['rc1', '8.6.0-rc1'],
+      '^8.7' => ['8_7', '^8.7'],
+      '>8.6.3' => ['gt8_6_3', '>8.6.3'],
+    ];
   }
 
   /**
@@ -335,7 +349,7 @@ CORE_INCOMPATIBILITY;
   }
 
   /**
-   * Dataprovider for testCoreIncompatibility()
+   * Dataprovider for testCoreIncompatibility().
    */
   public function providerCoreIncompatibility() {
     list($major, $minor) = explode('.', \Drupal::VERSION);
