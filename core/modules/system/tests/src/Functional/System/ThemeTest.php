@@ -482,7 +482,7 @@ class ThemeTest extends BrowserTestBase {
    *
    * @param string $theme_name
    *   Theme name to select element on page. This can be a partial name.
-   * @param $expected_text
+   * @param string $expected_text
    *   The expected incompatibility text.
    */
   private function assertThemeIncompatibleText($theme_name, $expected_text) {

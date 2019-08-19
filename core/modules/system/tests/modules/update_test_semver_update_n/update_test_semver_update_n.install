@@ -6,7 +6,7 @@
  */
 
 /**
- * Update 8002.
+ * Update 8001.
  */
 function update_test_semver_update_n_update_8001() {
   \Drupal::state()->set('update_test_semver_update_n_update_8001', 'Yes, I was run. Thanks for testing!');
