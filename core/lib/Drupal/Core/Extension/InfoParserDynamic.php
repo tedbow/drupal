@@ -2,8 +2,8 @@
 
 namespace Drupal\Core\Extension;
 
+use Composer\Semver\Semver;
 use Drupal\Component\Serialization\Exception\InvalidDataTypeException;
-use Drupal\Component\Version\DrupalSemver;
 use Drupal\Core\Serialization\Yaml;
 
 /**
@@ -12,6 +12,29 @@ use Drupal\Core\Serialization\Yaml;
 class InfoParserDynamic implements InfoParserInterface {
 
   const FIRST_CORE_DEPENDENCY_SUPPORTED_VERSION = '8.7.7';
+
+  /**
+   * Determines if a version satisfies the given constraints.
+   *
+   * This method uses \Composer\Semver\Semver::satisfies() but returns FALSE if
+   * the version or constraints are not valid instead of throwing an exception.
+   *
+   * @param string $version
+   *   The version.
+   * @param string $constraints
+   *   The constraints.
+   *
+   * @return bool
+   *   TRUE if the version satisfies the constraints, otherwise FALSE.
+   */
+  protected static function satisfies(string $version, $constraints) {
+    try {
+      return Semver::satisfies($version, $constraints);
+    }
+    catch (\UnexpectedValueException $exception) {
+      return FALSE;
+    }
+  }
 
   /**
    * {@inheritdoc}
@@ -50,18 +73,19 @@ class InfoParserDynamic implements InfoParserInterface {
         // 8.7.7 because these versions do not use the 'core_dependency' key.
         // Do not throw the exception if the constraint also is satisfied by
         // 8.0.0-alpha1 to allow constraints such as '^8' or '^8 || ^9'.
-        if ($supports_pre_core_dependency_version && !DrupalSemver::satisfies('8.0.0-alpha1', $parsed_info['core_dependency'])) {
+        if ($supports_pre_core_dependency_version && !static::satisfies('8.0.0-alpha1', $parsed_info['core_dependency'])) {
           throw new InfoParserException("The 'core_dependency' can not be used to specify compatibility specific version before " . static::FIRST_CORE_DEPENDENCY_SUPPORTED_VERSION . " in $filename");
         }
-      }
-      else {
-        $parsed_info['core_dependency'] = $parsed_info['core'];
       }
 
       // Determine if the extension is compatible with the current version of
       // Drupal core.
-      $parsed_info['core_incompatible'] = !DrupalSemver::satisfies(\Drupal::VERSION, $parsed_info['core_dependency']);
-
+      try {
+        $parsed_info['core_incompatible'] = !static::satisfies(\Drupal::VERSION, $parsed_info['core_dependency'] ?? $parsed_info['core']);
+      }
+      catch (\UnexpectedValueException $exception) {
+        $parsed_info['core_incompatible'] = TRUE;
+      }
       if (isset($parsed_info['version']) && $parsed_info['version'] === 'VERSION') {
         $parsed_info['version'] = \Drupal::VERSION;
       }
@@ -117,14 +141,14 @@ class InfoParserDynamic implements InfoParserInterface {
             $evaluated_constraints[$constraint] = FALSE;
             return $evaluated_constraints[$constraint];
           }
-          if (DrupalSemver::satisfies($minor_version, $constraint)) {
+          if (static::satisfies($minor_version, $constraint)) {
             $evaluated_constraints[$constraint] = TRUE;
             return $evaluated_constraints[$constraint];
           }
           if ($patch === 0) {
             foreach (['alpha1', 'beta1', 'rc1'] as $suffix) {
               $pre_release_version = "$minor_version-$suffix";
-              if (DrupalSemver::satisfies($minor_version, $pre_release_version)) {
+              if (static::satisfies($pre_release_version, $constraint)) {
                 $evaluated_constraints[$constraint] = TRUE;
                 return $evaluated_constraints[$constraint];
               }

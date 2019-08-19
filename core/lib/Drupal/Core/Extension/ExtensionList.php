@@ -2,7 +2,6 @@
 
 namespace Drupal\Core\Extension;
 
-use Drupal\Component\Version\DrupalSemver;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Database\DatabaseExceptionWrapper;
 use Drupal\Core\Extension\Exception\UnknownExtensionException;

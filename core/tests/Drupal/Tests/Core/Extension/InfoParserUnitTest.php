@@ -303,7 +303,6 @@ COMMONTEST;
     $info_values = $this->infoParser->parse(vfsStream::url('modules/fixtures/common_test.info.txt'));
     $this->assertEquals($info_values['simple_string'], 'A simple string', 'Simple string value was parsed correctly.');
     $this->assertEquals($info_values['version'], \Drupal::VERSION, 'Constant value was parsed correctly.');
-    $this->assertSame($info_values['core_dependency'], '8.x');
     $this->assertEquals($info_values['double_colon'], 'dummyClassName::method', 'Value containing double-colon was parsed correctly.');
   }
 
