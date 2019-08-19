@@ -122,7 +122,6 @@ class ModuleInstallerTest extends KernelTestBase {
     ];
   }
 
-
   /**
    * Tests install with a dependency with an invalid core version constraint.
    *
