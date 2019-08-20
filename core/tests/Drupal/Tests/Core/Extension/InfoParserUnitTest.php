@@ -152,12 +152,10 @@ BOTH_CORE_VERSION_REQUIREMENT;
     vfsStream::create([
       'fixtures' => [
         'core_version_requirement.info.txt' => $core_version_requirement,
-        'core_version_requirement-duplicate.info.txt' => $core_version_requirement,
       ],
     ]);
-    $info_values = $this->infoParser->parse(vfsStream::url('modules/fixtures/core_version_requirement.info.txt'));
-    $this->assertSame($info_values['core_version_requirement'], '^8.8');
-    $info_values = $this->infoParser->parse(vfsStream::url('modules/fixtures/core_version_requirement-duplicate.info.txt'));
+    $filename = vfsStream::url('modules/fixtures/core_version_requirement.info.txt');
+    $info_values = $this->infoParser->parse($filename);
     $this->assertSame($info_values['core_version_requirement'], '^8.8');
   }
 
@@ -185,9 +183,10 @@ BOTH_CORE_CORE_VERSION_REQUIREMENT_88;
         'core_and_core_version_requirement_88.info.txt' => $core_and_core_version_requirement_88,
       ],
     ]);
+    $filename = vfsStream::url('modules/fixtures/core_and_core_version_requirement_88.info.txt');
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
     $this->expectExceptionMessage("The 'core_version_requirement' constraint (^8.8) requires the 'core' not be set in vfs://modules/fixtures/core_and_core_version_requirement_88.info.txt");
-    $this->infoParser->parse(vfsStream::url('modules/fixtures/core_and_core_version_requirement_88.info.txt'));
+    $this->infoParser->parse($filename);
   }
 
   /**
@@ -360,12 +359,9 @@ CORE_INCOMPATIBILITY;
     vfsStream::create([
       'fixtures' => [
         "$file_name.info.txt" => $core_incompatibility,
-        "$file_name-duplicate.info.txt" => $core_incompatibility,
       ],
     ]);
     $info_values = $this->infoParser->parse(vfsStream::url("modules/fixtures/$file_name.info.txt"));
-    $this->assertSame($expected, $info_values['core_incompatible']);
-    $info_values = $this->infoParser->parse(vfsStream::url("modules/fixtures/$file_name-duplicate.info.txt"));
     $this->assertSame($expected, $info_values['core_incompatible']);
   }
 
