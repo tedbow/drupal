@@ -126,7 +126,7 @@ class InfoParserDynamic implements InfoParserInterface {
   }
 
   /**
-   * Determines if a constraint is .
+   * Determines if a constraint is satisfied by earlier versions of Drupal.
    *
    * @param string $constraint
    *   A core semantic version constraint.

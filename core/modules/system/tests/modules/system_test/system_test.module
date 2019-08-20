@@ -62,10 +62,6 @@ function system_test_system_info_alter(&$info, Extension $file, $type) {
     }
   }
 
-  if (($core_requirement = \Drupal::state()->get('dependency_test.core_version_requirement')) && $file->getName() === 'common_test') {
-    $info['core_version_requirement'] = $core_requirement;
-  }
-
   // Make the system_dependencies_test visible by default.
   if ($file->getName() == 'system_dependencies_test') {
     $info['hidden'] = FALSE;
