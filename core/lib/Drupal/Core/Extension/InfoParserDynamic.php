@@ -14,7 +14,7 @@ class InfoParserDynamic implements InfoParserInterface {
   /**
    * The earliest Drupal version that supports the 'core_version_requirement'.
    */
-  const FIRST_CORE_DEPENDENCY_SUPPORTED_VERSION = '8.7.7';
+  const FIRST_CORE_VERSION_REQUIREMENT_SUPPORTED_VERSION = '8.7.7';
 
   /**
    * Determines if a version satisfies the given constraints.
@@ -64,12 +64,12 @@ class InfoParserDynamic implements InfoParserInterface {
         throw new InfoParserException("Invalid 'core' value \"{$parsed_info['core']}\" in " . $filename);
       }
       if (isset($parsed_info['core_version_requirement'])) {
-        $supports_pre_core_dependency_version = static::isConstraintSatisfiedByPreCoreDependencyCoreVersion($parsed_info['core_version_requirement']);
+        $supports_pre_core_version_requirement_version = static::isConstraintSatisfiedByPreCoreVersionRequirementCoreVersion($parsed_info['core_version_requirement']);
         // If the 'core_version_requirement' constraint does not satisfy any
         // Drupal 8 versions before 8.7.7 then 'core' cannot be set or it will
         // effectively support all versions of Drupal 8 because
         // 'core_version_requirement' will be ignored in previous versions.
-        if (!$supports_pre_core_dependency_version && isset($parsed_info['core'])) {
+        if (!$supports_pre_core_version_requirement_version && isset($parsed_info['core'])) {
           throw new InfoParserException("The 'core_version_requirement' constraint ({$parsed_info['core_version_requirement']}) requires the 'core' not be set in " . $filename);
         }
         // 'core_version_requirement' can not be used to specify Drupal 8
@@ -77,8 +77,8 @@ class InfoParserDynamic implements InfoParserInterface {
         // 'core_version_requirement' key. Do not throw the exception if the
         // constraint also is satisfied by 8.0.0-alpha1 to allow constraints
         // such as '^8' or '^8 || ^9'.
-        if ($supports_pre_core_dependency_version && !static::satisfies('8.0.0-alpha1', $parsed_info['core_version_requirement'])) {
-          throw new InfoParserException("The 'core_version_requirement' can not be used to specify compatibility specific version before " . static::FIRST_CORE_DEPENDENCY_SUPPORTED_VERSION . " in $filename");
+        if ($supports_pre_core_version_requirement_version && !static::satisfies('8.0.0-alpha1', $parsed_info['core_version_requirement'])) {
+          throw new InfoParserException("The 'core_version_requirement' can not be used to specify compatibility specific version before " . static::FIRST_CORE_VERSION_REQUIREMENT_SUPPORTED_VERSION . " in $filename");
         }
       }
 
@@ -135,13 +135,13 @@ class InfoParserDynamic implements InfoParserInterface {
    *   TRUE if the constraint is satisfied by a core version that does not
    *   support the 'core_version_requirement' key in info.yml files.
    */
-  protected static function isConstraintSatisfiedByPreCoreDependencyCoreVersion($constraint) {
+  protected static function isConstraintSatisfiedByPreCoreVersionRequirementCoreVersion($constraint) {
     static $evaluated_constraints = [];
     if (!isset($evaluated_constraints[$constraint])) {
       foreach (range(0, 7) as $minor) {
         foreach (range(0, 20) as $patch) {
           $minor_version = "8.$minor.$patch";
-          if ($minor_version === static::FIRST_CORE_DEPENDENCY_SUPPORTED_VERSION) {
+          if ($minor_version === static::FIRST_CORE_VERSION_REQUIREMENT_SUPPORTED_VERSION) {
             $evaluated_constraints[$constraint] = FALSE;
             return $evaluated_constraints[$constraint];
           }
