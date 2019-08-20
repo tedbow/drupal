@@ -2,4 +2,4 @@ name: 'Theme test with semver core version'
 type: theme
 description: 'Test theme which has semver core version.'
 version: VERSION
-core_dependency: ^8 || ^9
+core_version_requirement: ^8 || ^9

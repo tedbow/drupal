@@ -108,12 +108,12 @@ class DependencyTest extends ModuleTestBase {
   public function testCoreCompatibility() {
     $assert_session = $this->assertSession();
 
-    // Test incompatible 'core_dependency'.
+    // Test incompatible 'core_version_requirement'.
     $this->drupalGet('admin/modules');
     $assert_session->fieldDisabled('modules[system_incompatible_core_version_test_1x][enable]');
     $assert_session->fieldDisabled('modules[system_core_incompatible_semver_test][enable]');
 
-    // Test compatible 'core_dependency' and compatible 'core'.
+    // Test compatible 'core_version_requirement' and compatible 'core'.
     $this->drupalGet('admin/modules');
     $assert_session->fieldEnabled('modules[common_test][enable]');
     $assert_session->fieldEnabled('modules[system_core_semver_test][enable]');

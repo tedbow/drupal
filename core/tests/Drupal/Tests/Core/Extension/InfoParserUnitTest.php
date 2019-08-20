@@ -103,93 +103,93 @@ MISSINGKEYS;
   }
 
   /**
-   * Tests that missing 'core' and 'core_dependency' keys are detected.
+   * Tests that missing 'core' and 'core_version_requirement' keys are detected.
    *
    * @covers ::parse
    */
-  public function testMissingCoreCoreDependency() {
-    $missing_core_and_core_dependency = <<<MISSING_CORE_AND_CORE_DEPENDENCY
-# info.yml for testing core and core_dependency.
+  public function testMissingCoreCoreVersionRequirement() {
+    $missing_core_and_core_version_requirement = <<<MISSING_CORE_AND_CORE_VERSION_REQUIREMENT
+# info.yml for testing core and core_version_requirement.
 package: Core
 version: VERSION
 type: module
 name: Skynet
 dependencies:
   - self_awareness
-MISSING_CORE_AND_CORE_DEPENDENCY;
+MISSING_CORE_AND_CORE_VERSION_REQUIREMENT;
 
     vfsStream::setup('modules');
     vfsStream::create([
       'fixtures' => [
-        'missing_core_and_core_dependency.info.txt' => $missing_core_and_core_dependency,
+        'missing_core_and_core_version_requirement.info.txt' => $missing_core_and_core_version_requirement,
       ],
     ]);
-    $filename = vfsStream::url('modules/fixtures/missing_core_and_core_dependency.info.txt');
+    $filename = vfsStream::url('modules/fixtures/missing_core_and_core_version_requirement.info.txt');
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
-    $this->expectExceptionMessage("The 'core' or the 'core_dependency' key must be present in vfs://modules/fixtures/missing_core_and_core_dependency.info.txt");
+    $this->expectExceptionMessage("The 'core' or the 'core_version_requirement' key must be present in vfs://modules/fixtures/missing_core_and_core_version_requirement.info.txt");
     $this->infoParser->parse($filename);
   }
 
   /**
-   * Tests that 'core_dependency: ^8.8' is valid with no 'core' key.
+   * Tests that 'core_version_requirement: ^8.8' is valid with no 'core' key.
    *
    * @covers ::parse
    */
-  public function testCoreDependency88() {
-    $core_dependency = <<<BOTH_CORE_DEPENDENCY
-# info.yml for testing core and core_dependency keys.
+  public function testCoreVersionRequirement88() {
+    $core_version_requirement = <<<BOTH_CORE_VERSION_REQUIREMENT
+# info.yml for testing core and core_version_requirement keys.
 package: Core
-core_dependency: ^8.8
+core_version_requirement: ^8.8
 version: VERSION
 type: module
 name: Module for That
 dependencies:
   - field
-BOTH_CORE_DEPENDENCY;
+BOTH_CORE_VERSION_REQUIREMENT;
 
     vfsStream::setup('modules');
     vfsStream::create([
       'fixtures' => [
-        'core_dependency.info.txt' => $core_dependency,
+        'core_version_requirement.info.txt' => $core_version_requirement,
       ],
     ]);
-    $filename = vfsStream::url('modules/fixtures/core_dependency.info.txt');
+    $filename = vfsStream::url('modules/fixtures/core_version_requirement.info.txt');
     $info_values = $this->infoParser->parse($filename);
-    $this->assertSame($info_values['core_dependency'], '^8.8');
+    $this->assertSame($info_values['core_version_requirement'], '^8.8');
   }
 
   /**
-   * Tests that 'core_dependency: ^8.8' is invalid with a 'core' key.
+   * Tests that 'core_version_requirement: ^8.8' is invalid with a 'core' key.
    *
    * @covers ::parse
    */
-  public function testCoreCoreDependency88() {
-    $core_and_core_dependency_88 = <<<BOTH_CORE_CORE_DEPENDENCY_88
-# info.yml for testing core and core_dependency keys.
+  public function testCoreCoreVersionRequirement88() {
+    $core_and_core_version_requirement_88 = <<<BOTH_CORE_CORE_VERSION_REQUIREMENT_88
+# info.yml for testing core and core_version_requirement keys.
 package: Core
 core: 8.x
-core_dependency: ^8.8
+core_version_requirement: ^8.8
 version: VERSION
 type: module
 name: Form auto submitter
 dependencies:
   - field
-BOTH_CORE_CORE_DEPENDENCY_88;
+BOTH_CORE_CORE_VERSION_REQUIREMENT_88;
 
     vfsStream::setup('modules');
     vfsStream::create([
       'fixtures' => [
-        'core_and_core_dependency_88.info.txt' => $core_and_core_dependency_88,
+        'core_and_core_version_requirement_88.info.txt' => $core_and_core_version_requirement_88,
       ],
     ]);
-    $filename = vfsStream::url('modules/fixtures/core_and_core_dependency_88.info.txt');
+    $filename = vfsStream::url('modules/fixtures/core_and_core_version_requirement_88.info.txt');
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
-    $this->expectExceptionMessage("The 'core_dependency' constraint (^8.8) requires the 'core' not be set in vfs://modules/fixtures/core_and_core_dependency_88.info.txt");
+    $this->expectExceptionMessage("The 'core_version_requirement' constraint (^8.8) requires the 'core' not be set in vfs://modules/fixtures/core_and_core_version_requirement_88.info.txt");
     $this->infoParser->parse($filename);
   }
 
   /**
-   * Tests that 'core_dependency: ^8.8' is invalid with a 'core' key.
+   * Tests a invalid 'core' key.
    *
    * @covers ::parse
    */
@@ -220,41 +220,41 @@ INVALID_CORE;
   }
 
   /**
-   * Tests that 'core_dependency' throws an exception if constraint is invalid.
+   * Tests a invalid 'core_version_requirement'.
    *
    * @covers ::parse
    *
-   * @dataProvider providerCoreDependencyInvalid
+   * @dataProvider providerCoreVersionRequirementInvalid
    */
-  public function testCoreDependencyInvalid($file_name, $constraint) {
-    $invalid_core_dependency = <<<INVALID_CORE_DEPENDENCY
-# info.yml for core_dependency validation.
+  public function testCoreVersionRequirementInvalid($file_name, $constraint) {
+    $invalid_core_version_requirement = <<<INVALID_CORE_VERSION_REQUIREMENT
+# info.yml for core_version_requirement validation.
 name: Gracie Evaluator
 description: 'Determines if Gracie is a "Good Dog". The answer is always "Yes".'
 package: Core
 type: module
 version: VERSION
-core_dependency: '$constraint'
+core_version_requirement: '$constraint'
 dependencies:
   - goodness_api
-INVALID_CORE_DEPENDENCY;
+INVALID_CORE_VERSION_REQUIREMENT;
 
     vfsStream::setup('modules');
     vfsStream::create([
       'fixtures' => [
-        "$file_name.info.txt" => $invalid_core_dependency,
+        "$file_name.info.txt" => $invalid_core_version_requirement,
       ],
     ]);
     $filename = vfsStream::url("modules/fixtures/$file_name.info.txt");
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
-    $this->expectExceptionMessage("The 'core_dependency' can not be used to specify compatibility specific version before 8.7.7 in vfs://modules/fixtures/$file_name.info.txt");
+    $this->expectExceptionMessage("The 'core_version_requirement' can not be used to specify compatibility specific version before 8.7.7 in vfs://modules/fixtures/$file_name.info.txt");
     $this->infoParser->parse($filename);
   }
 
   /**
-   * Dataprovider for testCoreDependencyInvalid().
+   * Dataprovider for testCoreVersionRequirementInvalid().
    */
-  public function providerCoreDependencyInvalid() {
+  public function providerCoreVersionRequirementInvalid() {
     return [
       '8.0.0-alpha2' => ['alpha2', '8.0.0-alpha2'],
       '8.6.0-rc1' => ['rc1', '8.6.0-rc1'],
@@ -329,7 +329,7 @@ COMMONTEST;
     $file_name = "core_incompatible_$file_name";
 
     $core_incompatibility = <<<CORE_INCOMPATIBILITY
-core_dependency: $constraint
+core_version_requirement: $constraint
 name: common_test
 type: module
 description: 'testing info file parsing'
