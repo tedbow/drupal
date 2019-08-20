@@ -123,12 +123,22 @@ MISSING_CORE_AND_CORE_VERSION_REQUIREMENT;
     vfsStream::create([
       'fixtures' => [
         'missing_core_and_core_version_requirement.info.txt' => $missing_core_and_core_version_requirement,
+        'missing_core_and_core_version_requirement-duplicate.info.txt' => $missing_core_and_core_version_requirement,
       ],
     ]);
-    $filename = vfsStream::url('modules/fixtures/missing_core_and_core_version_requirement.info.txt');
+    $exception_message = "The 'core' or the 'core_version_requirement' key must be present in vfs://modules/fixtures/missing_core_and_core_version_requirement";
+    // Set the expected exception for the 2nd call to parse().
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
-    $this->expectExceptionMessage("The 'core' or the 'core_version_requirement' key must be present in vfs://modules/fixtures/missing_core_and_core_version_requirement.info.txt");
-    $this->infoParser->parse($filename);
+    $this->expectExceptionMessage("$exception_message-duplicate.info.txt");
+
+    try {
+      $this->infoParser->parse(vfsStream::url('modules/fixtures/missing_core_and_core_version_requirement.info.txt'));
+    }
+    catch (InfoParserException $exception) {
+      $this->assertSame("$exception_message.info.txt", $exception->getMessage());
+
+      $this->infoParser->parse(vfsStream::url('modules/fixtures/missing_core_and_core_version_requirement-duplicate.info.txt'));
+    }
   }
 
   /**
@@ -149,14 +159,16 @@ dependencies:
 BOTH_CORE_VERSION_REQUIREMENT;
 
     vfsStream::setup('modules');
-    vfsStream::create([
-      'fixtures' => [
-        'core_version_requirement.info.txt' => $core_version_requirement,
-      ],
-    ]);
-    $filename = vfsStream::url('modules/fixtures/core_version_requirement.info.txt');
-    $info_values = $this->infoParser->parse($filename);
-    $this->assertSame($info_values['core_version_requirement'], '^8.8');
+    foreach (['1', '2'] as $file_delta) {
+      $filename = "core_version_requirement-$file_delta.info.txt";
+      vfsStream::create([
+        'fixtures' => [
+          $filename => $core_version_requirement,
+        ],
+      ]);
+      $info_values = $this->infoParser->parse(vfsStream::url("modules/fixtures/$filename"));
+      $this->assertSame($info_values['core_version_requirement'], '^8.8', "Expected core_version_requirement for file: $filename");
+    }
   }
 
   /**
@@ -181,12 +193,21 @@ BOTH_CORE_CORE_VERSION_REQUIREMENT_88;
     vfsStream::create([
       'fixtures' => [
         'core_and_core_version_requirement_88.info.txt' => $core_and_core_version_requirement_88,
+        'core_and_core_version_requirement_88-duplicate.info.txt' => $core_and_core_version_requirement_88,
       ],
     ]);
-    $filename = vfsStream::url('modules/fixtures/core_and_core_version_requirement_88.info.txt');
+    $exception_message = "The 'core_version_requirement' constraint (^8.8) requires the 'core' not be set in vfs://modules/fixtures/core_and_core_version_requirement_88";
+    // Set the expected exception for the 2nd call to parse().
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
-    $this->expectExceptionMessage("The 'core_version_requirement' constraint (^8.8) requires the 'core' not be set in vfs://modules/fixtures/core_and_core_version_requirement_88.info.txt");
-    $this->infoParser->parse($filename);
+    $this->expectExceptionMessage("$exception_message-duplicate.info.txt");
+    try {
+      $this->infoParser->parse(vfsStream::url('modules/fixtures/core_and_core_version_requirement_88.info.txt'));
+    }
+    catch (InfoParserException $exception) {
+      $this->assertSame("$exception_message.info.txt", $exception->getMessage());
+
+      $this->infoParser->parse(vfsStream::url('modules/fixtures/core_and_core_version_requirement_88-duplicate.info.txt'));
+    }
   }
 
   /**
@@ -212,12 +233,24 @@ INVALID_CORE;
     vfsStream::create([
       'fixtures' => [
         'invalid_core.info.txt' => $invalid_core,
+        'invalid_core-duplicate.info.txt' => $invalid_core,
       ],
     ]);
-    $filename = vfsStream::url('modules/fixtures/invalid_core.info.txt');
+    $exception_message = "Invalid 'core' value \"^8\" in vfs://modules/fixtures/invalid_core";
+    // Set the expected exception for the 2nd call to parse().
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
-    $this->expectExceptionMessage("Invalid 'core' value \"^8\" in vfs://modules/fixtures/invalid_core.info.txt");
-    $this->infoParser->parse($filename);
+    $this->expectExceptionMessage("$exception_message-duplicate.info.txt");
+
+    try {
+      $this->infoParser->parse(vfsStream::url('modules/fixtures/invalid_core.info.txt'));
+    }
+    catch (InfoParserException $exception) {
+      $this->assertSame("$exception_message.info.txt", $exception->getMessage());
+
+      $this->infoParser->parse(vfsStream::url('modules/fixtures/invalid_core-duplicate.info.txt'));
+    }
+
+
   }
 
   /**
@@ -227,7 +260,7 @@ INVALID_CORE;
    *
    * @dataProvider providerCoreVersionRequirementInvalid
    */
-  public function testCoreVersionRequirementInvalid($file_name, $constraint) {
+  public function testCoreVersionRequirementInvalid($test_case, $constraint) {
     $invalid_core_version_requirement = <<<INVALID_CORE_VERSION_REQUIREMENT
 # info.yml for core_version_requirement validation.
 name: Gracie Evaluator
@@ -243,26 +276,22 @@ INVALID_CORE_VERSION_REQUIREMENT;
     vfsStream::setup('modules');
     vfsStream::create([
       'fixtures' => [
-        "$file_name.info.txt" => $invalid_core_version_requirement,
-        "$file_name-duplicate.info.txt" => $invalid_core_version_requirement,
+        "invalid_core_version_requirement-$test_case.info.txt" => $invalid_core_version_requirement,
+        "invalid_core_version_requirement-$test_case-duplicate.info.txt" => $invalid_core_version_requirement,
       ],
     ]);
-    $exception_message = "The 'core_version_requirement' can not be used to specify compatibility specific version before 8.7.7 in vfs://modules/fixtures/";
+    $exception_message = "The 'core_version_requirement' can not be used to specify compatibility specific version before 8.7.7 in vfs://modules/fixtures/invalid_core_version_requirement-$test_case";
+    // Set the expected exception for the 2nd call to parse().
+    $this->expectException('\Drupal\Core\Extension\InfoParserException');
+    $this->expectExceptionMessage("$exception_message-duplicate.info.txt");
     try {
-      $this->infoParser->parse(vfsStream::url("modules/fixtures/$file_name.info.txt"));
+      $this->infoParser->parse(vfsStream::url("modules/fixtures/invalid_core_version_requirement-$test_case.info.txt"));
     }
     catch (InfoParserException $exception) {
-      $this->assertSame($exception_message . "$file_name.info.txt", $exception->getMessage());
-      try {
-        $this->infoParser->parse(vfsStream::url("modules/fixtures/$file_name-duplicate.info.txt"));
-      }
-      catch (InfoParserException $exception) {
-        $this->assertSame($exception_message . "$file_name-duplicate.info.txt", $exception->getMessage());
-        return;
-      }
-    }
+      $this->assertSame("$exception_message.info.txt", $exception->getMessage());
 
-    $this->fail('The exception was not thrown when parsing the info file the second time.');
+      $this->infoParser->parse(vfsStream::url("modules/fixtures/invalid_core_version_requirement-$test_case-duplicate.info.txt"));
+    }
   }
 
   /**
@@ -298,12 +327,20 @@ MISSINGKEY;
     vfsStream::create([
       'fixtures' => [
         'missing_key.info.txt' => $missing_key,
+        'missing_key-duplicate.info.txt' => $missing_key,
       ],
     ]);
-    $filename = vfsStream::url('modules/fixtures/missing_key.info.txt');
-    $this->expectException('\Drupal\Core\Extension\InfoParserException');
-    $this->expectExceptionMessage('Missing required keys (type) in vfs://modules/fixtures/missing_key.info.txt');
-    $this->infoParser->parse($filename);
+    try {
+      $this->infoParser->parse(vfsStream::url('modules/fixtures/missing_key.info.txt'));
+    }
+    catch (InfoParserException $exception) {
+      $this->assertSame('Missing required keys (type) in vfs://modules/fixtures/missing_key.info.txt', $exception->getMessage());
+
+      $this->expectException('\Drupal\Core\Extension\InfoParserException');
+      $this->expectExceptionMessage('Missing required keys (type) in vfs://modules/fixtures/missing_key-duplicate.info.txt');
+      $this->infoParser->parse(vfsStream::url('modules/fixtures/missing_key-duplicate.info.txt'));
+    }
+
   }
 
   /**
@@ -323,18 +360,22 @@ double_colon: dummyClassName::method
 COMMONTEST;
 
     vfsStream::setup('modules');
-    vfsStream::create([
-      'fixtures' => [
-        'common_test.info.txt' => $common,
-      ],
-    ]);
-    $info_values = $this->infoParser->parse(vfsStream::url('modules/fixtures/common_test.info.txt'));
-    $this->assertEquals($info_values['simple_string'], 'A simple string', 'Simple string value was parsed correctly.');
-    $this->assertEquals($info_values['version'], \Drupal::VERSION, 'Constant value was parsed correctly.');
-    $this->assertEquals($info_values['double_colon'], 'dummyClassName::method', 'Value containing double-colon was parsed correctly.');
-    $this->assertSame('8.x', $info_values['core']);
-    $this->assertFalse(isset($info_values['core_version_requirement']));
-    $this->assertFalse($info_values['core_incompatible']);
+
+    foreach (['1', '2'] as $file_delta) {
+      $filename = "common_test-$file_delta.info.txt";
+      vfsStream::create([
+        'fixtures' => [
+          $filename => $common,
+        ],
+      ]);
+      $info_values = $this->infoParser->parse(vfsStream::url("modules/fixtures/$filename"));
+      $this->assertEquals($info_values['simple_string'], 'A simple string', 'Simple string value was parsed correctly.');
+      $this->assertEquals($info_values['version'], \Drupal::VERSION, 'Constant value was parsed correctly.');
+      $this->assertEquals($info_values['double_colon'], 'dummyClassName::method', 'Value containing double-colon was parsed correctly.');
+      $this->assertSame('8.x', $info_values['core']);
+      $this->assertFalse(isset($info_values['core_version_requirement']));
+      $this->assertFalse($info_values['core_incompatible']);
+    }
   }
 
   /**
@@ -342,9 +383,7 @@ COMMONTEST;
    *
    * @dataProvider providerCoreIncompatibility
    */
-  public function testCoreIncompatibility($file_name, $constraint, $expected) {
-    $file_name = "core_incompatible_$file_name";
-
+  public function testCoreIncompatibility($test_case, $constraint, $expected) {
     $core_incompatibility = <<<CORE_INCOMPATIBILITY
 core_version_requirement: $constraint
 name: common_test
@@ -356,13 +395,16 @@ double_colon: dummyClassName::method
 CORE_INCOMPATIBILITY;
 
     vfsStream::setup('modules');
-    vfsStream::create([
-      'fixtures' => [
-        "$file_name.info.txt" => $core_incompatibility,
-      ],
-    ]);
-    $info_values = $this->infoParser->parse(vfsStream::url("modules/fixtures/$file_name.info.txt"));
-    $this->assertSame($expected, $info_values['core_incompatible']);
+    foreach (['1', '2'] as $file_delta) {
+      $filename = "core_incompatible-$test_case-$file_delta.info.txt";
+      vfsStream::create([
+        'fixtures' => [
+          $filename => $core_incompatibility,
+        ],
+      ]);
+      $info_values = $this->infoParser->parse(vfsStream::url("modules/fixtures/$filename"));
+      $this->assertSame($expected, $info_values['core_incompatible'], "core_incompatible correct in file: $filename");
+    }
   }
 
   /**
