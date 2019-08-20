@@ -318,6 +318,9 @@ COMMONTEST;
     $this->assertEquals($info_values['simple_string'], 'A simple string', 'Simple string value was parsed correctly.');
     $this->assertEquals($info_values['version'], \Drupal::VERSION, 'Constant value was parsed correctly.');
     $this->assertEquals($info_values['double_colon'], 'dummyClassName::method', 'Value containing double-colon was parsed correctly.');
+    $this->assertSame('8.x', $info_values['core']);
+    $this->assertFalse(isset($info_values['core_version_requirement']));
+    $this->assertFalse($info_values['core_incompatible']);
   }
 
   /**
