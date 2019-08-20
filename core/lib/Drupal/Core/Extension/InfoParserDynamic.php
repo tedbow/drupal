@@ -162,8 +162,8 @@ class InfoParserDynamic implements InfoParserInterface {
           }
         }
       }
+      $evaluated_constraints[$constraint] = FALSE;
     }
-    $evaluated_constraints[$constraint] = FALSE;
     return $evaluated_constraints[$constraint];
   }
 

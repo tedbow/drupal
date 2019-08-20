@@ -3,6 +3,7 @@
 namespace Drupal\Tests\Core\Extension;
 
 use Drupal\Core\Extension\InfoParser;
+use Drupal\Core\Extension\InfoParserException;
 use Drupal\Tests\UnitTestCase;
 use org\bovigo\vfs\vfsStream;
 
@@ -151,10 +152,12 @@ BOTH_CORE_VERSION_REQUIREMENT;
     vfsStream::create([
       'fixtures' => [
         'core_version_requirement.info.txt' => $core_version_requirement,
+        'core_version_requirement-duplicate.info.txt' => $core_version_requirement,
       ],
     ]);
-    $filename = vfsStream::url('modules/fixtures/core_version_requirement.info.txt');
-    $info_values = $this->infoParser->parse($filename);
+    $info_values = $this->infoParser->parse(vfsStream::url('modules/fixtures/core_version_requirement.info.txt'));
+    $this->assertSame($info_values['core_version_requirement'], '^8.8');
+    $info_values = $this->infoParser->parse(vfsStream::url('modules/fixtures/core_version_requirement-duplicate.info.txt'));
     $this->assertSame($info_values['core_version_requirement'], '^8.8');
   }
 
@@ -182,10 +185,9 @@ BOTH_CORE_CORE_VERSION_REQUIREMENT_88;
         'core_and_core_version_requirement_88.info.txt' => $core_and_core_version_requirement_88,
       ],
     ]);
-    $filename = vfsStream::url('modules/fixtures/core_and_core_version_requirement_88.info.txt');
     $this->expectException('\Drupal\Core\Extension\InfoParserException');
     $this->expectExceptionMessage("The 'core_version_requirement' constraint (^8.8) requires the 'core' not be set in vfs://modules/fixtures/core_and_core_version_requirement_88.info.txt");
-    $this->infoParser->parse($filename);
+    $this->infoParser->parse(vfsStream::url('modules/fixtures/core_and_core_version_requirement_88.info.txt'));
   }
 
   /**
@@ -243,12 +245,25 @@ INVALID_CORE_VERSION_REQUIREMENT;
     vfsStream::create([
       'fixtures' => [
         "$file_name.info.txt" => $invalid_core_version_requirement,
+        "$file_name-duplicate.info.txt" => $invalid_core_version_requirement,
       ],
     ]);
-    $filename = vfsStream::url("modules/fixtures/$file_name.info.txt");
-    $this->expectException('\Drupal\Core\Extension\InfoParserException');
-    $this->expectExceptionMessage("The 'core_version_requirement' can not be used to specify compatibility specific version before 8.7.7 in vfs://modules/fixtures/$file_name.info.txt");
-    $this->infoParser->parse($filename);
+    $exception_message = "The 'core_version_requirement' can not be used to specify compatibility specific version before 8.7.7 in vfs://modules/fixtures/";
+    try {
+      $this->infoParser->parse(vfsStream::url("modules/fixtures/$file_name.info.txt"));
+    }
+    catch (InfoParserException $exception) {
+      $this->assertSame($exception_message . "$file_name.info.txt", $exception->getMessage());
+    }
+
+    try {
+      $this->infoParser->parse(vfsStream::url("modules/fixtures/$file_name-duplicate.info.txt"));
+    }
+    catch (InfoParserException $exception) {
+      $this->assertSame($exception_message . "$file_name-duplicate.info.txt", $exception->getMessage());
+      return;
+    }
+    $this->fail('The exception was not thrown when parsing the info file the second time.');
   }
 
   /**
@@ -345,9 +360,12 @@ CORE_INCOMPATIBILITY;
     vfsStream::create([
       'fixtures' => [
         "$file_name.info.txt" => $core_incompatibility,
+        "$file_name-duplicate.info.txt" => $core_incompatibility,
       ],
     ]);
     $info_values = $this->infoParser->parse(vfsStream::url("modules/fixtures/$file_name.info.txt"));
+    $this->assertSame($expected, $info_values['core_incompatible']);
+    $info_values = $this->infoParser->parse(vfsStream::url("modules/fixtures/$file_name-duplicate.info.txt"));
     $this->assertSame($expected, $info_values['core_incompatible']);
   }
 
