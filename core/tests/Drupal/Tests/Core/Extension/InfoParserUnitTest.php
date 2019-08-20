@@ -253,15 +253,15 @@ INVALID_CORE_VERSION_REQUIREMENT;
     }
     catch (InfoParserException $exception) {
       $this->assertSame($exception_message . "$file_name.info.txt", $exception->getMessage());
+      try {
+        $this->infoParser->parse(vfsStream::url("modules/fixtures/$file_name-duplicate.info.txt"));
+      }
+      catch (InfoParserException $exception) {
+        $this->assertSame($exception_message . "$file_name-duplicate.info.txt", $exception->getMessage());
+        return;
+      }
     }
 
-    try {
-      $this->infoParser->parse(vfsStream::url("modules/fixtures/$file_name-duplicate.info.txt"));
-    }
-    catch (InfoParserException $exception) {
-      $this->assertSame($exception_message . "$file_name-duplicate.info.txt", $exception->getMessage());
-      return;
-    }
     $this->fail('The exception was not thrown when parsing the info file the second time.');
   }
 
