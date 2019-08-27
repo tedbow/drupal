@@ -923,6 +923,15 @@ picturefill:
   dependencies:
     - core/matchmedia
 
+sortable:
+  remote: https://github.com/SortableJS/Sortable
+  version: "1.10.0-rc3"
+  license:
+    name: MIT
+    url: https://github.com/SortableJS/Sortable/tree/master#mit-license
+  js:
+    assets/vendor/sortable/Sortable.min.js: { minified: true }
+
 underscore:
   remote: https://github.com/jashkenas/underscore
   version: "1.8.3"
