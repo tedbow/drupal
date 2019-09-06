@@ -17,6 +17,7 @@ use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Site\Settings;
+use Drupal\update\UpdateHelper;
 
 // These are internally used constants for this code, do not modify.
 
@@ -407,6 +408,7 @@ function update_get_available($refresh = FALSE) {
     $available = \Drupal::keyValueExpirable('update_available_releases')->getAll();
   }
 
+  $available = UpdateHelper::setFallBackLts($available);
   return $available;
 }
 
