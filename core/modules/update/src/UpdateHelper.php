@@ -275,9 +275,10 @@ class UpdateHelper {
   public static function setFallBackLts(array &$available) {
     $project_ltses = [
       'drupal' => [
-        '8' => [
-          'minor' => 9,
-          'lts_support_end' => '11/19',
+        [
+          'version_major' => 8,
+          'version_minor' => 9,
+          'support_end' => '11/19',
         ],
       ],
     ];

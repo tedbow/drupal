@@ -408,7 +408,7 @@ function update_get_available($refresh = FALSE) {
     $available = \Drupal::keyValueExpirable('update_available_releases')->getAll();
   }
 
-  $available = UpdateHelper::setFallBackLts($available);
+  UpdateHelper::setFallBackLts($available);
   return $available;
 }
 

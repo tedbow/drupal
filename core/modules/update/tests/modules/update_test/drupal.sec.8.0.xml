@@ -5,6 +5,13 @@
     <dc:creator>Drupal</dc:creator>
     <api_version>8.x</api_version>
     <recommended_major>8</recommended_major>
+    <lts_releases>
+        <lts_release>
+            <version_major>8</version_major>
+            <version_minor>8</version_minor>
+            <support_end>11/01/2020</support_end>
+        </lts_release>
+    </lts_releases>
     <supported_majors>8</supported_majors>
     <default_major>8</default_major>
     <project_status>published</project_status>
