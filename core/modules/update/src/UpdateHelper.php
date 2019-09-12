@@ -64,11 +64,10 @@ class UpdateHelper {
    * @param array $releases
    *   Releases as returned by update_get_available().
    * @param array $supported_majors
-   *   Major version that are supported.
+   *   Major versions that are supported.
    *
    * @return int
    *   The number of additional supported minor releases.
-   *
    */
   private static function getAdditionalSecuritySupportedMinors(array $security_supported_release_info, array $releases, array $supported_majors) {
     $latest_full_release = static::getMostRecentFullRelease($releases);
@@ -90,13 +89,17 @@ class UpdateHelper {
       return (int) $security_supported_release_info['version_minor'] - (int) $latest_full_release['version_minor'];
     }
     else {
-      if (in_array($support_until_major, $supported_majors) && (int) $security_supported_release_info['version_minor'] === 0 && (int) $security_supported_release_info['version_patch'] === 0) {
+      // The latest full release was a lower major version than the security
+      // supported release.
+      if (in_array($support_until_major, $supported_majors) && $security_supported_release_info['version'] === "$support_until_major.0.0") {
+        // If the major version this release supported until is the first
+        // release of a major, for example 9.0.0, then check if that major
+        // version is currently supported. If it is supported then the first
+        // version of that major has been released.
         return -1;
       }
-      // The latest full release was a lower major version.
       return static::CORE_MINORS_SUPPORTED;
     }
-
   }
 
   /**
@@ -128,7 +131,7 @@ class UpdateHelper {
     $support_until_release['version'] = implode('.', $support_until_release);
     if ($lts_release = static::getMajorLts($project_data, $existing_release['version_major'])) {
       if ($lts_release['version_minor'] - (int) $existing_release['version_minor'] === 1) {
-        // If the current release is 1 minor before the LTS release then this
+        // If the installed version is 1 minor before the LTS release then this
         // version will be supported until the next major is released.
         $next_major = ((int) $existing_release['version_major']) + 1;
         $support_until_release = [
@@ -139,10 +142,11 @@ class UpdateHelper {
         ];
       }
       elseif (version_compare($support_until_release['version'], $lts_release['version'], '>')) {
+        // No matter how many minors core supports there will be no minor
+        // releases after the LTS minor.
         $support_until_release = $lts_release;
       }
     }
-
     return $support_until_release;
   }
 
@@ -258,7 +262,7 @@ class UpdateHelper {
    */
   public static function getSecurityCoverageRequirement(array $project_data) {
     if ($project_data['project_type'] == 'core' && !empty($project_data['security_coverage_info'])) {
-        if ($security_coverage_message = static::getSecurityCoverageMessage($project_data)) {
+      if ($security_coverage_message = static::getSecurityCoverageMessage($project_data)) {
         $requirement['title'] = t('Drupal core security coverage');
         $requirement['description'] = $security_coverage_message;
         if (!empty($project_data['security_coverage_info']['current_lts_release'])) {
@@ -316,34 +320,40 @@ class UpdateHelper {
     return FALSE;
   }
 
+  /**
+   * Sets the fallback LTS release information for available releases.
+   *
+   * @param array $available
+   *   Array of data about available releases, keyed by project machine name.
+   */
   public static function setFallBackLts(array &$available) {
     $project_lts_releases = [
       'drupal' => [
         [
           'version_major' => 8,
-          'version_minor' => 7,
+          'version_minor' => 9,
           'version_patch' => 0,
           'version' => '8.9.0',
           'support_end' => '11/01/21',
         ],
       ],
     ];
-
     foreach ($project_lts_releases as $project_name => $lts_releases) {
       if (isset($available[$project_name])) {
         foreach ($lts_releases as $fallback_lts_release) {
           $existing_major_lts_release = static::getMajorLts($available[$project_name], $fallback_lts_release['version_major']);
           if (empty($existing_major_lts_release)) {
+            // Only set the fallback LTS if no existing LTS is set for the major
+            // version of this project.
             $available[$project_name]['lts_releases'][] = $fallback_lts_release;
           }
-
         }
       }
     }
   }
 
   /**
-   * Gets the LTS release information for a project major version if any.
+   * Gets the LTS release information for a project major version, if any.
    *
    * @param array $project_data
    *   The project data.
@@ -351,14 +361,13 @@ class UpdateHelper {
    *   The major version to check.
    *
    * @return array
-   *   The LTS release information.
+   *   The LTS release information if set, otherwise NULL.
    */
   private static function getMajorLts(array $project_data, $major_version) {
     if (empty($project_data['lts_releases'])) {
       return NULL;
     }
     foreach ($project_data['lts_releases'] as $lts_release) {
-
       // There should only be one LTS version per major version.
       if ((int) $major_version === (int) $lts_release['version_major']) {
         return $lts_release;
