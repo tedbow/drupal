@@ -8,7 +8,9 @@
     <lts_releases>
         <lts_release>
             <version_major>8</version_major>
-            <version_minor>8</version_minor>
+            <version_minor>9</version_minor>
+            <version_patch>0</version_patch>
+            <version>8.9.0</version>
             <support_end>11/01/2020</support_end>
         </lts_release>
     </lts_releases>
@@ -18,6 +20,30 @@
     <link>http://example.com/project/drupal</link>
     <terms><term><name>Projects</name><value>Drupal project</value></term></terms>
     <releases>
+        <release>
+          <name>Drupal 8.9.0</name>
+          <version>8.9.0</version>
+          <tag>DRUPAL-8-9-0</tag>
+          <version_major>8</version_major>
+          <version_minor>9</version_minor>
+          <version_patch>0</version_patch>
+          <status>published</status>
+          <release_link>http://example.com/drupal-8-9-0-release</release_link>
+          <download_link>http://example.com/drupal-8-9-0.tar.gz</download_link>
+          <date>1250424641</date>
+          <mdhash>b966255555d9c9b86d480ca08cfaa98e</mdhash>
+          <filesize>4294967296</filesize>
+          <terms>
+            <term>
+              <name>Release type</name>
+              <value>New features</value>
+            </term>
+            <term>
+              <name>Release type</name>
+              <value>Bug fixes</value>
+            </term>
+          </terms>
+        </release>
         <release>
             <name>Drupal 8.8.0</name>
             <version>8.8.0</version>

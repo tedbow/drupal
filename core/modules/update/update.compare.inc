@@ -427,6 +427,9 @@ function update_calculate_project_update_status(&$project_data, $available) {
     $project_data['recommended'] = $project_data['latest_version'];
   }
 
+  if (isset($available['lts_releases']) && !isset($project_data['lts_releases'])) {
+    $project_data['lts_releases'] = $available['lts_releases'];
+  }
   $project_data['security_coverage_info'] = UpdateHelper::getSecurityCoverageInfo($project_data, $available['releases']);
 
   if (isset($project_data['status'])) {

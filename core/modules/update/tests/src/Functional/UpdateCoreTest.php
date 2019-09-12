@@ -370,6 +370,7 @@ class UpdateCoreTest extends UpdateTestBase {
     if ($requirements_section_message) {
       $this->assertNotEmpty($coverage_messages, 'If a requirements section is provided expected message must be provided');
       // Ensure that messages are under the correct section.
+      file_put_contents('/Users/ted.bowman/Sites/www/test.html', $this->getSession()->getPage()->getOuterHtml());
       $assert_session->elementExists('css', "div:contains('$requirements_section_message') summary:contains('Drupal core security coverage')");
       $cover_message_locator = 'details.system-status-report__entry:contains("Drupal core security coverage")';
       $assert_session->elementExists('css', $cover_message_locator);
@@ -393,50 +394,116 @@ class UpdateCoreTest extends UpdateTestBase {
     $release_coverage_message = 'Visit the release cycle overview for more information on supported releases.';
     $update_status_message = 'See the available updates page for more information.';
     return [
-      '0.0, unsupported' => [
-        'site_patch_version' => '0.0',
-        'requirements_section' => 'Errors found',
-        'fixture' => 'sec.2.0_3rc1',
-        'coverage_messages' => [
-          'The installed minor version of Drupal, 8.0, is no longer supported and will not receive security updates.',
-          'Update to a supported minor as soon as possible to continue receiving security updates.',
-          $release_coverage_message,
-          $update_status_message,
-        ],
-        'not_contains_messages' => [
-          'or higher soon to continue receiving security updates.',
-        ],
-      ],
-      '1.0, supported with 3rc' => [
-        'site_patch_version' => '1.0',
-        'requirements_section_message' => 'Warnings found',
-        'fixture' => 'sec.2.0_3rc1',
-        'coverage_messages' => [
-          'The installed minor version of Drupal, 8.1, will receive security updates until the release of 8.3.0.',
-          'Update to 8.2 or higher soon to continue receiving security updates.',
-          $release_coverage_message,
-          $update_status_message,
-        ],
-        'not_contains_messages' => [],
-      ],
-      '1.0, supported' => [
-        'site_patch_version' => '1.0',
-        'requirements_section_message' => 'Warnings found',
-        'fixture' => 'sec.2.0',
-        'coverage_messages' => [
-          'The installed minor version of Drupal, 8.1, will receive security updates until the release of 8.3.0.',
-          'Update to 8.2 or higher soon to continue receiving security updates.',
-          $release_coverage_message,
-          $update_status_message,
-        ],
-        'not_contains_messages' => [],
-      ],
-      '2.0, supported with 3rc' => [
-        'site_patch_version' => '2.0',
+//      '0.0, unsupported' => [
+//        'site_patch_version' => '0.0',
+//        'requirements_section' => 'Errors found',
+//        'fixture' => 'sec.2.0_3rc1',
+//        'coverage_messages' => [
+//          'The installed minor version of Drupal, 8.0, is no longer supported and will not receive security updates.',
+//          'Update to a supported minor as soon as possible to continue receiving security updates.',
+//          $release_coverage_message,
+//          $update_status_message,
+//        ],
+//        'not_contains_messages' => [
+//          'or higher soon to continue receiving security updates.',
+//        ],
+//      ],
+//      '1.0, supported with 3rc' => [
+//        'site_patch_version' => '1.0',
+//        'requirements_section_message' => 'Warnings found',
+//        'fixture' => 'sec.2.0_3rc1',
+//        'coverage_messages' => [
+//          'The installed minor version of Drupal, 8.1, will receive security updates until the release of 8.3.0.',
+//          'Update to 8.2 or higher soon to continue receiving security updates.',
+//          $release_coverage_message,
+//          $update_status_message,
+//        ],
+//        'not_contains_messages' => [],
+//      ],
+//      '1.0, supported' => [
+//        'site_patch_version' => '1.0',
+//        'requirements_section_message' => 'Warnings found',
+//        'fixture' => 'sec.2.0',
+//        'coverage_messages' => [
+//          'The installed minor version of Drupal, 8.1, will receive security updates until the release of 8.3.0.',
+//          'Update to 8.2 or higher soon to continue receiving security updates.',
+//          $release_coverage_message,
+//          $update_status_message,
+//        ],
+//        'not_contains_messages' => [],
+//      ],
+//      '2.0, supported with 3rc' => [
+//        'site_patch_version' => '2.0',
+//        'requirements_section_message' => 'Checked',
+//        'fixture' => 'sec.2.0_3rc1',
+//        'coverage_messages' => [
+//          'The installed minor version of Drupal, 8.2, will receive security updates until the release of 8.4.0.',
+//          $release_coverage_message,
+//        ],
+//        'not_contains_messages' => [
+//          'or higher soon to continue receiving security updates.',
+//          $update_status_message,
+//        ],
+//      ],
+//      '2.0, supported' => [
+//        'site_patch_version' => '2.0',
+//        'requirements_section_message' => 'Checked',
+//        'fixture' => 'sec.2.0',
+//        'coverage_messages' => [
+//          'The installed minor version of Drupal, 8.2, will receive security updates until the release of 8.4.0.',
+//          $release_coverage_message,
+//        ],
+//        'not_contains_messages' => [
+//          'or higher soon to continue receiving security updates.',
+//          $update_status_message,
+//        ],
+//      ],
+//      // Ensure we don't show messages for pre-release or dev versions.
+//      '2.0-beta2, no message' => [
+//        'site_patch_version' => '2.0-beta2',
+//        'requirements_section_message' => '',
+//        'fixture' => 'sec.2.0_3rc1',
+//        'coverage_messages' => [],
+//        'not_contains_messages' => [],
+//      ],
+//      '1.0-dev, no message' => [
+//        'site_patch_version' => '1.0-dev',
+//        'requirements_section_message' => '',
+//        'fixture' => 'sec.2.0_3rc1',
+//        'coverage_messages' => [],
+//        'not_contains_messages' => [],
+//      ],
+//      // Ensure that if the next major version is release we still display a no
+//      // longer supported message if we can be sure it is not.
+//      '0.0, 9 unsupported' => [
+//        'site_patch_version' => '0.0',
+//        'requirements_section_message' => 'Errors found',
+//        'fixture' => 'sec.2.0_9',
+//        'coverage_messages' => [
+//          'The installed minor version of Drupal, 8.0, is no longer supported and will not receive security updates.',
+//          'Update to a supported minor as soon as possible to continue receiving security updates.',
+//          $release_coverage_message,
+//          $update_status_message,
+//        ],
+//        'not_contains_messages' => [
+//          'or higher soon to continue receiving security updates.',
+//        ],
+//      ],
+//      // Ensure that if the next major version has been released and we do not
+//      // know if the current version is supported we do not show any message.
+//      '2.0, 9 no message' => [
+//        'site_patch_version' => '2.0',
+//        'requirements_section_message' => '',
+//        'fixture' => 'sec.2.0_9',
+//        'coverage_messages' => [],
+//        'not_contains_messages' => [],
+//      ],
+      '8.8, supported' => [
+        'site_patch_version' => '8.0',
         'requirements_section_message' => 'Checked',
-        'fixture' => 'sec.2.0_3rc1',
+        'fixture' => 'sec.8.0',
         'coverage_messages' => [
-          'The installed minor version of Drupal, 8.2, will receive security updates until the release of 8.4.0.',
+          'The installed minor version of Drupal, 8.8, will receive security updates until the release of 9.0.0.',
           $release_coverage_message,
         ],
         'not_contains_messages' => [
@@ -444,58 +511,18 @@ class UpdateCoreTest extends UpdateTestBase {
           $update_status_message,
         ],
       ],
-      '2.0, supported' => [
-        'site_patch_version' => '2.0',
+      '8.9, lts' => [
+        'site_patch_version' => '9.2',
         'requirements_section_message' => 'Checked',
-        'fixture' => 'sec.2.0',
+        'fixture' => 'sec.8.0',
         'coverage_messages' => [
-          'The installed minor version of Drupal, 8.2, will receive security updates until the release of 8.4.0.',
+          'The installed minor version of %project, %version, is a Long Term Service release and will be supported until 11/01/2020.',
           $release_coverage_message,
         ],
         'not_contains_messages' => [
           'or higher soon to continue receiving security updates.',
           $update_status_message,
         ],
-      ],
-      // Ensure we don't show messages for pre-release or dev versions.
-      '2.0-beta2, no message' => [
-        'site_patch_version' => '2.0-beta2',
-        'requirements_section_message' => '',
-        'fixture' => 'sec.2.0_3rc1',
-        'coverage_messages' => [],
-        'not_contains_messages' => [],
-      ],
-      '1.0-dev, no message' => [
-        'site_patch_version' => '1.0-dev',
-        'requirements_section_message' => '',
-        'fixture' => 'sec.2.0_3rc1',
-        'coverage_messages' => [],
-        'not_contains_messages' => [],
-      ],
-      // Ensure that if the next major version is release we still display a no
-      // longer supported message if we can be sure it is not.
-      '0.0, 9 unsupported' => [
-        'site_patch_version' => '0.0',
-        'requirements_section_message' => 'Errors found',
-        'fixture' => 'sec.2.0_9',
-        'coverage_messages' => [
-          'The installed minor version of Drupal, 8.0, is no longer supported and will not receive security updates.',
-          'Update to a supported minor as soon as possible to continue receiving security updates.',
-          $release_coverage_message,
-          $update_status_message,
-        ],
-        'not_contains_messages' => [
-          'or higher soon to continue receiving security updates.',
-        ],
-      ],
-      // Ensure that if the next major version has been released and we do not
-      // know if the current version is supported we do not show any message.
-      '2.0, 9 no message' => [
-        'site_patch_version' => '2.0',
-        'requirements_section_message' => '',
-        'fixture' => 'sec.2.0_9',
-        'coverage_messages' => [],
-        'not_contains_messages' => [],
       ],
     ];
   }

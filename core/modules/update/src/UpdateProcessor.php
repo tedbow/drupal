@@ -223,6 +223,15 @@ class UpdateProcessor implements UpdateProcessorInterface {
     foreach ($xml as $k => $v) {
       $data[$k] = (string) $v;
     }
+    $data['lts_releases'] = [];
+    if (isset($xml->lts_releases)) {
+      foreach ($xml->lts_releases->children() as $lts_release) {
+        foreach ($lts_release as $key => $value) {
+          $version = (string) $lts_release->version;
+          $data['lts_releases'][$version][$key] = (string) $value;
+        }
+      }
+    }
     $data['releases'] = [];
     if (isset($xml->releases)) {
       foreach ($xml->releases->children() as $release) {
