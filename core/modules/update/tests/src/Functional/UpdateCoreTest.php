@@ -370,7 +370,6 @@ class UpdateCoreTest extends UpdateTestBase {
     if ($requirements_section_message) {
       $this->assertNotEmpty($coverage_messages, 'If a requirements section is provided expected message must be provided');
       // Ensure that messages are under the correct section.
-      file_put_contents('/Users/ted.bowman/Sites/www/test.html', $this->getSession()->getPage()->getOuterHtml());
       $assert_session->elementExists('css', "div:contains('$requirements_section_message') summary:contains('Drupal core security coverage')");
       $cover_message_locator = 'details.system-status-report__entry:contains("Drupal core security coverage")';
       $assert_session->elementExists('css', $cover_message_locator);
@@ -512,11 +511,11 @@ class UpdateCoreTest extends UpdateTestBase {
         ],
       ],
       '8.9, lts' => [
-        'site_patch_version' => '9.2',
-        'requirements_section_message' => 'Checked',
+        'site_patch_version' => '9.0',
+        'requirements_section_message' => 'Long Term Service version',
         'fixture' => 'sec.8.0',
         'coverage_messages' => [
-          'The installed minor version of %project, %version, is a Long Term Service release and will be supported until 11/01/2020.',
+          'The installed minor version of Drupal, 8.9, is a Long Term Service release and will be supported until 11/01/2020.',
           $release_coverage_message,
         ],
         'not_contains_messages' => [

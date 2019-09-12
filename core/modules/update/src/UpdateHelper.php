@@ -174,7 +174,6 @@ class UpdateHelper {
    *   The security coverage message, or an empty string if there is none.
    */
   private static function getSecurityCoverageMessage(array $project_data) {
-      file_put_contents('/Users/ted.bowman/Sites/www/kg.txt', print_r($project_data, TRUE));
     if (!isset($project_data['security_coverage_info']['additional_minors_coverage'])) {
       return '';
     }
@@ -279,7 +278,6 @@ class UpdateHelper {
         return $requirement;
       }
     }
-    file_put_contents('/Users/ted.bowman/Sites/www/ffff.txt', print_r($project_data, TRUE));
     return NULL;
   }
 
