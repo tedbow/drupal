@@ -43,7 +43,7 @@ class UpdateHelper {
         // $support_until_release has not we cannot know the coverage status.
         return [];
       }
-      $info['additional_minors_coverage'] = static::getAdditionalSecuritySupportedMinors($support_until_release, $releases);
+      $info['additional_minors_coverage'] = static::getAdditionalSecuritySupportedMinors($support_until_release, $releases, $project_data['supported_majors']);
     }
     if ($existing_release = static::getExistingRelease($project_data, $releases)) {
       if ($lts_release = static::getMajorLts($project_data, $existing_release['version_major'])) {
@@ -63,19 +63,21 @@ class UpdateHelper {
    *   The security supported release.
    * @param array $releases
    *   Releases as returned by update_get_available().
+   * @param array $supported_majors
+   *   Major version that are supported.
    *
    * @return int
    *   The number of additional supported minor releases.
    *
-   * @throws \Exception
    */
-  private static function getAdditionalSecuritySupportedMinors(array $security_supported_release_info, array $releases) {
+  private static function getAdditionalSecuritySupportedMinors(array $security_supported_release_info, array $releases, array $supported_majors) {
     $latest_full_release = static::getMostRecentFullRelease($releases);
-    if ((int) $latest_full_release['version_major'] > (int) $security_supported_release_info['version_major']) {
+    $support_until_major = (int) $security_supported_release_info['version_major'];
+    if ((int) $latest_full_release['version_major'] > $support_until_major) {
       // Even if there is new major version we can know if the installed version
       // is not supported because the version it is supported till has already
       // been released.
-      if ($latest_full_release = static::getMostRecentFullRelease($releases, $security_supported_release_info['version_major'])) {
+      if ($latest_full_release = static::getMostRecentFullRelease($releases,$support_until_major)) {
         if ((int) $security_supported_release_info['version_minor'] <= (int) $latest_full_release['version_minor']) {
           return -1;
         }
@@ -84,10 +86,13 @@ class UpdateHelper {
         }
       }
     }
-    elseif ((int) $latest_full_release['version_major'] === (int) $security_supported_release_info['version_major']) {
+    elseif ((int) $latest_full_release['version_major'] === $support_until_major) {
       return (int) $security_supported_release_info['version_minor'] - (int) $latest_full_release['version_minor'];
     }
     else {
+      if (in_array($support_until_major, $supported_majors) && (int) $security_supported_release_info['version_minor'] === 0 && (int) $security_supported_release_info['version_patch'] === 0) {
+        return -1;
+      }
       // The latest full release was a lower major version.
       return static::CORE_MINORS_SUPPORTED;
     }
