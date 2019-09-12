@@ -512,6 +512,36 @@ class UpdateCoreTest extends UpdateTestBase {
           $update_status_message,
         ],
       ],
+      // Ensure that LTS releases set in XML will override fallback LTS release
+      // information set in code.
+      '8.8, supported new LTS' => [
+        'site_patch_version' => '8.0',
+        'requirements_section_message' => 'Checked',
+        'fixture' => 'sec.8.0-9-supported-lts-set',
+        'coverage_messages' => [
+          'The installed minor version of Drupal, 8.8, will receive security updates until the release of 8.10.0.',
+          'or higher soon to continue receiving security updates.',
+          $release_coverage_message,
+          $update_status_message,
+        ],
+        'not_contains_messages' => [],
+      ],
+      // Ensure an LTS set in the XML will cause the fallback LTS treated as a
+      // normal release.
+      '8.9, 9 support, new LTS' => [
+        'site_patch_version' => '9.0',
+        'requirements_section_message' => 'Errors found',
+        'fixture' => 'sec.8.0-9-supported-lts-set',
+        'coverage_messages' => [
+          'The installed minor version of Drupal, 8.9, is no longer supported and will not receive security updates.',
+          'Update to a supported minor as soon as possible to continue receiving security updates.',
+          $release_coverage_message,
+          $update_status_message,
+        ],
+        'not_contains_messages' => [
+          'or higher soon to continue receiving security updates.',
+        ],
+      ],
       // Ensure that 'supported_majors' value including '9' will indicate that
       // a version that is supported until 9.0.0 is unsupported.
       '8.8, 9 supported' => [
@@ -534,7 +564,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'requirements_section_message' => 'Long Term Service version',
         'fixture' => 'sec.8.0-9-supported',
         'coverage_messages' => [
-          'The installed minor version of Drupal, 8.9, is a Long Term Service release and will be supported until 11/01/2020.',
+          'The installed minor version of Drupal, 8.9, is a Long Term Service release and will be supported until 11/01/21.',
           $release_coverage_message,
         ],
         'not_contains_messages' => [
