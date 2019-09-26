@@ -270,7 +270,7 @@ class UpdateHelper {
     $minor_version = (int) $minor_version;
     $requirement = [];
     if ($minor_version === 8) {
-      $requirement = static::createRequirementForSupportEndDate($project_data, '12/02/2020');
+      $requirement = static::createRequirementForSupportEndDate($project_data, '12/02/2020', TRUE);
     }
     if ($minor_version === 9) {
       $requirement = static::createRequirementForSupportEndDate($project_data, '11/01/2021');
@@ -342,15 +342,17 @@ class UpdateHelper {
    *
    * @return array
    */
-  private static function createRequirementForSupportEndDate(array $project_data, $end_date_string) {
+  private static function createRequirementForSupportEndDate(array $project_data, $end_date_string, $six_month_warning = FALSE) {
     list(,$minor_version) = explode('.', $project_data['existing_version']);
     $minor_version = (int) $minor_version;
     $requirement = [];
     $current_minor = "{$project_data['existing_major']}.$minor_version";
-    $end_timestamp = \DateTime::createFromFormat('m/d/Y', $end_date_string)->getTimestamp();
+    $end_date = \DateTime::createFromFormat('m/d/Y', $end_date_string);
+    $end_timestamp = $end_date->getTimestamp();
     /** @var \Drupal\Component\Datetime\Time $time */
     $time = \Drupal::service('datetime.time');
-    if ($end_timestamp <= $time->getRequestTime()) {
+    $request_time = $time->getRequestTime();
+    if ($end_timestamp <= $request_time) {
       // LTS support is over.
       $requirement['value'] = t('Unsupported minor version');
       $requirement['severity'] = SystemManager::REQUIREMENT_ERROR;
@@ -369,6 +371,9 @@ class UpdateHelper {
             '%date' => $date_formatter->format($end_timestamp, 'html_date'),
           ]
         ) . '</p>';
+      if ($six_month_warning && $end_date->sub(\DateInterval::createFromDateString('6 months'))->getTimestamp() <= $request_time) {
+        $requirement['description'] .= '<p>' . t('Update to a supported minor version soon to continue receiving security updates.') . '</p>';
+      }
     }
     return $requirement;
   }

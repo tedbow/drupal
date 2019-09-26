@@ -395,7 +395,8 @@ class UpdateCoreTest extends UpdateTestBase {
     $release_coverage_message = 'Visit the release cycle overview for more information on supported releases.';
     $update_status_message = 'See the available updates page for more information.';
     $update_asap_message = 'Update to a supported minor as soon as possible to continue receiving security updates.';
-    $update_soon_message = 'or higher soon to continue receiving security updates.';
+    $update_or_higher_soon_message = 'or higher soon to continue receiving security updates.';
+    $update_soon_message = 'Update to a supported minor version soon to continue receiving security updates.';
     return [
       '0.0, unsupported' => [
         'site_patch_version' => '0.0',
@@ -408,7 +409,7 @@ class UpdateCoreTest extends UpdateTestBase {
           $update_status_message,
         ],
         'not_contains_messages' => [
-          $update_soon_message,
+          $update_or_higher_soon_message,
         ],
         'mock_date' => '',
       ],
@@ -447,7 +448,7 @@ class UpdateCoreTest extends UpdateTestBase {
           $release_coverage_message,
         ],
         'not_contains_messages' => [
-          $update_soon_message,
+          $update_or_higher_soon_message,
           $update_status_message,
         ],
         'mock_date' => '',
@@ -461,7 +462,7 @@ class UpdateCoreTest extends UpdateTestBase {
           $release_coverage_message,
         ],
         'not_contains_messages' => [
-          $update_soon_message,
+          $update_or_higher_soon_message,
           $update_status_message,
         ],
         'mock_date' => '',
@@ -496,7 +497,7 @@ class UpdateCoreTest extends UpdateTestBase {
           $update_status_message,
         ],
         'not_contains_messages' => [
-          $update_soon_message,
+          $update_or_higher_soon_message,
         ],
         'mock_date' => '',
       ],
@@ -521,7 +522,7 @@ class UpdateCoreTest extends UpdateTestBase {
           $update_asap_message,
         ],
         'not_contains_messages' => [
-          $update_soon_message,
+          $update_or_higher_soon_message,
         ],
         'mock_date' => '11/02/2021',
       ],
@@ -534,7 +535,7 @@ class UpdateCoreTest extends UpdateTestBase {
           $update_asap_message,
         ],
         'not_contains_messages' => [
-          $update_soon_message,
+          $update_or_higher_soon_message,
         ],
         'mock_date' => '12/03/2020',
       ],
@@ -547,7 +548,10 @@ class UpdateCoreTest extends UpdateTestBase {
         ],
         'not_contains_messages' => [
           $update_asap_message,
+          // The LTS release will not give a special warning as the end date
+          // get closer.
           $update_soon_message,
+          $update_or_higher_soon_message,
         ],
         'mock_date' => '10/31/2021',
       ],
@@ -559,10 +563,25 @@ class UpdateCoreTest extends UpdateTestBase {
           'The installed minor version of Drupal, 8.8, will receive security updates until 2020-12-02.',
         ],
         'not_contains_messages' => [
+          $update_soon_message,
           $update_asap_message,
+          $update_or_higher_soon_message,
+        ],
+        'mock_date' => '6/01/2020',
+      ],
+      '8.8, supported, 6 months warn' => [
+        'site_patch_version' => '8.0',
+        'requirements_section_message' => 'Errors found',
+        'fixture' => 'sec.9.0',
+        'coverage_messages' => [
+          'The installed minor version of Drupal, 8.8, will receive security updates until 2020-12-02.',
           $update_soon_message,
         ],
-        'mock_date' => '11/30/2020',
+        'not_contains_messages' => [
+          $update_asap_message,
+          $update_or_higher_soon_message,
+        ],
+        'mock_date' => '6/02/2020',
       ],
     ];
   }
