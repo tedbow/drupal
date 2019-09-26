@@ -242,7 +242,6 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Older release history XML file without supported or recommended.
     $supported_majors[] = $available['default_major'];
   }
-  $project_data['supported_majors'] = $supported_majors;
 
   if (in_array($existing_major, $supported_majors)) {
     // Still supported, stay at the current major version.

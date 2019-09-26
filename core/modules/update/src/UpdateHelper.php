@@ -41,7 +41,7 @@ class UpdateHelper {
     if ($lts_requirement = static::getLtsRequirement($project_data, $releases)) {
       $info['lts_requirement'] = $lts_requirement;
     }
-    else if ($support_until_release = static::getSupportUntilReleaseInfo($project_data, $releases)) {
+    elseif ($support_until_release = static::getSupportUntilReleaseInfo($project_data, $releases)) {
       $info['supported_until'] = $support_until_release;
       if (static::isNextMajorReleasedWithoutSupportedReleased($releases, $support_until_release)) {
         // If the next major version has been released but
@@ -336,26 +336,6 @@ class UpdateHelper {
   }
 
   /**
-   * @param string $title
-   * @param string $current_minor
-   * @param int $timestamp
-   *
-   * @return string
-   */
-  private static function getSupportedUntilDateMessage($title, $current_minor, $timestamp) {
-    /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
-    $date_formatter = \Drupal::service('date.formatter');
-    return '<p>' . t(
-        'The installed minor version of %project, %version, will receive security updates until %date.',
-        [
-          '%project' => $title,
-          '%version' => $current_minor,
-          '%date' => $date_formatter->format($timestamp, 'html_date'),
-        ]
-      ) . '</p>';
-  }
-
-  /**
    * @param array $project_data
    * @param array $requirement
    * @param $current_minor
@@ -377,9 +357,18 @@ class UpdateHelper {
       $requirement['description'] = static::getVersionNotSupportedMessage($project_data['title'], $current_minor);
     }
     else {
+      /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
+      $date_formatter = \Drupal::service('date.formatter');
       $requirement['value'] = t('Supported minor version');
       $requirement['severity'] = SystemManager::REQUIREMENT_WARNING;
-      $requirement['description'] = static::getSupportedUntilDateMessage($project_data['title'], $current_minor, $end_timestamp);
+      $requirement['description'] = '<p>' . t(
+          'The installed minor version of %project, %version, will receive security updates until %date.',
+          [
+            '%project' => $project_data['title'],
+            '%version' => $current_minor,
+            '%date' => $date_formatter->format($end_timestamp, 'html_date'),
+          ]
+        ) . '</p>';
     }
     return $requirement;
   }
