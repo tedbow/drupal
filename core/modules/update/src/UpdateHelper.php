@@ -270,7 +270,7 @@ class UpdateHelper {
     $minor_version = (int) $minor_version;
     $requirement = [];
     if ($minor_version === 8) {
-      $requirement = static::createRequirementForSupportEndDate($project_data, '12/02/2020', TRUE);
+      $requirement = static::createRequirementForSupportEndDate($project_data, '12/02/2020', '6 months');
     }
     if ($minor_version === 9) {
       $requirement = static::createRequirementForSupportEndDate($project_data, '11/01/2021');
@@ -342,7 +342,7 @@ class UpdateHelper {
    *
    * @return array
    */
-  private static function createRequirementForSupportEndDate(array $project_data, $end_date_string, $six_month_warning = FALSE) {
+  private static function createRequirementForSupportEndDate(array $project_data, $end_date_string, $warn_at = '') {
     list(,$minor_version) = explode('.', $project_data['existing_version']);
     $minor_version = (int) $minor_version;
     $requirement = [];
@@ -371,7 +371,7 @@ class UpdateHelper {
             '%date' => $date_formatter->format($end_timestamp, 'html_date'),
           ]
         ) . '</p>';
-      if ($six_month_warning && $end_date->sub(\DateInterval::createFromDateString('6 months'))->getTimestamp() <= $request_time) {
+      if ($warn_at && $end_date->sub(\DateInterval::createFromDateString($warn_at))->getTimestamp() <= $request_time) {
         $requirement['description'] .= '<p>' . t('Update to a supported minor version soon to continue receiving security updates.') . '</p>';
       }
     }
