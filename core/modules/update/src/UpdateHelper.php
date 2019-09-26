@@ -7,7 +7,7 @@ use Drupal\Core\Url;
 use Drupal\system\SystemManager;
 
 /**
- * Update helper methods.
+ * Update helper methods to determine security coverage.
  *
  * @internal
  */
