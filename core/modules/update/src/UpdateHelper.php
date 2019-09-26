@@ -217,7 +217,7 @@ class UpdateHelper {
    *   An array if there is security coverage requirement, otherwise NULL.
    */
   public static function getSecurityCoverageRequirement(array $project_data) {
-    if ($project_data['project_type'] == 'core') {
+    if ($project_data['project_type'] === 'core' && $project_data['name'] === 'drupal') {
       $requirement['title'] = t('Drupal core security coverage');
       if (!empty($project_data['security_coverage_info'])) {
         $security_coverage_info = $project_data['security_coverage_info'];
@@ -359,7 +359,7 @@ class UpdateHelper {
       // LTS support is over.
       $requirement['value'] = t('Unsupported minor version');
       $requirement['severity'] = SystemManager::REQUIREMENT_ERROR;
-      $requirement['description'] = static::getVersionNotSupportedMessage($project_data['title'], $current_minor);
+      $requirement['description'] = static::getVersionNotSupportedMessage($project_data['name'], $current_minor);
     }
     else {
       /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
@@ -369,7 +369,7 @@ class UpdateHelper {
       $requirement['description'] = '<p>' . t(
           'The installed minor version of %project, %version, will receive security updates until %date.',
           [
-            '%project' => $project_data['title'],
+            '%project' => $project_data['name'],
             '%version' => $current_minor,
             '%date' => $date_formatter->format($end_timestamp, 'html_date'),
           ]
