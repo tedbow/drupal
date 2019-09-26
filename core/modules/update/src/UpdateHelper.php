@@ -269,64 +269,11 @@ class UpdateHelper {
     list(,$minor_version) = explode('.', $project_data['existing_version']);
     $minor_version = (int) $minor_version;
     $requirement = [];
-    $current_minor = "{$project_data['existing_major']}.$minor_version";
     if ($minor_version === 8) {
-      // Drupal 8.8.x is only supported until 9.0.0 is released.
-      if (in_array(9, $project_data['supported_majors'])) {
-        // If 9 is supported 9.0.0 has been released and 8.8.x is no longer
-        // supported.
-        $requirement['description'] = static::getVersionNotSupportedMessage($project_data['title'], $current_minor);
-        $requirement['severity'] = SystemManager::REQUIREMENT_ERROR;
-        $requirement['value'] = t('Unsupported minor version');
-      }
-      else {
-        $latest_full_release = static::getMostRecentFullRelease($releases);
-        $latest_minor = (int) $latest_full_release['version_minor'];
-        if ($latest_minor > 9) {
-          // 🙀 We didn't expect an minor version after 8.9. what to do?
-        }
-        else {
-          $additional_minors_coverage = $latest_minor === 9 ? 1 : 2;
-          $requirement['description'] = static::getVersionSupportedMessage($project_data['title'], $current_minor, '9.0.0', $project_data['existing_release'], $additional_minors_coverage);
-          $requirement['severity'] = SystemManager::REQUIREMENT_OK;
-          $requirement['value'] = t('Supported minor version');
-        }
-      }
+      $requirement = static::createRequirementForSupportEndDate($project_data, '12/02/2020');
     }
     if ($minor_version === 9) {
-      $lts_end_date = \DateTime::createFromFormat('m/d/Y', '11/01/2021');
-      /** @var \Drupal\Component\Datetime\Time $time */
-      $time = \Drupal::service('datetime.time');
-      $request_time = $time->getRequestTime();
-      if ($lts_end_date->getTimestamp() <= $request_time) {
-        // LTS support is over.
-        $requirement['value'] = t('Unsupported minor version');
-        $requirement['severity'] = SystemManager::REQUIREMENT_ERROR;
-        $requirement['description'] = $message = '<p>' . t(
-            'The installed minor version of %project, %version, is no longer supported and will not receive security updates.',
-            [
-              '%project' => $project_data['title'],
-              '%version' => $current_minor,
-            ])
-          . '</p><p>'
-          . t(
-            'Update to a Drupal 9 as soon as possible to continue receiving security updates.')
-          . ' ' . static::getAvailableUpdatesMessage() . '</p>';
-      }
-      else {
-        $requirement['value'] = t('Supported minor version');
-        $requirement['severity'] = SystemManager::REQUIREMENT_WARNING;
-        /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
-        $date_formatter = \Drupal::service('date.formatter');
-        $requirement['description'] = '<p>' . t(
-            'The installed minor version of %project, %version, will receive security updates until %date',
-            [
-              '%project' => $project_data['title'],
-              '%version' =>$current_minor,
-              '%date' => $date_formatter->format($lts_end_date->getTimestamp()),
-            ]
-          ) . '</p>';
-      }
+      $requirement = static::createRequirementForSupportEndDate($project_data, '11/01/2021');
     }
     if (isset($requirement['description'])) {
       $requirement['description'] = Markup::create($requirement['description']);
@@ -337,7 +284,6 @@ class UpdateHelper {
   /**
    * @param string $project
    * @param string $version
-   * @param string $available_updates_message
    *
    * @return string
    */
@@ -359,10 +305,10 @@ class UpdateHelper {
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
    */
   private static function getAvailableUpdatesMessage() {
-    return t('See the <a href=":update_status_report">available updates</a> page for more information.', [
-      ':update_status_report' => Url::fromRoute('update.status')
-        ->toString()
-    ]);
+    return t(
+      'See the <a href=":update_status_report">available updates</a> page for more information.',
+      [':update_status_report' => Url::fromRoute('update.status')->toString()]
+    );
   }
 
   private static function getVersionSupportedMessage($title, $current_minor, $supported_until_version, $existing_release, $additional_minors_coverage) {
@@ -387,6 +333,55 @@ class UpdateHelper {
         ) . ' ' . static::getAvailableUpdatesMessage() . '</p>';
     }
     return $message;
+  }
+
+  /**
+   * @param string $title
+   * @param string $current_minor
+   * @param int $timestamp
+   *
+   * @return string
+   */
+  private static function getSupportedUntilDateMessage($title, $current_minor, $timestamp) {
+    /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
+    $date_formatter = \Drupal::service('date.formatter');
+    return '<p>' . t(
+        'The installed minor version of %project, %version, will receive security updates until %date.',
+        [
+          '%project' => $title,
+          '%version' => $current_minor,
+          '%date' => $date_formatter->format($timestamp, 'html_date'),
+        ]
+      ) . '</p>';
+  }
+
+  /**
+   * @param array $project_data
+   * @param array $requirement
+   * @param $current_minor
+   *
+   * @return array
+   */
+  private static function createRequirementForSupportEndDate(array $project_data, $end_date_string) {
+    list(,$minor_version) = explode('.', $project_data['existing_version']);
+    $minor_version = (int) $minor_version;
+    $requirement = [];
+    $current_minor = "{$project_data['existing_major']}.$minor_version";
+    $end_timestamp = \DateTime::createFromFormat('m/d/Y', $end_date_string)->getTimestamp();
+    /** @var \Drupal\Component\Datetime\Time $time */
+    $time = \Drupal::service('datetime.time');
+    if ($end_timestamp <= $time->getRequestTime()) {
+      // LTS support is over.
+      $requirement['value'] = t('Unsupported minor version');
+      $requirement['severity'] = SystemManager::REQUIREMENT_ERROR;
+      $requirement['description'] = static::getVersionNotSupportedMessage($project_data['title'], $current_minor);
+    }
+    else {
+      $requirement['value'] = t('Supported minor version');
+      $requirement['severity'] = SystemManager::REQUIREMENT_WARNING;
+      $requirement['description'] = static::getSupportedUntilDateMessage($project_data['title'], $current_minor, $end_timestamp);
+    }
+    return $requirement;
   }
 
 }

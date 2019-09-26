@@ -394,19 +394,21 @@ class UpdateCoreTest extends UpdateTestBase {
   public function securityCoverageMessageProvider() {
     $release_coverage_message = 'Visit the release cycle overview for more information on supported releases.';
     $update_status_message = 'See the available updates page for more information.';
-    $a =  [
+    $update_asap_message = 'Update to a supported minor as soon as possible to continue receiving security updates.';
+    $update_soon_message = 'or higher soon to continue receiving security updates.';
+    return [
       '0.0, unsupported' => [
         'site_patch_version' => '0.0',
         'requirements_section' => 'Errors found',
         'fixture' => 'sec.2.0_3rc1',
         'coverage_messages' => [
           'The installed minor version of Drupal, 8.0, is no longer supported and will not receive security updates.',
-          'Update to a supported minor as soon as possible to continue receiving security updates.',
+          $update_asap_message,
           $release_coverage_message,
           $update_status_message,
         ],
         'not_contains_messages' => [
-          'or higher soon to continue receiving security updates.',
+          $update_soon_message,
         ],
         'mock_date' => '',
       ],
@@ -445,7 +447,7 @@ class UpdateCoreTest extends UpdateTestBase {
           $release_coverage_message,
         ],
         'not_contains_messages' => [
-          'or higher soon to continue receiving security updates.',
+          $update_soon_message,
           $update_status_message,
         ],
         'mock_date' => '',
@@ -459,7 +461,7 @@ class UpdateCoreTest extends UpdateTestBase {
           $release_coverage_message,
         ],
         'not_contains_messages' => [
-          'or higher soon to continue receiving security updates.',
+          $update_soon_message,
           $update_status_message,
         ],
         'mock_date' => '',
@@ -489,12 +491,12 @@ class UpdateCoreTest extends UpdateTestBase {
         'fixture' => 'sec.2.0_9',
         'coverage_messages' => [
           'The installed minor version of Drupal, 8.0, is no longer supported and will not receive security updates.',
-          'Update to a supported minor as soon as possible to continue receiving security updates.',
+          $update_asap_message,
           $release_coverage_message,
           $update_status_message,
         ],
         'not_contains_messages' => [
-          'or higher soon to continue receiving security updates.',
+          $update_soon_message,
         ],
         'mock_date' => '',
       ],
@@ -502,8 +504,8 @@ class UpdateCoreTest extends UpdateTestBase {
       // know if the current version is supported we do not show any message.
       '2.0, 9 no message' => [
         'site_patch_version' => '2.0',
-        'requirements_section_message' => 'Errors found',
-        'fixture' => 'sec.9.0',
+        'requirements_section_message' => '',
+        'fixture' => 'sec.2.0_9',
         'coverage_messages' => [],
         'not_contains_messages' => [],
         'mock_date' => '',
@@ -512,14 +514,57 @@ class UpdateCoreTest extends UpdateTestBase {
       // know if the current version is supported we do not show any message.
       '8.9, lts over' => [
         'site_patch_version' => '9.0',
-        'requirements_section_message' => '',
+        'requirements_section_message' => 'Errors found',
         'fixture' => 'sec.9.0',
-        'coverage_messages' => [],
-        'not_contains_messages' => [],
-        'mock_date' => '11/02/2022',
+        'coverage_messages' => [
+          'The installed minor version of Drupal, 8.9, is no longer supported and will not receive security updates.',
+          $update_asap_message,
+        ],
+        'not_contains_messages' => [
+          $update_soon_message,
+        ],
+        'mock_date' => '11/02/2021',
+      ],
+      '8.8, support over' => [
+        'site_patch_version' => '8.0',
+        'requirements_section_message' => 'Errors found',
+        'fixture' => 'sec.9.0',
+        'coverage_messages' => [
+          'The installed minor version of Drupal, 8.8, is no longer supported and will not receive security updates.',
+          $update_asap_message,
+        ],
+        'not_contains_messages' => [
+          $update_soon_message,
+        ],
+        'mock_date' => '12/03/2020',
+      ],
+      '8.9, lts' => [
+        'site_patch_version' => '9.0',
+        'requirements_section_message' => 'Errors found',
+        'fixture' => 'sec.9.0',
+        'coverage_messages' => [
+          'The installed minor version of Drupal, 8.9, will receive security updates until 2021-11-01.',
+        ],
+        'not_contains_messages' => [
+          $update_asap_message,
+          $update_soon_message,
+        ],
+        'mock_date' => '10/31/2021',
+      ],
+      '8.8, supported' => [
+        'site_patch_version' => '8.0',
+        'requirements_section_message' => 'Errors found',
+        'fixture' => 'sec.9.0',
+        'coverage_messages' => [
+          'The installed minor version of Drupal, 8.8, will receive security updates until 2020-12-02.',
+        ],
+        'not_contains_messages' => [
+          $update_asap_message,
+          $update_soon_message,
+        ],
+        'mock_date' => '11/30/2020',
       ],
     ];
-    return [$a['8.9, lts over']];
   }
 
   /**
