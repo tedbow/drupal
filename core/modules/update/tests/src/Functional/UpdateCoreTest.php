@@ -397,7 +397,7 @@ class UpdateCoreTest extends UpdateTestBase {
     $update_asap_message = 'Update to a supported minor as soon as possible to continue receiving security updates.';
     $update_or_higher_soon_message = 'or higher soon to continue receiving security updates.';
     $update_soon_message = 'Update to a supported minor version soon to continue receiving security updates.';
-    return [
+    $test_cases = [
       '0.0, unsupported' => [
         'site_patch_version' => '0.0',
         'requirements_section' => 'Errors found',
@@ -511,8 +511,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'not_contains_messages' => [],
         'mock_date' => '',
       ],
-      // Ensure that if the next major version has been released and we do not
-      // know if the current version is supported we do not show any message.
+      // Ensure that if LTS support window is finished a message is displayed.
       '8.9, lts over' => [
         'site_patch_version' => '9.0',
         'requirements_section_message' => 'Errors found',
@@ -526,6 +525,8 @@ class UpdateCoreTest extends UpdateTestBase {
         ],
         'mock_date' => '2021-11-02',
       ],
+      // Ensure that if the 8.8 support window is finished a message is
+      // displayed.
       '8.8, support over' => [
         'site_patch_version' => '8.0',
         'requirements_section_message' => 'Errors found',
@@ -539,6 +540,8 @@ class UpdateCoreTest extends UpdateTestBase {
         ],
         'mock_date' => '2020-12-03',
       ],
+      // Ensure that if LTS support window is not finished a message is
+      // displayed.
       '8.9, lts' => [
         'site_patch_version' => '9.0',
         'requirements_section_message' => 'Errors found',
@@ -553,8 +556,10 @@ class UpdateCoreTest extends UpdateTestBase {
           $update_soon_message,
           $update_or_higher_soon_message,
         ],
-        'mock_date' => '2021-10-31',
+        'mock_date' => '2021-01-01',
       ],
+      // Ensure that if the 8.8 support window is not finished a message is
+      // displayed.
       '8.8, supported' => [
         'site_patch_version' => '8.0',
         'requirements_section_message' => 'Errors found',
@@ -569,6 +574,8 @@ class UpdateCoreTest extends UpdateTestBase {
         ],
         'mock_date' => '2020-6-01',
       ],
+      // Ensure that if the 8.8 support window is not finished but it is within
+      // 6 months of closing a message is displayed.
       '8.8, supported, 6 months warn' => [
         'site_patch_version' => '8.0',
         'requirements_section_message' => 'Errors found',
@@ -584,6 +591,11 @@ class UpdateCoreTest extends UpdateTestBase {
         'mock_date' => '2020-6-02',
       ],
     ];
+    // Ensure that the LTS support window message does not change at all within
+    // 6 months.
+    $test_cases['8.9, lts 6 month'] = $test_cases['8.9, lts'];
+    $test_cases['8.9, lts 6 month']['mock_date'] = '2021-10-31';
+    return $test_cases;
   }
 
   /**
