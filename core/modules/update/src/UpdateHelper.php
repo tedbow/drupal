@@ -5,6 +5,7 @@ namespace Drupal\update;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
+use Drupal\system\SystemManager;
 
 /**
  * Update helper methods.
@@ -154,25 +155,21 @@ class UpdateHelper {
    *   The security coverage message, or an empty string if there is none.
    */
   private static function getSecurityCoverageMessage(array $project_data) {
-    if (!isset($project_data['security_coverage_info'])) {
+    if (!isset($project_data['security_coverage_info']['additional_minors_coverage'])) {
       return '';
     }
     $security_info = $project_data['security_coverage_info'];
-    $available_updates_message = static::getAvailableUpdatesMessage();
     list($major, $minor) = explode('.', $project_data['existing_version']);
-    if (isset($security_info['additional_minors_coverage'])) {
-      if ($security_info['additional_minors_coverage'] > 0) {
-        // If the installed minor version will be supported until newer minor
-        // versions are released inform the user.
-        $support_until_release = $security_info['supported_until'];
-        $message = static::getVersionSupportedMessage($project_data['title'],  "$major.$minor", $support_until_release['version'], $project_data['existing_release'], $security_info['additional_minors_coverage']);
-
-      }
-      else {
-        // Because the current minor version is no longer supported advise the
-        // site owner update.
-        $message = static::getVersionNotSupportedMessage($project_data['title'], "$major.$minor");
-      }
+    if ($security_info['additional_minors_coverage'] > 0) {
+      // If the installed minor version will be supported until newer minor
+      // versions are released inform the user.
+      $support_until_release = $security_info['supported_until'];
+      $message = static::getVersionSupportedMessage($project_data['title'],  "$major.$minor", $support_until_release['version'], $project_data['existing_release'], $security_info['additional_minors_coverage']);
+    }
+    else {
+      // Because the current minor version is no longer supported advise the
+      // site owner update.
+      $message = static::getVersionNotSupportedMessage($project_data['title'], "$major.$minor");
     }
     if ($project_data['project_type'] === 'core' && $project_data['name'] === 'drupal') {
       // Provide a link to the Drupal core documentation on release cycles
@@ -184,6 +181,7 @@ class UpdateHelper {
           ]
         ) . '</p>';
     }
+
     return Markup::create($message);
   }
 
@@ -218,8 +216,8 @@ class UpdateHelper {
         }
         return $requirement;
       }
-      elseif (isset($project_data['lts_requirement'])) {
-        return $project_data['lts_requirement'];
+      elseif (isset($project_data['security_coverage_info']['lts_requirement'])) {
+        return  $requirement + $project_data['security_coverage_info']['lts_requirement'];
       }
     }
     return NULL;
@@ -271,14 +269,14 @@ class UpdateHelper {
     list(,$minor_version) = explode('.', $project_data['existing_version']);
     $minor_version = (int) $minor_version;
     $requirement = [];
+    $current_minor = "{$project_data['existing_major']}.$minor_version";
     if ($minor_version === 8) {
-      $current_minor = "{$project_data['existing_major']}.$minor_version";
       // Drupal 8.8.x is only supported until 9.0.0 is released.
       if (in_array(9, $project_data['supported_majors'])) {
         // If 9 is supported 9.0.0 has been released and 8.8.x is no longer
         // supported.
         $requirement['description'] = static::getVersionNotSupportedMessage($project_data['title'], $current_minor);
-        $requirement['severity'] = REQUIREMENT_ERROR;
+        $requirement['severity'] = SystemManager::REQUIREMENT_ERROR;
         $requirement['value'] = t('Unsupported minor version');
       }
       else {
@@ -289,14 +287,13 @@ class UpdateHelper {
         }
         else {
           $additional_minors_coverage = $latest_minor === 9 ? 1 : 2;
-          $requirement['description'] = static::getVersionSupportedMessage($project_data['title'],  $current_minor, '9.0.0', $project_data['existing_release'], $additional_minors_coverage);
-          $requirement['severity'] = $additional_minors_coverage === 2 ? REQUIREMENT_INFO : REQUIREMENT_WARNING;
+          $requirement['description'] = static::getVersionSupportedMessage($project_data['title'], $current_minor, '9.0.0', $project_data['existing_release'], $additional_minors_coverage);
+          $requirement['severity'] = SystemManager::REQUIREMENT_OK;
           $requirement['value'] = t('Supported minor version');
         }
       }
     }
     if ($minor_version === 9) {
-      $info['lts_status'] = static::LTS_STATUS_ON_LTS;
       $lts_end_date = \DateTime::createFromFormat('m/d/Y', '11/01/2021');
       /** @var \Drupal\Component\Datetime\Time $time */
       $time = \Drupal::service('datetime.time');
@@ -304,7 +301,7 @@ class UpdateHelper {
       if ($lts_end_date->getTimestamp() <= $request_time) {
         // LTS support is over.
         $requirement['value'] = t('Unsupported minor version');
-        $requirement['severity'] = REQUIREMENT_ERROR;
+        $requirement['severity'] = SystemManager::REQUIREMENT_ERROR;
         $requirement['description'] = $message = '<p>' . t(
             'The installed minor version of %project, %version, is no longer supported and will not receive security updates.',
             [
@@ -318,7 +315,7 @@ class UpdateHelper {
       }
       else {
         $requirement['value'] = t('Supported minor version');
-        $requirement['severity'] = REQUIREMENT_WARNING;
+        $requirement['severity'] = SystemManager::REQUIREMENT_WARNING;
         /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
         $date_formatter = \Drupal::service('date.formatter');
         $requirement['description'] = '<p>' . t(
@@ -329,12 +326,10 @@ class UpdateHelper {
               '%date' => $date_formatter->format($lts_end_date->getTimestamp()),
             ]
           ) . '</p>';
-        if ($lts_end_date->sub(\DateInterval::createFromDateString('6 month')) <= $request_time) {
-          $requirement['description'] .= '<p>' . t(
-              'Update to Drupal 9 soon to continue receiving security updates.') .
-            ' ' . static::getAvailableUpdatesMessage() . '</p>';
-        }
       }
+    }
+    if (isset($requirement['description'])) {
+      $requirement['description'] = Markup::create($requirement['description']);
     }
     return $requirement;
   }

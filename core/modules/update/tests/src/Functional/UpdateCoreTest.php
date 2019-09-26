@@ -361,11 +361,13 @@ class UpdateCoreTest extends UpdateTestBase {
    *
    * @dataProvider securityCoverageMessageProvider
    */
-  public function testSecurityCoverageMessage($site_patch_version, $requirements_section_message, $fixture, array $coverage_messages = [], array $not_contains_messages = []) {
+  public function testSecurityCoverageMessage($site_patch_version, $requirements_section_message, $fixture, array $coverage_messages = [], array $not_contains_messages = [], $mock_date = '') {
     $assert_session = $this->assertSession();
+    \Drupal::state()->set('update_test.mock_date', $mock_date);
     $this->setSystemInfo("8.$site_patch_version");
     $this->refreshUpdateStatus(['drupal' => $fixture]);
     $this->drupalGet('admin/reports/status');
+    file_put_contents('/Users/ted.bowman/Sites/www/test.html', $this->getSession()->getPage()->getOuterHtml());
 
     if ($requirements_section_message) {
       $this->assertNotEmpty($coverage_messages, 'If a requirements section is provided expected message must be provided');
@@ -392,7 +394,7 @@ class UpdateCoreTest extends UpdateTestBase {
   public function securityCoverageMessageProvider() {
     $release_coverage_message = 'Visit the release cycle overview for more information on supported releases.';
     $update_status_message = 'See the available updates page for more information.';
-    return [
+    $a =  [
       '0.0, unsupported' => [
         'site_patch_version' => '0.0',
         'requirements_section' => 'Errors found',
@@ -406,6 +408,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'not_contains_messages' => [
           'or higher soon to continue receiving security updates.',
         ],
+        'mock_date' => '',
       ],
       '1.0, supported with 3rc' => [
         'site_patch_version' => '1.0',
@@ -418,6 +421,7 @@ class UpdateCoreTest extends UpdateTestBase {
           $update_status_message,
         ],
         'not_contains_messages' => [],
+        'mock_date' => '',
       ],
       '1.0, supported' => [
         'site_patch_version' => '1.0',
@@ -430,6 +434,7 @@ class UpdateCoreTest extends UpdateTestBase {
           $update_status_message,
         ],
         'not_contains_messages' => [],
+        'mock_date' => '',
       ],
       '2.0, supported with 3rc' => [
         'site_patch_version' => '2.0',
@@ -443,6 +448,7 @@ class UpdateCoreTest extends UpdateTestBase {
           'or higher soon to continue receiving security updates.',
           $update_status_message,
         ],
+        'mock_date' => '',
       ],
       '2.0, supported' => [
         'site_patch_version' => '2.0',
@@ -456,6 +462,7 @@ class UpdateCoreTest extends UpdateTestBase {
           'or higher soon to continue receiving security updates.',
           $update_status_message,
         ],
+        'mock_date' => '',
       ],
       // Ensure we don't show messages for pre-release or dev versions.
       '2.0-beta2, no message' => [
@@ -464,6 +471,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'fixture' => 'sec.2.0_3rc1',
         'coverage_messages' => [],
         'not_contains_messages' => [],
+        'mock_date' => '',
       ],
       '1.0-dev, no message' => [
         'site_patch_version' => '1.0-dev',
@@ -471,6 +479,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'fixture' => 'sec.2.0_3rc1',
         'coverage_messages' => [],
         'not_contains_messages' => [],
+        'mock_date' => '',
       ],
       // Ensure that if the next major version is release we still display a no
       // longer supported message if we can be sure it is not.
@@ -487,17 +496,30 @@ class UpdateCoreTest extends UpdateTestBase {
         'not_contains_messages' => [
           'or higher soon to continue receiving security updates.',
         ],
+        'mock_date' => '',
       ],
       // Ensure that if the next major version has been released and we do not
       // know if the current version is supported we do not show any message.
       '2.0, 9 no message' => [
         'site_patch_version' => '2.0',
-        'requirements_section_message' => '',
-        'fixture' => 'sec.2.0_9',
+        'requirements_section_message' => 'Errors found',
+        'fixture' => 'sec.9.0',
         'coverage_messages' => [],
         'not_contains_messages' => [],
+        'mock_date' => '',
+      ],
+      // Ensure that if the next major version has been released and we do not
+      // know if the current version is supported we do not show any message.
+      '8.9, lts over' => [
+        'site_patch_version' => '9.0',
+        'requirements_section_message' => '',
+        'fixture' => 'sec.9.0',
+        'coverage_messages' => [],
+        'not_contains_messages' => [],
+        'mock_date' => '11/02/2022',
       ],
     ];
+    return [$a['8.9, lts over']];
   }
 
   /**
