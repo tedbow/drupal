@@ -367,7 +367,6 @@ class UpdateCoreTest extends UpdateTestBase {
     $this->setSystemInfo("8.$site_patch_version");
     $this->refreshUpdateStatus(['drupal' => $fixture]);
     $this->drupalGet('admin/reports/status');
-    file_put_contents('/Users/ted.bowman/Sites/www/test.html', $this->getSession()->getPage()->getOuterHtml());
 
     if ($requirements_section_message) {
       $this->assertNotEmpty($coverage_messages, 'If a requirements section is provided expected message must be provided');
