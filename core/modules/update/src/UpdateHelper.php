@@ -38,7 +38,7 @@ class UpdateHelper {
       return [];
     }
     if ($support_until_release = static::getSupportUntilReleaseInfo($project_data, $releases)) {
-      $info['supported_until'] = $support_until_release;
+      $info['supported_until_version'] = $support_until_release['version'];
       if (static::isNextMajorReleasedWithoutSupportedReleased($releases, $support_until_release)) {
         // If the next major version has been released but
         // $support_until_release has not we cannot know the coverage status.
@@ -65,21 +65,21 @@ class UpdateHelper {
    */
   private static function getAdditionalSecuritySupportedMinors(array $security_supported_release_info, array $releases) {
     $latest_full_release = static::getMostRecentFullRelease($releases);
-    if ((int) $latest_full_release['version_major'] > (int) $security_supported_release_info['version_major']) {
+    if ($latest_full_release['version_major'] > $security_supported_release_info['version_major']) {
       // Even if there is new major version we can know if the installed version
       // is not supported because the version it is supported till has already
       // been released.
       if ($latest_full_release = static::getMostRecentFullRelease($releases, $security_supported_release_info['version_major'])) {
-        if ((int) $security_supported_release_info['version_minor'] <= (int) $latest_full_release['version_minor']) {
+        if ($security_supported_release_info['version_minor'] <= $latest_full_release['version_minor']) {
           return -1;
         }
         else {
-          throw new \LogicException('::getAdditionalSecuritySupportedMinors() should never bee called before checking ::isNextMajorReleasedWithoutSupportedReleased().');
+          throw new \LogicException('::getAdditionalSecuritySupportedMinors() should never be called before checking ::isNextMajorReleasedWithoutSupportedReleased().');
         }
       }
     }
-    elseif ((int) $latest_full_release['version_major'] === (int) $security_supported_release_info['version_major']) {
-      return (int) $security_supported_release_info['version_minor'] - (int) $latest_full_release['version_minor'];
+    elseif ($latest_full_release['version_major'] === $security_supported_release_info['version_major']) {
+      return $security_supported_release_info['version_minor'] - $latest_full_release['version_minor'];
     }
     // The latest full release was a lower major version.
     return -1;
@@ -115,7 +115,7 @@ class UpdateHelper {
       return [];
     }
     $support_until_release = [
-      'version_major' => $existing_release['version_major'],
+      'version_major' => (int) $existing_release['version_major'],
       'version_minor' => ((int) $existing_release['version_minor']) + static::CORE_MINORS_SUPPORTED,
       'version_patch' => 0,
     ];
@@ -128,7 +128,7 @@ class UpdateHelper {
    *
    * @param array $releases
    *   Releases as returned by update_get_available().
-   * @param string|null $major
+   * @param int|null $major
    *   (optional) Version major.
    *
    * @return array|null
@@ -136,10 +136,13 @@ class UpdateHelper {
    */
   private static function getMostRecentFullRelease(array $releases, $major = NULL) {
     foreach ($releases as $release) {
-      if ($major && (int) $release['version_major'] !== (int) $major) {
+      $release['version_major'] = (int) $release['version_major'];
+      if ($major && $release['version_major'] !== $major) {
         continue;
       }
       if ($release['status'] === 'published' && empty($release['version_extra'])) {
+        $release['version_minor'] = (int) $release['version_minor'];
+        $release['version_patch'] = (int) $release['version_patch'];
         return $release;
       }
     }
@@ -169,7 +172,7 @@ class UpdateHelper {
           [
             '%project' => $project_data['title'],
             '%version' => "$major.$minor",
-            '%coverage_version' => $security_info['supported_until']['version'],
+            '%coverage_version' => $security_info['supported_until_version'],
           ]
         ) . '</p>';
 
@@ -256,12 +259,12 @@ class UpdateHelper {
    */
   private static function isNextMajorReleasedWithoutSupportedReleased(array $releases, array $security_supported_release_info) {
     $latest_full_release = static::getMostRecentFullRelease($releases);
-    if ((int) $latest_full_release['version_major'] > (int) $security_supported_release_info['version_major']) {
+    if ($latest_full_release['version_major'] > $security_supported_release_info['version_major']) {
       // Even if there is new major version we can know if the installed version
       // is not supported because the version it is supported till has already
       // been released.
       $latest_full_release = static::getMostRecentFullRelease($releases, $security_supported_release_info['version_major']);
-      if ((int) $security_supported_release_info['version_minor'] > (int) $latest_full_release['version_minor']) {
+      if ($security_supported_release_info['version_minor'] > $latest_full_release['version_minor']) {
         return TRUE;
       }
     }
@@ -281,13 +284,13 @@ class UpdateHelper {
     if (!($project_data['project_type'] === 'core' && $project_data['name'] === 'drupal' && (int) $project_data['existing_major'] === 8)) {
       return [];
     }
-    list(, $minor_version) = explode('.', $project_data['existing_version']);
+    $minor_version = explode('.', $project_data['existing_version'])[1];
     $requirement = [];
-    if ((int) $minor_version === 8) {
-      $requirement = static::createRequirementForSupportEndDate($project_data, '12/02/2020', '6 months');
+    if ($minor_version === '8') {
+      $requirement = static::createRequirementForSupportEndDate($project_data, '2020-12-02', '6 months');
     }
-    elseif ((int) $minor_version === 9) {
-      $requirement = static::createRequirementForSupportEndDate($project_data, '11/01/2021');
+    elseif ($minor_version === '9') {
+      $requirement = static::createRequirementForSupportEndDate($project_data, '2021-11-01');
     }
     return $requirement;
   }
@@ -336,7 +339,7 @@ class UpdateHelper {
    * @param array $project_data
    *   The project data.
    * @param string $end_date_string
-   *   The date date the support will end in the format 'm/d/Y'.
+   *   The date date the support will end in the format 'YYYY-MM-DD'.
    * @param string $warn_at
    *   The time before support ends to add an update warning. This a date part
    *   string that can be used in \DateInterval::createFromDateString().
@@ -347,7 +350,7 @@ class UpdateHelper {
   private static function createRequirementForSupportEndDate(array $project_data, $end_date_string, $warn_at = '') {
     list(, $minor_version) = explode('.', $project_data['existing_version']);
     $current_minor = "{$project_data['existing_major']}.$minor_version";
-    $end_date = \DateTime::createFromFormat('m/d/Y', $end_date_string);
+    $end_date = \DateTime::createFromFormat('Y-m-d', $end_date_string);
     $end_timestamp = $end_date->getTimestamp();
     /** @var \Drupal\Component\Datetime\Time $time */
     $time = \Drupal::service('datetime.time');
