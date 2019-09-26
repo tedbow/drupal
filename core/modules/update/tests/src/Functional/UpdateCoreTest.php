@@ -524,7 +524,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'not_contains_messages' => [
           $update_or_higher_soon_message,
         ],
-        'mock_date' => '11/02/2021',
+        'mock_date' => '2021-11-02',
       ],
       '8.8, support over' => [
         'site_patch_version' => '8.0',
@@ -537,7 +537,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'not_contains_messages' => [
           $update_or_higher_soon_message,
         ],
-        'mock_date' => '12/03/2020',
+        'mock_date' => '2020-12-03',
       ],
       '8.9, lts' => [
         'site_patch_version' => '9.0',
@@ -553,7 +553,7 @@ class UpdateCoreTest extends UpdateTestBase {
           $update_soon_message,
           $update_or_higher_soon_message,
         ],
-        'mock_date' => '10/31/2021',
+        'mock_date' => '2021-10-31',
       ],
       '8.8, supported' => [
         'site_patch_version' => '8.0',
@@ -567,7 +567,7 @@ class UpdateCoreTest extends UpdateTestBase {
           $update_asap_message,
           $update_or_higher_soon_message,
         ],
-        'mock_date' => '6/01/2020',
+        'mock_date' => '2020-6-01',
       ],
       '8.8, supported, 6 months warn' => [
         'site_patch_version' => '8.0',
@@ -581,7 +581,7 @@ class UpdateCoreTest extends UpdateTestBase {
           $update_asap_message,
           $update_or_higher_soon_message,
         ],
-        'mock_date' => '6/02/2020',
+        'mock_date' => '2020-6-02',
       ],
     ];
   }

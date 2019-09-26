@@ -6,6 +6,7 @@
  */
 
 use Drupal\update\UpdateHelper;
+
 /**
  * Determines version and type information for currently installed projects.
  *

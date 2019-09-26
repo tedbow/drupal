@@ -4,6 +4,9 @@ namespace Drupal\update_test\DateTime;
 
 use Drupal\Component\Datetime\Time;
 
+/**
+ * Test service to all altering request time.
+ */
 class TestTime extends Time {
 
   /**
@@ -11,7 +14,7 @@ class TestTime extends Time {
    */
   public function getRequestTime() {
     if ($mock_date = \Drupal::state()->get('update_test.mock_date', NULL)) {
-      return \DateTime::createFromFormat('m/d/Y', $mock_date)->getTimestamp();
+      return \DateTime::createFromFormat('Y-m-d', $mock_date)->getTimestamp();
     }
     return parent::getRequestTime();
   }
