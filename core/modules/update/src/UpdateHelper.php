@@ -2,7 +2,6 @@
 
 namespace Drupal\update;
 
-use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\system\SystemManager;
@@ -38,10 +37,7 @@ class UpdateHelper {
       // Only Drupal core has an explicit coverage range.
       return [];
     }
-    if ($lts_requirement = static::getLtsRequirement($project_data, $releases)) {
-      $info['lts_requirement'] = $lts_requirement;
-    }
-    elseif ($support_until_release = static::getSupportUntilReleaseInfo($project_data, $releases)) {
+    if ($support_until_release = static::getSupportUntilReleaseInfo($project_data, $releases)) {
       $info['supported_until'] = $support_until_release;
       if (static::isNextMajorReleasedWithoutSupportedReleased($releases, $support_until_release)) {
         // If the next major version has been released but
@@ -113,8 +109,13 @@ class UpdateHelper {
     if (!empty($existing_release['version_extra'])) {
       return [];
     }
+    // Minors 8.8 and 8.9 have special logic for security support.
+    // @see ::getLtsRequirement()
+    if ($existing_release['version_major'] === '8' && in_array($existing_release['version_minor'], ['8', '9'])) {
+      return [];
+    }
     $support_until_release = [
-      'version_major' => (int) $existing_release['version_major'],
+      'version_major' => $existing_release['version_major'],
       'version_minor' => ((int) $existing_release['version_minor']) + static::CORE_MINORS_SUPPORTED,
       'version_patch' => 0,
     ];
@@ -163,8 +164,26 @@ class UpdateHelper {
     if ($security_info['additional_minors_coverage'] > 0) {
       // If the installed minor version will be supported until newer minor
       // versions are released inform the user.
-      $support_until_release = $security_info['supported_until'];
-      $message = static::getVersionSupportedMessage($project_data['title'],  "$major.$minor", $support_until_release['version'], $project_data['existing_release'], $security_info['additional_minors_coverage']);
+      $message = '<p>' . t(
+          'The installed minor version of %project, %version, will receive security updates until the release of %coverage_version.',
+          [
+            '%project' => $project_data['title'],
+            '%version' => "$major.$minor",
+            '%coverage_version' => $security_info['supported_until']['version'],
+          ]
+        ) . '</p>';
+
+      if ($security_info['additional_minors_coverage'] === 1) {
+        // If the installed minor version will only be supported for 1 newer
+        // minor core version encourage the site owner to update soon.
+        $message .= '<p>' . t(
+            'Update to %next_minor or higher soon to continue receiving security updates.',
+            [
+              '%next_minor' => $project_data['existing_release']['version_major'] . '.' . ((int) $project_data['existing_release']['version_minor'] + 1),
+
+            ]
+          ) . ' ' . static::getAvailableUpdatesMessage() . '</p>';
+      }
     }
     else {
       // Because the current minor version is no longer supported advise the
@@ -195,29 +214,25 @@ class UpdateHelper {
    *   An array if there is security coverage requirement, otherwise NULL.
    */
   public static function getSecurityCoverageRequirement(array $project_data) {
-    if ($project_data['project_type'] == 'core' && !empty($project_data['security_coverage_info'])) {
+    if ($project_data['project_type'] == 'core') {
       $requirement['title'] = t('Drupal core security coverage');
-      $security_coverage_info = $project_data['security_coverage_info'];
-      if ($security_coverage_message = static::getSecurityCoverageMessage($project_data)) {
-        $requirement['description'] = $security_coverage_message;
-        if ($security_coverage_info['additional_minors_coverage'] > 0) {
-          $requirement['value'] = t('Supported minor version');
-          $requirement['severity'] = REQUIREMENT_INFO;
-          if ($security_coverage_info['additional_minors_coverage'] > 1) {
-            $requirement['severity'] = REQUIREMENT_INFO;
+      if (!empty($project_data['security_coverage_info'])) {
+        $security_coverage_info = $project_data['security_coverage_info'];
+        if ($security_coverage_message = static::getSecurityCoverageMessage($project_data)) {
+          $requirement['description'] = $security_coverage_message;
+          if ($security_coverage_info['additional_minors_coverage'] > 0) {
+            $requirement['value'] = t('Supported minor version');
+            $requirement['severity'] = $security_coverage_info['additional_minors_coverage'] > 1 ? REQUIREMENT_INFO : REQUIREMENT_WARNING;
           }
           else {
-            $requirement['severity'] = REQUIREMENT_WARNING;
+            $requirement['value'] = t('Unsupported minor version');
+            $requirement['severity'] = REQUIREMENT_ERROR;
           }
+          return $requirement;
         }
-        else {
-          $requirement['value'] = t('Unsupported minor version');
-          $requirement['severity'] = REQUIREMENT_ERROR;
-        }
-        return $requirement;
       }
-      elseif (isset($project_data['security_coverage_info']['lts_requirement'])) {
-        return  $requirement + $project_data['security_coverage_info']['lts_requirement'];
+      elseif ($lts_requirement = static::getLtsRequirement($project_data)) {
+        return $requirement + $lts_requirement;
       }
     }
     return NULL;
@@ -254,45 +269,46 @@ class UpdateHelper {
   }
 
   /**
+   * Gets the security coverage requirement for LTS release.
+   *
    * @param array $project_data
    *   The project data.
-   * @param array $releases
-   *   Releases as returned by update_get_available().
    *
    * @return array
-   *   The security coverage information.
+   *   An array if there is security coverage requirement, otherwise NULL.
    */
-  private static function getLtsRequirement(array $project_data, array $releases) {
+  private static function getLtsRequirement(array $project_data) {
     if (!($project_data['project_type'] === 'core' && $project_data['name'] === 'drupal' && (int) $project_data['existing_major'] === 8)) {
       return [];
     }
-    list(,$minor_version) = explode('.', $project_data['existing_version']);
-    $minor_version = (int) $minor_version;
+    list(, $minor_version) = explode('.', $project_data['existing_version']);
     $requirement = [];
-    if ($minor_version === 8) {
+    if ((int) $minor_version === 8) {
       $requirement = static::createRequirementForSupportEndDate($project_data, '12/02/2020', '6 months');
     }
-    if ($minor_version === 9) {
+    elseif ((int) $minor_version === 9) {
       $requirement = static::createRequirementForSupportEndDate($project_data, '11/01/2021');
-    }
-    if (isset($requirement['description'])) {
-      $requirement['description'] = Markup::create($requirement['description']);
     }
     return $requirement;
   }
 
   /**
+   * Gets the formatted message for an unsupported project.
+   *
    * @param string $project
-   * @param string $version
+   *   The project name.
+   * @param string $minor_version
+   *   The installed minor version.
    *
    * @return string
+   *   The message for an unsupported version.
    */
-  private static function getVersionNotSupportedMessage($project, $version) {
+  private static function getVersionNotSupportedMessage($project, $minor_version) {
     $message = '<p>' . t(
         'The installed minor version of %project, %version, is no longer supported and will not receive security updates.',
         [
           '%project' => $project,
-          '%version' => $version,
+          '%version' => $minor_version,
         ])
       . '</p><p>'
       . t(
@@ -302,7 +318,10 @@ class UpdateHelper {
   }
 
   /**
+   * Gets the message with a link to the available updates page.
+   *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   The message.
    */
   private static function getAvailableUpdatesMessage() {
     return t(
@@ -311,41 +330,22 @@ class UpdateHelper {
     );
   }
 
-  private static function getVersionSupportedMessage($title, $current_minor, $supported_until_version, $existing_release, $additional_minors_coverage) {
-    $message = '<p>' . t(
-        'The installed minor version of %project, %version, will receive security updates until the release of %coverage_version.',
-        [
-          '%project' => $title,
-          '%version' =>$current_minor,
-          '%coverage_version' => $supported_until_version,
-        ]
-      ) . '</p>';
-
-    if ($additional_minors_coverage === 1) {
-      // If the installed minor version will only be supported for 1 newer
-      // minor core version encourage the site owner to update soon.
-      $message .= '<p>' . t(
-          'Update to %next_minor or higher soon to continue receiving security updates.',
-          [
-            '%next_minor' => $existing_release['version_major'] . '.' . ((int) $existing_release + 1),
-
-          ]
-        ) . ' ' . static::getAvailableUpdatesMessage() . '</p>';
-    }
-    return $message;
-  }
-
   /**
+   * Creates a requirements array for a project version with a support end date.
+   *
    * @param array $project_data
-   * @param array $requirement
-   * @param $current_minor
+   *   The project data.
+   * @param string $end_date_string
+   *   The date date the support will end in the format 'm/d/Y'.
+   * @param string $warn_at
+   *   The time before support ends to add an update warning. This a date part
+   *   string that can be used in \DateInterval::createFromDateString().
    *
    * @return array
+   *   A requirements array as used in hook_requirements().
    */
   private static function createRequirementForSupportEndDate(array $project_data, $end_date_string, $warn_at = '') {
-    list(,$minor_version) = explode('.', $project_data['existing_version']);
-    $minor_version = (int) $minor_version;
-    $requirement = [];
+    list(, $minor_version) = explode('.', $project_data['existing_version']);
     $current_minor = "{$project_data['existing_major']}.$minor_version";
     $end_date = \DateTime::createFromFormat('m/d/Y', $end_date_string);
     $end_timestamp = $end_date->getTimestamp();
@@ -374,6 +374,9 @@ class UpdateHelper {
       if ($warn_at && $end_date->sub(\DateInterval::createFromDateString($warn_at))->getTimestamp() <= $request_time) {
         $requirement['description'] .= '<p>' . t('Update to a supported minor version soon to continue receiving security updates.') . '</p>';
       }
+    }
+    if (isset($requirement['description'])) {
+      $requirement['description'] = Markup::create($requirement['description']);
     }
     return $requirement;
   }
