@@ -20,7 +20,7 @@ abstract class WebDriverTestBase extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['js_deprecation_test'];
+  public static $modules = ['js_deprecation_log_test'];
 
   /**
    * Disables CSS animations in tests for more reliable testing.
@@ -116,7 +116,7 @@ abstract class WebDriverTestBase extends BrowserTestBase {
         throw new \RuntimeException('Unfinished AJAX requests while tearing down a test');
       }
 
-      $warnings = $this->getSession()->evaluateScript("JSON.parse(localStorage.getItem('js_deprecation_test.warnings') || JSON.stringify([]))");
+      $warnings = $this->getSession()->evaluateScript("JSON.parse(localStorage.getItem('js_deprecation_log_test.warnings') || JSON.stringify([]))");
       foreach ($warnings as $warning) {
         if (strpos($warning, '[Deprecation]') === 0) {
           @trigger_error('Javascript Deprecation:' . substr($warning, 13), E_USER_DEPRECATED);
