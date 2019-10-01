@@ -18,6 +18,11 @@ use Zumba\Mink\Driver\PhantomJSDriver;
 abstract class WebDriverTestBase extends BrowserTestBase {
 
   /**
+   * {@inheritdoc}
+   */
+  public static $modules = ['js_deprecation_test'];
+
+  /**
    * Disables CSS animations in tests for more reliable testing.
    *
    * CSS animations are disabled by installing the css_disable_transitions_test
@@ -26,6 +31,8 @@ abstract class WebDriverTestBase extends BrowserTestBase {
    * @var bool
    */
   protected $disableCssAnimations = TRUE;
+
+
 
   /**
    * {@inheritdoc}
@@ -61,7 +68,7 @@ abstract class WebDriverTestBase extends BrowserTestBase {
     }
     catch (DriverException $e) {
       if ($this->minkDefaultDriverClass === DrupalSelenium2Driver::class) {
-        $this->markTestSkipped("The test wasn't able to connect to your webdriver instance. For more information read core/tests/README.md.\n\nThe original message while starting Mink: {$e->getMessage()}");
+          $this->markTestSkipped("The test wasn't able to connect to your webdriver instance. For more information read core/tests/README.md.\n\nThe original message while starting Mink: {$e->getMessage()}");
       }
       else {
         throw $e;
@@ -77,7 +84,7 @@ abstract class WebDriverTestBase extends BrowserTestBase {
    */
   protected function installModulesFromClassProperty(ContainerInterface $container) {
     if ($this->disableCssAnimations) {
-      self::$modules = ['css_disable_transitions_test'];
+      self::$modules[] = 'css_disable_transitions_test';
     }
     parent::installModulesFromClassProperty($container);
   }
@@ -107,6 +114,13 @@ abstract class WebDriverTestBase extends BrowserTestBase {
         // Rather than allow it to fail, throw an explicit exception now
         // explaining what the problem is.
         throw new \RuntimeException('Unfinished AJAX requests while tearing down a test');
+      }
+
+      $warnings = $this->getSession()->evaluateScript("JSON.parse(localStorage.getItem('js_deprecation_test.warnings') || JSON.stringify([]))");
+      foreach ($warnings as $warning) {
+        if (strpos($warning, '[Deprecation]') === 0) {
+          @trigger_error('Javascript Deprecation:' . substr($warning, 13), E_USER_DEPRECATED);
+        }
       }
     }
     parent::tearDown();
