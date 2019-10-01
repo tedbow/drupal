@@ -203,7 +203,11 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       drupalSettings.ajaxTrustedUrl[this.url] = true;
     }
 
-    var ajax = this;
+    var ajax = Drupal.deprecatedProperty({
+      target: this,
+      deprecatedProperty: 'element_settings',
+      message: 'The element_settings property has been deprecated in drupal:8.5.0 and is removed from drupal:9.0.0. Use elementSettings instead.'
+    });
 
     ajax.options = {
       url: ajax.url,
@@ -505,12 +509,18 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   };
 
   Drupal.theme.ajaxWrapperNewContent = function ($newContent, ajax, response) {
+    Drupal.deprecationError({
+      message: 'Drupal.theme.ajaxWrapperNewContent is deprecated in drupal:8.6.0 and will be removed from drupal:9.0.0. Use data with desired wrapper. See https://www.drupal.org/node/2974880.'
+    });
     return (response.effect || ajax.effect) !== 'none' && $newContent.filter(function (i) {
       return !($newContent[i].nodeName === '#comment' || $newContent[i].nodeName === '#text' && /^(\s|\n|\r)*$/.test($newContent[i].textContent));
     }).length > 1 ? Drupal.theme('ajaxWrapperMultipleRootElements', $newContent) : $newContent;
   };
 
   Drupal.theme.ajaxWrapperMultipleRootElements = function ($elements) {
+    Drupal.deprecationError({
+      message: 'The current behavior of Drupal.theme.ajaxWrapperMultipleRootElements is deprecated in drupal:8.6.0 and will be removed from drupal:9.0.0. Provide theme function to preserve the current behavior. See https://www.drupal.org/node/2974880.'
+    });
     return $('<div></div>').append($elements);
   };
 
