@@ -12,8 +12,8 @@
   behaviors.testDeprecations = {
     attach: () => {
       //deprecatedFunction();
-      const deprecatedProperty = objectWithDeprecatedProperty.deprecatedProperty;
-    }
-  }
-
+      const deprecatedProperty =
+        objectWithDeprecatedProperty.deprecatedProperty;
+    },
+  };
 })(Drupal);
