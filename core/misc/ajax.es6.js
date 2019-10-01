@@ -473,7 +473,12 @@
 
     // Set the options for the ajaxSubmit function.
     // The 'this' variable will not persist inside of the options object.
-    const ajax = this;
+    const ajax = Drupal.deprecatedProperty({
+      target: this,
+      deprecatedProperty: 'element_settings',
+      message:
+        'The element_settings property has been deprecated in drupal:8.5.0 and is removed from drupal:9.0.0. Use elementSettings instead.',
+    });
 
     /**
      * Options for the jQuery.ajax function.
@@ -1125,20 +1130,25 @@
    *
    * @see https://www.drupal.org/node/2940704
    */
-  Drupal.theme.ajaxWrapperNewContent = ($newContent, ajax, response) =>
-    (response.effect || ajax.effect) !== 'none' &&
-    $newContent.filter(
-      i =>
-        !// We can not consider HTML comments or whitespace text as separate
-        // roots, since they do not cause visual regression with effect.
-        (
-          $newContent[i].nodeName === '#comment' ||
-          ($newContent[i].nodeName === '#text' &&
-            /^(\s|\n|\r)*$/.test($newContent[i].textContent))
-        ),
-    ).length > 1
+  Drupal.theme.ajaxWrapperNewContent = ($newContent, ajax, response) => {
+    Drupal.deprecationError({
+      message:
+        'Drupal.theme.ajaxWrapperNewContent is deprecated in drupal:8.6.0 and will be removed from drupal:9.0.0. Use data with desired wrapper. See https://www.drupal.org/node/2974880.',
+    });
+    return (response.effect || ajax.effect) !== 'none' &&
+      $newContent.filter(
+        i =>
+          !// We can not consider HTML comments or whitespace text as separate
+          // roots, since they do not cause visual regression with effect.
+          (
+            $newContent[i].nodeName === '#comment' ||
+            ($newContent[i].nodeName === '#text' &&
+              /^(\s|\n|\r)*$/.test($newContent[i].textContent))
+          ),
+      ).length > 1
       ? Drupal.theme('ajaxWrapperMultipleRootElements', $newContent)
       : $newContent;
+  };
 
   /**
    * Provide a wrapper for multiple root elements via Ajax.
@@ -1154,8 +1164,13 @@
    *
    * @see https://www.drupal.org/node/2940704
    */
-  Drupal.theme.ajaxWrapperMultipleRootElements = $elements =>
-    $('<div></div>').append($elements);
+  Drupal.theme.ajaxWrapperMultipleRootElements = $elements => {
+    Drupal.deprecationError({
+      message:
+        'The current behavior of Drupal.theme.ajaxWrapperMultipleRootElements is deprecated in drupal:8.6.0 and will be removed from drupal:9.0.0. Provide theme function to preserve the current behavior. See https://www.drupal.org/node/2974880.',
+    });
+    return $('<div></div>').append($elements);
+  };
 
   /**
    * @typedef {object} Drupal.AjaxCommands~commandDefinition
