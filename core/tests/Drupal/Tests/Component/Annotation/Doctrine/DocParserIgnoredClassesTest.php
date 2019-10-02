@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
  *
  * @group Annotation
  */
-class DocParserTest extends TestCase {
+class DocParserIgnoredClassesTest extends TestCase {
 
   /**
    * Ensure annotations can be ignored when namespaces are present.
