@@ -5,7 +5,7 @@
  * Code required only when comparing available updates to existing data.
  */
 
-use Drupal\update\UpdateHelper;
+use Drupal\update\ProjectData;
 
 /**
  * Determines version and type information for currently installed projects.
@@ -428,7 +428,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     $project_data['recommended'] = $project_data['latest_version'];
   }
 
-  $project_data['security_coverage_info'] = UpdateHelper::getSecurityCoverageInfo($project_data, $available['releases']);
+  $project_data['security_coverage_info'] = (new ProjectData($project_data))->getSecurityCoverageInfo($available['releases']);
 
   if (isset($project_data['status'])) {
     // If we already know the status, we're done.
