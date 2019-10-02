@@ -6,15 +6,16 @@ namespace Drupal\Tests\Component\Annotation\Doctrine\Fixtures;
  * @Annotation
  * @Target("ALL")
  */
-final class AnnotationWithConstants
+final class AnnotationEnum
 {
-
-    const INTEGER = 1;
-    const FLOAT   = 1.2;
-    const STRING  = '1.2.3';
+    const ONE   = 'ONE';
+    const TWO   = 'TWO';
+    const THREE = 'THREE';
 
     /**
      * @var mixed
+     *
+     * @Enum({"ONE","TWO","THREE"})
      */
     public $value;
 }
