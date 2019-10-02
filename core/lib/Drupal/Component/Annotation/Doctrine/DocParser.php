@@ -22,7 +22,7 @@ use Doctrine\Common\Annotations\DocLexer;
  * This Drupal version allows for ignoring annotations when namespaces are
  * present.
  */
-class DocParser
+final class DocParser
 {
     /**
      * An array of all valid tokens for a class name.

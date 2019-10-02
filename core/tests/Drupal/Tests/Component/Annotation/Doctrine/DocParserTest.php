@@ -9,13 +9,14 @@ use Doctrine\Common\Annotations\Annotation\Target;
 use Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants;
 use Drupal\Tests\Component\Annotation\Doctrine\Fixtures\ClassWithConstants;
 use Drupal\Tests\Component\Annotation\Doctrine\Fixtures\IntefaceWithConstants;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @coversDefaultClass \Drupal\Component\Annotation\Doctrine\DocParser
  *
  * @group Annotation
  */
-class DocParserTest extends \PHPUnit_Framework_TestCase
+class DocParserTest extends TestCase
 {
     public function testNestedArraysWithNestedAnnotation()
     {
