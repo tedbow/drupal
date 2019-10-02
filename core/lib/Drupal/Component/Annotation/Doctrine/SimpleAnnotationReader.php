@@ -4,7 +4,6 @@
 namespace Drupal\Component\Annotation\Doctrine;
 
 use Doctrine\Common\Annotations\Reader;
-use Drupal\Component\Annotation\Doctrine\DocParser;
 
 /**
  * Simple Annotation Reader.
@@ -16,7 +15,7 @@ use Drupal\Component\Annotation\Doctrine\DocParser;
  * Drupal adds its own version of DocParser and allows for ignoring common
  * annotations.
  */
-class SimpleAnnotationReader implements Reader
+final class SimpleAnnotationReader implements Reader
 {
 
     protected $ignoredAnnotations = [
