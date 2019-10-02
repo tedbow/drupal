@@ -1,4 +1,6 @@
 <?php
+// @codingStandardsIgnoreFile
+
 namespace Doctrine\Tests\Common\Annotations\Ticket;
 
 use Doctrine\Common\Annotations\AnnotationReader;

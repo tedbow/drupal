@@ -1,4 +1,5 @@
 <?php
+// @codingStandardsIgnoreFile
 
 namespace Drupal\Tests\Component\Annotation\Doctrine;
 
@@ -9,6 +10,11 @@ use Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationWithConstants;
 use Drupal\Tests\Component\Annotation\Doctrine\Fixtures\ClassWithConstants;
 use Drupal\Tests\Component\Annotation\Doctrine\Fixtures\IntefaceWithConstants;
 
+/**
+ * @coversDefaultClass \Drupal\Component\Annotation\Doctrine\DocParser
+ *
+ * @group Annotation
+ */
 class DocParserTest extends \PHPUnit_Framework_TestCase
 {
     public function testNestedArraysWithNestedAnnotation()

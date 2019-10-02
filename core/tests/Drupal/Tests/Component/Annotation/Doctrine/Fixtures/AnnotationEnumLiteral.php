@@ -1,5 +1,5 @@
 <?php
-
+// @codingStandardsIgnoreFile
 namespace Drupal\Tests\Component\Annotation\Doctrine\Fixtures;
 
 use Drupal\Tests\Component\Annotation\Doctrine\Fixtures\AnnotationEnumLiteral as SelfEnum;
