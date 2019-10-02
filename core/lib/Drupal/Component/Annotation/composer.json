@@ -7,7 +7,7 @@
   "require": {
     "php": ">=7.0.8",
     "doctrine/common": "^2.5",
-    "doctrine/annotations": "1.2.*",
+    "doctrine/annotations": "^1.2",
     "drupal/core-file-cache": "^8.2",
     "drupal/core-plugin": "^8.2",
     "drupal/core-utility": "^8.2"
