@@ -24,38 +24,44 @@ class ProjectData {
   protected $projectData;
 
   /**
+   * Releases as returned by update_get_available().
+   *
+   * @see \update_get_available()
+   *
+   * @var array
+   */
+  protected $releases;
+
+  /**
    * ProjectUpdateData constructor.
    */
-  public function __construct(array $project_data) {
+  public function __construct(array $project_data, array $releases = NULL) {
     $this->projectData = $project_data;
+    $this->releases = $releases;
   }
-
 
   /**
    * Gets the security coverage information for a project.
    *
    * Currently only Drupal core is supported.
    *
-   * @param array $releases
-   *   Releases as returned by update_get_available().
-   *
    * @return array
    *   The security coverage information.
    */
-  public function getSecurityCoverageInfo(array $releases) {
+  public function getSecurityCoverageInfo() {
     $info = [];
     if (!($this->projectData['project_type'] === 'core' && $this->projectData['name'] === 'drupal')) {
       // Only Drupal core has an explicit coverage range.
       return [];
     }
-    if ($support_until_release = $this->getSupportUntilReleaseInfo($releases)) {
+    if ($support_until_release = $this->getSupportUntilReleaseInfo()) {
       $info['supported_until_version'] = $support_until_release['version'];
-      if ($this->isNextMajorReleasedWithoutSupportedReleased($releases, $support_until_release)) {
+      if ($this->isNextMajorReleasedWithoutSupportedReleased($support_until_release)) {
         // If the next major version has been released but
         // $support_until_release has not we cannot know the coverage status.
         return [];
       }
-      $info['additional_minors_coverage'] = $this->getAdditionalSecuritySupportedMinors($support_until_release, $releases);
+      $info['additional_minors_coverage'] = $this->getAdditionalSecuritySupportedMinors($support_until_release);
     }
 
     return $info;
@@ -66,21 +72,19 @@ class ProjectData {
    *
    * @param array $security_supported_release_info
    *   The security supported release.
-   * @param array $releases
-   *   Releases as returned by update_get_available().
    *
    * @return int
    *   The number of additional supported minor releases.
    *
    * @throws \Exception
    */
-  private function getAdditionalSecuritySupportedMinors(array $security_supported_release_info, array $releases) {
-    $latest_full_release = $this->getMostRecentFullRelease($releases);
+  private function getAdditionalSecuritySupportedMinors(array $security_supported_release_info) {
+    $latest_full_release = $this->getMostRecentFullRelease();
     if ($latest_full_release['version_major'] > $security_supported_release_info['version_major']) {
       // Even if there is new major version we can know if the installed version
       // is not supported because the version it is supported till has already
       // been released.
-      if ($latest_full_release = $this->getMostRecentFullRelease($releases, $security_supported_release_info['version_major'])) {
+      if ($latest_full_release = $this->getMostRecentFullRelease($security_supported_release_info['version_major'])) {
         if ($security_supported_release_info['version_minor'] <= $latest_full_release['version_minor']) {
           return -1;
         }
@@ -103,17 +107,14 @@ class ProjectData {
    *    what the final minor release of a particular major version will be. This
    *    method should not return a version beyond that minor.
    *
-   * @param array $releases
-   *   Releases as returned by update_get_available().
-   *
    * @return array
    *   The release information.
    */
-  private function getSupportUntilReleaseInfo(array $releases) {
-    if (empty($releases[$this->projectData['existing_version']])) {
+  private function getSupportUntilReleaseInfo() {
+    if (empty($this->releases[$this->projectData['existing_version']])) {
       return [];
     }
-    $existing_release = $releases[$this->projectData['existing_version']];
+    $existing_release = $this->releases[$this->projectData['existing_version']];
 
     if (!empty($existing_release['version_extra'])) {
       return [];
@@ -135,16 +136,14 @@ class ProjectData {
   /**
    * Gets the most recent full release.
    *
-   * @param array $releases
-   *   Releases as returned by update_get_available().
    * @param int|null $major
    *   (optional) Version major.
    *
    * @return array|null
    *   The most recent full release if found, otherwise NULL.
    */
-  private function getMostRecentFullRelease(array $releases, $major = NULL) {
-    foreach ($releases as $release) {
+  private function getMostRecentFullRelease($major = NULL) {
+    foreach ($this->releases as $release) {
       $release['version_major'] = (int) $release['version_major'];
       if ($major && $release['version_major'] !== $major) {
         continue;
@@ -160,9 +159,6 @@ class ProjectData {
 
   /**
    * Gets the security coverage message.
-   *
-   * @param array $this->projectData
-   *   The project data.
    *
    * @return string|\Drupal\Component\Render\MarkupInterface
    *   The security coverage message, or an empty string if there is none.
@@ -219,9 +215,6 @@ class ProjectData {
   /**
    * Gets the security coverage requirement if any.
    *
-   * @param array $this->projectData
-   *   The project data.
-   *
    * @return array|null
    *   An array if there is security coverage requirement, otherwise NULL.
    */
@@ -260,8 +253,6 @@ class ProjectData {
    * installed version is supported till is not released then we cannot
    * determine if the currently installed version is within the support window.
    *
-   * @param array $releases
-   *   Releases as returned by update_get_available().
    * @param array $security_supported_release_info
    *   Release information as return by update_get_available().
    *
@@ -269,13 +260,13 @@ class ProjectData {
    *   TRUE if the next major version has been released and the supported until
    *   release is not available.
    */
-  private function isNextMajorReleasedWithoutSupportedReleased(array $releases, array $security_supported_release_info) {
-    $latest_full_release = $this->getMostRecentFullRelease($releases);
+  private function isNextMajorReleasedWithoutSupportedReleased(array $security_supported_release_info) {
+    $latest_full_release = $this->getMostRecentFullRelease();
     if ($latest_full_release['version_major'] > $security_supported_release_info['version_major']) {
       // Even if there is new major version we can know if the installed version
       // is not supported because the version it is supported till has already
       // been released.
-      $latest_full_release = $this->getMostRecentFullRelease($releases, $security_supported_release_info['version_major']);
+      $latest_full_release = $this->getMostRecentFullRelease($security_supported_release_info['version_major']);
       if ($security_supported_release_info['version_minor'] > $latest_full_release['version_minor']) {
         return TRUE;
       }
@@ -307,8 +298,6 @@ class ProjectData {
   /**
    * Gets the formatted message for an unsupported project.
    *
-   * @param string $project
-   *   The project name.
    * @param string $minor_version
    *   The installed minor version.
    *
