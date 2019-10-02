@@ -21,6 +21,8 @@ use Doctrine\Common\Annotations\DocLexer;
  *
  * This Drupal version allows for ignoring annotations when namespaces are
  * present.
+ *
+ * @internal
  */
 final class DocParser
 {

@@ -14,6 +14,8 @@ use Doctrine\Common\Annotations\Reader;
  *
  * Drupal adds its own version of DocParser and allows for ignoring common
  * annotations.
+ *
+ * @internal
  */
 final class SimpleAnnotationReader implements Reader
 {
