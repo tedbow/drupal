@@ -1106,7 +1106,8 @@ DOCBLOCK;
 
         try {
             $parser = $this->createTestParser();
-            $parser->parse($docblock);
+            $result = $parser->parse($docblock);
+            $this->assertTrue(is_array($result) && empty($result));
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
         }
@@ -1127,7 +1128,8 @@ DOCBLOCK;
 
         try {
             $parser = $this->createTestParser();
-            $parser->parse($docblock);
+            $result = $parser->parse($docblock);
+            $this->assertTrue(is_array($result) && empty($result));
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
         }

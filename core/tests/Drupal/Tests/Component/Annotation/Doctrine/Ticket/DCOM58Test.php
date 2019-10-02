@@ -1,7 +1,7 @@
 <?php
 // @codingStandardsIgnoreFile
 
-namespace Doctrine\Tests\Common\Annotations\Ticket;
+namespace Drupal\Tests\Component\Annotation\Doctrine\Ticket;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\DocParser;
