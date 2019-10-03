@@ -35,9 +35,6 @@ class ProjectSecurityRequirement {
    * @see \Drupal\update\ProjectSecurityCoverageCalculator::getSecurityCoverageInfo()
    */
   public function __construct(array $project_data) {
-    if (!isset($this->projectData['security_coverage_info'])) {
-      throw new \LogicException('\Drupal\update\ProjectUpdateData::getSecurityCoverageRequirement() should only be called after "security_coverage_info" has been set by calling \Drupal\update\ProjectUpdateData::getSecurityCoverageInfo()');
-    }
     $this->projectData = $project_data;
   }
 
