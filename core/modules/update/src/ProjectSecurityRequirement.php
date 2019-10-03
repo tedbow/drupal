@@ -7,7 +7,7 @@ use Drupal\Core\Url;
 use Drupal\system\SystemManager;
 
 /**
- * Class for generating a projects security requirement.
+ * Class for generating a project's security requirement.
  *
  * @see update_requirements()
  *
@@ -46,41 +46,29 @@ class ProjectSecurityRequirement {
    */
   public function getSecurityCoverageRequirement() {
     if ($this->projectData['project_type'] === 'core' && $this->projectData['name'] === 'drupal') {
-      $requirement['title'] = t('Drupal core security coverage');
       if (!empty($this->projectData['security_coverage_info'])) {
-        $security_coverage_info = $this->projectData['security_coverage_info'];
-        if ($security_coverage_message = $this->getSecurityCoverageMessage()) {
-          $requirement['description'] = $security_coverage_message;
-          if ($security_coverage_info['additional_minors_coverage'] > 0) {
-            $requirement['value'] = t('Supported minor version');
-            $requirement['severity'] = $security_coverage_info['additional_minors_coverage'] > 1 ? REQUIREMENT_INFO : REQUIREMENT_WARNING;
-          }
-          else {
-            $requirement['value'] = t('Unsupported minor version');
-            $requirement['severity'] = REQUIREMENT_ERROR;
-          }
-          return $requirement;
+        $requirement['title'] = t('Drupal core security coverage');
+        if (isset($this->projectData['security_coverage_info']['support_end_version'])) {
+          $requirement += $this->getVersionEndRequirement();
         }
-      }
-      elseif ($lts_requirement = $this->getLtsRequirement()) {
-        return $requirement + $lts_requirement;
+        elseif (isset($this->projectData['security_coverage_info']['support_end_date'])) {
+          $requirement += $this->getDateEndRequirement();
+        }
+        return $requirement;
       }
     }
     return NULL;
   }
 
   /**
-   * Gets the security coverage message.
+   * Gets coverage message for additional minor version support.
    *
    * @return string|\Drupal\Component\Render\MarkupInterface
    *   The security coverage message, or an empty string if there is none.
    *
    * @see \Drupal\update\ProjectSecurityCoverageCalculator::getSecurityCoverageInfo()
    */
-  private function getSecurityCoverageMessage() {
-    if (!isset($this->projectData['security_coverage_info']['additional_minors_coverage'])) {
-      return '';
-    }
+  private function getVersionEndCoverageMessage() {
     $security_info = $this->projectData['security_coverage_info'];
     list($major, $minor) = explode('.', $this->projectData['existing_version']);
     if ($security_info['additional_minors_coverage'] > 0) {
@@ -127,22 +115,47 @@ class ProjectSecurityRequirement {
   }
 
   /**
-   * Gets the security coverage requirement for LTS release.
+   * Gets the security coverage requirement based on an end date.
+   *
+   * @see \Drupal\update\ProjectSecurityCoverageCalculator::getSupportUntilDateInfo().
    *
    * @return array
    *   An array if there is security coverage requirement, otherwise NULL.
    */
-  private function getLtsRequirement() {
-    if (!($this->projectData['project_type'] === 'core' && $this->projectData['name'] === 'drupal' && (int) $this->projectData['existing_major'] === 8)) {
-      return [];
-    }
-    $minor_version = explode('.', $this->projectData['existing_version'])[1];
+  private function getDateEndRequirement() {
     $requirement = [];
-    if ($minor_version === '8') {
-      $requirement = $this->createRequirementForSupportEndDate('2020-12-02', '6 months');
+    list(, $minor_version) = explode('.', $this->projectData['existing_version']);
+    $current_minor = "{$this->projectData['existing_major']}.$minor_version";
+    $security_info = $this->projectData['security_coverage_info'];
+    $end_timestamp = \DateTime::createFromFormat('Y-m-d', $security_info['support_end_date'])->getTimestamp();
+    /** @var \Drupal\Component\Datetime\Time $time */
+    $time = \Drupal::service('datetime.time');
+    $request_time = $time->getRequestTime();
+    if ($end_timestamp <= $request_time) {
+      // Support is over.
+      $requirement['value'] = t('Unsupported minor version');
+      $requirement['severity'] = SystemManager::REQUIREMENT_ERROR;
+      $requirement['description'] = $this->getVersionNotSupportedMessage($current_minor);
     }
-    elseif ($minor_version === '9') {
-      $requirement = $this->createRequirementForSupportEndDate('2021-11-01');
+    else {
+      /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
+      $date_formatter = \Drupal::service('date.formatter');
+      $requirement['value'] = t('Supported minor version');
+      $requirement['severity'] = SystemManager::REQUIREMENT_WARNING;
+      $requirement['description'] = '<p>' . t(
+          'The installed minor version of %project, %version, will receive security updates until %date.',
+          [
+            '%project' => $this->projectData['name'],
+            '%version' => $current_minor,
+            '%date' => $date_formatter->format($end_timestamp, 'html_date'),
+          ]
+        ) . '</p>';
+      if (isset($security_info['support_ending_warn_date']) && \DateTime::createFromFormat('Y-m-d', $security_info['support_ending_warn_date'])->getTimestamp() <= $request_time) {
+        $requirement['description'] .= '<p>' . t('Update to a supported minor version soon to continue receiving security updates.') . '</p>';
+      }
+    }
+    if (isset($requirement['description'])) {
+      $requirement['description'] = Markup::create($requirement['description']);
     }
     return $requirement;
   }
@@ -184,50 +197,24 @@ class ProjectSecurityRequirement {
   }
 
   /**
-   * Creates a requirements array for a project version with a support end date.
-   *
-   * @param string $end_date_string
-   *   The date date the support will end in the format 'YYYY-MM-DD'.
-   * @param string $warn_at
-   *   The time before support ends to add an update warning. This a date part
-   *   string that can be used in \DateInterval::createFromDateString().
+   * Get the requirements array based on support to a specific version.
    *
    * @return array
-   *   A requirements array as used in hook_requirements().
+   *   Requirements array as specified by hook_requirements().
    */
-  private function createRequirementForSupportEndDate($end_date_string, $warn_at = '') {
-    list(, $minor_version) = explode('.', $this->projectData['existing_version']);
-    $current_minor = "{$this->projectData['existing_major']}.$minor_version";
-    $end_date = \DateTime::createFromFormat('Y-m-d', $end_date_string);
-    $end_timestamp = $end_date->getTimestamp();
-    /** @var \Drupal\Component\Datetime\Time $time */
-    $time = \Drupal::service('datetime.time');
-    $request_time = $time->getRequestTime();
-    if ($end_timestamp <= $request_time) {
-      // LTS support is over.
-      $requirement['value'] = t('Unsupported minor version');
-      $requirement['severity'] = SystemManager::REQUIREMENT_ERROR;
-      $requirement['description'] = $this->getVersionNotSupportedMessage($current_minor);
-    }
-    else {
-      /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
-      $date_formatter = \Drupal::service('date.formatter');
-      $requirement['value'] = t('Supported minor version');
-      $requirement['severity'] = SystemManager::REQUIREMENT_WARNING;
-      $requirement['description'] = '<p>' . t(
-          'The installed minor version of %project, %version, will receive security updates until %date.',
-          [
-            '%project' => $this->projectData['name'],
-            '%version' => $current_minor,
-            '%date' => $date_formatter->format($end_timestamp, 'html_date'),
-          ]
-        ) . '</p>';
-      if ($warn_at && $end_date->sub(\DateInterval::createFromDateString($warn_at))->getTimestamp() <= $request_time) {
-        $requirement['description'] .= '<p>' . t('Update to a supported minor version soon to continue receiving security updates.') . '</p>';
+  private function getVersionEndRequirement() {
+    $requirement = [];
+    $security_coverage_info = $this->projectData['security_coverage_info'];
+    if ($security_coverage_message = $this->getVersionEndCoverageMessage()) {
+      $requirement['description'] = $security_coverage_message;
+      if ($security_coverage_info['additional_minors_coverage'] > 0) {
+        $requirement['value'] = t('Supported minor version');
+        $requirement['severity'] = $security_coverage_info['additional_minors_coverage'] > 1 ? REQUIREMENT_INFO : REQUIREMENT_WARNING;
       }
-    }
-    if (isset($requirement['description'])) {
-      $requirement['description'] = Markup::create($requirement['description']);
+      else {
+        $requirement['value'] = t('Unsupported minor version');
+        $requirement['severity'] = REQUIREMENT_ERROR;
+      }
     }
     return $requirement;
   }

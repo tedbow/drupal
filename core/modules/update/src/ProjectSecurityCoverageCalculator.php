@@ -57,7 +57,7 @@ class ProjectSecurityCoverageCalculator {
    *   available will have the following keys:
    *   - support_end_version: The version the existing version is supported
    *     until.
-   *   - additional_minors_coverage: The number of additional minors releease
+   *   - additional_minors_coverage: The number of additional minors release
    *     after the latest full release of the project the existing version will
    *     be supported.
    */
@@ -67,7 +67,10 @@ class ProjectSecurityCoverageCalculator {
       // Only Drupal core has an explicit coverage range.
       return [];
     }
-    if ($support_until_release = $this->getSupportUntilReleaseInfo()) {
+    if ($supported_until_date_info = $this->getSupportUntilDateInfo()) {
+      return $supported_until_date_info;
+    }
+    elseif ($support_until_release = $this->getSupportUntilReleaseInfo()) {
       $info['support_end_version'] = $support_until_release['version'];
       if ($this->isNextMajorReleasedWithoutSupportedReleased($support_until_release)) {
         // If the next major version has been released but
@@ -196,6 +199,31 @@ class ProjectSecurityCoverageCalculator {
       }
     }
     return NULL;
+  }
+
+  /**
+   * Gets the support end date information if any.
+   *
+   * @return array
+   *   If no support end date information is available then an empty array is
+   *   returned. If support end date information is available then an array is
+   *   return with the following keys:
+   *   - support_end_date: The date support will end for the existing version
+   *     in the format 'YYYY-MM-DD'
+   *   - (optional) support_ending_warn_date: The date after which a warning
+   *     should be displayed about upgrading to another version.
+   */
+  private function getSupportUntilDateInfo() {
+    $minor_version = explode('.', $this->projectData['existing_version'])[1];
+    $info = [];
+    if ($minor_version === '8') {
+      $info['support_end_date'] = '2020-12-02';
+      $info['support_ending_warn_date'] = '2020-6-02';
+    }
+    elseif ($minor_version === '9') {
+      $info['support_end_date'] = '2021-11-01';
+    }
+    return $info;
   }
 
 }
