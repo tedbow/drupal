@@ -7,7 +7,7 @@
 
 use Drupal\Core\Link;
 use Drupal\Core\Url;
-use Drupal\update\ProjectData;
+use Drupal\update\ProjectSecurityRequirement;
 
 /**
  * Implements hook_requirements().
@@ -37,7 +37,7 @@ function update_requirements($phase) {
       $data = update_calculate_project_data($available);
       // First, populate the requirements for core:
       $requirements['update_core'] = _update_requirement_check($data['drupal'], 'core');
-      if ($core_coverage_requirement = (new ProjectData($data['drupal']))->getSecurityCoverageRequirement()) {
+      if ($core_coverage_requirement = (new ProjectSecurityRequirement($data['drupal']))->getSecurityCoverageRequirement()) {
         $requirements['coverage_core'] = $core_coverage_requirement;
       }
 

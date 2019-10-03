@@ -7,22 +7,69 @@ use Drupal\Core\Url;
 use Drupal\system\SystemManager;
 
 /**
- * Update helper methods to determine security coverage.
+ * Class for generating a projects security requirement.
+ *
+ * @see update_requirements()
  *
  * @internal
  */
-class ProjectData {
+class ProjectSecurityRequirement {
 
   /**
+   * The Drupal project data.
+   *
    * @var array
+   *
+   * @see \Drupal\update\UpdateManagerInterface::getProjects()
+   * @see update_process_project_info()
    */
   protected $projectData;
 
   /**
-   * ProjectUpdateData constructor.
+   * Constructs ProjectUpdateData object.
+   *
+   * @param array $project_data
+   *   Project data form Drupal\update\UpdateManagerInterface::getProjects().
+   *   The 'security_coverage_info' key should be set before using this class.
+   *
+   * @see \Drupal\update\ProjectSecurityCoverageCalculator::getSecurityCoverageInfo()
    */
   public function __construct(array $project_data) {
+    if (!isset($this->projectData['security_coverage_info'])) {
+      throw new \LogicException('\Drupal\update\ProjectUpdateData::getSecurityCoverageRequirement() should only be called after "security_coverage_info" has been set by calling \Drupal\update\ProjectUpdateData::getSecurityCoverageInfo()');
+    }
     $this->projectData = $project_data;
+  }
+
+  /**
+   * Gets the security coverage requirement if any.
+   *
+   * @return array|null
+   *   An array if there is security coverage requirement, otherwise NULL.
+   */
+  public function getSecurityCoverageRequirement() {
+    if ($this->projectData['project_type'] === 'core' && $this->projectData['name'] === 'drupal') {
+      $requirement['title'] = t('Drupal core security coverage');
+      if (!empty($this->projectData['security_coverage_info'])) {
+        $security_coverage_info = $this->projectData['security_coverage_info'];
+        if ($security_coverage_message = $this->getSecurityCoverageMessage()) {
+          $requirement['description'] = $security_coverage_message;
+          if ($security_coverage_info['additional_minors_coverage'] > 0) {
+            $requirement['value'] = t('Supported minor version');
+            $requirement['severity'] = $security_coverage_info['additional_minors_coverage'] > 1 ? REQUIREMENT_INFO : REQUIREMENT_WARNING;
+          }
+          else {
+            $requirement['value'] = t('Unsupported minor version');
+            $requirement['severity'] = REQUIREMENT_ERROR;
+          }
+          return $requirement;
+        }
+      }
+      elseif ($lts_requirement = $this->getLtsRequirement()) {
+        return $requirement + $lts_requirement;
+      }
+    }
+    return NULL;
   }
 
   /**
@@ -30,6 +77,8 @@ class ProjectData {
    *
    * @return string|\Drupal\Component\Render\MarkupInterface
    *   The security coverage message, or an empty string if there is none.
+   *
+   * @see \Drupal\update\ProjectSecurityCoverageCalculator::getSecurityCoverageInfo()
    */
   private function getSecurityCoverageMessage() {
     if (!isset($this->projectData['security_coverage_info']['additional_minors_coverage'])) {
@@ -45,7 +94,7 @@ class ProjectData {
           [
             '%project' => $this->projectData['title'],
             '%version' => "$major.$minor",
-            '%coverage_version' => $security_info['supported_until_version'],
+            '%coverage_version' => $security_info['support_end_version'],
           ]
         ) . '</p>';
 
@@ -78,40 +127,6 @@ class ProjectData {
     }
 
     return Markup::create($message);
-  }
-
-  /**
-   * Gets the security coverage requirement if any.
-   *
-   * @return array|null
-   *   An array if there is security coverage requirement, otherwise NULL.
-   */
-  public function getSecurityCoverageRequirement() {
-    if (!isset($this->projectData['security_coverage_info'])) {
-      throw new \LogicException('\Drupal\update\ProjectUpdateData::getSecurityCoverageRequirement() should only be called after "security_coverage_info" has been set by calling \Drupal\update\ProjectUpdateData::getSecurityCoverageInfo()');
-    }
-    if ($this->projectData['project_type'] === 'core' && $this->projectData['name'] === 'drupal') {
-      $requirement['title'] = t('Drupal core security coverage');
-      if (!empty($this->projectData['security_coverage_info'])) {
-        $security_coverage_info = $this->projectData['security_coverage_info'];
-        if ($security_coverage_message = $this->getSecurityCoverageMessage()) {
-          $requirement['description'] = $security_coverage_message;
-          if ($security_coverage_info['additional_minors_coverage'] > 0) {
-            $requirement['value'] = t('Supported minor version');
-            $requirement['severity'] = $security_coverage_info['additional_minors_coverage'] > 1 ? REQUIREMENT_INFO : REQUIREMENT_WARNING;
-          }
-          else {
-            $requirement['value'] = t('Unsupported minor version');
-            $requirement['severity'] = REQUIREMENT_ERROR;
-          }
-          return $requirement;
-        }
-      }
-      elseif ($lts_requirement = $this->getLtsRequirement()) {
-        return $requirement + $lts_requirement;
-      }
-    }
-    return NULL;
   }
 
   /**

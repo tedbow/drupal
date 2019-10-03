@@ -4,6 +4,8 @@ namespace Drupal\update;
 
 /**
  * Calculates a projects security coverage information.
+ *
+ * @internal
  */
 class ProjectSecurityCoverageCalculator {
 
@@ -15,25 +17,31 @@ class ProjectSecurityCoverageCalculator {
   /**
    * The Drupal project data.
    *
-   * The data is obtained from
-   * \Drupal\update\UpdateManagerInterface::getProjects() and then processed
    * @var array
+   *
+   * @see \Drupal\update\UpdateManagerInterface::getProjects()
+   * @see update_process_project_info()
    */
   protected $projectData;
 
   /**
    * Releases as returned by update_get_available().
    *
-   * @see \update_get_available()
-   *
    * @var array
+   *
+   * @see \update_get_available()
    */
   protected $releases;
 
   /**
-   * ProjectUpdateData constructor.
+   * Constructs a ProjectUpdateData object.
+   *
+   * @param array $project_data
+   *   Project data form Drupal\update\UpdateManagerInterface::getProjects().
+   * @param array $releases
+   *   Project releases as returned by update_get_available().
    */
-  public function __construct(array $project_data, array $releases = NULL) {
+  public function __construct(array $project_data, array $releases) {
     $this->projectData = $project_data;
     $this->releases = $releases;
   }
@@ -44,7 +52,14 @@ class ProjectSecurityCoverageCalculator {
    * Currently only Drupal core is supported.
    *
    * @return array
-   *   The security coverage information.
+   *   The security coverage information or an empty array if no security
+   *   information is available for the project. If security coverage is
+   *   available will have the following keys:
+   *   - support_end_version: The version the existing version is supported
+   *     until.
+   *   - additional_minors_coverage: The number of additional minors releease
+   *     after the latest full release of the project the existing version will
+   *     be supported.
    */
   public function getSecurityCoverageInfo() {
     $info = [];
@@ -53,7 +68,7 @@ class ProjectSecurityCoverageCalculator {
       return [];
     }
     if ($support_until_release = $this->getSupportUntilReleaseInfo()) {
-      $info['supported_until_version'] = $support_until_release['version'];
+      $info['support_end_version'] = $support_until_release['version'];
       if ($this->isNextMajorReleasedWithoutSupportedReleased($support_until_release)) {
         // If the next major version has been released but
         // $support_until_release has not we cannot know the coverage status.
