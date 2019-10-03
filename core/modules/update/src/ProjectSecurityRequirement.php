@@ -117,8 +117,6 @@ class ProjectSecurityRequirement {
   /**
    * Gets the security coverage requirement based on an end date.
    *
-   * @see \Drupal\update\ProjectSecurityCoverageCalculator::getSupportUntilDateInfo().
-   *
    * @return array
    *   An array if there is security coverage requirement, otherwise NULL.
    */
