@@ -39,7 +39,7 @@ function update_requirements($phase) {
       $requirements['update_core'] = _update_requirement_check($data['drupal'], 'core');
       /** @var \Drupal\update\ProjectSecurityRequirement $project_security_requirement */
       $project_security_requirement = \Drupal::classResolver(ProjectSecurityRequirement::class);
-      if ($core_coverage_requirement = $project_security_requirement->getSecurityCoverageRequirement()) {
+      if ($core_coverage_requirement = $project_security_requirement->getSecurityCoverageRequirement($data['drupal'])) {
         $requirements['coverage_core'] = $core_coverage_requirement;
       }
 
