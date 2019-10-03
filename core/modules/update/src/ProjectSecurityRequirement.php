@@ -92,7 +92,7 @@ class ProjectSecurityRequirement {
               '%next_minor' => $this->projectData['existing_release']['version_major'] . '.' . ((int) $this->projectData['existing_release']['version_minor'] + 1),
 
             ]
-          ) . ' ' . $this->getAvailableUpdatesMessage() . '</p>';
+          ) . ' ' . static::getAvailableUpdatesMessage() . '</p>';
       }
     }
     else {
@@ -179,7 +179,7 @@ class ProjectSecurityRequirement {
       . '</p><p>'
       . t(
         'Update to a supported minor as soon as possible to continue receiving security updates.')
-      . ' ' . $this->getAvailableUpdatesMessage() . '</p>';
+      . ' ' . static::getAvailableUpdatesMessage() . '</p>';
     return $message;
   }
 
@@ -189,7 +189,7 @@ class ProjectSecurityRequirement {
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
    *   The message.
    */
-  private function getAvailableUpdatesMessage() {
+  private static function getAvailableUpdatesMessage() {
     return t(
       'See the <a href=":update_status_report">available updates</a> page for more information.',
       [':update_status_report' => Url::fromRoute('update.status')->toString()]
