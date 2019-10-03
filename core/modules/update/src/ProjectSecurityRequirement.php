@@ -2,9 +2,13 @@
 
 namespace Drupal\update;
 
+use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\system\SystemManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class for generating a project's security requirement.
@@ -13,10 +17,10 @@ use Drupal\system\SystemManager;
  *
  * @internal
  */
-class ProjectSecurityRequirement {
+class ProjectSecurityRequirement implements ContainerInjectionInterface {
 
   /**
-   * The Drupal project data.
+   * Drupal project data..
    *
    * @var array
    *
@@ -26,25 +30,54 @@ class ProjectSecurityRequirement {
   protected $projectData;
 
   /**
+   * The date formatter service.
+   *
+   * @var \Drupal\Core\Datetime\DateFormatterInterface
+   */
+  protected $dateFormatter;
+
+  /**
+   * The time service.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected $time;
+
+  /**
    * Constructs ProjectUpdateData object.
    *
-   * @param array $project_data
-   *   Project data form Drupal\update\UpdateManagerInterface::getProjects().
-   *   The 'security_coverage_info' key should be set before using this class.
-   *
-   * @see \Drupal\update\ProjectSecurityCoverageCalculator::getSecurityCoverageInfo()
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   *   The date formatter service.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
    */
-  public function __construct(array $project_data) {
-    $this->projectData = $project_data;
+  public function __construct(DateFormatterInterface $date_formatter, TimeInterface $time) {
+    $this->dateFormatter = $date_formatter;
+    $this->time = $time;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('date.formatter'),
+      $container->get('datetime.time')
+    );
   }
 
   /**
    * Gets the security coverage requirement if any.
    *
+   * @param array $project_data
+   *   Project data form Drupal\update\UpdateManagerInterface::getProjects().
+   *   The 'security_coverage_info' key should be set calling this method.
+   *
    * @return array|null
    *   An array if there is security coverage requirement, otherwise NULL.
    */
-  public function getSecurityCoverageRequirement() {
+  public function getSecurityCoverageRequirement(array $project_data) {
+    $this->projectData = $project_data;
     if ($this->projectData['project_type'] === 'core' && $this->projectData['name'] === 'drupal') {
       if (!empty($this->projectData['security_coverage_info'])) {
         $requirement['title'] = t('Drupal core security coverage');
@@ -126,9 +159,7 @@ class ProjectSecurityRequirement {
     $current_minor = "{$this->projectData['existing_major']}.$minor_version";
     $security_info = $this->projectData['security_coverage_info'];
     $end_timestamp = \DateTime::createFromFormat('Y-m-d', $security_info['support_end_date'])->getTimestamp();
-    /** @var \Drupal\Component\Datetime\Time $time */
-    $time = \Drupal::service('datetime.time');
-    $request_time = $time->getRequestTime();
+    $request_time = $this->time->getRequestTime();
     if ($end_timestamp <= $request_time) {
       // Support is over.
       $requirement['value'] = t('Unsupported minor version');
@@ -136,8 +167,6 @@ class ProjectSecurityRequirement {
       $requirement['description'] = $this->getVersionNotSupportedMessage($current_minor);
     }
     else {
-      /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
-      $date_formatter = \Drupal::service('date.formatter');
       $requirement['value'] = t('Supported minor version');
       $requirement['severity'] = SystemManager::REQUIREMENT_WARNING;
       $requirement['description'] = '<p>' . t(
@@ -145,7 +174,7 @@ class ProjectSecurityRequirement {
           [
             '%project' => $this->projectData['name'],
             '%version' => $current_minor,
-            '%date' => $date_formatter->format($end_timestamp, 'html_date'),
+            '%date' => $this->dateFormatter->format($end_timestamp, 'html_date'),
           ]
         ) . '</p>';
       if (isset($security_info['support_ending_warn_date']) && \DateTime::createFromFormat('Y-m-d', $security_info['support_ending_warn_date'])->getTimestamp() <= $request_time) {
@@ -216,5 +245,4 @@ class ProjectSecurityRequirement {
     }
     return $requirement;
   }
-
 }
