@@ -3,6 +3,7 @@
 namespace Drupal\update;
 
 use Drupal\Core\Render\Markup;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\system\SystemManager;
 
@@ -14,6 +15,8 @@ use Drupal\system\SystemManager;
  * @internal
  */
 class ProjectSecurityRequirement {
+
+  use StringTranslationTrait;
 
   /**
    * Drupal project data..
@@ -44,7 +47,7 @@ class ProjectSecurityRequirement {
   public function getRequirement() {
     if ($this->projectData['project_type'] === 'core' && $this->projectData['name'] === 'drupal') {
       if (!empty($this->projectData['security_coverage_info'])) {
-        $requirement['title'] = t('Drupal core security coverage');
+        $requirement['title'] = $this->t('Drupal core security coverage');
         if (isset($this->projectData['security_coverage_info']['support_end_version'])) {
           $requirement += $this->getVersionEndRequirement();
         }
@@ -71,7 +74,7 @@ class ProjectSecurityRequirement {
     if ($security_info['additional_minors_coverage'] > 0) {
       // If the installed minor version will be supported until newer minor
       // versions are released inform the user.
-      $message = '<p>' . t(
+      $message = '<p>' . $this->t(
           'The installed minor version of %project, %version, will receive security updates until the release of %coverage_version.',
           [
             '%project' => $this->projectData['title'],
@@ -83,7 +86,7 @@ class ProjectSecurityRequirement {
       if ($security_info['additional_minors_coverage'] === 1) {
         // If the installed minor version will only be supported for 1 newer
         // minor core version encourage the site owner to update soon.
-        $message .= '<p>' . t(
+        $message .= '<p>' . $this->t(
             'Update to %next_minor or higher soon to continue receiving security updates.',
             [
               '%next_minor' => $this->projectData['existing_release']['version_major'] . '.' . ((int) $this->projectData['existing_release']['version_minor'] + 1),
@@ -100,7 +103,7 @@ class ProjectSecurityRequirement {
     if ($this->projectData['project_type'] === 'core' && $this->projectData['name'] === 'drupal') {
       // Provide a link to the Drupal core documentation on release cycles
       // if the installed Drupal core minor is not supported.
-      $message .= '<p>' . t(
+      $message .= '<p>' . $this->t(
           'Visit the <a href=":url">release cycle overview</a> for more information on supported releases.',
           [
             ':url' => 'https://www.drupal.org/core/release-cycle-overview',
@@ -128,16 +131,16 @@ class ProjectSecurityRequirement {
     $request_time = $time->getRequestTime();
     if ($end_timestamp <= $request_time) {
       // Support is over.
-      $requirement['value'] = t('Unsupported minor version');
+      $requirement['value'] = $this->t('Unsupported minor version');
       $requirement['severity'] = SystemManager::REQUIREMENT_ERROR;
       $requirement['description'] = $this->getVersionNotSupportedMessage($current_minor);
     }
     else {
       /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
       $date_formatter = \Drupal::service('date.formatter');
-      $requirement['value'] = t('Supported minor version');
+      $requirement['value'] = $this->t('Supported minor version');
       $requirement['severity'] = SystemManager::REQUIREMENT_WARNING;
-      $requirement['description'] = '<p>' . t(
+      $requirement['description'] = '<p>' . $this->t(
           'The installed minor version of %project, %version, will receive security updates until %date.',
           [
             '%project' => $this->projectData['name'],
@@ -146,7 +149,7 @@ class ProjectSecurityRequirement {
           ]
         ) . '</p>';
       if (isset($security_info['support_ending_warn_date']) && \DateTime::createFromFormat('Y-m-d', $security_info['support_ending_warn_date'])->getTimestamp() <= $request_time) {
-        $requirement['description'] .= '<p>' . t('Update to a supported minor version soon to continue receiving security updates.') . '</p>';
+        $requirement['description'] .= '<p>' . $this->t('Update to a supported minor version soon to continue receiving security updates.') . '</p>';
       }
     }
     if (isset($requirement['description'])) {
@@ -165,14 +168,14 @@ class ProjectSecurityRequirement {
    *   The message for an unsupported version.
    */
   private function getVersionNotSupportedMessage($minor_version) {
-    $message = '<p>' . t(
+    $message = '<p>' . $this->t(
         'The installed minor version of %project, %version, is no longer supported and will not receive security updates.',
         [
           '%project' => $this->projectData['name'],
           '%version' => $minor_version,
         ])
       . '</p><p>'
-      . t(
+      . $this->t(
         'Update to a supported minor as soon as possible to continue receiving security updates.')
       . ' ' . static::getAvailableUpdatesMessage() . '</p>';
     return $message;
@@ -203,11 +206,11 @@ class ProjectSecurityRequirement {
     if ($security_coverage_message = $this->getVersionEndCoverageMessage()) {
       $requirement['description'] = $security_coverage_message;
       if ($security_coverage_info['additional_minors_coverage'] > 0) {
-        $requirement['value'] = t('Supported minor version');
+        $requirement['value'] = $this->t('Supported minor version');
         $requirement['severity'] = $security_coverage_info['additional_minors_coverage'] > 1 ? REQUIREMENT_INFO : REQUIREMENT_WARNING;
       }
       else {
-        $requirement['value'] = t('Unsupported minor version');
+        $requirement['value'] = $this->t('Unsupported minor version');
         $requirement['severity'] = REQUIREMENT_ERROR;
       }
     }
