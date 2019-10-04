@@ -110,8 +110,8 @@ class ProjectSecurityData {
     if (empty($this->releases[$this->projectData['existing_version']])) {
       return [];
     }
-    $existing_release = $this->releases[$this->projectData['existing_version']];
 
+    $existing_release = $this->releases[$this->projectData['existing_version']];
     if (!empty($existing_release['version_extra'])) {
       return [];
     }
