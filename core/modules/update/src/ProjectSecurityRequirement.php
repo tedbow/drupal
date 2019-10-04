@@ -44,7 +44,7 @@ class ProjectSecurityRequirement implements ContainerInjectionInterface {
   protected $time;
 
   /**
-   * Constructs ProjectUpdateData object.
+   * Constructs a ProjectSecurityRequirement object.
    *
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
    *   The date formatter service.
@@ -71,12 +71,14 @@ class ProjectSecurityRequirement implements ContainerInjectionInterface {
    *
    * @param array $project_data
    *   Project data form Drupal\update\UpdateManagerInterface::getProjects().
-   *   The 'security_coverage_info' key should be set calling this method.
+   *   The 'security_coverage_info' key should be set by
+   *   calling \Drupal\update\ProjectSecurityData::getCoverageInfo() before
+   *   calling this method.
    *
    * @return array|null
    *   An array if there is security coverage requirement, otherwise NULL.
    */
-  public function getSecurityCoverageRequirement(array $project_data) {
+  public function getRequirement(array $project_data) {
     $this->projectData = $project_data;
     if ($this->projectData['project_type'] === 'core' && $this->projectData['name'] === 'drupal') {
       if (!empty($this->projectData['security_coverage_info'])) {
@@ -151,7 +153,7 @@ class ProjectSecurityRequirement implements ContainerInjectionInterface {
    * Gets the security coverage requirement based on an end date.
    *
    * @return array
-   *   An array if there is security coverage requirement, otherwise NULL.
+   *   Requirements array as specified by hook_requirements().
    */
   private function getDateEndRequirement() {
     $requirement = [];
