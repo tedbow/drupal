@@ -166,7 +166,9 @@ class ProjectSecurityData {
    * @return int
    *   The number of additional supported minor releases.
    *
-   * @throws \Exception
+   * @throws \LogicException
+   *   Throw when this method is called without checking if
+   *   ::isNextMajorReleasedWithoutSupportedReleased() returns false.
    */
   private function getAdditionalSecuritySupportedMinors(array $security_supported_release_info) {
     $latest_full_release = $this->getMostRecentFullRelease();
