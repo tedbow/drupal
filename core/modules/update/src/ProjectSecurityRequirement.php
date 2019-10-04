@@ -99,7 +99,7 @@ class ProjectSecurityRequirement implements ContainerInjectionInterface {
    * @return string|\Drupal\Component\Render\MarkupInterface
    *   The security coverage message, or an empty string if there is none.
    *
-   * @see \Drupal\update\ProjectSecurityCoverageCalculator::getSecurityCoverageInfo()
+   * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
    */
   private function getVersionEndCoverageMessage() {
     $security_info = $this->projectData['security_coverage_info'];

@@ -7,7 +7,7 @@ namespace Drupal\update;
  *
  * @internal
  */
-class ProjectSecurityCoverageCalculator {
+class ProjectSecurityData {
 
   /**
    * The number of minor versions of Drupal core that are supported.
@@ -29,7 +29,7 @@ class ProjectSecurityCoverageCalculator {
    *
    * @var array
    *
-   * @see \update_get_available()
+   * @see update_get_available()
    */
   protected $releases;
 
@@ -37,7 +37,8 @@ class ProjectSecurityCoverageCalculator {
    * Constructs a ProjectUpdateData object.
    *
    * @param array $project_data
-   *   Project data form Drupal\update\UpdateManagerInterface::getProjects().
+   *   Project data from Drupal\update\UpdateManagerInterface::getProjects() and
+   *   processed by update_process_project_info().
    * @param array $releases
    *   Project releases as returned by update_get_available().
    */
@@ -67,7 +68,7 @@ class ProjectSecurityCoverageCalculator {
    *   - (optional) support_ending_warn_date: The date after which a warning
    *     should be displayed about upgrading to another version.
    */
-  public function getSecurityCoverageInfo() {
+  public function getCoverageInfo() {
     $info = [];
     if (!($this->projectData['project_type'] === 'core' && $this->projectData['name'] === 'drupal')) {
       // Only Drupal core has an explicit coverage range.
