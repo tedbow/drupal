@@ -10,7 +10,8 @@ use Doctrine\Common\Annotations\Reader;
  *
  * This class is a near-copy of
  * Doctrine\Common\Annotations\SimpleAnnotationReader, which is part of the
- * Doctrine project: <http://www.doctrine-project.org>
+ * Doctrine project: <http://www.doctrine-project.org>. It was copied from
+ * version 1.2.7.
  *
  * Drupal adds its own version of DocParser and allows for ignoring common
  * annotations.

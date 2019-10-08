@@ -14,6 +14,15 @@ use PHPUnit\Framework\TestCase;
 /**
  * @coversDefaultClass \Drupal\Component\Annotation\Doctrine\DocParser
  *
+ * This class is a near-copy of
+ * Doctrine\Tests\Common\Annotations\DocParserTest, which is part of the
+ * Doctrine project: <http://www.doctrine-project.org>.  It was copied from
+ * version 1.2.7.
+ *
+ * The supporting test fixture classes in
+ * core/tests/Drupal/Tests/Component/Annotation/Doctrine/Fixtures were also
+ * copied from version 1.2.7.
+ *
  * @group Annotation
  */
 class DocParserTest extends TestCase
