@@ -23,8 +23,8 @@ function simpletest_requirements($phase) {
   $requirements = [];
 
   $requirements['deprecation'] = [
-    'title' => t('Simpletest'),
-    'value' => t('The Drupal core Simpletest module is deprecated for removal in Drupal 9. It should not be enabled on production sites. See https://www.drupal.org/node/3091784 for alternatives.'),
+    'title' => t('Testing (SimpleTest)'),
+    'value' => t('The Testing (SimpleTest) module is deprecated for removal in Drupal 9. It should not be enabled on production sites. See https://www.drupal.org/node/3091784 for more information.'),
     'severity' => $phase === 'runtime' ? REQUIREMENT_WARNING : REQUIREMENT_INFO,
   ];
 
