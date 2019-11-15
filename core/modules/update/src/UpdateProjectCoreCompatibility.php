@@ -5,13 +5,17 @@ namespace Drupal\update;
 use Composer\Semver\Semver;
 use Composer\Semver\VersionParser;
 
-
 /**
- * Utilility class to set core compatiblity ranges.
+ * Utility class to set core compatibility ranges.
  */
 class UpdateProjectCoreCompatibility {
 
   /**
+   * Set core_compatibility_ranges for project releases.
+   *
+   * @todo Update Security releases also.
+   * @todo update core/modules/update/templates/update-version.html.twig to
+   *   output the ranges.
    * @param array &$project_data
    * @param array $available_project
    * @param array $available_core
@@ -101,4 +105,5 @@ class UpdateProjectCoreCompatibility {
     }
     return $compatibility_ranges;
   }
+
 }
