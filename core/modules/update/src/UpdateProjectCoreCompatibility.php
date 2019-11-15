@@ -5,6 +5,10 @@ namespace Drupal\update;
 use Composer\Semver\Semver;
 use Composer\Semver\VersionParser;
 
+
+/**
+ * Utilility class to set core compatiblity ranges.
+ */
 class UpdateProjectCoreCompatibility {
 
   /**
@@ -19,18 +23,24 @@ class UpdateProjectCoreCompatibility {
       // versions.
       return;
     }
+    $releases_to_set = [];
     $possible_core_update_versions = self::getPossibleCoreUpdateVersions($core_data, $core_releases);
-    $set_ranges_for_version = function ($version) use (&$project_releases, $possible_core_update_versions) {
-      if (!empty($project_releases[$version]['core_compatibility'])) {
-        $project_releases[$version]['core_compatibility_ranges'] = self::createCompatibilityRanges($project_releases[$version]['core_compatibility'], $possible_core_update_versions);
-      }
-    };
       foreach (['recommended', 'latest_version'] as $update_version_type) {
-      if (isset($project_data[$update_version_type])) {
-        $set_ranges_for_version($project_data[$update_version_type]);
+      if (isset($project_data[$update_version_type])&& !empty($project_releases[$project_data[$update_version_type]])) {
+        $releases_to_set[] = &$project_releases[$project_data[$update_version_type]];
       }
     }
-    foreach (['also', ['security updates']] as $versions) {
+    if (!empty($project_data['also'])) {
+      foreach ($project_data['also'] as $version) {
+        if (isset($project_releases[$version])) {
+          $releases_to_set[] = &$project_releases[$version];
+        }
+      }
+    }
+    foreach ($releases_to_set as &$release) {
+      if (!empty($release['core_compatibility'])) {
+        $release['core_compatibility_ranges'] = self::createCompatibilityRanges($release['core_compatibility'], $possible_core_update_versions);
+      }
 
     }
 
