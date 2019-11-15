@@ -33,6 +33,7 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
         'also' => [
           '1.2.4',
           '1.2.5',
+          '1.2.6',
         ],
       ],
       'project_releases' => [
@@ -48,6 +49,7 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
         '1.2.5' => [
           'core_compatibility' => '8.9.0 || 8.9.2 || ^9.0.1',
         ],
+        '1.2.6' => [],
       ],
       'core_data' => [
         'existing_version' => '8.8.0',
