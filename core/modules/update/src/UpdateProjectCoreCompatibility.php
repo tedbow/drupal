@@ -20,13 +20,17 @@ class UpdateProjectCoreCompatibility {
       return;
     }
     $possible_core_update_versions = self::getPossibleCoreUpdateVersions($core_data, $core_releases);
-    foreach (['recommended', 'latest_version'] as $update_version_type) {
-      if (isset($project_data[$update_version_type])) {
-        $version = $project_data[$update_version_type];
-        if (!empty($project_releases[$version]['core_compatibility'])) {
-          $project_releases[$version]['core_compatibility_ranges'] = self::createCompatibilityRanges($project_releases[$version]['core_compatibility'], $possible_core_update_versions);
-        }
+    $set_ranges_for_version = function ($version) use (&$project_releases, $possible_core_update_versions) {
+      if (!empty($project_releases[$version]['core_compatibility'])) {
+        $project_releases[$version]['core_compatibility_ranges'] = self::createCompatibilityRanges($project_releases[$version]['core_compatibility'], $possible_core_update_versions);
       }
+    };
+      foreach (['recommended', 'latest_version'] as $update_version_type) {
+      if (isset($project_data[$update_version_type])) {
+        $set_ranges_for_version($project_data[$update_version_type]);
+      }
+    }
+    foreach (['also', ['security updates']] as $versions) {
 
     }
 
