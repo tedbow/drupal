@@ -248,7 +248,7 @@ function update_theme() {
     // We are using template instead of '#type' => 'table' here to keep markup
     // out of preprocess and allow for easier changes to markup.
     'update_version' => [
-      'variables' => ['version' => NULL, 'title' => NULL, 'attributes' => []],
+      'variables' => ['version' => NULL, 'title' => NULL, 'attributes' => [], 'core_compatibility_message' => NULL],
       'file' => 'update.report.inc',
     ],
   ];

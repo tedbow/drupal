@@ -14,15 +14,9 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
    * @covers ::setProjectCoreCompatibilityRanges
    * @dataProvider providerSetProjectCoreCompatibilityRanges
    */
-  public function testSetProjectCoreCompatibilityRanges(array $project_data, array $project_releases, $core_data, array $core_releases, array $expected_ranges) {
+  public function testSetProjectCoreCompatibilityRanges(array $project_data, array $project_releases, $core_data, array $core_releases, array $expected) {
     UpdateProjectCoreCompatibility::setProjectCoreCompatibilityRanges($project_data, $project_releases, $core_data, $core_releases);
-    $actual_ranges = [];
-    foreach ($project_releases as $project_version => $project_release) {
-      if (isset($project_release['core_compatibility_ranges'])) {
-        $actual_ranges[$project_version] = $project_release['core_compatibility_ranges'];
-      }
-    }
-    $this->assertSame($expected_ranges, $actual_ranges);
+    $this->assertSame($expected, $project_releases);
   }
 
   public function providerSetProjectCoreCompatibilityRanges() {
@@ -65,11 +59,28 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
         '8.9.1' => [],
         '8.9.2' => [],
       ],
-      'expected_ranges' => [
-        '1.0.1' => [['8.8.1', '8.9.2']],
-        '1.2.3' => [['8.9.0', '8.9.2']],
-        '1.2.4' => [['8.9.2']],
-        '1.2.5' => [['8.9.0'], ['8.9.2']],
+      'expected' => [
+        '1.0.1' => [
+          'core_compatibility' => '^8.8 || ^9',
+          'core_compatibility_ranges' => [['8.8.1', '8.9.2']],
+          'core_compatibility_message' => 'This module is compatible with Drupal core: 8.8.1 to 8.9.2',
+        ],
+        '1.2.3' => [
+          'core_compatibility' => '^8.9 || ^9',
+          'core_compatibility_ranges' => [['8.9.0', '8.9.2']],
+          'core_compatibility_message' => 'This module is compatible with Drupal core: 8.9.0 to 8.9.2',
+        ],
+        '1.2.4' => [
+          'core_compatibility' => '^8.9.2 || ^9',
+          'core_compatibility_ranges' => [['8.9.2']],
+          'core_compatibility_message' => 'This module is compatible with Drupal core: 8.9.2',
+        ],
+        '1.2.5' => [
+          'core_compatibility' => '8.9.0 || 8.9.2 || ^9.0.1',
+          'core_compatibility_ranges' => [['8.9.0'], ['8.9.2']],
+          'core_compatibility_message' => 'This module is compatible with Drupal core: 8.9.0, 8.9.2',
+        ],
+        '1.2.6' => [],
       ],
     ];
     // Ensure that when only Drupal 9 pre-releases none of the expected ranges
@@ -88,17 +99,40 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
       '9.0.1' => [],
       '9.0.2' => [],
     ];
-    $test_cases['with 9 full releases']['expected_ranges'] = [
-      '1.0.1' => [['8.8.1', '9.0.2']],
-      '1.2.3' => [['8.9.0', '9.0.2']],
-      '1.2.4' => [['8.9.2', '9.0.2']],
-      '1.2.5' => [
-        ['8.9.0'],
-        ['8.9.2'],
-        ['9.0.1', '9.0.2'],
+    $test_cases['with 9 full releases']['expected'] = [
+      '1.0.1' => [
+        'core_compatibility' => '^8.8 || ^9',
+        'core_compatibility_ranges' => [['8.8.1', '9.0.2']],
+        'core_compatibility_message' => 'This module is compatible with Drupal core: 8.8.1 to 9.0.2',
       ],
+      '1.2.3' => [
+        'core_compatibility' => '^8.9 || ^9',
+        'core_compatibility_ranges' => [['8.9.0', '9.0.2']],
+        'core_compatibility_message' => 'This module is compatible with Drupal core: 8.9.0 to 9.0.2',
+      ],
+      '1.2.4' => [
+        'core_compatibility' => '^8.9.2 || ^9',
+        'core_compatibility_ranges' => [['8.9.2', '9.0.2']],
+        'core_compatibility_message' => 'This module is compatible with Drupal core: 8.9.2 to 9.0.2',
+      ],
+      '1.2.5' => [
+        'core_compatibility' => '8.9.0 || 8.9.2 || ^9.0.1',
+        'core_compatibility_ranges' => [['8.9.0'], ['8.9.2'], ['9.0.1', '9.0.2']],
+        'core_compatibility_message' => 'This module is compatible with Drupal core: 8.9.0, 8.9.2, 9.0.1 to 9.0.2',
+      ],
+      '1.2.6' => [],
     ];
     return $test_cases;
+  }
+
+}
+
+namespace Drupal\update;
+
+if (!function_exists('t')) {
+
+  function t($string, array $args = []) {
+    return strtr($string, $args);
   }
 
 }
