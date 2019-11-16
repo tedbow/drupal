@@ -44,6 +44,9 @@ class UpdateProjectCoreCompatibility {
     foreach ($releases_to_set as &$release) {
       if (!empty($release['core_compatibility'])) {
         $release['core_compatibility_ranges'] = self::createCompatibilityRanges($release['core_compatibility'], $possible_core_update_versions);
+        if ($release['core_compatibility_ranges']) {
+          $release['core_compatibility_message'] = self::formatMessage($release['core_compatibility_ranges']);
+        }
       }
 
     }
@@ -104,6 +107,18 @@ class UpdateProjectCoreCompatibility {
       $compatibility_ranges[] = $range;
     }
     return $compatibility_ranges;
+  }
+
+  protected static function formatMessage(array $core_compatibility_ranges) {
+    $range_messages = [];
+    foreach ($core_compatibility_ranges as $core_compatibility_range) {
+      $range_message = $core_compatibility_range[0];
+      if (count($core_compatibility_range) === 2) {
+        $range_message .= " to {$core_compatibility_range[1]}";
+      }
+      $range_messages[] = $range_message;
+    }
+    return t('This module is compatible with Drupal core:') . ' ' . implode(', ', $range_messages);
   }
 
 }
