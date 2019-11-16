@@ -20,16 +20,15 @@ class UpdateProjectCoreCompatibility {
    * @param array $available_project
    * @param array $available_core
    */
-  public static function setProjectCoreCompatibilityRanges(array $project_data, array $core_data) {
-    if (!isset($core_data['existing_version']) || !isset($core_data['releases'][$core_data['existing_version']])) {
+  public static function setProjectCoreCompatibilityRanges(array $project_data, array &$project_releases, $core_data, array $core_releases) {
+    if (!isset($core_data['existing_version']) || !isset($core_releases[$core_data['existing_version']])) {
       // If we can't determine the existing version then we can't calculate
       // the core compatibility of based on core versions after the existing
       // versions.
       return;
     }
     $releases_to_set = [];
-    $project_releases = &$project_data['releases'];
-    $possible_core_update_versions = self::getPossibleCoreUpdateVersions($core_data);
+    $possible_core_update_versions = self::getPossibleCoreUpdateVersions($core_data, $core_releases);
       foreach (['recommended', 'latest_version'] as $update_version_type) {
       if (isset($project_data[$update_version_type])&& !empty($project_releases[$project_data[$update_version_type]])) {
         $releases_to_set[] = &$project_releases[$project_data[$update_version_type]];
@@ -56,12 +55,12 @@ class UpdateProjectCoreCompatibility {
 
   /**
    * @param $core_data
-
+   * @param array $core_releases
    *
    * @return array
    */
-  protected static function getPossibleCoreUpdateVersions($core_data) {
-    $core_release_versions = array_keys($core_data['releases']);
+  protected static function getPossibleCoreUpdateVersions($core_data, array $core_releases) {
+    $core_release_versions = array_keys($core_releases);
     $possible_core_update_versions = Semver::satisfiedBy($core_release_versions, '>= ' . $core_data['existing_version']);
     $possible_core_update_versions = Semver::sort($possible_core_update_versions);
     $possible_core_update_versions = array_filter($possible_core_update_versions, function ($version) {
