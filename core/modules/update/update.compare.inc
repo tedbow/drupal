@@ -103,7 +103,7 @@ function update_calculate_project_data($available) {
     if (isset($available[$project])) {
       update_calculate_project_update_status($projects[$project], $available[$project]);
       if ($drupal_project_info && $project !== 'drupal' && !empty($available[$project]['releases'])) {
-        UpdateProjectCoreCompatibility::setProjectCoreCompatibilityRanges($projects[$project], $available[$project]['releases'], $drupal_project_info, $available['drupal']['releases']);
+        UpdateProjectCoreCompatibility::setProjectCoreCompatibilityRanges($projects[$project], $available[$project]['releases'], $projects['drupal'], $available['drupal']['releases']);
       }
 
     }
