@@ -61,7 +61,7 @@ class UpdateProjectCoreCompatibility {
    */
   protected static function getPossibleCoreUpdateVersions($core_data, array $core_releases) {
     $core_release_versions = array_keys($core_releases);
-    $possible_core_update_versions = Semver::satisfiedBy($core_release_versions, '> ' . $core_data['existing_version']);
+    $possible_core_update_versions = Semver::satisfiedBy($core_release_versions, '>= ' . $core_data['existing_version']);
     $possible_core_update_versions = Semver::sort($possible_core_update_versions);
     $possible_core_update_versions = array_filter($possible_core_update_versions, function ($version) {
       return VersionParser::parseStability($version) === 'stable';
