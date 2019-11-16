@@ -14,11 +14,14 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
    * @covers ::setProjectCoreCompatibilityRanges
    * @dataProvider providerSetProjectCoreCompatibilityRanges
    */
-  public function testSetProjectCoreCompatibilityRanges(array $project_data, array $project_releases, $core_data, array $core_releases, array $expected) {
+  public function testSetProjectCoreCompatibilityRanges(array $project_data, array $project_releases, $core_data, array $core_releases, array $expected_releases) {
     UpdateProjectCoreCompatibility::setProjectCoreCompatibilityRanges($project_data, $project_releases, $core_data, $core_releases);
-    $this->assertSame($expected, $project_releases);
+    $this->assertSame($expected_releases, $project_releases);
   }
 
+  /**
+   * Dataprovider for testSetProjectCoreCompatibilityRanges().
+   */
   public function providerSetProjectCoreCompatibilityRanges() {
     $test_cases['no 9 releases'] = [
       'project_data' => [
@@ -59,11 +62,11 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
         '8.9.1' => [],
         '8.9.2' => [],
       ],
-      'expected' => [
+      'expected_releases' => [
         '1.0.1' => [
           'core_compatibility' => '^8.8 || ^9',
-          'core_compatibility_ranges' => [['8.8.1', '8.9.2']],
-          'core_compatibility_message' => 'This module is compatible with Drupal core: 8.8.1 to 8.9.2',
+          'core_compatibility_ranges' => [['8.8.0', '8.9.2']],
+          'core_compatibility_message' => 'This module is compatible with Drupal core: 8.8.0 to 8.9.2',
         ],
         '1.2.3' => [
           'core_compatibility' => '^8.9 || ^9',
@@ -99,11 +102,11 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
       '9.0.1' => [],
       '9.0.2' => [],
     ];
-    $test_cases['with 9 full releases']['expected'] = [
+    $test_cases['with 9 full releases']['expected_releases'] = [
       '1.0.1' => [
         'core_compatibility' => '^8.8 || ^9',
-        'core_compatibility_ranges' => [['8.8.1', '9.0.2']],
-        'core_compatibility_message' => 'This module is compatible with Drupal core: 8.8.1 to 9.0.2',
+        'core_compatibility_ranges' => [['8.8.0', '9.0.2']],
+        'core_compatibility_message' => 'This module is compatible with Drupal core: 8.8.0 to 9.0.2',
       ],
       '1.2.3' => [
         'core_compatibility' => '^8.9 || ^9',

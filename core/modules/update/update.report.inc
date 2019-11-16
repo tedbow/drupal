@@ -7,7 +7,6 @@
 
 use Drupal\Core\Template\Attribute;
 use Drupal\Core\Url;
-use Drupal\update\UpdateProjectCoreCompatibility;
 
 /**
  * Prepares variables for project status report templates.
@@ -161,7 +160,6 @@ function template_preprocess_update_project_status(&$variables) {
           '#version' => $project['releases'][$project['recommended']],
           '#title' => t('Recommended version:'),
           '#attributes' => ['class' => $version_class],
-          '#core_compatibility_message' => UpdateProjectCoreCompatibility::formatMessage()
         ];
       }
 

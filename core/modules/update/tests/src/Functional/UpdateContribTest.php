@@ -113,6 +113,7 @@ class UpdateContribTest extends UpdateTestBase {
       ]
     );
     $this->assertRaw($project_link, 'Link to aaa_update_test project appears.');
+    file_put_contents('/Users/ted.bowman/Sites/www/test.html', $this->getSession()->getPage()->getOuterHtml());
   }
 
   /**
