@@ -76,6 +76,9 @@ class UpdateProjectCoreCompatibility {
    * @return array
    */
   protected static function createCompatibilityRanges($core_compatibility, array $possible_core_update_versions) {
+    // @todo statically cache the results here because this will the same for many projects
+    // because they will likely use the same core_compatibility.
+    // For example "^8 || ^9" or "^8.8 || ^9" should be very common.
     $compatibility_ranges = [];
     $previous_version_satisfied = NULL;
     $range = [];
