@@ -7,6 +7,8 @@ use Drupal\update\UpdateProjectCoreCompatibility;
 
 /**
  * @coversDefaultClass \Drupal\update\UpdateProjectCoreCompatibility
+ *
+ * @group update
  */
 class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
 
