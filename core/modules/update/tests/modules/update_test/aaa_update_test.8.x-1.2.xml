@@ -17,7 +17,7 @@
    <name>aaa_update_test 8.x-1.2</name>
    <version>8.x-1.2</version>
    <tag>DRUPAL-8--1-2</tag>
-    <core_compatibility>^</core_compatibility>
+    <core_compatibility>^8</core_compatibility>
    <version_major>1</version_major>
    <version_patch>2</version_patch>
    <status>published</status>
@@ -29,7 +29,6 @@
    <terms>
     <term><name>Release type</name><value>New features</value></term>
     <term><name>Release type</name><value>Bug fixes</value></term>
-    <term><name>Release type</name><value>Security update</value></term>
    </terms>
   </release>
   <release>
@@ -47,7 +46,6 @@
    <terms>
     <term><name>Release type</name><value>New features</value></term>
     <term><name>Release type</name><value>Bug fixes</value></term>
-    <term><name>Release type</name><value>Insecure</value></term>
    </terms>
   </release>
   <release>
@@ -65,7 +63,6 @@
    <terms>
     <term><name>Release type</name><value>New features</value></term>
     <term><name>Release type</name><value>Bug fixes</value></term>
-    <term><name>Release type</name><value>Insecure</value></term>
    </terms>
   </release>
  </releases>

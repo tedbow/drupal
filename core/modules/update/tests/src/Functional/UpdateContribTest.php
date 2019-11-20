@@ -445,6 +445,28 @@ class UpdateContribTest extends UpdateTestBase {
   }
 
   /**
+   * Test
+   */
+  public function testCoreCompatibilityMessage() {
+    $system_info = [
+      '#all' => [
+        'version' => '8.0.0',
+      ],
+      'aaa_update_test' => [
+        'project' => 'aaa_update_test',
+        'version' => '8.x-1.0',
+        'hidden' => FALSE,
+      ],
+    ];
+    $this->config('update_test.settings')->set('system_info', $system_info)->save();
+    $this->refreshUpdateStatus(['drupal' => '1.1', 'aaa_update_test' => '8.x-1.2']);
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    $this->drupalGet('admin/reports/updates');
+    file_put_contents('/Users/ted.bowman/Sites/www/test.html', $page->getOuterHtml());
+  }
+
+  /**
    * Tests update status of security releases.
    *
    * @param string $module_version
