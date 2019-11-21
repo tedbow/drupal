@@ -11,13 +11,18 @@ use Composer\Semver\VersionParser;
 class UpdateProjectCoreCompatibility {
 
   /**
-   * Set core compatibility information for project releases.
+   * @var string[]
+   */
+  protected $possible_core_versions;
+
+  /**
+   * @var array
+   */
+  protected $evaluated_ranges = [];
+
+  /**
+   * Constructs an UpdateProjectCoreCompatibility object.
    *
-   * @param array &$project_data
-   *   The project data as returned by
-   *   \Drupal\update\UpdateManagerInterface::getProjects() and then processed
-   *   by update_process_project_info() and
-   *   update_calculate_project_update_status().
    * @param array $core_data
    *   The project data for Drupal core as returned by
    *   \Drupal\update\UpdateManagerInterface::getProjects() and then processed
@@ -26,16 +31,25 @@ class UpdateProjectCoreCompatibility {
    * @param array $core_releases
    *   The drupal core available releases.
    */
-  public static function setProjectCoreCompatibilityRanges(array &$project_data, $core_data, array $core_releases) {
-    if (!isset($core_data['existing_version']) || !isset($core_releases[$core_data['existing_version']])) {
-      // If we can't determine the existing version then we can't calculate
-      // the core compatibility of based on core versions after the existing
-      // version.
+  public function __construct(array $core_data, array $core_releases) {
+    if (isset($core_data['existing_version'])) {
+      $this->possible_core_versions = $this->getPossibleCoreUpdateVersions($core_data['existing_version'], $core_releases);
+    }
+  }
+
+  /**
+   * Set core compatibility information for project releases.
+   *
+   * @param array &$project_data
+   *   The project data as returned by
+   *   \Drupal\update\UpdateManagerInterface::getProjects() and then processed
+   *   by update_process_project_info() and
+   *   update_calculate_project_update_status().
+   */
+  public function setProjectCoreCompatibilityRanges(array &$project_data) {
+    if (empty($this->possible_core_versions)) {
       return;
     }
-
-
-    $possible_core_update_versions = self::getPossibleCoreUpdateVersions($core_data, $core_releases);
 
     // Get the various releases that will need to have core compatibility data
     // added to them.
@@ -67,9 +81,9 @@ class UpdateProjectCoreCompatibility {
 
     foreach ($releases_to_set as &$release) {
       if (!empty($release['core_compatibility'])) {
-        $release['core_compatibility_ranges'] = self::createCompatibilityRanges($release['core_compatibility'], $possible_core_update_versions);
+        $release['core_compatibility_ranges'] = $this->createCompatibilityRanges($release['core_compatibility']);
         if ($release['core_compatibility_ranges']) {
-          $release['core_compatibility_message'] = self::formatMessage($release['core_compatibility_ranges']);
+          $release['core_compatibility_message'] = $this->formatMessage($release['core_compatibility_ranges']);
         }
       }
     }
@@ -78,20 +92,23 @@ class UpdateProjectCoreCompatibility {
   /**
    * Gets the core versions that should be considered for compatibility ranges.
    *
-   * @param array $core_data
-   *   The project data for Drupal core as returned by
-   *   \Drupal\update\UpdateManagerInterface::getProjects() and then processed
-   *   by update_process_project_info() and
-   *   update_calculate_project_update_status().
+   * @param string $existing_version
+   *   The core existing version.
    * @param array $core_releases
    *   The drupal core available releases.
    *
    * @return string[]
    *   The core version numbers.
    */
-  protected static function getPossibleCoreUpdateVersions(array $core_data, array $core_releases) {
+  protected function getPossibleCoreUpdateVersions($existing_version, array $core_releases) {
+    if (!isset($core_releases[$existing_version])) {
+      // If we can't determine the existing version then we can't calculate
+      // the core compatibility of based on core versions after the existing
+      // version.
+      return [];
+    }
     $core_release_versions = array_keys($core_releases);
-    $possible_core_update_versions = Semver::satisfiedBy($core_release_versions, '>= ' . $core_data['existing_version']);
+    $possible_core_update_versions = Semver::satisfiedBy($core_release_versions, '>= ' . $existing_version);
     $possible_core_update_versions = Semver::sort($possible_core_update_versions);
     $possible_core_update_versions = array_filter($possible_core_update_versions, function ($version) {
       return VersionParser::parseStability($version) === 'stable';
@@ -105,14 +122,12 @@ class UpdateProjectCoreCompatibility {
    *
    * @return array
    */
-  protected static function createCompatibilityRanges($core_compatibility, array $possible_core_update_versions) {
-    static $cached_ranges = [];
-    //$cache_key = $core_compatibility . ':' . implode(':', $possible_core_update_versions);
-    if (!isset($cached_ranges[$cache_key])) {
+  protected function createCompatibilityRanges($core_compatibility) {
+    if (!isset($this->evaluated_ranges[$core_compatibility])) {
       $compatibility_ranges = [];
       $previous_version_satisfied = NULL;
       $range = [];
-      foreach ($possible_core_update_versions as $possible_core_update_version) {
+      foreach ($this->possible_core_versions as $possible_core_update_version) {
         if (Semver::satisfies($possible_core_update_version, $core_compatibility)) {
           if (empty($range)) {
             $range[] = $possible_core_update_version;
@@ -137,13 +152,12 @@ class UpdateProjectCoreCompatibility {
       if ($range) {
         $compatibility_ranges[] = $range;
       }
-      return $compatibility_ranges;
-      $cached_ranges[$cache_key] = $compatibility_ranges;
+      $this->evaluated_ranges[$core_compatibility] = $compatibility_ranges;
     }
-    return $cached_ranges[$cache_key];
+    return $this->evaluated_ranges[$core_compatibility];
   }
 
-  protected static function formatMessage(array $core_compatibility_ranges) {
+  protected function formatMessage(array $core_compatibility_ranges) {
     $range_messages = [];
     foreach ($core_compatibility_ranges as $core_compatibility_range) {
       $range_message = $core_compatibility_range[0];

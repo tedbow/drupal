@@ -99,11 +99,17 @@ function update_calculate_project_data($available) {
     $projects = array_merge(['drupal' => $drupal_project_info], $projects);
   }
 
+
+  /** @var \Drupal\update\UpdateProjectCoreCompatibility $project_core_compatibility */
+  $project_core_compatibility = NULL;
   foreach ($projects as $project => $project_info) {
     if (isset($available[$project])) {
       update_calculate_project_update_status($projects[$project], $available[$project]);
-      if ($drupal_project_info && $project !== 'drupal' && !empty($available[$project]['releases'])) {
-        UpdateProjectCoreCompatibility::setProjectCoreCompatibilityRanges($projects[$project], $projects['drupal'], $available['drupal']['releases']);
+      if ($project === 'drupal' && !empty($available[$project]['releases'])) {
+        $project_core_compatibility = new UpdateProjectCoreCompatibility($project_info, $available[$project]['releases']);
+      }
+      elseif(!empty($project_core_compatibility)) {
+        $project_core_compatibility->setProjectCoreCompatibilityRanges($projects[$project]);
       }
 
     }

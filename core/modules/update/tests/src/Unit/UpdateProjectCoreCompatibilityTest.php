@@ -17,7 +17,8 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
    * @dataProvider providerSetProjectCoreCompatibilityRanges
    */
   public function testSetProjectCoreCompatibilityRanges(array $project_data, $core_data, array $core_releases, array $expected_releases) {
-    UpdateProjectCoreCompatibility::setProjectCoreCompatibilityRanges($project_data, $core_data, $core_releases);
+    $project_compatibility = new UpdateProjectCoreCompatibility($core_data, $core_releases);
+    $project_compatibility->setProjectCoreCompatibilityRanges($project_data);
     $this->assertSame($expected_releases, $project_data['releases']);
   }
 
