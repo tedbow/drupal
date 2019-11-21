@@ -5,7 +5,7 @@
  * Code required only when comparing available updates to existing data.
  */
 
-use Drupal\update\UpdateProjectCoreCompatibility;
+use Drupal\update\ProjectCoreCompatibility;
 
 /**
  * Determines version and type information for currently installed projects.
@@ -100,16 +100,16 @@ function update_calculate_project_data($available) {
   }
 
 
-  /** @var \Drupal\update\UpdateProjectCoreCompatibility $project_core_compatibility */
+  /** @var \Drupal\update\ProjectCoreCompatibility $project_core_compatibility */
   $project_core_compatibility = NULL;
   foreach ($projects as $project => $project_info) {
     if (isset($available[$project])) {
       update_calculate_project_update_status($projects[$project], $available[$project]);
       if ($project === 'drupal' && !empty($available[$project]['releases'])) {
-        $project_core_compatibility = new UpdateProjectCoreCompatibility($project_info, $available[$project]['releases']);
+        $project_core_compatibility = new ProjectCoreCompatibility($project_info, $available[$project]['releases']);
       }
       elseif(!empty($project_core_compatibility)) {
-        $project_core_compatibility->setProjectCoreCompatibilityRanges($projects[$project]);
+        $project_core_compatibility->setReleaseRanges($projects[$project]);
       }
 
     }

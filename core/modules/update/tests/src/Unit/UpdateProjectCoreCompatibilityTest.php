@@ -3,22 +3,22 @@
 namespace Drupal\Tests\update\Unit;
 
 use Drupal\Tests\UnitTestCase;
-use Drupal\update\UpdateProjectCoreCompatibility;
+use Drupal\update\ProjectCoreCompatibility;
 
 /**
- * @coversDefaultClass \Drupal\update\UpdateProjectCoreCompatibility
+ * @coversDefaultClass \Drupal\update\ProjectCoreCompatibility
  *
  * @group update
  */
 class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
 
   /**
-   * @covers ::setProjectCoreCompatibilityRanges
+   * @covers ::setReleaseRanges
    * @dataProvider providerSetProjectCoreCompatibilityRanges
    */
   public function testSetProjectCoreCompatibilityRanges(array $project_data, $core_data, array $core_releases, array $expected_releases) {
-    $project_compatibility = new UpdateProjectCoreCompatibility($core_data, $core_releases);
-    $project_compatibility->setProjectCoreCompatibilityRanges($project_data);
+    $project_compatibility = new ProjectCoreCompatibility($core_data, $core_releases);
+    $project_compatibility->setReleaseRanges($project_data);
     $this->assertSame($expected_releases, $project_data['releases']);
   }
 

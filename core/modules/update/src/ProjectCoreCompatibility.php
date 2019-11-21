@@ -8,7 +8,7 @@ use Composer\Semver\VersionParser;
 /**
  * Utility class to set core compatibility ranges for available module updates.
  */
-class UpdateProjectCoreCompatibility {
+class ProjectCoreCompatibility {
 
   /**
    * @var string[]
@@ -46,7 +46,7 @@ class UpdateProjectCoreCompatibility {
    *   by update_process_project_info() and
    *   update_calculate_project_update_status().
    */
-  public function setProjectCoreCompatibilityRanges(array &$project_data) {
+  public function setReleaseRanges(array &$project_data) {
     if (empty($this->possible_core_versions)) {
       return;
     }
