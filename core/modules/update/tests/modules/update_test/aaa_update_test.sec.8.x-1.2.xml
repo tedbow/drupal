@@ -17,7 +17,7 @@
    <name>aaa_update_test 8.x-1.2</name>
    <version>8.x-1.2</version>
    <tag>DRUPAL-8--1-2</tag>
-    <core_compatibility>^</core_compatibility>
+    <core_compatibility>^8.1.0</core_compatibility>
    <version_major>1</version_major>
    <version_patch>2</version_patch>
    <status>published</status>

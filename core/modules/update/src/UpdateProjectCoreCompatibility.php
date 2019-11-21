@@ -20,7 +20,7 @@ class UpdateProjectCoreCompatibility {
    * @param array $available_project
    * @param array $available_core
    */
-  public static function setProjectCoreCompatibilityRanges(array &$project_data, array, $core_data, array $core_releases) {
+  public static function setProjectCoreCompatibilityRanges(array &$project_data, $core_data, array $core_releases) {
     if (!isset($core_data['existing_version']) || !isset($core_releases[$core_data['existing_version']])) {
       // If we can't determine the existing version then we can't calculate
       // the core compatibility of based on core versions after the existing
@@ -30,7 +30,7 @@ class UpdateProjectCoreCompatibility {
     $releases_to_set = [];
     $project_releases = &$project_data['releases'];
     $possible_core_update_versions = self::getPossibleCoreUpdateVersions($core_data, $core_releases);
-      foreach (['recommended', 'latest_version'] as $update_version_type) {
+    foreach (['recommended', 'latest_version'] as $update_version_type) {
       if (isset($project_data[$update_version_type])&& !empty($project_releases[$project_data[$update_version_type]])) {
         $releases_to_set[] = &$project_releases[$project_data[$update_version_type]];
       }
@@ -42,6 +42,12 @@ class UpdateProjectCoreCompatibility {
         }
       }
     }
+    if (!empty($project_data['security updates'])) {
+      foreach ($project_data['security updates'] as &$security_update) {
+        $releases_to_set[] = &$security_update;
+      }
+    }
+
     foreach ($releases_to_set as &$release) {
       if (!empty($release['core_compatibility'])) {
         $release['core_compatibility_ranges'] = self::createCompatibilityRanges($release['core_compatibility'], $possible_core_update_versions);

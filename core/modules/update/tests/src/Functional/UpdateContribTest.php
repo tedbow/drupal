@@ -459,11 +459,19 @@ class UpdateContribTest extends UpdateTestBase {
       ],
     ];
     $this->config('update_test.settings')->set('system_info', $system_info)->save();
+
     $this->refreshUpdateStatus(['drupal' => '1.1', 'aaa_update_test' => '8.x-1.2']);
-    $assert_session = $this->assertSession();
-    $page = $this->getSession()->getPage();
-    $this->drupalGet('admin/reports/updates');
-    file_put_contents('/Users/ted.bowman/Sites/www/test.html', $page->getOuterHtml());
+    $this->assertCoreCompatibilityMessage('8.x-1.2', 'http://example.com/aaa_update_test-8-x-1-2-release', '8.0.0 to 8.1.1', 'Recommended version:');
+    $this->assertCoreCompatibilityMessage('8.x-1.3-beta1', 'http://example.com/aaa_update_test-8-x-1-3-beta1-release', '8.0.0, 8.1.1', 'Latest version:');
+
+    $this->refreshUpdateStatus(['drupal' => '1.1-alpha1', 'aaa_update_test' => '8.x-1.2']);
+    $this->assertCoreCompatibilityMessage('8.x-1.2', 'http://example.com/aaa_update_test-8-x-1-2-release', '8.0.0 to 8.1.0', 'Recommended version:');
+    $this->assertCoreCompatibilityMessage('8.x-1.3-beta1', 'http://example.com/aaa_update_test-8-x-1-3-beta1-release', '8.0.0', 'Latest version:');
+
+    $this->refreshUpdateStatus(['drupal' => '1.1', 'aaa_update_test' => 'sec.8.x-1.2_8.x-2.2']);
+    // Assert an a se
+    $this->assertCoreCompatibilityMessage('8.x-1.2', 'http://example.com/aaa_update_test-8-x-1-2-release', '8.1.0 to 8.1.1', 'Security update:');
+    $this->assertCoreCompatibilityMessage('8.x-2.2', 'http://example.com/aaa_update_test-8-x-2-2-release', '8.1.1', 'Also available:');
   }
 
   /**
@@ -590,6 +598,20 @@ class UpdateContribTest extends UpdateTestBase {
       //   - 8.x-3.0-beta1 using fixture 'sec.8.x-1.2_8.x-2.2' to ensure that
       //     8.x-2.2 is the  only security update.
     ];
+  }
+
+  /**
+   * @param $release_label
+   * @param $release_url
+   * @param $compatibility_range
+   */
+  protected function assertCoreCompatibilityMessage($release_label, $release_url, $compatibility_range, $release_title) {
+    $this->assertRaw(Link::fromTextAndUrl($release_label, Url::fromUri($release_url))->toString());
+    $link = $this->getSession()->getPage()->findLink($release_label);
+    $update_info_element = $link->getParent();
+    $this->assertContains("This module is compatible with Drupal core: $compatibility_range", $update_info_element->getText());
+    $update_title_element = $update_info_element->getParent()->find('css', '.project-update__version-title');
+    $this->assertSame($release_title, $update_title_element->getText());
   }
 
 }
