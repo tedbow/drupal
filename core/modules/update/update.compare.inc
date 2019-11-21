@@ -104,7 +104,7 @@ function update_calculate_project_data($available) {
       }
       update_calculate_project_update_status($projects[$project], $available[$project]);
       if (isset($project_core_compatibility)) {
-        $project_core_compatibility->setReleaseRanges($projects[$project]);
+        $project_core_compatibility->setReleaseMessage($projects[$project]);
       }
     }
     else {

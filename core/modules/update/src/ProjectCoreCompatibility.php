@@ -11,14 +11,18 @@ use Composer\Semver\VersionParser;
 class ProjectCoreCompatibility {
 
   /**
+   * Core versions that are available for updates.
+   *
    * @var string[]
    */
-  protected $possible_core_versions;
+  protected $possibleCoreUpdateVersions;
 
   /**
-   * @var array
+   * Core compatibility messages.
+   *
+   * @var string[]
    */
-  protected $evaluated_ranges = [];
+  protected $compatibilityMessages = [];
 
   /**
    * Constructs an UpdateProjectCoreCompatibility object.
@@ -33,12 +37,12 @@ class ProjectCoreCompatibility {
    */
   public function __construct(array $core_data, array $core_releases) {
     if (isset($core_data['existing_version'])) {
-      $this->possible_core_versions = $this->getPossibleCoreUpdateVersions($core_data['existing_version'], $core_releases);
+      $this->possibleCoreUpdateVersions = $this->getPossibleCoreUpdateVersions($core_data['existing_version'], $core_releases);
     }
   }
 
   /**
-   * Set core compatibility information for project releases.
+   * Set core compatibility message for project releases.
    *
    * @param array &$project_data
    *   The project data as returned by
@@ -46,8 +50,8 @@ class ProjectCoreCompatibility {
    *   by update_process_project_info() and
    *   update_calculate_project_update_status().
    */
-  public function setReleaseRanges(array &$project_data) {
-    if (empty($this->possible_core_versions)) {
+  public function setReleaseMessage(array &$project_data) {
+    if (empty($this->possibleCoreUpdateVersions)) {
       return;
     }
 
@@ -81,10 +85,7 @@ class ProjectCoreCompatibility {
 
     foreach ($releases_to_set as &$release) {
       if (!empty($release['core_compatibility'])) {
-        $release['core_compatibility_ranges'] = $this->createCompatibilityRanges($release['core_compatibility']);
-        if ($release['core_compatibility_ranges']) {
-          $release['core_compatibility_message'] = $this->formatMessage($release['core_compatibility_ranges']);
-        }
+        $release['core_compatibility_message'] = $this->createMessageFromCoreCompatibility($release['core_compatibility']);
       }
     }
   }
@@ -117,56 +118,72 @@ class ProjectCoreCompatibility {
   }
 
   /**
-   * @param $core_compatibility
-   * @param array $possible_core_update_versions
+   * Gets the compatibility ranges for the a constraint.
    *
-   * @return array
+   * @param string $core_compatibility_constraint
+   *   A Composer Semver compatible constraint.
+   *
+   * @return array[]
+   *   An array compatibility ranges. If the range array has 2 element then this
+   *   denotes a range of compatibility between and including the 2 versions. If
+   *   the range has 1 element then it denotes compatibility with a single
+   *   version.
    */
-  protected function createCompatibilityRanges($core_compatibility) {
-    if (!isset($this->evaluated_ranges[$core_compatibility])) {
-      $compatibility_ranges = [];
-      $previous_version_satisfied = NULL;
-      $range = [];
-      foreach ($this->possible_core_versions as $possible_core_update_version) {
-        if (Semver::satisfies($possible_core_update_version, $core_compatibility)) {
-          if (empty($range)) {
-            $range[] = $possible_core_update_version;
-          }
-          else {
-            $range[1] = $possible_core_update_version;
-          }
+  protected function getCompatibilityRanges($core_compatibility_constraint) {
+    $compatibility_ranges = [];
+    $previous_version_satisfied = NULL;
+    $range = [];
+    foreach ($this->possibleCoreUpdateVersions as $possible_core_update_version) {
+      if (Semver::satisfies($possible_core_update_version, $core_compatibility_constraint)) {
+        if (empty($range)) {
+          $range[] = $possible_core_update_version;
         }
         else {
-          if ($range) {
-            if ($previous_version_satisfied) {
-              // Make the previous version be the second item in the current
-              // range.
-              $range[] = $previous_version_satisfied;
-            }
-            $compatibility_ranges[] = $range;
-          }
-          // Start a new range.
-          $range = [];
+          $range[1] = $possible_core_update_version;
         }
       }
-      if ($range) {
-        $compatibility_ranges[] = $range;
+      else {
+        if ($range) {
+          if ($previous_version_satisfied) {
+            // Make the previous version be the second item in the current
+            // range.
+            $range[] = $previous_version_satisfied;
+          }
+          $compatibility_ranges[] = $range;
+        }
+        // Start a new range.
+        $range = [];
       }
-      $this->evaluated_ranges[$core_compatibility] = $compatibility_ranges;
     }
-    return $this->evaluated_ranges[$core_compatibility];
+    if ($range) {
+      $compatibility_ranges[] = $range;
+    }
+    return $compatibility_ranges;
   }
 
-  protected function formatMessage(array $core_compatibility_ranges) {
-    $range_messages = [];
-    foreach ($core_compatibility_ranges as $core_compatibility_range) {
-      $range_message = $core_compatibility_range[0];
-      if (count($core_compatibility_range) === 2) {
-        $range_message .= " to {$core_compatibility_range[1]}";
+  /**
+   * Creates core compatibility message.
+   *
+   * @param string $core_compatibility_constraint
+   *   A Composer Semver compatible constraint.
+   *
+   * @return string
+   *   The core compatibility message.
+   */
+  protected function createMessageFromCoreCompatibility($core_compatibility_constraint) {
+    if (!isset($this->compatibilityMessages[$core_compatibility_constraint])) {
+      $core_compatibility_ranges = $this->getCompatibilityRanges($core_compatibility_constraint);
+      $range_messages = [];
+      foreach ($core_compatibility_ranges as $core_compatibility_range) {
+        $range_message = $core_compatibility_range[0];
+        if (count($core_compatibility_range) === 2) {
+          $range_message .= " to {$core_compatibility_range[1]}";
+        }
+        $range_messages[] = $range_message;
       }
-      $range_messages[] = $range_message;
+      $this->compatibilityMessages[$core_compatibility_constraint] = t('This module is compatible with Drupal core:') . ' ' . implode(', ', $range_messages);
     }
-    return t('This module is compatible with Drupal core:') . ' ' . implode(', ', $range_messages);
+    return $this->compatibilityMessages[$core_compatibility_constraint];
   }
 
 }
