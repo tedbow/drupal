@@ -92,26 +92,20 @@ function update_calculate_project_data($available) {
   }
   $projects = \Drupal::service('update.manager')->getProjects();
   update_process_project_info($projects);
-  $drupal_project_info = NULL;
-  if (isset($projects['drupal']) && !empty($available['drupal']['releases'])) {
-    $drupal_project_info = $projects['drupal'];
-    unset($projects['drupal']);
-    $projects = array_merge(['drupal' => $drupal_project_info], $projects);
+  if (isset($projects['drupal']) && !empty($available['drupal'])) {
+    update_calculate_project_update_status($projects['drupal'], $available['drupal']);
+    $project_core_compatibility = new ProjectCoreCompatibility($projects['drupal'], $available['drupal']['releases']);
   }
 
-
-  /** @var \Drupal\update\ProjectCoreCompatibility $project_core_compatibility */
-  $project_core_compatibility = NULL;
   foreach ($projects as $project => $project_info) {
     if (isset($available[$project])) {
-      update_calculate_project_update_status($projects[$project], $available[$project]);
-      if ($project === 'drupal' && !empty($available[$project]['releases'])) {
-        $project_core_compatibility = new ProjectCoreCompatibility($project_info, $available[$project]['releases']);
+      if ($project === 'drupal') {
+        continue;
       }
-      elseif(!empty($project_core_compatibility)) {
+      update_calculate_project_update_status($projects[$project], $available[$project]);
+      if (isset($project_core_compatibility)) {
         $project_core_compatibility->setReleaseRanges($projects[$project]);
       }
-
     }
     else {
       $projects[$project]['status'] = UPDATE_UNKNOWN;
