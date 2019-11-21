@@ -6,30 +6,37 @@ use Composer\Semver\Semver;
 use Composer\Semver\VersionParser;
 
 /**
- * Utility class to set core compatibility ranges.
+ * Utility class to set core compatibility ranges for available module updates.
  */
 class UpdateProjectCoreCompatibility {
 
   /**
    * Set core_compatibility_ranges for project releases.
    *
-   * @todo Update Security releases also.
-   * @todo update core/modules/update/templates/update-version.html.twig to
-   *   output the ranges.
    * @param array &$project_data
-   * @param array $available_project
-   * @param array $available_core
+   *   The project data as returned by
+   *   \Drupal\update\UpdateManagerInterface::getProjects() and then processed
+   *   by update_process_project_info() and
+   *   update_calculate_project_update_status().
+   * @param array $core_data
+   *   The project data for Drupal core as returned by
+   *   \Drupal\update\UpdateManagerInterface::getProjects() and then processed
+   *   by update_process_project_info() and
+   *   update_calculate_project_update_status().
+   * @param array $core_releases
+   *   The drupal core available releases.
    */
   public static function setProjectCoreCompatibilityRanges(array &$project_data, $core_data, array $core_releases) {
     if (!isset($core_data['existing_version']) || !isset($core_releases[$core_data['existing_version']])) {
       // If we can't determine the existing version then we can't calculate
       // the core compatibility of based on core versions after the existing
-      // versions.
+      // version.
       return;
     }
-    $releases_to_set = [];
+
     $project_releases = &$project_data['releases'];
     $possible_core_update_versions = self::getPossibleCoreUpdateVersions($core_data, $core_releases);
+    $releases_to_set = [];
     foreach (['recommended', 'latest_version'] as $update_version_type) {
       if (isset($project_data[$update_version_type])&& !empty($project_releases[$project_data[$update_version_type]])) {
         $releases_to_set[] = &$project_releases[$project_data[$update_version_type]];
