@@ -34,21 +34,28 @@ class UpdateProjectCoreCompatibility {
       return;
     }
 
-    $project_releases = &$project_data['releases'];
+
     $possible_core_update_versions = self::getPossibleCoreUpdateVersions($core_data, $core_releases);
+
+    // Get the various releases that will need to have a core compatibility
+    // data added to them.
     $releases_to_set = [];
-    foreach (['recommended', 'latest_version'] as $update_version_type) {
-      if (isset($project_data[$update_version_type])&& !empty($project_releases[$project_data[$update_version_type]])) {
-        $releases_to_set[] = &$project_releases[$project_data[$update_version_type]];
-      }
+    $versions = [];
+    if (!empty($project_data['recommended'])) {
+      $versions[] = $project_data['recommended'];
+    }
+    if (!empty($project_data['latest_version'])) {
+      $versions[] = $project_data['latest_version'];
     }
     if (!empty($project_data['also'])) {
-      foreach ($project_data['also'] as $version) {
-        if (isset($project_releases[$version])) {
-          $releases_to_set[] = &$project_releases[$version];
-        }
+      $versions = array_merge($versions, $project_data['also']);
+    }
+    foreach ($versions as $version) {
+      if (isset($project_data['releases'][$version])) {
+        $releases_to_set[] = &$project_data['releases'][$version];
       }
     }
+
     if (!empty($project_data['security updates'])) {
       foreach ($project_data['security updates'] as &$security_update) {
         $releases_to_set[] = &$security_update;

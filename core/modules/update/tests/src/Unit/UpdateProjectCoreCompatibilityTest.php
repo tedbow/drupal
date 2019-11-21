@@ -16,9 +16,9 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
    * @covers ::setProjectCoreCompatibilityRanges
    * @dataProvider providerSetProjectCoreCompatibilityRanges
    */
-  public function testSetProjectCoreCompatibilityRanges(array $project_data, array $project_releases, $core_data, array $core_releases, array $expected_releases) {
-    UpdateProjectCoreCompatibility::setProjectCoreCompatibilityRanges($project_data, $project_releases, $core_data, $core_releases);
-    $this->assertSame($expected_releases, $project_releases);
+  public function testSetProjectCoreCompatibilityRanges(array $project_data, $core_data, array $core_releases, array $expected_releases) {
+    UpdateProjectCoreCompatibility::setProjectCoreCompatibilityRanges($project_data, $core_data, $core_releases);
+    $this->assertSame($expected_releases, $project_data['releases']);
   }
 
   /**
@@ -34,21 +34,21 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
           '1.2.5',
           '1.2.6',
         ],
-      ],
-      'project_releases' => [
-        '1.0.1' => [
-          'core_compatibility' => '^8.8 || ^9',
+        'releases' => [
+          '1.0.1' => [
+            'core_compatibility' => '8.x',
+          ],
+          '1.2.3' => [
+            'core_compatibility' => '^8.9 || ^9',
+          ],
+          '1.2.4' => [
+            'core_compatibility' => '^8.9.2 || ^9',
+          ],
+          '1.2.5' => [
+            'core_compatibility' => '8.9.0 || 8.9.2 || ^9.0.1',
+          ],
+          '1.2.6' => [],
         ],
-        '1.2.3' => [
-          'core_compatibility' => '^8.9 || ^9',
-        ],
-        '1.2.4' => [
-          'core_compatibility' => '^8.9.2 || ^9',
-        ],
-        '1.2.5' => [
-          'core_compatibility' => '8.9.0 || 8.9.2 || ^9.0.1',
-        ],
-        '1.2.6' => [],
       ],
       'core_data' => [
         'existing_version' => '8.8.0',
@@ -66,7 +66,7 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
       ],
       'expected_releases' => [
         '1.0.1' => [
-          'core_compatibility' => '^8.8 || ^9',
+          'core_compatibility' => '8.x',
           'core_compatibility_ranges' => [['8.8.0', '8.9.2']],
           'core_compatibility_message' => 'This module is compatible with Drupal core: 8.8.0 to 8.9.2',
         ],
@@ -106,9 +106,9 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
     ];
     $test_cases['with 9 full releases']['expected_releases'] = [
       '1.0.1' => [
-        'core_compatibility' => '^8.8 || ^9',
-        'core_compatibility_ranges' => [['8.8.0', '9.0.2']],
-        'core_compatibility_message' => 'This module is compatible with Drupal core: 8.8.0 to 9.0.2',
+        'core_compatibility' => '8.x',
+        'core_compatibility_ranges' => [['8.8.0', '8.9.2']],
+        'core_compatibility_message' => 'This module is compatible with Drupal core: 8.8.0 to 8.9.2',
       ],
       '1.2.3' => [
         'core_compatibility' => '^8.9 || ^9',

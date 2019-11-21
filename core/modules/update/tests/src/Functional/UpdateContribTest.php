@@ -445,7 +445,7 @@ class UpdateContribTest extends UpdateTestBase {
   }
 
   /**
-   * Test
+   * Tests that core compatibility
    */
   public function testCoreCompatibilityMessage() {
     $system_info = [
