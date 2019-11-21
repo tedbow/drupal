@@ -11,7 +11,7 @@ use Composer\Semver\VersionParser;
 class UpdateProjectCoreCompatibility {
 
   /**
-   * Set core_compatibility_ranges for project releases.
+   * Set core compatibility information for project releases.
    *
    * @param array &$project_data
    *   The project data as returned by
@@ -37,16 +37,18 @@ class UpdateProjectCoreCompatibility {
 
     $possible_core_update_versions = self::getPossibleCoreUpdateVersions($core_data, $core_releases);
 
-    // Get the various releases that will need to have a core compatibility
-    // data added to them.
+    // Get the various releases that will need to have core compatibility data
+    // added to them.
     $releases_to_set = [];
     $versions = [];
+    // 'recommended' and 'latest' will be single version numbers if set.
     if (!empty($project_data['recommended'])) {
       $versions[] = $project_data['recommended'];
     }
     if (!empty($project_data['latest_version'])) {
       $versions[] = $project_data['latest_version'];
     }
+    // If set 'also' will be an array of version numbers.
     if (!empty($project_data['also'])) {
       $versions = array_merge($versions, $project_data['also']);
     }
@@ -56,6 +58,7 @@ class UpdateProjectCoreCompatibility {
       }
     }
 
+    // If 'security updates' exists it will be array of releases.
     if (!empty($project_data['security updates'])) {
       foreach ($project_data['security updates'] as &$security_update) {
         $releases_to_set[] = &$security_update;
@@ -69,18 +72,24 @@ class UpdateProjectCoreCompatibility {
           $release['core_compatibility_message'] = self::formatMessage($release['core_compatibility_ranges']);
         }
       }
-
     }
-
   }
 
   /**
-   * @param $core_data
-   * @param array $core_releases
+   * Gets the core versions that should be considered for compatibility ranges.
    *
-   * @return array
+   * @param array $core_data
+   *   The project data for Drupal core as returned by
+   *   \Drupal\update\UpdateManagerInterface::getProjects() and then processed
+   *   by update_process_project_info() and
+   *   update_calculate_project_update_status().
+   * @param array $core_releases
+   *   The drupal core available releases.
+   *
+   * @return string[]
+   *   The core version numbers.
    */
-  protected static function getPossibleCoreUpdateVersions($core_data, array $core_releases) {
+  protected static function getPossibleCoreUpdateVersions(array $core_data, array $core_releases) {
     $core_release_versions = array_keys($core_releases);
     $possible_core_update_versions = Semver::satisfiedBy($core_release_versions, '>= ' . $core_data['existing_version']);
     $possible_core_update_versions = Semver::sort($possible_core_update_versions);
@@ -97,40 +106,41 @@ class UpdateProjectCoreCompatibility {
    * @return array
    */
   protected static function createCompatibilityRanges($core_compatibility, array $possible_core_update_versions) {
-    // @todo statically cache the results here because this will the same for many projects
-    // because they will likely use the same core_compatibility.
-    // For example "^8 || ^9" or "^8.8 || ^9" should be very common.
-    $compatibility_ranges = [];
-    $previous_version_satisfied = NULL;
-    $range = [];
-    foreach ($possible_core_update_versions as $possible_core_update_version) {
-      if (Semver::satisfies($possible_core_update_version, $core_compatibility)) {
-        if (empty($range)) {
-          $range[] = $possible_core_update_version;
+    static $cached_ranges = [];
+    //$cache_key = $core_compatibility . ':' . implode(':', $possible_core_update_versions);
+    if (!isset($cached_ranges[$cache_key])) {
+      $compatibility_ranges = [];
+      $previous_version_satisfied = NULL;
+      $range = [];
+      foreach ($possible_core_update_versions as $possible_core_update_version) {
+        if (Semver::satisfies($possible_core_update_version, $core_compatibility)) {
+          if (empty($range)) {
+            $range[] = $possible_core_update_version;
+          }
+          else {
+            $range[1] = $possible_core_update_version;
+          }
         }
         else {
-          $range[1] = $possible_core_update_version;
-        }
-
-      }
-      else {
-        if ($range) {
-          if ($previous_version_satisfied) {
-            // Make the previous version be the second item in the current
-            // range.
-            $range[] = $previous_version_satisfied;
+          if ($range) {
+            if ($previous_version_satisfied) {
+              // Make the previous version be the second item in the current
+              // range.
+              $range[] = $previous_version_satisfied;
+            }
+            $compatibility_ranges[] = $range;
           }
-          $compatibility_ranges[] = $range;
+          // Start a new range.
+          $range = [];
         }
-        // Start a new range.
-        $range = [];
       }
-
+      if ($range) {
+        $compatibility_ranges[] = $range;
+      }
+      return $compatibility_ranges;
+      $cached_ranges[$cache_key] = $compatibility_ranges;
     }
-    if ($range) {
-      $compatibility_ranges[] = $range;
-    }
-    return $compatibility_ranges;
+    return $cached_ranges[$cache_key];
   }
 
   protected static function formatMessage(array $core_compatibility_ranges) {

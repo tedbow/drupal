@@ -36,6 +36,7 @@ class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
         ],
         'releases' => [
           '1.0.1' => [
+            // If
             'core_compatibility' => '8.x',
           ],
           '1.2.3' => [
