@@ -5,6 +5,8 @@
  * Code required only when comparing available updates to existing data.
  */
 
+use Drupal\update\ProjectInfo;
+
 /**
  * Determines version and type information for currently installed projects.
  *
@@ -294,6 +296,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     return;
   }
   foreach ($available['releases'] as $version => $release) {
+    $release_project_data = new ProjectInfo($release);
     // First, if this is the existing release, check a few conditions.
     if ($project_data['existing_version'] === $version) {
       if (isset($release['terms']['Release type']) &&
@@ -333,18 +336,20 @@ function update_calculate_project_update_status(&$project_data, $available) {
       continue;
     }
 
+    $release_major_version = $release_project_data->getMajorVersion();
+    $release_patch_version = $release_project_data->getPatchVersion();
     // See if this is a higher major version than our target and yet still
     // supported. If so, record it as an "Also available" release.
     // Note: Some projects have a HEAD release from CVS days, which could
     // be one of those being compared. They would not have version_major
     // set, so we must call isset first.
-    if (isset($release['version_major']) && $release['version_major'] > $target_major) {
-      if (in_array($release['version_major'], $supported_majors)) {
+    if ($release_major_version !== NULL && $release_major_version > $target_major) {
+      if (in_array($release_major_version, $supported_majors)) {
         if (!isset($project_data['also'])) {
           $project_data['also'] = [];
         }
-        if (!isset($project_data['also'][$release['version_major']])) {
-          $project_data['also'][$release['version_major']] = $version;
+        if (!isset($project_data['also'][$release_major_version])) {
+          $project_data['also'][$release_major_version] = $version;
           $project_data['releases'][$version] = $release;
         }
       }
@@ -361,16 +366,15 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Look for the 'latest version' if we haven't found it yet. Latest is
     // defined as the most recent version for the target major version.
     if (!isset($project_data['latest_version'])
-        && $release['version_major'] == $target_major) {
+        && $release_major_version == $target_major) {
       $project_data['latest_version'] = $version;
       $project_data['releases'][$version] = $release;
     }
 
     // Look for the development snapshot release for this branch.
     if (!isset($project_data['dev_version'])
-        && $release['version_major'] == $target_major
-        && isset($release['version_extra'])
-        && $release['version_extra'] == 'dev') {
+        && $release_major_version == $target_major
+        && $release_project_data->getVersionExtra() === 'dev') {
       $project_data['dev_version'] = $version;
       $project_data['releases'][$version] = $release;
     }
@@ -378,13 +382,13 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Look for the 'recommended' version if we haven't found it yet (see
     // phpdoc at the top of this function for the definition).
     if (!isset($project_data['recommended'])
-        && $release['version_major'] == $target_major
-        && isset($release['version_patch'])) {
-      if ($patch != $release['version_patch']) {
-        $patch = $release['version_patch'];
+        && $release_major_version == $target_major
+        && $release_patch_version !== NULL) {
+      if ($patch != $release_patch_version) {
+        $patch = $release_patch_version;
         $release_patch_changed = $release;
       }
-      if (empty($release['version_extra']) && $patch == $release['version_patch']) {
+      if ($release_project_data->getVersionExtra() === NULL && $patch == $release_patch_version) {
         $project_data['recommended'] = $release_patch_changed['version'];
         $project_data['releases'][$release_patch_changed['version']] = $release_patch_changed;
       }

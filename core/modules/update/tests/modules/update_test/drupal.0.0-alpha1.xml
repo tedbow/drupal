@@ -17,10 +17,6 @@
    <name>Drupal 8.0.0-alpha1</name>
    <version>8.0.0-alpha1</version>
    <tag>DRUPAL-8-0-0-alpha1</tag>
-   <version_major>8</version_major>
-   <version_minor>0</version_minor>
-   <version_patch>0</version_patch>
-   <version_extra>alpha1</version_extra>
    <status>published</status>
    <release_link>http://example.com/drupal-8-0-0-alpha1-release</release_link>
    <download_link>http://example.com/drupal-8-0-0-alpha1.tar.gz</download_link>

@@ -17,9 +17,6 @@
    <name>Drupal 9.0.0</name>
    <version>9.0.0</version>
    <tag>DRUPAL-9-0-0</tag>
-   <version_major>9</version_major>
-   <version_minor>0</version_minor>
-   <version_patch>0</version_patch>
    <status>published</status>
    <release_link>http://example.com/drupal-9-0-0-release</release_link>
    <download_link>http://example.com/drupal-9-0-0.tar.gz</download_link>
