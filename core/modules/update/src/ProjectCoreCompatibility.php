@@ -42,55 +42,6 @@ class ProjectCoreCompatibility {
   }
 
   /**
-   * Set core compatibility message for project releases.
-   *
-   * @param array &$project_data
-   *   The project data as returned by
-   *   \Drupal\update\UpdateManagerInterface::getProjects() and then processed
-   *   by update_process_project_info() and
-   *   update_calculate_project_update_status().
-   */
-  public function setReleaseMessage(array &$project_data) {
-    if (empty($this->possibleCoreUpdateVersions)) {
-      return;
-    }
-
-    // Get the various releases that will need to have core compatibility data
-    // added to them.
-    $releases_to_set = [];
-    $versions = [];
-    // 'recommended' and 'latest' will be single version numbers if set.
-    if (!empty($project_data['recommended'])) {
-      $versions[] = $project_data['recommended'];
-    }
-    if (!empty($project_data['latest_version'])) {
-      $versions[] = $project_data['latest_version'];
-    }
-    // If set 'also' will be an array of version numbers.
-    if (!empty($project_data['also'])) {
-      $versions = array_merge($versions, $project_data['also']);
-    }
-    foreach ($versions as $version) {
-      if (isset($project_data['releases'][$version])) {
-        $releases_to_set[] = &$project_data['releases'][$version];
-      }
-    }
-
-    // If 'security updates' exists it will be array of releases.
-    if (!empty($project_data['security updates'])) {
-      foreach ($project_data['security updates'] as &$security_update) {
-        $releases_to_set[] = &$security_update;
-      }
-    }
-
-    foreach ($releases_to_set as &$release) {
-      if (!empty($release['core_compatibility'])) {
-        $release['core_compatibility_message'] = $this->createMessageFromCoreCompatibility($release['core_compatibility']);
-      }
-    }
-  }
-
-  /**
    * Gets the core versions that should be considered for compatibility ranges.
    *
    * @param string $existing_version
@@ -118,13 +69,90 @@ class ProjectCoreCompatibility {
   }
 
   /**
-   * Gets the compatibility ranges for the a constraint.
+   * Sets core compatibility messages for project releases.
+   *
+   * @param array &$project_data
+   *   The project data as returned by
+   *   \Drupal\update\UpdateManagerInterface::getProjects() and then processed
+   *   by update_process_project_info() and
+   *   update_calculate_project_update_status(). If set the following keys are
+   *   used in this method:
+   *   - recommended (string): A project version number.
+   *   - latest (string): A project version number.
+   *   - also (string[]): Project version numbers.
+   *   - releases (array[]): An array where the keys are project version numbers
+   *     and the values are arrays of project release information.
+   *   - security updates (array[]): An array of project release information.
+   */
+  public function setReleaseMessage(array &$project_data) {
+    if (empty($this->possibleCoreUpdateVersions)) {
+      return;
+    }
+
+    // Get the various releases that will need to have core compatibility data
+    // added to them.
+    $releases_to_set = [];
+    $versions = [];
+    if (!empty($project_data['recommended'])) {
+      $versions[] = $project_data['recommended'];
+    }
+    if (!empty($project_data['latest_version'])) {
+      $versions[] = $project_data['latest_version'];
+    }
+    if (!empty($project_data['also'])) {
+      $versions = array_merge($versions, $project_data['also']);
+    }
+    foreach ($versions as $version) {
+      if (isset($project_data['releases'][$version])) {
+        $releases_to_set[] = &$project_data['releases'][$version];
+      }
+    }
+    if (!empty($project_data['security updates'])) {
+      foreach ($project_data['security updates'] as &$security_update) {
+        $releases_to_set[] = &$security_update;
+      }
+    }
+    foreach ($releases_to_set as &$release) {
+      if (!empty($release['core_compatibility'])) {
+        $release['core_compatibility_message'] = $this->createMessageFromCoreCompatibility($release['core_compatibility']);
+      }
+    }
+  }
+
+  /**
+   * Creates core a compatibility message from a semantic version constraint.
    *
    * @param string $core_compatibility_constraint
-   *   A Composer Semver compatible constraint.
+   *   A Composer semantic version constraint.
+   *
+   * @return string
+   *   The core compatibility message.
+   */
+  protected function createMessageFromCoreCompatibility($core_compatibility_constraint) {
+    if (!isset($this->compatibilityMessages[$core_compatibility_constraint])) {
+      $core_compatibility_ranges = $this->getCompatibilityRanges($core_compatibility_constraint);
+      $range_messages = [];
+      foreach ($core_compatibility_ranges as $core_compatibility_range) {
+        if (count($core_compatibility_range) === 2) {
+          $range_messages[] = t('@start to @end', ['@start' => $core_compatibility_range[0], '@end' => $core_compatibility_range[1]]);
+        }
+        else {
+          $range_messages[] = $core_compatibility_range[0];
+        }
+      }
+      $this->compatibilityMessages[$core_compatibility_constraint] = t('This module is compatible with Drupal core:') . ' ' . implode(', ', $range_messages);
+    }
+    return $this->compatibilityMessages[$core_compatibility_constraint];
+  }
+
+  /**
+   * Gets the compatibility ranges for a semantic version constraint.
+   *
+   * @param string $core_compatibility_constraint
+   *   A Composer semantic version constraint.
    *
    * @return array[]
-   *   An array compatibility ranges. If the range array has 2 element then this
+   *   An array compatibility ranges. If a range array has 2 element then this
    *   denotes a range of compatibility between and including the 2 versions. If
    *   the range has 1 element then it denotes compatibility with a single
    *   version.
@@ -159,32 +187,6 @@ class ProjectCoreCompatibility {
       $compatibility_ranges[] = $range;
     }
     return $compatibility_ranges;
-  }
-
-  /**
-   * Creates core compatibility message.
-   *
-   * @param string $core_compatibility_constraint
-   *   A Composer Semver compatible constraint.
-   *
-   * @return string
-   *   The core compatibility message.
-   */
-  protected function createMessageFromCoreCompatibility($core_compatibility_constraint) {
-    if (!isset($this->compatibilityMessages[$core_compatibility_constraint])) {
-      $core_compatibility_ranges = $this->getCompatibilityRanges($core_compatibility_constraint);
-      $range_messages = [];
-      foreach ($core_compatibility_ranges as $core_compatibility_range) {
-        if (count($core_compatibility_range) === 2) {
-          $range_messages[] = t('@start to @end', ['@start' => $core_compatibility_range[0], '@end' => $core_compatibility_range[1]]);
-        }
-        else {
-          $range_messages[] = $core_compatibility_range[0];
-        }
-      }
-      $this->compatibilityMessages[$core_compatibility_constraint] = t('This module is compatible with Drupal core:') . ' ' . implode(', ', $range_messages);
-    }
-    return $this->compatibilityMessages[$core_compatibility_constraint];
   }
 
 }

@@ -93,6 +93,9 @@ function update_calculate_project_data($available) {
   $projects = \Drupal::service('update.manager')->getProjects();
   update_process_project_info($projects);
   if (isset($projects['drupal']) && !empty($available['drupal'])) {
+    // Calculate core status first so that it is complete before
+    // \Drupal\update\ProjectCoreCompatibility::setReleaseMessage() is called
+    // for each module below.
     update_calculate_project_update_status($projects['drupal'], $available['drupal']);
     if (isset($available['drupal']['releases'])) {
       $project_core_compatibility = new ProjectCoreCompatibility($projects['drupal'], $available['drupal']['releases']);
