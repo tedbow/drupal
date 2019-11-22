@@ -175,11 +175,12 @@ class ProjectCoreCompatibility {
       $core_compatibility_ranges = $this->getCompatibilityRanges($core_compatibility_constraint);
       $range_messages = [];
       foreach ($core_compatibility_ranges as $core_compatibility_range) {
-        $range_message = $core_compatibility_range[0];
         if (count($core_compatibility_range) === 2) {
-          $range_message .= " to {$core_compatibility_range[1]}";
+          $range_messages[] = t('@start to @end', ['@start' => $core_compatibility_range[0], '@end' => $core_compatibility_range[1]]);
         }
-        $range_messages[] = $range_message;
+        else {
+          $range_messages[] = $core_compatibility_range[0];
+        }
       }
       $this->compatibilityMessages[$core_compatibility_constraint] = t('This module is compatible with Drupal core:') . ' ' . implode(', ', $range_messages);
     }
