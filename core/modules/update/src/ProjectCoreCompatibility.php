@@ -6,7 +6,7 @@ use Composer\Semver\Semver;
 use Composer\Semver\VersionParser;
 
 /**
- * Utility class to set core compatibility ranges for available module updates.
+ * Utility class to set core compatibility messages for module updates.
  */
 class ProjectCoreCompatibility {
 
