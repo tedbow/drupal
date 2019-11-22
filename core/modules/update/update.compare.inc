@@ -5,7 +5,7 @@
  * Code required only when comparing available updates to existing data.
  */
 
-use Drupal\update\ProjectInfo;
+use Drupal\update\ReleaseInfo;
 
 /**
  * Determines version and type information for currently installed projects.
@@ -296,7 +296,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     return;
   }
   foreach ($available['releases'] as $version => $release) {
-    $release_project_data = new ProjectInfo($release);
+    $release_info = new ReleaseInfo($release);
     // First, if this is the existing release, check a few conditions.
     if ($project_data['existing_version'] === $version) {
       if (isset($release['terms']['Release type']) &&
@@ -336,8 +336,8 @@ function update_calculate_project_update_status(&$project_data, $available) {
       continue;
     }
 
-    $release_major_version = $release_project_data->getMajorVersion();
-    $release_patch_version = $release_project_data->getPatchVersion();
+    $release_major_version = $release_info->getMajorVersion();
+    $release_patch_version = $release_info->getPatchVersion();
     // See if this is a higher major version than our target and yet still
     // supported. If so, record it as an "Also available" release.
     // Note: Some projects have a HEAD release from CVS days, which could
@@ -374,7 +374,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Look for the development snapshot release for this branch.
     if (!isset($project_data['dev_version'])
         && $release_major_version == $target_major
-        && $release_project_data->getVersionExtra() === 'dev') {
+        && $release_info->getVersionExtra() === 'dev') {
       $project_data['dev_version'] = $version;
       $project_data['releases'][$version] = $release;
     }
@@ -388,7 +388,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
         $patch = $release_patch_version;
         $release_patch_changed = $release;
       }
-      if ($release_project_data->getVersionExtra() === NULL && $patch == $release_patch_version) {
+      if ($release_info->getVersionExtra() === NULL && $patch == $release_patch_version) {
         $project_data['recommended'] = $release_patch_changed['version'];
         $project_data['releases'][$release_patch_changed['version']] = $release_patch_changed;
       }

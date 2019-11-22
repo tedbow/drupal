@@ -3,22 +3,22 @@
 namespace Drupal\update;
 
 /**
- * Provides a value object for update project data.
+ * Provides a value object for update release data.
  */
-class ProjectInfo {
+class ReleaseInfo {
 
   /**
-   * The project data.
+   * The release data.
    *
    * @var array
    */
   protected $data;
 
   /**
-   * Constructs an ProjectData object.
+   * Constructs an ReleaseInfo object.
    *
    * @param array $data
-   *   The project data.
+   *   The release data.
    */
   public function __construct(array $data) {
     $this->data = $data;
@@ -80,5 +80,6 @@ class ProjectInfo {
     $last_version_parts = explode('-', count($version_parts) === 2 ? $version_parts[1] : $version_parts[2]);
     return count($last_version_parts) === 1 ? NULL : $last_version_parts[1];
   }
+
 
 }

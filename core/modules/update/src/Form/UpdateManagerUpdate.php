@@ -8,7 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Url;
-use Drupal\update\ProjectInfo;
+use Drupal\update\ReleaseInfo;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -134,7 +134,7 @@ class UpdateManagerUpdate extends FormBase {
 
       $recommended_release = $project['releases'][$project['recommended']];
       $recommended_version = '{{ release_version }} (<a href="{{ release_link }}" title="{{ project_title }}">{{ release_notes }}</a>)';
-      $project_info = new ProjectInfo($recommended_release);
+      $project_info = new ReleaseInfo($recommended_release);
       if ($project_info->getMajorVersion() != $project['existing_major']) {
         $recommended_version .= '<div title="{{ major_update_warning_title }}" class="update-major-version-warning">{{ major_update_warning_text }}</div>';
       }

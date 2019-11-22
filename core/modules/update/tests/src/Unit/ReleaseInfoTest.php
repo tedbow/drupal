@@ -3,14 +3,14 @@
 namespace Drupal\Tests\update\Unit;
 
 use Drupal\Tests\UnitTestCase;
-use Drupal\update\ProjectInfo;
+use Drupal\update\ReleaseInfo;
 
 /**
- * @coversDefaultClass \Drupal\update\ProjectInfo
+ * @coversDefaultClass \Drupal\update\ReleaseInfo
  *
  * @group update
  */
-class ProjectInfoTest extends UnitTestCase {
+class ReleaseInfoTest extends UnitTestCase {
 
   /**
    * @covers ::getMajorVersion
@@ -18,8 +18,8 @@ class ProjectInfoTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetMajorVersion($version, $excepted_version_info) {
-    $projectInfo = new ProjectInfo(['version' => $version]);
-    $this->assertSame($excepted_version_info['major'], $projectInfo->getMajorVersion());
+    $releaseInfo = new ReleaseInfo(['version' => $version]);
+    $this->assertSame($excepted_version_info['major'], $releaseInfo->getMajorVersion());
   }
 
   /**
@@ -28,8 +28,8 @@ class ProjectInfoTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetMinorVersion($version, $excepted_version_info) {
-    $projectInfo = new ProjectInfo(['version' => $version]);
-    $this->assertSame($excepted_version_info['minor'], $projectInfo->getMinorVersion());
+    $releaseInfo = new ReleaseInfo(['version' => $version]);
+    $this->assertSame($excepted_version_info['minor'], $releaseInfo->getMinorVersion());
   }
 
   /**
@@ -38,8 +38,8 @@ class ProjectInfoTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetPatchVersion($version, $excepted_version_info) {
-    $projectInfo = new ProjectInfo(['version' => $version]);
-    $this->assertSame($excepted_version_info['patch'], $projectInfo->getPatchVersion());
+    $releaseInfo = new ReleaseInfo(['version' => $version]);
+    $this->assertSame($excepted_version_info['patch'], $releaseInfo->getPatchVersion());
   }
 
   /**
@@ -48,8 +48,8 @@ class ProjectInfoTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetVersionExtra($version, $excepted_version_info) {
-    $projectInfo = new ProjectInfo(['version' => $version]);
-    $this->assertSame($excepted_version_info['extra'], $projectInfo->getVersionExtra());
+    $releaseInfo = new ReleaseInfo(['version' => $version]);
+    $this->assertSame($excepted_version_info['extra'], $releaseInfo->getVersionExtra());
   }
 
   /**
