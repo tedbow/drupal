@@ -159,8 +159,6 @@ class ProjectCoreCompatibility {
    */
   protected function getCompatibilityRanges($core_compatibility_constraint) {
     $compatibility_ranges = [];
-    $previous_version_satisfied = NULL;
-    $range = [];
     foreach ($this->possibleCoreUpdateVersions as $possible_core_update_version) {
       if (Semver::satisfies($possible_core_update_version, $core_compatibility_constraint)) {
         if (empty($range)) {
@@ -171,19 +169,16 @@ class ProjectCoreCompatibility {
         }
       }
       else {
-        if ($range) {
-          if ($previous_version_satisfied) {
-            // Make the previous version be the second item in the current
-            // range.
-            $range[] = $previous_version_satisfied;
-          }
+        // If core version does not satisfy the constraint and there is a non
+        // empty range add it to the list of ranges.
+        if (!empty($range)) {
           $compatibility_ranges[] = $range;
+          // Start a new range.
+          $range = [];
         }
-        // Start a new range.
-        $range = [];
       }
     }
-    if ($range) {
+    if (!empty($range)) {
       $compatibility_ranges[] = $range;
     }
     return $compatibility_ranges;
