@@ -94,7 +94,9 @@ function update_calculate_project_data($available) {
   update_process_project_info($projects);
   if (isset($projects['drupal']) && !empty($available['drupal'])) {
     update_calculate_project_update_status($projects['drupal'], $available['drupal']);
-    $project_core_compatibility = new ProjectCoreCompatibility($projects['drupal'], $available['drupal']['releases']);
+    if (isset($available['drupal']['releases'])) {
+      $project_core_compatibility = new ProjectCoreCompatibility($projects['drupal'], $available['drupal']['releases']);
+    }
   }
 
   foreach ($projects as $project => $project_info) {
