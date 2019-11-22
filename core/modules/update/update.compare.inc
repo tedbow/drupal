@@ -234,24 +234,22 @@ function update_calculate_project_update_status(&$project_data, $available) {
   }
 
   // Figure out the target major version.
-  $existing_major = $project_data['existing_major'];
-  $supported_majors = [];
-  if (isset($available['supported_majors'])) {
-    $supported_majors = explode(',', $available['supported_majors']);
-  }
-  elseif (isset($available['default_major'])) {
-    // Older release history XML file without supported or recommended.
-    $supported_majors[] = $available['default_major'];
+  $existing_release = $available['releases'][$project_data['existing_version']];
+  $existing_release_info = new ReleaseInfo($existing_release);
+  $supported_branches = [];
+  if (isset($available['supported_branches'])) {
+    $supported_branches = explode(',', $available['supported_branches']);
   }
 
-  if (in_array($existing_major, $supported_majors)) {
+
+  if (in_array($existing_major, $supported_branches)) {
     // Still supported, stay at the current major version.
     $target_major = $existing_major;
   }
   elseif (isset($available['recommended_major'])) {
     // Since 'recommended_major' is defined, we know this is the new XML
     // format. Therefore, we know the current release is unsupported since
-    // its major version was not in the 'supported_majors' list. We should
+    // its major version was not in the 'supported_branches' list. We should
     // find the best release from the recommended major version.
     $target_major = $available['recommended_major'];
     $project_data['status'] = UPDATE_NOT_SUPPORTED;
@@ -344,7 +342,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // be one of those being compared. They would not have version_major
     // set, so we must call isset first.
     if ($release_major_version !== NULL && $release_major_version > $target_major) {
-      if (in_array($release_major_version, $supported_majors)) {
+      if (in_array($release_major_version, $supported_branches)) {
         if (!isset($project_data['also'])) {
           $project_data['also'] = [];
         }

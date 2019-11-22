@@ -53,6 +53,16 @@ class ReleaseInfoTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::getBranch
+   *
+   * @dataProvider providerVersionInfos
+   */
+  public function testGetBranch($version, $excepted_version_info) {
+    $releaseInfo = new ReleaseInfo(['version' => $version]);
+    $this->assertSame($excepted_version_info['branch'], $releaseInfo->getBranch());
+  }
+
+  /**
    * Dataprovider for expected version information.
    *
    * @return array
@@ -67,6 +77,7 @@ class ReleaseInfoTest extends UnitTestCase {
           'minor' => NULL,
           'patch' => '3',
           'extra' => NULL,
+          'branch' => '8.x-1.',
         ],
       ],
       '8.x-1.3-dev' => [
@@ -76,6 +87,7 @@ class ReleaseInfoTest extends UnitTestCase {
           'minor' => NULL,
           'patch' => '3',
           'extra' => 'dev',
+          'branch' => '8.x-1.',
         ],
       ],
       '1.3' => [
@@ -85,6 +97,7 @@ class ReleaseInfoTest extends UnitTestCase {
           'minor' => NULL,
           'patch' => '3',
           'extra' => NULL,
+          'branch' => '1.',
         ],
       ],
       '1.3-dev' => [
@@ -94,6 +107,7 @@ class ReleaseInfoTest extends UnitTestCase {
           'minor' => NULL,
           'patch' => '3',
           'extra' => 'dev',
+          'branch' => '1.',
         ],
       ],
       '1.2.3' => [
@@ -103,6 +117,7 @@ class ReleaseInfoTest extends UnitTestCase {
           'minor' => '2',
           'patch' => '3',
           'extra' => NULL,
+          'branch' => '1.2.',
         ],
       ],
       '1.2.3-dev' => [
@@ -112,6 +127,7 @@ class ReleaseInfoTest extends UnitTestCase {
           'minor' => '2',
           'patch' => '3',
           'extra' => 'dev',
+          'branch' => '1.2.',
         ],
       ],
     ];

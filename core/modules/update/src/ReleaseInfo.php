@@ -81,5 +81,14 @@ class ReleaseInfo {
     return count($last_version_parts) === 1 ? NULL : $last_version_parts[1];
   }
 
+  public function getBranch() {
+    $version = $this->data['version'];
+    if ($extra = $this->getVersionExtra()) {
+      $version = str_replace("-$extra", '', $version);
+    }
+    $parts = explode('.', $version);
+    array_pop($parts);
+    return implode('.', $parts) . '.';
+  }
 
 }
