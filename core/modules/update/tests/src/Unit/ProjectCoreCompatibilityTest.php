@@ -10,7 +10,7 @@ use Drupal\update\ProjectCoreCompatibility;
  *
  * @group update
  */
-class UpdateProjectCoreCompatibilityTest extends UnitTestCase {
+class ProjectCoreCompatibilityTest extends UnitTestCase {
 
   /**
    * @covers ::setReleaseMessage
