@@ -5,8 +5,6 @@
  * Code required only when comparing available updates to existing data.
  */
 
-use Drupal\update\UpdateProjectCoreCompatibility;
-
 /**
  * Determines version and type information for currently installed projects.
  *
@@ -92,20 +90,9 @@ function update_calculate_project_data($available) {
   }
   $projects = \Drupal::service('update.manager')->getProjects();
   update_process_project_info($projects);
-  $drupal_project_info = NULL;
-  if (isset($projects['drupal']) && !empty($available['drupal']['releases'])) {
-    $drupal_project_info = $projects['drupal'];
-    unset($projects['drupal']);
-    $projects = array_merge(['drupal' => $drupal_project_info], $projects);
-  }
-
   foreach ($projects as $project => $project_info) {
     if (isset($available[$project])) {
       update_calculate_project_update_status($projects[$project], $available[$project]);
-      if ($drupal_project_info && $project !== 'drupal' && !empty($available[$project]['releases'])) {
-        UpdateProjectCoreCompatibility::setProjectCoreCompatibilityRanges($projects[$project], $available[$project]['releases'], $projects['drupal'], $available['drupal']['releases']);
-      }
-
     }
     else {
       $projects[$project]['status'] = UPDATE_UNKNOWN;
