@@ -445,7 +445,7 @@ class UpdateContribTest extends UpdateTestBase {
   }
 
   /**
-   * Tests that core compatibility
+   * Tests that core compatibility messages.
    */
   public function testCoreCompatibilityMessage() {
     $system_info = [
@@ -460,16 +460,19 @@ class UpdateContribTest extends UpdateTestBase {
     ];
     $this->config('update_test.settings')->set('system_info', $system_info)->save();
 
+    // Confirm that messages are displayed for recommended and latest updates.
     $this->refreshUpdateStatus(['drupal' => '1.1', 'aaa_update_test' => '8.x-1.2']);
     $this->assertCoreCompatibilityMessage('8.x-1.2', 'http://example.com/aaa_update_test-8-x-1-2-release', '8.0.0 to 8.1.1', 'Recommended version:');
     $this->assertCoreCompatibilityMessage('8.x-1.3-beta1', 'http://example.com/aaa_update_test-8-x-1-3-beta1-release', '8.0.0, 8.1.1', 'Latest version:');
 
+    // Change the available core releases and confirm that the messages change.
     $this->refreshUpdateStatus(['drupal' => '1.1-alpha1', 'aaa_update_test' => '8.x-1.2']);
     $this->assertCoreCompatibilityMessage('8.x-1.2', 'http://example.com/aaa_update_test-8-x-1-2-release', '8.0.0 to 8.1.0', 'Recommended version:');
     $this->assertCoreCompatibilityMessage('8.x-1.3-beta1', 'http://example.com/aaa_update_test-8-x-1-3-beta1-release', '8.0.0', 'Latest version:');
 
+    // Confirm that messages are displayed for security and 'Also available'
+    // updates.
     $this->refreshUpdateStatus(['drupal' => '1.1', 'aaa_update_test' => 'sec.8.x-1.2_8.x-2.2']);
-    // Assert an a se
     $this->assertCoreCompatibilityMessage('8.x-1.2', 'http://example.com/aaa_update_test-8-x-1-2-release', '8.1.0 to 8.1.1', 'Security update:');
     $this->assertCoreCompatibilityMessage('8.x-2.2', 'http://example.com/aaa_update_test-8-x-2-2-release', '8.1.1', 'Also available:');
   }
