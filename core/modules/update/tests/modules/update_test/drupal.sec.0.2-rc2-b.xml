@@ -4,7 +4,7 @@
 <short_name>drupal</short_name>
 <dc:creator>Drupal</dc:creator>
 <api_version>8.x</api_version>
-<recommended_major>8</recommended_major>
+<recommended_branch>8.0.</recommended_branch>
 <supported_branches>8.0.,8.1.</supported_branches>
 <default_major>8</default_major>
 <project_status>published</project_status>

@@ -84,6 +84,7 @@ class UpdateCoreTest extends UpdateTestBase {
         $this->refreshUpdateStatus(['drupal' => "$minor_version.1" . $extra_version]);
         $this->standardTests();
         $this->drupalGet('admin/reports/updates');
+        file_put_contents("/Users/ted.bowman/Sites/www/$minor_version-$extra_version.html", $this->getSession()->getPage()->getOuterHtml());
         $this->clickLink(t('Check manually'));
         $this->checkForMetaRefresh();
         $this->assertNoText(t('Security update required!'));

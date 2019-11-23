@@ -94,6 +94,7 @@ abstract class UpdateTestBase extends BrowserTestBase {
   protected function standardTests() {
     $this->assertRaw('<h3>' . t('Drupal core') . '</h3>');
     $this->assertRaw(Link::fromTextAndUrl(t('Drupal'), Url::fromUri('http://example.com/project/drupal'))->toString(), 'Link to the Drupal project appears.');
+    file_put_contents("/Users/ted.bowman/Sites/www/test.html", $this->getSession()->getPage()->getOuterHtml());
     $this->assertNoText(t('No available releases found'));
   }
 
