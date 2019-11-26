@@ -178,7 +178,7 @@ class UpdateCoreTest extends UpdateTestBase {
    *
    * @dataProvider securityUpdateAvailabilityProvider
    */
-  public function xtestSecurityUpdateAvailability($site_patch_version, array $expected_security_releases, $expected_update_message_type, $fixture) {
+  public function testSecurityUpdateAvailability($site_patch_version, array $expected_security_releases, $expected_update_message_type, $fixture) {
     $this->setSystemInfo("8.$site_patch_version");
     $this->refreshUpdateStatus(['drupal' => $fixture]);
     $this->assertSecurityUpdates('drupal-8', $expected_security_releases, $expected_update_message_type, 'table.update');
