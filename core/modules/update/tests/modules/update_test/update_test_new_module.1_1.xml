@@ -4,8 +4,8 @@
 <short_name>update_test_new_module</short_name>
 <dc:creator>Drupal</dc:creator>
 <api_version>8.x</api_version>
-<recommended_major>1</recommended_major>
-<supported_majors>8.x-1.</supported_majors>
+<recommended_branch>8.x-1.</recommended_branch>
+<supported_branches>8.x-1.</supported_branches>
 <default_major>1</default_major>
 <project_status>published</project_status>
 <link>http://example.com/project/update_test_new_module</link>
