@@ -4,8 +4,8 @@
 <short_name>drupal</short_name>
 <dc:creator>Drupal</dc:creator>
 <api_version>9.x</api_version>
-<recommended_major>9</recommended_major>
-<supported_majors>9</supported_majors>
+<recommended_branch>9.0.</recommended_branch>
+<supported_branches>9.0.</supported_branches>
 <default_major>9</default_major>
 <project_status>published</project_status>
 <link>http://example.com/project/drupal</link>
