@@ -124,12 +124,13 @@ class UpdateCoreTest extends UpdateTestBase {
               $this->assertRaw('warning.svg', 'Warning icon was found.');
             }
             // Both stable and unstable releases are available.
-            // An unstable release is the latest.
+            // An unstable on a supported branch higher than the current branch
+            // is available.
             else {
               $this->assertNoText(t('Up to date'));
               $this->assertText(t('Update available'));
               $this->assertText(t('Recommended version:'));
-              $this->assertText(t('Latest version:'));
+              $this->assertText(t('Also available:'));
               $this->assertRaw('warning.svg', 'Warning icon was found.');
             }
             break;
