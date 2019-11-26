@@ -234,8 +234,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
   }
 
   // Figure out the target major version.
-  $existing_release = $available['releases'][$project_data['existing_version']];
-  $existing_release_info = new ReleaseInfo($existing_release);
+  $existing_release_info = new ReleaseInfo(['version' => $project_data['existing_version']]);
   $supported_branches = [];
   if (isset($available['supported_branches'])) {
     $supported_branches = explode(',', $available['supported_branches']);
