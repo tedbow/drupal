@@ -264,6 +264,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
   else {
     // Malformed XML file? Stick with the current branch.
     $target_branch = $existing_release_info->getBranch();
+    $target_major = $existing_release_info->getMajorVersion();
   }
 
   // Make sure we never tell the admin to downgrade. If we recommended an
