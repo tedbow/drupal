@@ -84,7 +84,6 @@ class UpdateCoreTest extends UpdateTestBase {
         $this->refreshUpdateStatus(['drupal' => "$minor_version.1" . $extra_version]);
         $this->standardTests();
         $this->drupalGet('admin/reports/updates');
-        file_put_contents("/Users/ted.bowman/Sites/www/$minor_version-$extra_version.html", $this->getSession()->getPage()->getOuterHtml());
         $this->clickLink(t('Check manually'));
         $this->checkForMetaRefresh();
         $this->assertNoText(t('Security update required!'));
@@ -124,13 +123,12 @@ class UpdateCoreTest extends UpdateTestBase {
               $this->assertRaw('warning.svg', 'Warning icon was found.');
             }
             // Both stable and unstable releases are available.
-            // An unstable on a supported branch higher than the current branch
-            // is available.
+            // An unstable release is the latest.
             else {
               $this->assertNoText(t('Up to date'));
               $this->assertText(t('Update available'));
               $this->assertText(t('Recommended version:'));
-              $this->assertText(t('Also available:'));
+              $this->assertText(t('Latest version:'));
               $this->assertRaw('warning.svg', 'Warning icon was found.');
             }
             break;
@@ -142,7 +140,7 @@ class UpdateCoreTest extends UpdateTestBase {
   /**
    * Tests the Update Manager module when a major update is available.
    */
-  public function xtestMajorUpdateAvailable() {
+  public function testMajorUpdateAvailable() {
     foreach ([0, 1] as $minor_version) {
       foreach ([0, 1] as $patch_version) {
         foreach (['-alpha1', '-beta1', ''] as $extra_version) {
