@@ -6,7 +6,6 @@
  <api_version>8.x</api_version>
  <recommended_branch>8.x-2.</recommended_branch>
  <supported_branches>8.x-1.,8.x-2.</supported_branches>
- <default_major>2</default_major>
  <project_status>published</project_status>
  <link>http://example.com/project/aaa_update_test</link>
  <terms>

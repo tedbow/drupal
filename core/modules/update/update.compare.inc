@@ -241,24 +241,17 @@ function update_calculate_project_update_status(&$project_data, $available) {
     $supported_branches = explode(',', $available['supported_branches']);
   }
 
-
   if (in_array($existing_version_parser->getSupportBranch(), $supported_branches)) {
     // Still supported, stay at the current major version.
     $target_major = $existing_major;
   }
   elseif (isset($available['recommended_branch'])) {
-    // Since 'recommended_branch' is defined, we know this is the new XML
-    // format. Therefore, we know the current release is unsupported since
+    // We know the current release is unsupported since
     // its major version was not in the 'supported_branches' list. We should
     // find the best release from the recommended major version.
     $branch_version_parser = new ModuleVersionParser($available['recommended_branch'] . 'x');
     $target_major = $branch_version_parser->getMajorVersion();
     $project_data['status'] = UPDATE_NOT_SUPPORTED;
-  }
-  elseif (isset($available['default_major'])) {
-    // Older release history XML file without recommended, so recommend
-    // the currently defined "default_major" version.
-    $target_major = $available['default_major'];
   }
   else {
     // Malformed XML file? Stick with the current branch.
