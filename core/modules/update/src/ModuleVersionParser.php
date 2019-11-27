@@ -81,6 +81,12 @@ class ModuleVersionParser {
     return count($last_version_parts) === 1 ? NULL : $last_version_parts[1];
   }
 
+  /**
+   * Gets the support branch.
+   *
+   * @return string
+   *   The support branch as is used in update XML files.
+   */
   public function getSupportBranch() {
     $version = $this->version;
     if ($extra = $this->getVersionExtra()) {
