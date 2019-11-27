@@ -3,14 +3,14 @@
 namespace Drupal\Tests\update\Unit;
 
 use Drupal\Tests\UnitTestCase;
-use Drupal\update\ReleaseInfo;
+use Drupal\update\ModuleVersionParser;
 
 /**
- * @coversDefaultClass \Drupal\update\ReleaseInfo
+ * @coversDefaultClass \Drupal\update\ModuleVersionParser
  *
  * @group update
  */
-class ReleaseInfoTest extends UnitTestCase {
+class ModuleVersionParserTest extends UnitTestCase {
 
   /**
    * @covers ::getMajorVersion
@@ -18,7 +18,7 @@ class ReleaseInfoTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetMajorVersion($version, $excepted_version_info) {
-    $releaseInfo = new ReleaseInfo(['version' => $version]);
+    $releaseInfo = new ModuleVersionParser($version);
     $this->assertSame($excepted_version_info['major'], $releaseInfo->getMajorVersion());
   }
 
@@ -28,7 +28,7 @@ class ReleaseInfoTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetMinorVersion($version, $excepted_version_info) {
-    $releaseInfo = new ReleaseInfo(['version' => $version]);
+    $releaseInfo = new ModuleVersionParser($version);
     $this->assertSame($excepted_version_info['minor'], $releaseInfo->getMinorVersion());
   }
 
@@ -38,7 +38,7 @@ class ReleaseInfoTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetPatchVersion($version, $excepted_version_info) {
-    $releaseInfo = new ReleaseInfo(['version' => $version]);
+    $releaseInfo = new ModuleVersionParser($version);
     $this->assertSame($excepted_version_info['patch'], $releaseInfo->getPatchVersion());
   }
 
@@ -48,18 +48,18 @@ class ReleaseInfoTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetVersionExtra($version, $excepted_version_info) {
-    $releaseInfo = new ReleaseInfo(['version' => $version]);
+    $releaseInfo = new ModuleVersionParser($version);
     $this->assertSame($excepted_version_info['extra'], $releaseInfo->getVersionExtra());
   }
 
   /**
-   * @covers ::getBranch
+   * @covers ::getSupportBranch
    *
    * @dataProvider providerVersionInfos
    */
-  public function testGetBranch($version, $excepted_version_info) {
-    $releaseInfo = new ReleaseInfo(['version' => $version]);
-    $this->assertSame($excepted_version_info['branch'], $releaseInfo->getBranch());
+  public function testGetSupportBranch($version, $excepted_version_info) {
+    $releaseInfo = new ModuleVersionParser($version);
+    $this->assertSame($excepted_version_info['branch'], $releaseInfo->getSupportBranch());
   }
 
   /**

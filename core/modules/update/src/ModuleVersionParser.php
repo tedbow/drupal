@@ -5,23 +5,23 @@ namespace Drupal\update;
 /**
  * Provides a value object for update release data.
  */
-class ReleaseInfo {
+class ModuleVersionParser {
 
   /**
-   * The release data.
+   * The version_string.
    *
-   * @var array
+   * @var string
    */
-  protected $data;
+  protected $version;
 
   /**
-   * Constructs an ReleaseInfo object.
+   * Constructs a ModuleVersionParser object.
    *
-   * @param array $data
-   *   The release data.
+   * @param string $version
+   *   The version string.
    */
-  public function __construct(array $data) {
-    $this->data = $data;
+  public function __construct($version) {
+    $this->version = $version;
   }
 
   /**
@@ -64,7 +64,7 @@ class ReleaseInfo {
    *   The version string.
    */
   private function getVersionString() {
-    $original_version = $this->data['version'];
+    $original_version = $this->version;
     $version = strpos($original_version, '8.x-') === 0 ? str_replace('8.x-', '', $original_version) : $original_version;
     return $version;
   }
@@ -81,8 +81,8 @@ class ReleaseInfo {
     return count($last_version_parts) === 1 ? NULL : $last_version_parts[1];
   }
 
-  public function getBranch() {
-    $version = $this->data['version'];
+  public function getSupportBranch() {
+    $version = $this->version;
     if ($extra = $this->getVersionExtra()) {
       $version = str_replace("-$extra", '', $version);
     }
