@@ -3,7 +3,7 @@
 namespace Drupal\update;
 
 /**
- * Provides a value object for update release data.
+ * Provides a module version parser.
  */
 class ModuleVersionParser {
 

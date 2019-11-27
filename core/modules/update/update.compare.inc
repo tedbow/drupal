@@ -243,7 +243,6 @@ function update_calculate_project_update_status(&$project_data, $available) {
 
   if (in_array($existing_version_parser->getSupportBranch(), $supported_branches)) {
     // Still supported, stay at the current major version.
-    $target_branch = $existing_version_parser->getSupportBranch();
     $target_major = $existing_version_parser->getMajorVersion();
   }
   elseif (isset($available['recommended_branch'])) {
@@ -251,19 +250,17 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // format. Therefore, we know the current release is unsupported since
     // its major version was not in the 'supported_branches' list. We should
     // find the best release from the recommended major version.
-    $target_branch = $available['recommended_branch'];
-    $branch_release_info = new ModuleVersionParser($target_branch . 'x');
-    $target_major = $branch_release_info->getMajorVersion();
+    $branch_version_parser = new ModuleVersionParser($available['recommended_branch'] . 'x');
+    $target_major = $branch_version_parser->getMajorVersion();
     $project_data['status'] = UPDATE_NOT_SUPPORTED;
   }
   elseif (isset($available['default_major'])) {
     // Older release history XML file without recommended, so recommend
     // the currently defined "default_major" version.
-    $target_branch = $available['default_major'];
+    $target_major = $available['default_major'];
   }
   else {
     // Malformed XML file? Stick with the current branch.
-    $target_branch = $existing_version_parser->getSupportBranch();
     $target_major = $existing_version_parser->getMajorVersion();
   }
 
@@ -274,7 +271,6 @@ function update_calculate_project_update_status(&$project_data, $available) {
   // unsupported, and there's nothing newer for them to upgrade to, we
   // can't print out a "Recommended version", but just have to tell them
   // what they have is unsupported and let them figure it out.
-  $target_branch = max($existing_version_parser->getSupportBranch(), $target_branch);
   $target_major = max($existing_version_parser->getMajorVersion(), $target_major);
 
   $release_patch_changed = '';
