@@ -235,6 +235,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
 
   // Figure out the target major version.
   $existing_version_parser = new ModuleVersionParser($project_data['existing_version']);
+  $existing_major = $existing_version_parser->getMajorVersion();
   $supported_branches = [];
   if (isset($available['supported_branches'])) {
     $supported_branches = explode(',', $available['supported_branches']);
@@ -243,7 +244,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
 
   if (in_array($existing_version_parser->getSupportBranch(), $supported_branches)) {
     // Still supported, stay at the current major version.
-    $target_major = $existing_version_parser->getMajorVersion();
+    $target_major = $existing_major;
   }
   elseif (isset($available['recommended_branch'])) {
     // Since 'recommended_branch' is defined, we know this is the new XML
@@ -261,7 +262,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
   }
   else {
     // Malformed XML file? Stick with the current branch.
-    $target_major = $existing_version_parser->getMajorVersion();
+    $target_major = $existing_major;
   }
 
   // Make sure we never tell the admin to downgrade. If we recommended an
@@ -271,7 +272,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
   // unsupported, and there's nothing newer for them to upgrade to, we
   // can't print out a "Recommended version", but just have to tell them
   // what they have is unsupported and let them figure it out.
-  $target_major = max($existing_version_parser->getMajorVersion(), $target_major);
+  $target_major = max($existing_major, $target_major);
 
   $release_patch_changed = '';
   $patch = '';
@@ -341,7 +342,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Note: Some projects have a HEAD release from CVS days, which could
     // be one of those being compared. They would not have version_major
     // set, so we must call isset first.
-    if ($release_major_version !== NULL && $release_version_parser->getMajorVersion() > $target_major) {
+    if ($release_major_version !== NULL && $release_major_version > $target_major) {
       if (in_array($release_version_parser->getSupportBranch(), $supported_branches)) {
         if (!isset($project_data['also'])) {
           $project_data['also'] = [];
@@ -364,14 +365,14 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Look for the 'latest version' if we haven't found it yet. Latest is
     // defined as the most recent version for the target major version.
     if (!isset($project_data['latest_version'])
-        && $release_version_parser->getMajorVersion() == $target_major) {
+        && $release_major_version == $target_major) {
       $project_data['latest_version'] = $version;
       $project_data['releases'][$version] = $release;
     }
 
     // Look for the development snapshot release for this branch.
     if (!isset($project_data['dev_version'])
-        && $release_version_parser->getMajorVersion() == $target_major
+        && $release_major_version == $target_major
         && $release_version_parser->getVersionExtra() === 'dev') {
       $project_data['dev_version'] = $version;
       $project_data['releases'][$version] = $release;
@@ -380,7 +381,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Look for the 'recommended' version if we haven't found it yet (see
     // phpdoc at the top of this function for the definition).
     if (!isset($project_data['recommended'])
-        && $release_version_parser->getMajorVersion() == $target_major
+        && $release_major_version == $target_major
         && $release_patch_version !== NULL) {
       if ($patch != $release_patch_version) {
         $patch = $release_patch_version;
