@@ -121,12 +121,14 @@ function update_calculate_project_data($available) {
  * with an error and the next project is considered.
  *
  * If the project itself is valid, the function decides what major release
- * series to consider. The project defines what the currently supported major
- * versions are for each version of core, so the first step is to make sure the
- * current version is still supported. If so, that's the target version. If the
- * current version is unsupported, the project maintainer's recommended major
- * version is used. There's also a check to make sure that this function never
- * recommends an earlier release than the currently installed major version.
+ * series to consider. The project defines the currently supported development
+ * branches, so the first step is to make sure the development branch of the
+ * current version is still supported. If so, then the major version of the
+ * current version is used. If the current
+ * version is not in supported branch, the project maintainer's recommended
+ * branch is used to determine the major version to use. There's also a check to
+ * make sure that this function never recommends an earlier release than the
+ * currently installed major version.
  *
  * Given a target major version, the available releases are scanned looking for
  * the specific release to recommend (avoiding beta releases and development
@@ -246,15 +248,14 @@ function update_calculate_project_update_status(&$project_data, $available) {
     $target_major = $existing_major;
   }
   elseif (isset($available['recommended_branch'])) {
-    // We know the current release is unsupported since
-    // its major version was not in the 'supported_branches' list. We should
-    // find the best release from the recommended major version.
-    $branch_version_parser = new ModuleVersionParser($available['recommended_branch'] . 'x');
-    $target_major = $branch_version_parser->getMajorVersion();
+    // We know the current release is unsupported since its support branch was
+    // not in the 'supported_branches' list. We should find the best release
+    // from the recommended_branch.
+    $target_major = ModuleVersionParser::createFromSupportBranch($available['recommended_branch'])->getMajorVersion();
     $project_data['status'] = UPDATE_NOT_SUPPORTED;
   }
   else {
-    // Malformed XML file? Stick with the current branch.
+    // Malformed XML file? Stick with the current version.
     $target_major = $existing_major;
   }
 
@@ -292,7 +293,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // First, if this is the existing release, check a few conditions.
     if ($project_data['existing_version'] === $version) {
       if (isset($release['terms']['Release type']) &&
-          in_array('Insecure', $release['terms']['Release type'])) {
+        in_array('Insecure', $release['terms']['Release type'])) {
         $project_data['status'] = UPDATE_NOT_SECURE;
       }
       elseif ($release['status'] == 'unpublished') {
@@ -307,7 +308,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
         ];
       }
       elseif (isset($release['terms']['Release type']) &&
-              in_array('Unsupported', $release['terms']['Release type'])) {
+        in_array('Unsupported', $release['terms']['Release type'])) {
         $project_data['status'] = UPDATE_NOT_SUPPORTED;
         if (empty($project_data['extra'])) {
           $project_data['extra'] = [];
@@ -322,8 +323,8 @@ function update_calculate_project_update_status(&$project_data, $available) {
 
     // Otherwise, ignore unpublished, insecure, or unsupported releases.
     if ($release['status'] == 'unpublished' ||
-        (isset($release['terms']['Release type']) &&
-         (in_array('Insecure', $release['terms']['Release type']) ||
+      (isset($release['terms']['Release type']) &&
+        (in_array('Insecure', $release['terms']['Release type']) ||
           in_array('Unsupported', $release['terms']['Release type'])))) {
       continue;
     }
@@ -358,15 +359,15 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Look for the 'latest version' if we haven't found it yet. Latest is
     // defined as the most recent version for the target major version.
     if (!isset($project_data['latest_version'])
-        && $release_major_version == $target_major) {
+      && $release_major_version == $target_major) {
       $project_data['latest_version'] = $version;
       $project_data['releases'][$version] = $release;
     }
 
     // Look for the development snapshot release for this branch.
     if (!isset($project_data['dev_version'])
-        && $release_major_version == $target_major
-        && $release_version_parser->getVersionExtra() === 'dev') {
+      && $release_major_version == $target_major
+      && $release_version_parser->getVersionExtra() === 'dev') {
       $project_data['dev_version'] = $version;
       $project_data['releases'][$version] = $release;
     }
@@ -374,8 +375,8 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Look for the 'recommended' version if we haven't found it yet (see
     // phpdoc at the top of this function for the definition).
     if (!isset($project_data['recommended'])
-        && $release_major_version == $target_major
-        && $release_patch_version !== NULL) {
+      && $release_major_version == $target_major
+      && $release_patch_version !== NULL) {
       if ($patch != $release_patch_version) {
         $patch = $release_patch_version;
         $release_patch_changed = $release;
@@ -410,7 +411,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
 
     // See if this release is a security update.
     if (isset($release['terms']['Release type'])
-        && in_array('Security update', $release['terms']['Release type'])) {
+      && in_array('Security update', $release['terms']['Release type'])) {
       $project_data['security updates'][] = $release;
     }
   }
