@@ -293,7 +293,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // First, if this is the existing release, check a few conditions.
     if ($project_data['existing_version'] === $version) {
       if (isset($release['terms']['Release type']) &&
-        in_array('Insecure', $release['terms']['Release type'])) {
+          in_array('Insecure', $release['terms']['Release type'])) {
         $project_data['status'] = UPDATE_NOT_SECURE;
       }
       elseif ($release['status'] == 'unpublished') {
@@ -323,8 +323,8 @@ function update_calculate_project_update_status(&$project_data, $available) {
 
     // Otherwise, ignore unpublished, insecure, or unsupported releases.
     if ($release['status'] == 'unpublished' ||
-      (isset($release['terms']['Release type']) &&
-        (in_array('Insecure', $release['terms']['Release type']) ||
+        (isset($release['terms']['Release type']) &&
+         (in_array('Insecure', $release['terms']['Release type']) ||
           in_array('Unsupported', $release['terms']['Release type'])))) {
       continue;
     }
@@ -359,15 +359,15 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Look for the 'latest version' if we haven't found it yet. Latest is
     // defined as the most recent version for the target major version.
     if (!isset($project_data['latest_version'])
-      && $release_major_version == $target_major) {
+        && $release_major_version == $target_major) {
       $project_data['latest_version'] = $version;
       $project_data['releases'][$version] = $release;
     }
 
     // Look for the development snapshot release for this branch.
     if (!isset($project_data['dev_version'])
-      && $release_major_version == $target_major
-      && $release_version_parser->getVersionExtra() === 'dev') {
+        && $release_major_version == $target_major
+        && $release_version_parser->getVersionExtra() === 'dev') {
       $project_data['dev_version'] = $version;
       $project_data['releases'][$version] = $release;
     }
@@ -375,8 +375,8 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Look for the 'recommended' version if we haven't found it yet (see
     // phpdoc at the top of this function for the definition).
     if (!isset($project_data['recommended'])
-      && $release_major_version == $target_major
-      && $release_patch_version !== NULL) {
+        && $release_major_version == $target_major
+        && $release_patch_version !== NULL) {
       if ($patch != $release_patch_version) {
         $patch = $release_patch_version;
         $release_patch_changed = $release;
@@ -411,7 +411,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
 
     // See if this release is a security update.
     if (isset($release['terms']['Release type'])
-      && in_array('Security update', $release['terms']['Release type'])) {
+       && in_array('Security update', $release['terms']['Release type'])) {
       $project_data['security updates'][] = $release;
     }
   }
