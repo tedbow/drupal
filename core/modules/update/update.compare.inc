@@ -308,7 +308,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
         ];
       }
       elseif (isset($release['terms']['Release type']) &&
-        in_array('Unsupported', $release['terms']['Release type'])) {
+              in_array('Unsupported', $release['terms']['Release type'])) {
         $project_data['status'] = UPDATE_NOT_SUPPORTED;
         if (empty($project_data['extra'])) {
           $project_data['extra'] = [];
@@ -411,7 +411,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
 
     // See if this release is a security update.
     if (isset($release['terms']['Release type'])
-       && in_array('Security update', $release['terms']['Release type'])) {
+        && in_array('Security update', $release['terms']['Release type'])) {
       $project_data['security updates'][] = $release;
     }
   }
