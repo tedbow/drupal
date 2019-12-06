@@ -7,6 +7,7 @@
 
 use Drupal\update\UpdateFetcherInterface;
 use Drupal\update\UpdateManagerInterface;
+use Drupal\update\ModuleVersionParser;
 use Drupal\update\ProjectCoreCompatibility;
 
 /**
@@ -252,35 +253,27 @@ function update_calculate_project_update_status(&$project_data, $available) {
   }
 
   // Figure out the target major version.
-  $existing_major = $project_data['existing_major'];
-  $supported_majors = [];
-  if (isset($available['supported_majors'])) {
-    $supported_majors = explode(',', $available['supported_majors']);
-  }
-  elseif (isset($available['default_major'])) {
-    // Older release history XML file without supported or recommended.
-    $supported_majors[] = $available['default_major'];
+  $existing_version_parser = new ModuleVersionParser($project_data['existing_version']);
+  $existing_major = $existing_version_parser->getMajorVersion();
+  $supported_branches = [];
+  if (isset($available['supported_branches'])) {
+    $supported_branches = explode(',', $available['supported_branches']);
   }
 
-  if (in_array($existing_major, $supported_majors)) {
+  if (in_array($existing_version_parser->getSupportBranch(), $supported_branches)) {
     // Still supported, stay at the current major version.
     $target_major = $existing_major;
   }
-  elseif (isset($available['recommended_major'])) {
-    // Since 'recommended_major' is defined, we know this is the new XML
-    // format. Therefore, we know the current release is unsupported since
-    // its major version was not in the 'supported_majors' list. We should
+  elseif (isset($available['recommended_branch'])) {
+    // We know the current release is unsupported since
+    // its major version was not in the 'supported_branches' list. We should
     // find the best release from the recommended major version.
-    $target_major = $available['recommended_major'];
+    $branch_version_parser = new ModuleVersionParser($available['recommended_branch'] . 'x');
+    $target_major = $branch_version_parser->getMajorVersion();
     $project_data['status'] = UpdateManagerInterface::NOT_SUPPORTED;
   }
-  elseif (isset($available['default_major'])) {
-    // Older release history XML file without recommended, so recommend
-    // the currently defined "default_major" version.
-    $target_major = $available['default_major'];
-  }
   else {
-    // Malformed XML file? Stick with the current version.
+    // Malformed XML file? Stick with the current branch.
     $target_major = $existing_major;
   }
 
@@ -314,6 +307,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     return;
   }
   foreach ($available['releases'] as $version => $release) {
+    $release_version_parser = new ModuleVersionParser($release['version']);
     // First, if this is the existing release, check a few conditions.
     if ($project_data['existing_version'] === $version) {
       if (isset($release['terms']['Release type']) &&
@@ -353,18 +347,20 @@ function update_calculate_project_update_status(&$project_data, $available) {
       continue;
     }
 
+    $release_major_version = $release_version_parser->getMajorVersion();
+    $release_patch_version = $release_version_parser->getPatchVersion();
     // See if this is a higher major version than our target and yet still
     // supported. If so, record it as an "Also available" release.
     // Note: Some projects have a HEAD release from CVS days, which could
     // be one of those being compared. They would not have version_major
     // set, so we must call isset first.
-    if (isset($release['version_major']) && $release['version_major'] > $target_major) {
-      if (in_array($release['version_major'], $supported_majors)) {
+    if ($release_major_version !== NULL && $release_major_version > $target_major) {
+      if (in_array($release_version_parser->getSupportBranch(), $supported_branches)) {
         if (!isset($project_data['also'])) {
           $project_data['also'] = [];
         }
-        if (!isset($project_data['also'][$release['version_major']])) {
-          $project_data['also'][$release['version_major']] = $version;
+        if (!isset($project_data['also'][$release_major_version])) {
+          $project_data['also'][$release_major_version] = $version;
           $project_data['releases'][$version] = $release;
         }
       }
@@ -381,16 +377,15 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Look for the 'latest version' if we haven't found it yet. Latest is
     // defined as the most recent version for the target major version.
     if (!isset($project_data['latest_version'])
-        && $release['version_major'] == $target_major) {
+        && $release_major_version == $target_major) {
       $project_data['latest_version'] = $version;
       $project_data['releases'][$version] = $release;
     }
 
     // Look for the development snapshot release for this branch.
     if (!isset($project_data['dev_version'])
-        && $release['version_major'] == $target_major
-        && isset($release['version_extra'])
-        && $release['version_extra'] == 'dev') {
+        && $release_major_version == $target_major
+        && $release_version_parser->getVersionExtra() === 'dev') {
       $project_data['dev_version'] = $version;
       $project_data['releases'][$version] = $release;
     }
@@ -398,13 +393,13 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Look for the 'recommended' version if we haven't found it yet (see
     // phpdoc at the top of this function for the definition).
     if (!isset($project_data['recommended'])
-        && $release['version_major'] == $target_major
-        && isset($release['version_patch'])) {
-      if ($patch != $release['version_patch']) {
-        $patch = $release['version_patch'];
+        && $release_major_version == $target_major
+        && $release_patch_version !== NULL) {
+      if ($patch != $release_patch_version) {
+        $patch = $release_patch_version;
         $release_patch_changed = $release;
       }
-      if (empty($release['version_extra']) && $patch == $release['version_patch']) {
+      if ($release_version_parser->getVersionExtra() === NULL && $patch == $release_patch_version) {
         $project_data['recommended'] = $release_patch_changed['version'];
         $project_data['releases'][$release_patch_changed['version']] = $release_patch_changed;
       }
