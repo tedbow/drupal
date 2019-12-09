@@ -264,11 +264,11 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Still supported, stay at the current major version.
     $target_major = $existing_major;
   }
-  elseif (isset($available['recommended_branch'])) {
-    // We know the current release is unsupported since
-    // its major version was not in the 'supported_branches' list. We should
-    // find the best release from the recommended major version.
-    $branch_version_parser = new ModuleVersionParser($available['recommended_branch'] . 'x');
+  elseif ($supported_branches) {
+    // We know the current release is unsupported since it is not in
+    // 'supported_branches' list. We should next supported release for the
+    // target major version.
+    $branch_version_parser = new ModuleVersionParser($supported_branches[0] . 'x');
     $target_major = $branch_version_parser->getMajorVersion();
     $project_data['status'] = UpdateManagerInterface::NOT_SUPPORTED;
   }
