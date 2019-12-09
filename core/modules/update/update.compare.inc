@@ -140,12 +140,14 @@ function update_calculate_project_data($available) {
  * with an error and the next project is considered.
  *
  * If the project itself is valid, the function decides what major release
- * series to consider. The project defines what the currently supported major
- * versions are for each version of core, so the first step is to make sure the
- * current version is still supported. If so, that's the target version. If the
- * current version is unsupported, the project maintainer's recommended major
- * version is used. There's also a check to make sure that this function never
- * recommends an earlier release than the currently installed major version.
+ * series to consider. The project defines the currently supported development
+ * branches, so the first step is to make sure the development branch of the
+ * current version is still supported. If so, then the major version of the
+ * current version is used. If the current
+ * version is not in supported branch, the project maintainer's recommended
+ * branch is used to determine the major version to use. There's also a check to
+ * make sure that this function never recommends an earlier release than the
+ * currently installed major version.
  *
  * Given a target major version, the available releases are scanned looking for
  * the specific release to recommend (avoiding beta releases and development
@@ -266,8 +268,8 @@ function update_calculate_project_update_status(&$project_data, $available) {
   }
   elseif ($supported_branches) {
     // We know the current release is unsupported since it is not in
-    // 'supported_branches' list. We should next supported release for the
-    // target major version.
+    // 'supported_branches' list. We should use the next supported branch for
+    // the target major version.
     $target_major = ModuleVersionParser::createFromSupportBranch($supported_branches[0])->getMajorVersion();
     $project_data['status'] = UpdateManagerInterface::NOT_SUPPORTED;
   }
