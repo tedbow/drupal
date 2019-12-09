@@ -25,6 +25,22 @@ class ModuleVersionParser {
   }
 
   /**
+   * Constructs a module version parser from a support branch.
+   *
+   * This can be used to determine the major and minor versions. The patch
+   * version will always be 'x'.
+   *
+   * @param string $branch
+   *   The support branch.
+   *
+   * @return \Drupal\update\ModuleVersionParser
+   *   The module version parser.
+   */
+  public static function createFromSupportBranch($branch) {
+    return new static ($branch . 'x');
+  }
+
+  /**
    * Gets the major version.
    *
    * @return string
