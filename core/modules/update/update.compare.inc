@@ -268,8 +268,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // We know the current release is unsupported since it is not in
     // 'supported_branches' list. We should next supported release for the
     // target major version.
-    $branch_version_parser = new ModuleVersionParser($supported_branches[0] . 'x');
-    $target_major = $branch_version_parser->getMajorVersion();
+    $target_major = ModuleVersionParser::createFromSupportBranch($supported_branches[0])->getMajorVersion();
     $project_data['status'] = UpdateManagerInterface::NOT_SUPPORTED;
   }
   else {
