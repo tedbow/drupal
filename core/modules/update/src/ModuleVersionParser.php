@@ -28,7 +28,7 @@ class ModuleVersionParser {
    * Constructs a module version parser from a support branch.
    *
    * This can be used to determine the major and minor versions. The patch
-   * version will always be 'x'.
+   * version will always be NULL.
    *
    * @param string $branch
    *   The support branch.
@@ -70,7 +70,10 @@ class ModuleVersionParser {
   public function getPatchVersion() {
     $version_parts = explode('.', $this->getVersionStringWithoutCoreCompatibility());
     $last_version_part = count($version_parts) === 2 ? $version_parts[1] : $version_parts[2];
-    return explode('-', $last_version_part)[0];
+    $patch = explode('-', $last_version_part)[0];
+    // If patch equals 'x' this parser was created from a branch and the patch
+    // version cannot be determined.
+    return $patch === 'x' ? NULL : $patch;
   }
 
   /**
