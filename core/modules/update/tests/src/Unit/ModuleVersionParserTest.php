@@ -18,8 +18,8 @@ class ModuleVersionParserTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetMajorVersion($version, $excepted_version_info) {
-    $releaseInfo = new ModuleVersionParser($version);
-    $this->assertSame($excepted_version_info['major'], $releaseInfo->getMajorVersion());
+    $parser = new ModuleVersionParser($version);
+    $this->assertSame($excepted_version_info['major'], $parser->getMajorVersion());
   }
 
   /**
@@ -28,8 +28,8 @@ class ModuleVersionParserTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetMinorVersion($version, $excepted_version_info) {
-    $releaseInfo = new ModuleVersionParser($version);
-    $this->assertSame($excepted_version_info['minor'], $releaseInfo->getMinorVersion());
+    $parser = new ModuleVersionParser($version);
+    $this->assertSame($excepted_version_info['minor'], $parser->getMinorVersion());
   }
 
   /**
@@ -38,8 +38,8 @@ class ModuleVersionParserTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetPatchVersion($version, $excepted_version_info) {
-    $releaseInfo = new ModuleVersionParser($version);
-    $this->assertSame($excepted_version_info['patch'], $releaseInfo->getPatchVersion());
+    $parser = new ModuleVersionParser($version);
+    $this->assertSame($excepted_version_info['patch'], $parser->getPatchVersion());
   }
 
   /**
@@ -48,8 +48,8 @@ class ModuleVersionParserTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetVersionExtra($version, $excepted_version_info) {
-    $releaseInfo = new ModuleVersionParser($version);
-    $this->assertSame($excepted_version_info['extra'], $releaseInfo->getVersionExtra());
+    $parser = new ModuleVersionParser($version);
+    $this->assertSame($excepted_version_info['extra'], $parser->getVersionExtra());
   }
 
   /**
@@ -58,8 +58,23 @@ class ModuleVersionParserTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetSupportBranch($version, $excepted_version_info) {
-    $releaseInfo = new ModuleVersionParser($version);
-    $this->assertSame($excepted_version_info['branch'], $releaseInfo->getSupportBranch());
+    $parser = new ModuleVersionParser($version);
+    $this->assertSame($excepted_version_info['branch'], $parser->getSupportBranch());
+  }
+
+  /**
+   * @covers ::createFromSupportBranch
+   *
+   * @dataProvider providerVersionInfos
+   */
+  public function testCreateFromSupportBranch($version, $excepted_version_info) {
+    $parser = ModuleVersionParser::createFromSupportBranch($excepted_version_info['branch']);
+    $this->assertInstanceOf(ModuleVersionParser::class, $parser);
+    $this->assertSame($excepted_version_info['major'], $parser->getMajorVersion());
+    $this->assertSame($excepted_version_info['minor'], $parser->getMinorVersion());
+    // Version extra and Patch version can't be determine from a branch.
+    $this->assertSame(NULL, $parser->getVersionExtra());
+    $this->assertSame('x', $parser->getPatchVersion());
   }
 
   /**
