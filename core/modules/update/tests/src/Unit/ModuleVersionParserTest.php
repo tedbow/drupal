@@ -72,9 +72,9 @@ class ModuleVersionParserTest extends UnitTestCase {
     $this->assertInstanceOf(ModuleVersionParser::class, $parser);
     $this->assertSame($excepted_version_info['major'], $parser->getMajorVersion());
     $this->assertSame($excepted_version_info['minor'], $parser->getMinorVersion());
-    // Version extra and Patch version can't be determine from a branch.
+    // Version extra and Patch version can't be determined from a branch.
     $this->assertSame(NULL, $parser->getVersionExtra());
-    $this->assertSame('x', $parser->getPatchVersion());
+    $this->assertSame(NULL, $parser->getPatchVersion());
   }
 
   /**
