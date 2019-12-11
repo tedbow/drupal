@@ -143,11 +143,10 @@ function update_calculate_project_data($available) {
  * series to consider. The project defines the currently supported development
  * branches, so the first step is to make sure the development branch of the
  * current version is still supported. If so, then the major version of the
- * current version is used. If the current
- * version is not in supported branch, the project maintainer's recommended
- * branch is used to determine the major version to use. There's also a check to
- * make sure that this function never recommends an earlier release than the
- * currently installed major version.
+ * current version is used. If the current version is not in a supported branch,
+ * the next supported branch is used to determine the major version to use.
+ * There's also a check to make sure that this function never recommends an
+ * earlier release than the currently installed major version.
  *
  * Given a target major version, the available releases are scanned looking for
  * the specific release to recommend (avoiding beta releases and development
