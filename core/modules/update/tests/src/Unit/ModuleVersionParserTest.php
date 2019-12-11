@@ -78,7 +78,7 @@ class ModuleVersionParserTest extends UnitTestCase {
   }
 
   /**
-   * Dataprovider for expected version information.
+   * Data provider for expected version information.
    *
    * @return array
    *   Arrays of version information.
