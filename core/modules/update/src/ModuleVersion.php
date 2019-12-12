@@ -15,11 +15,11 @@ class ModuleVersion {
   protected $version;
 
   /**
-   * The version string parts  split apart by commas.
+   * The version, without the core compatibility prefix, split apart by commas.
    *
    * @var array
    */
-  protected $version_parts;
+  protected $versionParts;
 
   /**
    * Constructs a ModuleVersion object.
@@ -29,7 +29,7 @@ class ModuleVersion {
    */
   public function __construct($version) {
     $this->version = $version;
-    $this->version_parts = explode('.', $this->getVersionStringWithoutCoreCompatibility());
+    $this->versionParts = explode('.', $this->getVersionStringWithoutCoreCompatibility());
   }
 
   /**
@@ -55,7 +55,7 @@ class ModuleVersion {
    *   The major version.
    */
   public function getMajorVersion() {
-    return $this->version_parts[0];
+    return $this->versionParts[0];
   }
 
   /**
@@ -65,7 +65,7 @@ class ModuleVersion {
    *   The minor version if available otherwise NULL.
    */
   public function getMinorVersion() {
-    return count($this->version_parts) === 2 ? NULL : $this->version_parts[1];
+    return count($this->versionParts) === 2 ? NULL : $this->versionParts[1];
   }
 
   /**
@@ -75,7 +75,7 @@ class ModuleVersion {
    *   The patch version.
    */
   public function getPatchVersion() {
-    $last_version_part = count($this->version_parts) === 2 ? $this->version_parts[1] : $this->version_parts[2];
+    $last_version_part = count($this->versionParts) === 2 ? $this->versionParts[1] : $this->versionParts[2];
     $patch = explode('-', $last_version_part)[0];
     // If patch equals 'x' this parser was created from a branch and the patch
     // version cannot be determined.
@@ -83,13 +83,13 @@ class ModuleVersion {
   }
 
   /**
-   * Gets the version string.
+   * Gets the version string with the core compatibility prefix removed.
    *
    * @return string
    *   The version string.
    */
   private function getVersionStringWithoutCoreCompatibility() {
-    $version = strpos($this->version, '8.x-') === 0 ? str_replace('8.x-', '', $this->version) : $this->version;
+    $version = strpos($this->version, \Drupal::CORE_COMPATIBILITY) === 0 ? str_replace('8.x-', '', $this->version) : $this->version;
     return $version;
   }
 
@@ -100,7 +100,7 @@ class ModuleVersion {
    *   The version extra string if available otherwise NULL.
    */
   public function getVersionExtra() {
-    $last_version_parts = explode('-', count($this->version_parts) === 2 ? $this->version_parts[1] : $this->version_parts[2]);
+    $last_version_parts = explode('-', count($this->versionParts) === 2 ? $this->versionParts[1] : $this->versionParts[2]);
     return count($last_version_parts) === 1 ? NULL : $last_version_parts[1];
   }
 
