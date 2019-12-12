@@ -4,6 +4,8 @@ namespace Drupal\update;
 
 /**
  * Provides a module version value object.
+ *
+ * @internal
  */
 class ModuleVersion {
 
