@@ -3,7 +3,7 @@
 namespace Drupal\update;
 
 /**
- * Provides a module version parser.
+ * Provides a module version value object.
  */
 class ModuleVersion {
 
@@ -33,7 +33,7 @@ class ModuleVersion {
   }
 
   /**
-   * Constructs a module version parser from a support branch.
+   * Constructs a module version object from a support branch.
    *
    * This can be used to determine the major and minor versions. The patch
    * version will always be NULL.
@@ -42,7 +42,7 @@ class ModuleVersion {
    *   The support branch.
    *
    * @return \Drupal\update\ModuleVersion
-   *   The module version parser.
+   *   The module version instance.
    */
   public static function createFromSupportBranch($branch) {
     return new static ($branch . 'x');
@@ -77,7 +77,7 @@ class ModuleVersion {
   public function getPatchVersion() {
     $last_version_part = count($this->versionParts) === 2 ? $this->versionParts[1] : $this->versionParts[2];
     $patch = explode('-', $last_version_part)[0];
-    // If patch equals 'x' this parser was created from a branch and the patch
+    // If patch equals 'x' this instance was created from a branch and the patch
     // version cannot be determined.
     return $patch === 'x' ? NULL : $patch;
   }
