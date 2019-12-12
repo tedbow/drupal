@@ -15,6 +15,13 @@ class ModuleVersion {
   protected $version;
 
   /**
+   * The version string parts  split apart by commas.
+   *
+   * @var array
+   */
+  protected $version_parts;
+
+  /**
    * Constructs a ModuleVersion object.
    *
    * @param string $version
@@ -22,6 +29,7 @@ class ModuleVersion {
    */
   public function __construct($version) {
     $this->version = $version;
+    $this->version_parts = explode('.', $this->getVersionStringWithoutCoreCompatibility());
   }
 
   /**
@@ -47,7 +55,7 @@ class ModuleVersion {
    *   The major version.
    */
   public function getMajorVersion() {
-    return explode('.', $this->getVersionStringWithoutCoreCompatibility())[0];
+    return $this->version_parts[0];
   }
 
   /**
@@ -57,8 +65,7 @@ class ModuleVersion {
    *   The minor version if available otherwise NULL.
    */
   public function getMinorVersion() {
-    $version_parts = explode('.', $this->getVersionStringWithoutCoreCompatibility());
-    return count($version_parts) === 2 ? NULL : $version_parts[1];
+    return count($this->version_parts) === 2 ? NULL : $this->version_parts[1];
   }
 
   /**
@@ -68,8 +75,7 @@ class ModuleVersion {
    *   The patch version.
    */
   public function getPatchVersion() {
-    $version_parts = explode('.', $this->getVersionStringWithoutCoreCompatibility());
-    $last_version_part = count($version_parts) === 2 ? $version_parts[1] : $version_parts[2];
+    $last_version_part = count($this->version_parts) === 2 ? $this->version_parts[1] : $this->version_parts[2];
     $patch = explode('-', $last_version_part)[0];
     // If patch equals 'x' this parser was created from a branch and the patch
     // version cannot be determined.
@@ -94,8 +100,7 @@ class ModuleVersion {
    *   The version extra string if available otherwise NULL.
    */
   public function getVersionExtra() {
-    $version_parts = explode('.', $this->getVersionStringWithoutCoreCompatibility());
-    $last_version_parts = explode('-', count($version_parts) === 2 ? $version_parts[1] : $version_parts[2]);
+    $last_version_parts = explode('-', count($this->version_parts) === 2 ? $this->version_parts[1] : $this->version_parts[2]);
     return count($last_version_parts) === 1 ? NULL : $last_version_parts[1];
   }
 
