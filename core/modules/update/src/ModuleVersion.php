@@ -5,7 +5,7 @@ namespace Drupal\update;
 /**
  * Provides a module version parser.
  */
-class ModuleVersionParser {
+class ModuleVersion {
 
   /**
    * The version_string.
@@ -15,7 +15,7 @@ class ModuleVersionParser {
   protected $version;
 
   /**
-   * Constructs a ModuleVersionParser object.
+   * Constructs a ModuleVersion object.
    *
    * @param string $version
    *   The version string.
@@ -33,7 +33,7 @@ class ModuleVersionParser {
    * @param string $branch
    *   The support branch.
    *
-   * @return \Drupal\update\ModuleVersionParser
+   * @return \Drupal\update\ModuleVersion
    *   The module version parser.
    */
   public static function createFromSupportBranch($branch) {
