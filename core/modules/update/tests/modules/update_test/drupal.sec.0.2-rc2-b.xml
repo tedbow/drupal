@@ -18,7 +18,6 @@
   <release_link>http://example.com/drupal-8-2-0-rc2-release</release_link>
   <download_link>http://example.com/drupal-8-2-0-rc2.tar.gz</download_link>
   <date>1533298080</date>
-  <mdhash>2387284145e34a19fc45e03c258a2831</mdhash>
   <terms>
    <term><name>Release type</name><value>Bug fixes</value></term>
    <term><name>Release type</name><value>New features</value></term>
@@ -35,7 +34,6 @@
   <release_link>http://example.com/drupal-8-2-0-rc1-release</release_link>
   <download_link>http://example.com/drupal-8-2-0-rc1.tar.gz</download_link>
   <date>1533270485</date>
-  <mdhash>3d70ae568dd8f7100082b8c58bc8d1fe</mdhash>
   <terms>
    <term><name>Release type</name><value>Bug fixes</value></term>
    <term><name>Release type</name><value>New features</value></term>
@@ -52,7 +50,6 @@
   <release_link>http://example.com/drupal-8-2-0-beta2-release</release_link>
   <download_link>http://example.com/drupal-8-2-0-beta2.tar.gz</download_link>
   <date>1533298080</date>
-  <mdhash>2387284145e34a19fc45e03c258a2831</mdhash>
   <terms>
    <term><name>Release type</name><value>Bug fixes</value></term>
    <term><name>Release type</name><value>New features</value></term>
@@ -69,7 +66,6 @@
   <release_link>http://example.com/drupal-8-2-0-beta1-release</release_link>
   <download_link>http://example.com/drupal-8-2-0-beta1.tar.gz</download_link>
   <date>1533270485</date>
-  <mdhash>3d70ae568dd8f7100082b8c58bc8d1fe</mdhash>
   <terms>
    <term><name>Release type</name><value>Bug fixes</value></term>
    <term><name>Release type</name><value>New features</value></term>
@@ -86,7 +82,6 @@
   <release_link>http://example.com/drupal-8-2-0-alpha2-release</release_link>
   <download_link>http://example.com/drupal-8-2-0-alpha2.tar.gz</download_link>
   <date>1533298080</date>
-  <mdhash>2387284145e34a19fc45e03c258a2831</mdhash>
   <terms>
    <term><name>Release type</name><value>Bug fixes</value></term>
    <term><name>Release type</name><value>New features</value></term>
@@ -103,7 +98,6 @@
   <release_link>http://example.com/drupal-8.2.0-alpha1</release_link>
   <download_link>http://example.com/drupal-8-2-0-alpha1.tar.gz</download_link>
   <date>1533270485</date>
-  <mdhash>3d70ae568dd8f7100082b8c58bc8d1fe</mdhash>
   <terms>
    <term><name>Release type</name><value>Bug fixes</value></term>
    <term><name>Release type</name><value>New features</value></term>
