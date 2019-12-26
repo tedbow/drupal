@@ -7,6 +7,7 @@
 
 use Drupal\Core\Link;
 use Drupal\Core\Url;
+use Drupal\update\ProjectSecurityRequirement;
 use Drupal\update\UpdateFetcherInterface;
 use Drupal\update\UpdateManagerInterface;
 
@@ -40,6 +41,10 @@ function update_requirements($phase) {
       $data = update_calculate_project_data($available);
       // First, populate the requirements for core:
       $requirements['update_core'] = _update_requirement_check($data['drupal'], 'core');
+      if ($core_coverage_requirement = (new ProjectSecurityRequirement($data['drupal']))->getRequirement()) {
+        $requirements['coverage_core'] = $core_coverage_requirement;
+      }
+
       // We don't want to check drupal a second time.
       unset($data['drupal']);
       if (!empty($data)) {

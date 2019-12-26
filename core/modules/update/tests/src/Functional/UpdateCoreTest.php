@@ -358,6 +358,209 @@ class UpdateCoreTest extends UpdateTestBase {
   }
 
   /**
+   * Tests the Update Manager module when a security update is available.
+   *
+   * @param string $installed_version
+   *   The installed Drupal version to test.
+   * @param string $fixture
+   *   The test fixture that contains the test XML.
+   * @param string $requirements_section_heading
+   *   The requirements section heading.
+   * @param string $message
+   *   The expected coverage message.
+   * @param string $mock_date
+   *   The mock date to use if needed in the format CCYY-MM-DD. If an empty
+   *   string is provided no mock date will be used.
+   *
+   * @dataProvider securityCoverageMessageProvider
+   */
+  public function testSecurityCoverageMessage($installed_version, $fixture, $requirements_section_heading, $message, $mock_date) {
+    \Drupal::state()->set('update_test.mock_date', $mock_date);
+    $this->setSystemInfo($installed_version);
+    $this->refreshUpdateStatus(['drupal' => $fixture]);
+    $this->drupalGet('admin/reports/status');
+
+    if (empty($requirements_section_heading)) {
+      $this->assertSession()->pageTextNotContains('Drupal core security coverage');
+      return;
+    }
+
+    $all_requirements_details = $this->getSession()->getPage()->findAll(
+      'css',
+      'details.system-status-report__entry:contains("Drupal core security coverage")'
+    );
+    // Ensure we only have 1 security message section.
+    $this->assertCount(1, $all_requirements_details);
+    $requirements_details = $all_requirements_details[0];
+    // Ensure that messages are under the correct heading which could be
+    // 'Checked', 'Warnings found', or 'Errors found'.
+    $requirements_section_element = $requirements_details->getParent();
+    $this->assertCount(1, $requirements_section_element->findAll('css', "h3:contains('$requirements_section_heading')"));
+    $actual_message = $requirements_details->find('css', 'div.description')->getText();
+    $this->assertNotEmpty($actual_message);
+    $this->assertEquals($message, $actual_message);
+  }
+
+  /**
+   * Dataprovider for testSecurityCoverageMessage().
+   *
+   * These test cases rely on the following fixtures containing the following
+   * releases:
+   * - drupal.sec.2.0_3.0-rc1.xml
+   *   - 8.2.0
+   *   - 8.3.0-rc1
+   * - drupal.sec.2.0.xml
+   *   - 8.2.0
+   * - drupal.sec.2.0_9.0.0.xml
+   *   - 8.2.0
+   *   - 9.0.0
+   * - drupal.sec.9.0.xml
+   *   - 8.9.0
+   * - drupal.sec.9.9.0.xml
+   *   - 9.9.0
+   */
+  public function securityCoverageMessageProvider() {
+    $release_coverage_message = 'Visit the release cycle overview for more information on supported releases.';
+    $see_available_message = 'See the available updates page for more information.';
+    $update_asap_message = 'Update to a supported minor as soon as possible to continue receiving security updates.';
+    $update_soon_message = 'Update to a supported minor version soon to continue receiving security updates.';
+    $test_cases = [
+      '8.0.0, unsupported' => [
+        'installed_version' => '8.0.0',
+        'fixture' => 'sec.2.0_3.0-rc1',
+        'requirements_section_heading' => 'Errors found',
+        'message' => "The installed minor version of Drupal, 8.0, is no longer supported and will not receive security updates.$update_asap_message $see_available_message$release_coverage_message",
+        'mock_date' => '',
+      ],
+      '8.1.0, supported with 3rc' => [
+        'installed_version' => '8.1.0',
+        'fixture' => 'sec.2.0_3.0-rc1',
+        'requirements_section_heading' => 'Warnings found',
+        'message' => "The installed minor version of Drupal, 8.1, will receive security updates until the release of 8.3.0.Update to 8.2 or higher soon to continue receiving security updates. $see_available_message$release_coverage_message",
+        'mock_date' => '',
+      ],
+      '8.1.0, supported' => [
+        'installed_version' => '8.1.0',
+        'fixture' => 'sec.2.0',
+        'requirements_section_heading' => 'Warnings found',
+        'message' => "The installed minor version of Drupal, 8.1, will receive security updates until the release of 8.3.0.Update to 8.2 or higher soon to continue receiving security updates. $see_available_message$release_coverage_message",
+        'mock_date' => '',
+      ],
+      '8.2.0, supported with 3rc' => [
+        'installed_version' => '8.2.0',
+        'fixture' => 'sec.2.0_3.0-rc1',
+        'requirements_section_heading' => 'Checked',
+        'message' => "The installed minor version of Drupal, 8.2, will receive security updates until the release of 8.4.0.$release_coverage_message",
+        'mock_date' => '',
+      ],
+      '8.2.0, supported' => [
+        'installed_version' => '8.2.0',
+        'fixture' => 'sec.2.0',
+        'requirements_section_heading' => 'Checked',
+        'message' => "The installed minor version of Drupal, 8.2, will receive security updates until the release of 8.4.0.$release_coverage_message",
+        'mock_date' => '',
+      ],
+      // Ensure we don't show messages for pre-release or dev versions.
+      '8.2.0-beta2, no message' => [
+        'installed_version' => '8.2.0-beta2',
+        'fixture' => 'sec.2.0_3.0-rc1',
+        'requirements_section_heading' => '',
+        'message' => '',
+        'mock_date' => '',
+      ],
+      '8.1.0-dev, no message' => [
+        'installed_version' => '8.1.0-dev',
+        'fixture' => 'sec.2.0_3.0-rc1',
+        'requirements_section_heading' => '',
+        'message' => '',
+        'mock_date' => '',
+      ],
+      // Ensure that if the next major version is released  and the supported
+      // until version is released we display a no longer supported message.
+      '8.0.0, 9 unsupported' => [
+        'installed_version' => '8.0.0',
+        'fixture' => 'sec.2.0_9.0.0',
+        'requirements_section_heading' => 'Errors found',
+        'message' => "The installed minor version of Drupal, 8.0, is no longer supported and will not receive security updates.$update_asap_message $see_available_message$release_coverage_message",
+        'mock_date' => '',
+      ],
+      // Ensure that if the next major version has been released and
+      // the supported until version has not been released we show a message.
+      '8.2.0, 9 no message' => [
+        'installed_version' => '8.2.0',
+        'fixture' => 'sec.2.0_9.0.0',
+        'requirements_section_heading' => 'Warnings found',
+        'message' => "The installed minor version of Drupal, 8.2, will receive security updates until the release of 8.4.0.Update to 8.3 or higher soon to continue receiving security updates. $see_available_message$release_coverage_message",
+        'mock_date' => '',
+      ],
+      // Ensure that if LTS support window is finished a message is displayed.
+      '8.9.0, lts over' => [
+        'installed_version' => '8.9.0',
+        'fixture' => 'sec.9.0',
+        'requirements_section_heading' => 'Errors found',
+        'message' => "The installed minor version of Drupal, 8.9, is no longer supported and will not receive security updates.$update_asap_message $see_available_message",
+        'mock_date' => '2021-11-02',
+      ],
+      // Ensure that if the 8.8 support window is finished a message is
+      // displayed.
+      '8.8.0, support over' => [
+        'installed_version' => '8.8.0',
+        'fixture' => 'sec.9.0',
+        'requirements_section_heading' => 'Errors found',
+        'message' => "The installed minor version of Drupal, 8.8, is no longer supported and will not receive security updates.$update_asap_message $see_available_message",
+        'mock_date' => '2020-12-03',
+      ],
+      // Ensure that if LTS support window is not finished a message is
+      // displayed.
+      '8.9.0, lts' => [
+        'installed_version' => '8.9.0',
+        'fixture' => 'sec.9.0',
+        'requirements_section_heading' => 'Checked',
+        'message' => 'The installed minor version of Drupal, 8.9, will receive security updates until 2021-11-01.',
+        'mock_date' => '2021-01-01',
+      ],
+      // Ensure that if the 8.8 support window is not finished a message is
+      // displayed.
+      '8.8.0, supported' => [
+        'installed_version' => '8.8.0',
+        'fixture' => 'sec.9.0',
+        'requirements_section_heading' => 'Checked',
+        'message' => 'The installed minor version of Drupal, 8.8, will receive security updates until 2020-12-02.',
+        'mock_date' => '2020-06-01',
+      ],
+      // Ensure that if the 8.8 support window is not finished but it is within
+      // 6 months of closing a message is displayed.
+      '8.8.0, supported, 6 months warn' => [
+        'installed_version' => '8.8.0',
+        'fixture' => 'sec.9.0',
+        'requirements_section_heading' => 'Warnings found',
+        'message' => "The installed minor version of Drupal, 8.8, will receive security updates until 2020-12-02.$update_soon_message",
+        'mock_date' => '2020-06-02',
+      ],
+      // Ensure the end dates for 8.8 and 8.9 only apply to major version 8.
+      '9.9.0' => [
+        'installed_version' => '9.9.0',
+        'fixture' => 'sec.9.9.0',
+        'requirements_section_heading' => 'Checked',
+        'message' => "The installed minor version of Drupal, 9.9, will receive security updates until the release of 9.11.0.$release_coverage_message",
+        'mock_date' => '',
+      ],
+      '9.8.0' => [
+        'installed_version' => '9.8.0',
+        'fixture' => 'sec.9.9.0',
+        'requirements_section_heading' => 'Warnings found',
+        'message' => "The installed minor version of Drupal, 9.8, will receive security updates until the release of 9.10.0.Update to 9.9 or higher soon to continue receiving security updates. $see_available_message$release_coverage_message",
+        'mock_date' => '',
+      ],
+    ];
+    // Ensure that the LTS support window message does not change at all within
+    // 6 months.
+    $test_cases['8.9.0, lts 6 month'] = $test_cases['8.9.0, lts'];
+    $test_cases['8.9.0, lts 6 month']['mock_date'] = '2021-10-31';
+    return $test_cases;
+  }
+
+  /**
    * Ensures proper results where there are date mismatches among modules.
    */
   public function testDatestampMismatch() {
