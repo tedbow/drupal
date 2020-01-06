@@ -136,7 +136,7 @@ class UpdateManagerUpdate extends FormBase {
 
       $recommended_release = $project['releases'][$project['recommended']];
       $recommended_version = '{{ release_version }} (<a href="{{ release_link }}" title="{{ project_title }}">{{ release_notes }}</a>)';
-      $recommended_version_parser = new ModuleVersion($recommended_release['version']);
+      $recommended_version_parser = ModuleVersion::fromVersionString($recommended_release['version']);
       if ($recommended_version_parser->getMajorVersion() != $project['existing_major']) {
         $recommended_version .= '<div title="{{ major_update_warning_title }}" class="update-major-version-warning">{{ major_update_warning_text }}</div>';
       }
