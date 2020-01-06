@@ -18,7 +18,7 @@ class ModuleVersionTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetMajorVersion($version, $expected_version_info) {
-    $version = new ModuleVersion($version);
+    $version = ModuleVersion::fromVersionString($version);
     $this->assertSame($expected_version_info['major'], $version->getMajorVersion());
   }
 
@@ -28,7 +28,7 @@ class ModuleVersionTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetMinorVersion($version, $expected_version_info) {
-    $version = new ModuleVersion($version);
+    $version = ModuleVersion::fromVersionString($version);
     $this->assertSame($expected_version_info['minor'], $version->getMinorVersion());
   }
 
@@ -38,7 +38,7 @@ class ModuleVersionTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetPatchVersion($version, $expected_version_info) {
-    $version = new ModuleVersion($version);
+    $version = ModuleVersion::fromVersionString($version);
     $this->assertSame($expected_version_info['patch'], $version->getPatchVersion());
   }
 
@@ -48,7 +48,7 @@ class ModuleVersionTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetVersionExtra($version, $expected_version_info) {
-    $version = new ModuleVersion($version);
+    $version = ModuleVersion::fromVersionString($version);
     $this->assertSame($expected_version_info['extra'], $version->getVersionExtra());
   }
 
@@ -58,7 +58,7 @@ class ModuleVersionTest extends UnitTestCase {
    * @dataProvider providerVersionInfos
    */
   public function testGetSupportBranch($version, $expected_version_info) {
-    $version = new ModuleVersion($version);
+    $version = ModuleVersion::fromVersionString($version);
     $this->assertSame($expected_version_info['branch'], $version->getSupportBranch());
   }
 
