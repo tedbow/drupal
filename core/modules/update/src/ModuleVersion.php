@@ -10,11 +10,9 @@ namespace Drupal\update;
 class ModuleVersion {
 
   /**
-   * The version_string.
-   *
-   * @var string
+   * The core compatibility prefix used in version strings.
    */
-  protected $version;
+  const CORE_COMPATIBILITY_PREFIX = \Drupal::CORE_COMPATIBILITY . '-';
 
   /**
    * The major version.
@@ -45,28 +43,64 @@ class ModuleVersion {
   protected $versionExtra;
 
   /**
-   * Constructs a ModuleVersion object.
+   * Whether the core compatibility prefix should be used.
    *
-   * @param string $version
-   *   The version string.
+   * @var bool
    */
-  public function __construct($version) {
-    $this->version = $version;
-    $version_parts = explode('.', $this->getVersionStringWithoutCoreCompatibility());
-    $this->majorVersion = $version_parts[0];
+  protected $useCorePrefix;
+
+  /**
+   * Constructs a module version object from a version string.
+   *
+   * @param string $version_string
+   *   The version string.
+   *
+   * @return \Drupal\update\ModuleVersion
+   *   The module version instance.
+   */
+  public static function fromVersionString($version_string) {
+    $use_compatibility_prefix = strpos($version_string, static::CORE_COMPATIBILITY_PREFIX) === 0;
+    if ($use_compatibility_prefix) {
+      $version_string = str_replace(static::CORE_COMPATIBILITY_PREFIX, '', $version_string);
+    }
+    $version_parts = explode('.', $version_string);
+    $major_version = $version_parts[0];
     if (count($version_parts) === 2) {
       $last_version_part = $version_parts[1];
-      $this->minorVersion = NULL;
+      $minor_version = NULL;
     }
     else {
       $last_version_part = $version_parts[2];
-      $this->minorVersion = $version_parts[1];
+      $minor_version = $version_parts[1];
     }
     $last_version_split = explode('-', $last_version_part);
     // If patch equals 'x' this instance was created from a branch and the patch
     // version cannot be determined.
-    $this->patchVersion = $last_version_split[0] === 'x' ? NULL : $last_version_split[0];
-    $this->versionExtra = count($last_version_split) === 1 ? NULL : $last_version_split[1];
+    $patch_version = $last_version_split[0] === 'x' ? NULL : $last_version_split[0];
+    $version_extra = count($last_version_split) === 1 ? NULL : $last_version_split[1];
+    return new static($major_version, $minor_version, $patch_version, $version_extra, $use_compatibility_prefix);
+  }
+
+  /**
+   * Constructs a ModuleVersion object.
+   *
+   * @param string $major_version
+   *   The major version.
+   * @param string|null $minor_version
+   *   The minor version.
+   * @param string|null $patch_version
+   *   The patch version.
+   * @param string|null $version_extra
+   *   The extra version string.
+   * @param bool $use_core_compatibility_prefix
+   *   Whether to use the core compatibility prefix.
+   */
+  protected function __construct($major_version, $minor_version, $patch_version, $version_extra, $use_core_compatibility_prefix) {
+    $this->majorVersion = $major_version;
+    $this->minorVersion = $minor_version;
+    $this->patchVersion = $patch_version;
+    $this->versionExtra = $version_extra;
+    $this->useCorePrefix = $use_core_compatibility_prefix;
   }
 
   /**
@@ -82,7 +116,7 @@ class ModuleVersion {
    *   The module version instance.
    */
   public static function createFromSupportBranch($branch) {
-    return new static($branch . 'x');
+    return static::fromVersionString($branch . 'x');
   }
 
   /**
@@ -116,16 +150,6 @@ class ModuleVersion {
   }
 
   /**
-   * Gets the version string with the core compatibility prefix removed.
-   *
-   * @return string
-   *   The version string.
-   */
-  private function getVersionStringWithoutCoreCompatibility() {
-    return strpos($this->version, \Drupal::CORE_COMPATIBILITY) === 0 ? str_replace('8.x-', '', $this->version) : $this->version;
-  }
-
-  /**
    * Gets the version extra string at the end of the version number.
    *
    * @return string|null
@@ -142,13 +166,13 @@ class ModuleVersion {
    *   The support branch as is used in update XML files.
    */
   public function getSupportBranch() {
-    $version = $this->version;
-    if ($extra = $this->getVersionExtra()) {
-      $version = str_replace("-$extra", '', $version);
+    $branch = $this->useCorePrefix ? static::CORE_COMPATIBILITY_PREFIX : '';
+    if ($this->minorVersion) {
+      return $branch . $this->majorVersion . '.' . $this->minorVersion . '.';
     }
-    $parts = explode('.', $version);
-    array_pop($parts);
-    return implode('.', $parts) . '.';
+    else {
+      return $branch . $this->majorVersion . '.';
+    }
   }
 
 }
