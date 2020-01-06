@@ -167,12 +167,11 @@ class ModuleVersion {
    */
   public function getSupportBranch() {
     $branch = $this->useCorePrefix ? static::CORE_COMPATIBILITY_PREFIX : '';
+    $branch .= $this->majorVersion . '.';
     if ($this->minorVersion) {
-      return $branch . $this->majorVersion . '.' . $this->minorVersion . '.';
+      $branch .= $this->minorVersion . '.';
     }
-    else {
-      return $branch . $this->majorVersion . '.';
-    }
+    return $branch;
   }
 
 }
