@@ -62,12 +62,11 @@ class ModuleVersion {
       $last_version_part = $version_parts[2];
       $this->minorVersion = $version_parts[1];
     }
-    $last_version_parts = explode('-', $last_version_part);
+    $last_version_split = explode('-', $last_version_part);
     // If patch equals 'x' this instance was created from a branch and the patch
     // version cannot be determined.
-    $this->patchVersion = $last_version_parts[0] === 'x' ? NULL : $last_version_parts[0];
-    $this->versionExtra = count($last_version_parts) === 1 ? NULL : $last_version_parts[1];
-
+    $this->patchVersion = $last_version_split[0] === 'x' ? NULL : $last_version_split[0];
+    $this->versionExtra = count($last_version_split) === 1 ? NULL : $last_version_split[1];
   }
 
   /**
@@ -83,7 +82,7 @@ class ModuleVersion {
    *   The module version instance.
    */
   public static function createFromSupportBranch($branch) {
-    return new static ($branch . 'x');
+    return new static($branch . 'x');
   }
 
   /**

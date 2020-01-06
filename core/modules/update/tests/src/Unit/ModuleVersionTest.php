@@ -17,9 +17,9 @@ class ModuleVersionTest extends UnitTestCase {
    *
    * @dataProvider providerVersionInfos
    */
-  public function testGetMajorVersion($version, $excepted_version_info) {
+  public function testGetMajorVersion($version, $expected_version_info) {
     $version = new ModuleVersion($version);
-    $this->assertSame($excepted_version_info['major'], $version->getMajorVersion());
+    $this->assertSame($expected_version_info['major'], $version->getMajorVersion());
   }
 
   /**
@@ -27,9 +27,9 @@ class ModuleVersionTest extends UnitTestCase {
    *
    * @dataProvider providerVersionInfos
    */
-  public function testGetMinorVersion($version, $excepted_version_info) {
+  public function testGetMinorVersion($version, $expected_version_info) {
     $version = new ModuleVersion($version);
-    $this->assertSame($excepted_version_info['minor'], $version->getMinorVersion());
+    $this->assertSame($expected_version_info['minor'], $version->getMinorVersion());
   }
 
   /**
@@ -37,9 +37,9 @@ class ModuleVersionTest extends UnitTestCase {
    *
    * @dataProvider providerVersionInfos
    */
-  public function testGetPatchVersion($version, $excepted_version_info) {
+  public function testGetPatchVersion($version, $expected_version_info) {
     $version = new ModuleVersion($version);
-    $this->assertSame($excepted_version_info['patch'], $version->getPatchVersion());
+    $this->assertSame($expected_version_info['patch'], $version->getPatchVersion());
   }
 
   /**
@@ -47,9 +47,9 @@ class ModuleVersionTest extends UnitTestCase {
    *
    * @dataProvider providerVersionInfos
    */
-  public function testGetVersionExtra($version, $excepted_version_info) {
+  public function testGetVersionExtra($version, $expected_version_info) {
     $version = new ModuleVersion($version);
-    $this->assertSame($excepted_version_info['extra'], $version->getVersionExtra());
+    $this->assertSame($expected_version_info['extra'], $version->getVersionExtra());
   }
 
   /**
@@ -57,9 +57,9 @@ class ModuleVersionTest extends UnitTestCase {
    *
    * @dataProvider providerVersionInfos
    */
-  public function testGetSupportBranch($version, $excepted_version_info) {
+  public function testGetSupportBranch($version, $expected_version_info) {
     $version = new ModuleVersion($version);
-    $this->assertSame($excepted_version_info['branch'], $version->getSupportBranch());
+    $this->assertSame($expected_version_info['branch'], $version->getSupportBranch());
   }
 
   /**
@@ -67,11 +67,11 @@ class ModuleVersionTest extends UnitTestCase {
    *
    * @dataProvider providerVersionInfos
    */
-  public function testCreateFromSupportBranch($version, $excepted_version_info) {
-    $version = ModuleVersion::createFromSupportBranch($excepted_version_info['branch']);
+  public function testCreateFromSupportBranch($version, $expected_version_info) {
+    $version = ModuleVersion::createFromSupportBranch($expected_version_info['branch']);
     $this->assertInstanceOf(ModuleVersion::class, $version);
-    $this->assertSame($excepted_version_info['major'], $version->getMajorVersion());
-    $this->assertSame($excepted_version_info['minor'], $version->getMinorVersion());
+    $this->assertSame($expected_version_info['major'], $version->getMajorVersion());
+    $this->assertSame($expected_version_info['minor'], $version->getMinorVersion());
     // Version extra and Patch version can't be determined from a branch.
     $this->assertSame(NULL, $version->getVersionExtra());
     $this->assertSame(NULL, $version->getPatchVersion());
@@ -142,6 +142,16 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => '2',
           'patch' => '3',
           'extra' => 'dev',
+          'branch' => '1.2.',
+        ],
+      ],
+      '1.2.x' => [
+        '1.2.x',
+        [
+          'major' => '1',
+          'minor' => '2',
+          'patch' => NULL,
+          'extra' => NULL,
           'branch' => '1.2.',
         ],
       ],
