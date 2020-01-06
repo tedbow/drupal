@@ -58,7 +58,7 @@ class ModuleVersion {
    * @return \Drupal\update\ModuleVersion
    *   The module version instance.
    */
-  public static function fromVersionString($version_string) {
+  public static function createFromVersionString($version_string) {
     $use_compatibility_prefix = strpos($version_string, static::CORE_COMPATIBILITY_PREFIX) === 0;
     if ($use_compatibility_prefix) {
       $version_string = str_replace(static::CORE_COMPATIBILITY_PREFIX, '', $version_string);
@@ -116,7 +116,7 @@ class ModuleVersion {
    *   The module version instance.
    */
   public static function createFromSupportBranch($branch) {
-    return static::fromVersionString($branch . 'x');
+    return static::createFromVersionString($branch . 'x');
   }
 
   /**

@@ -262,7 +262,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
   }
 
   // Figure out the target major version.
-  $existing_module_version = ModuleVersion::fromVersionString($project_data['existing_version']);
+  $existing_module_version = ModuleVersion::createFromVersionString($project_data['existing_version']);
   $existing_major = $existing_module_version->getMajorVersion();
   $supported_branches = [];
   if (isset($available['supported_branches'])) {
@@ -315,7 +315,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     return;
   }
   foreach ($available['releases'] as $version => $release) {
-    $release_module_version = ModuleVersion::fromVersionString($release['version']);
+    $release_module_version = ModuleVersion::createFromVersionString($release['version']);
     // First, if this is the existing release, check a few conditions.
     if ($project_data['existing_version'] === $version) {
       if (isset($release['terms']['Release type']) &&
