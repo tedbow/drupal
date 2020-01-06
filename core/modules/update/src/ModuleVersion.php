@@ -17,11 +17,32 @@ class ModuleVersion {
   protected $version;
 
   /**
-   * The version, without the core compatibility prefix, split apart by commas.
+   * The major version.
    *
-   * @var array
+   * @var string
    */
-  protected $versionParts;
+  protected $majorVersion;
+
+  /**
+   * The minor version.
+   *
+   * @var string|null
+   */
+  protected $minorVersion;
+
+  /**
+   * The patch version.
+   *
+   * @var string|null
+   */
+  protected $patchVersion;
+
+  /**
+   * The version extra string.
+   *
+   * @var string|null
+   */
+  protected $versionExtra;
 
   /**
    * Constructs a ModuleVersion object.
@@ -31,7 +52,22 @@ class ModuleVersion {
    */
   public function __construct($version) {
     $this->version = $version;
-    $this->versionParts = explode('.', $this->getVersionStringWithoutCoreCompatibility());
+    $version_parts = explode('.', $this->getVersionStringWithoutCoreCompatibility());
+    $this->majorVersion = $version_parts[0];
+    if (count($version_parts) === 2) {
+      $last_version_part = $version_parts[1];
+      $this->minorVersion = NULL;
+    }
+    else {
+      $last_version_part = $version_parts[2];
+      $this->minorVersion = $version_parts[1];
+    }
+    $last_version_parts = explode('-', $last_version_part);
+    // If patch equals 'x' this instance was created from a branch and the patch
+    // version cannot be determined.
+    $this->patchVersion = $last_version_parts[0] === 'x' ? NULL : $last_version_parts[0];
+    $this->versionExtra = count($last_version_parts) === 1 ? NULL : $last_version_parts[1];
+
   }
 
   /**
@@ -57,7 +93,7 @@ class ModuleVersion {
    *   The major version.
    */
   public function getMajorVersion() {
-    return $this->versionParts[0];
+    return $this->majorVersion;
   }
 
   /**
@@ -67,7 +103,7 @@ class ModuleVersion {
    *   The minor version if available otherwise NULL.
    */
   public function getMinorVersion() {
-    return count($this->versionParts) === 2 ? NULL : $this->versionParts[1];
+    return $this->minorVersion;
   }
 
   /**
@@ -77,11 +113,7 @@ class ModuleVersion {
    *   The patch version.
    */
   public function getPatchVersion() {
-    $last_version_part = count($this->versionParts) === 2 ? $this->versionParts[1] : $this->versionParts[2];
-    $patch = explode('-', $last_version_part)[0];
-    // If patch equals 'x' this instance was created from a branch and the patch
-    // version cannot be determined.
-    return $patch === 'x' ? NULL : $patch;
+    return $this->patchVersion;
   }
 
   /**
@@ -91,8 +123,7 @@ class ModuleVersion {
    *   The version string.
    */
   private function getVersionStringWithoutCoreCompatibility() {
-    $version = strpos($this->version, \Drupal::CORE_COMPATIBILITY) === 0 ? str_replace('8.x-', '', $this->version) : $this->version;
-    return $version;
+    return strpos($this->version, \Drupal::CORE_COMPATIBILITY) === 0 ? str_replace('8.x-', '', $this->version) : $this->version;
   }
 
   /**
@@ -102,8 +133,7 @@ class ModuleVersion {
    *   The version extra string if available otherwise NULL.
    */
   public function getVersionExtra() {
-    $last_version_parts = explode('-', count($this->versionParts) === 2 ? $this->versionParts[1] : $this->versionParts[2]);
-    return count($last_version_parts) === 1 ? NULL : $last_version_parts[1];
+    return $this->versionExtra;
   }
 
   /**
