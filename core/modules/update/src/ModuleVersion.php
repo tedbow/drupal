@@ -160,18 +160,20 @@ class ModuleVersion {
   }
 
   /**
-   * Gets the support branch.
+   * Determines if the version is in a specific support branch.
    *
-   * @return string
-   *   The support branch as is used in update XML files.
+   * @param string $support_branch
+   *   The support branch.
+   *
+   * @return bool
+   *   TRUE if the version is in the support branch, otherwise FALSE.
    */
-  public function getSupportBranch() {
-    $branch = $this->useCorePrefix ? static::CORE_COMPATIBILITY_PREFIX : '';
-    $branch .= $this->majorVersion . '.';
-    if ($this->minorVersion !== NULL) {
-      $branch .= $this->minorVersion . '.';
+  public function isInSupportBranch($support_branch) {
+    $branch_version = static::createFromSupportBranch($support_branch);
+    if ($branch_version->minorVersion === NULL) {
+      return $this->getMajorVersion() === $branch_version->getMajorVersion();
     }
-    return $branch;
+    return $this->getMajorVersion() === $branch_version->getMajorVersion() && $this->getMinorVersion() === $branch_version->getMinorVersion();
   }
 
 }

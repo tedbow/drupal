@@ -269,7 +269,15 @@ function update_calculate_project_update_status(&$project_data, $available) {
     $supported_branches = explode(',', $available['supported_branches']);
   }
 
-  if (in_array($existing_module_version->getSupportBranch(), $supported_branches)) {
+  $is_in_supported_branch = function (ModuleVersion $version) use ($supported_branches) {
+    foreach ($supported_branches as $supported_branch) {
+      if ($version->isInSupportBranch($supported_branch)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  };
+  if ($is_in_supported_branch($existing_module_version)) {
     // Still supported, stay at the current major version.
     $target_major = $existing_major;
   }
@@ -363,7 +371,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // be one of those being compared. They would not have version_major
     // set, so we must call isset first.
     if ($release_major_version !== NULL && $release_major_version > $target_major) {
-      if (in_array($release_module_version->getSupportBranch(), $supported_branches)) {
+      if ($is_in_supported_branch($release_module_version)) {
         if (!isset($project_data['also'])) {
           $project_data['also'] = [];
         }

@@ -53,16 +53,6 @@ class ModuleVersionTest extends UnitTestCase {
   }
 
   /**
-   * @covers ::getSupportBranch
-   *
-   * @dataProvider providerVersionInfos
-   */
-  public function testGetSupportBranch($version, $expected_version_info) {
-    $version = ModuleVersion::createFromVersionString($version);
-    $this->assertSame($expected_version_info['branch'], $version->getSupportBranch());
-  }
-
-  /**
    * @covers ::createFromSupportBranch
    *
    * @dataProvider providerVersionInfos
@@ -254,6 +244,53 @@ class ModuleVersionTest extends UnitTestCase {
           'extra' => NULL,
           'branch' => '1.2.',
         ],
+      ],
+    ];
+  }
+
+  /**
+   * @covers ::isInSupportBranch
+   *
+   * @dataProvider providerIsInSupportBranch
+   */
+  public function testIsInSupportBranch($version, $branch, $expected_result) {
+    $this->assertEquals($expected_result, ModuleVersion::createFromVersionString($version)->isInSupportBranch($branch));
+  }
+
+  /**
+   * Data provider for testIsInSupportBranch().
+   */
+  public function providerIsInSupportBranch() {
+    return [
+      [
+        '1.2.3',
+        '1.',
+        TRUE,
+      ],
+      [
+        '1.2.3',
+        '1.2.',
+        TRUE,
+      ],
+      [
+        '1.2.3',
+        '1.3.',
+        FALSE,
+      ],
+      [
+        '1.2.3',
+        '2.',
+        FALSE,
+      ],
+      [
+        '1.2.3',
+        '2.2.',
+        FALSE,
+      ],
+      [
+        '1.2.3',
+        '2.3.',
+        FALSE,
       ],
     ];
   }
