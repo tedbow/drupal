@@ -55,16 +55,44 @@ class ModuleVersionTest extends UnitTestCase {
   /**
    * @covers ::createFromSupportBranch
    *
-   * @dataProvider providerVersionInfos
+   * @dataProvider providerCreateFromSupportBranch
    */
-  public function testCreateFromSupportBranch($version, $expected_version_info) {
-    $version = ModuleVersion::createFromSupportBranch($expected_version_info['branch']);
+  public function testCreateFromSupportBranch($branch, $expected_major, $expected_minor) {
+    $version = ModuleVersion::createFromSupportBranch($branch);
     $this->assertInstanceOf(ModuleVersion::class, $version);
-    $this->assertSame($expected_version_info['major'], $version->getMajorVersion());
-    $this->assertSame($expected_version_info['minor'], $version->getMinorVersion());
+    $this->assertSame($expected_major, $version->getMajorVersion());
+    $this->assertSame($expected_minor, $version->getMinorVersion());
     // Version extra and Patch version can't be determined from a branch.
     $this->assertSame(NULL, $version->getVersionExtra());
     $this->assertSame(NULL, $version->getPatchVersion());
+  }
+
+  /**
+   * Data provider for providerCreateFromSupportBranch().
+   */
+  public function providerCreateFromSupportBranch() {
+    return [
+      '0.' => [
+        '0.',
+        '0',
+        NULL,
+      ],
+      '1.' => [
+        '1.',
+        '1',
+        NULL,
+      ],
+      '0.1.' => [
+        '0.1.',
+        '0',
+        '1',
+      ],
+      '1.2.' => [
+        '1.2.',
+        '1',
+        '2',
+      ],
+    ];
   }
 
   /**
@@ -82,7 +110,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => NULL,
           'patch' => '3',
           'extra' => NULL,
-          'branch' => '8.x-1.',
         ],
       ],
       '8.x-1.0' => [
@@ -92,7 +119,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => NULL,
           'patch' => '0',
           'extra' => NULL,
-          'branch' => '8.x-1.',
         ],
       ],
       '8.x-1.0-dev' => [
@@ -102,7 +128,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => NULL,
           'patch' => '0',
           'extra' => 'dev',
-          'branch' => '8.x-1.',
         ],
       ],
       '8.x-1.3-dev' => [
@@ -112,7 +137,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => NULL,
           'patch' => '3',
           'extra' => 'dev',
-          'branch' => '8.x-1.',
         ],
       ],
       '0.1' => [
@@ -122,7 +146,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => NULL,
           'patch' => '1',
           'extra' => NULL,
-          'branch' => '0.',
         ],
       ],
       '1.0' => [
@@ -132,7 +155,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => NULL,
           'patch' => '0',
           'extra' => NULL,
-          'branch' => '1.',
         ],
       ],
       '1.3' => [
@@ -142,7 +164,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => NULL,
           'patch' => '3',
           'extra' => NULL,
-          'branch' => '1.',
         ],
       ],
       '1.0-dev' => [
@@ -152,7 +173,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => NULL,
           'patch' => '0',
           'extra' => 'dev',
-          'branch' => '1.',
         ],
       ],
       '1.3-dev' => [
@@ -162,7 +182,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => NULL,
           'patch' => '3',
           'extra' => 'dev',
-          'branch' => '1.',
         ],
       ],
       '0.2.0' => [
@@ -172,7 +191,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => '2',
           'patch' => '0',
           'extra' => NULL,
-          'branch' => '0.2.',
         ],
       ],
       '1.2.0' => [
@@ -182,7 +200,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => '2',
           'patch' => '0',
           'extra' => NULL,
-          'branch' => '1.2.',
         ],
       ],
       '1.0.3' => [
@@ -192,7 +209,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => '0',
           'patch' => '3',
           'extra' => NULL,
-          'branch' => '1.0.',
         ],
       ],
       '1.2.3' => [
@@ -202,7 +218,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => '2',
           'patch' => '3',
           'extra' => NULL,
-          'branch' => '1.2.',
         ],
       ],
       '1.2.0-dev' => [
@@ -212,7 +227,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => '2',
           'patch' => '0',
           'extra' => 'dev',
-          'branch' => '1.2.',
         ],
       ],
       '1.2.3-dev' => [
@@ -222,7 +236,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => '2',
           'patch' => '3',
           'extra' => 'dev',
-          'branch' => '1.2.',
         ],
       ],
       '1.0.x' => [
@@ -232,7 +245,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => '0',
           'patch' => NULL,
           'extra' => NULL,
-          'branch' => '1.0.',
         ],
       ],
       '1.2.x' => [
@@ -242,7 +254,6 @@ class ModuleVersionTest extends UnitTestCase {
           'minor' => '2',
           'patch' => NULL,
           'extra' => NULL,
-          'branch' => '1.2.',
         ],
       ],
     ];
