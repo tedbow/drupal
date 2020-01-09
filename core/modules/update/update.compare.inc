@@ -318,6 +318,10 @@ function update_calculate_project_update_status(&$project_data, $available) {
     $project_data['reason'] = t('No available releases found');
     return;
   }
+
+  $recommended_version_without_extra = '';
+  $recommended_release = NULL;
+
   foreach ($available['releases'] as $version => $release) {
     $release_module_version = ModuleVersion::createFromVersionString($release['version']);
     // First, if this is the existing release, check a few conditions.
@@ -366,7 +370,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // be one of those being compared. They would not have version_major
     // set, so we must call isset first.
     if ($release_major_version !== NULL && $release_major_version > $target_major) {
-      if ($is_in_supported_branch($release_module_version)) {
+      if ($is_in_supported_branch($release['version'])) {
         if (!isset($project_data['also'])) {
           $project_data['also'] = [];
         }
@@ -401,13 +405,24 @@ function update_calculate_project_update_status(&$project_data, $available) {
       $project_data['releases'][$version] = $release;
     }
 
-    // Look for the 'recommended' version if we haven't found it yet (see
+    if ($release_module_version->getVersionExtra()) {
+      $release_version_without_extra = str_replace('-' . $release_module_version->getVersionExtra(), '', $release['version']);
+    }
+    else {
+      $release_version_without_extra = $release['version'];
+    }
+
+    // Look for the 'recommended' version if we haven't found it yet (SEE
     // phpdoc at the top of this function for the definition).
     if (!isset($project_data['recommended'])
         && $release_major_version == $target_major) {
+      if ($recommended_version_without_extra !== $release_version_without_extra) {
+        $recommended_version_without_extra = $release_version_without_extra;
+        $recommended_release = $release;
+      }
       if ($release_module_version->getVersionExtra() === NULL) {
-        $project_data['recommended'] = $release['version'];
-        $project_data['releases'][$release['version']] = $release;
+        $project_data['recommended'] = $recommended_release['version'];
+        $project_data['releases'][$recommended_release['version']] = $recommended_release;
       }
     }
 
