@@ -98,7 +98,6 @@ class UpdateCoreTest extends UpdateTestBase {
         $this->clickLink(t('Check manually'));
         $this->checkForMetaRefresh();
         $this->assertNoText(t('Security update required!'));
-        file_put_contents("/Users/ted.bowman/Sites/www/test-$full_version.html", $this->getSession()->getPage()->getOuterHtml());
         switch ($minor_version) {
           case 0:
             // Both stable and unstable releases are available.
