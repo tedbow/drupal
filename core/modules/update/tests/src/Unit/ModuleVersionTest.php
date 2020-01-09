@@ -23,26 +23,6 @@ class ModuleVersionTest extends UnitTestCase {
   }
 
   /**
-   * @covers ::getMinorVersion
-   *
-   * @dataProvider providerVersionInfos
-   */
-  public function testGetMinorVersion($version, $expected_version_info) {
-    $version = ModuleVersion::createFromVersionString($version);
-    $this->assertSame($expected_version_info['minor'], $version->getMinorVersion());
-  }
-
-  /**
-   * @covers ::getPatchVersion
-   *
-   * @dataProvider providerVersionInfos
-   */
-  public function testGetPatchVersion($version, $expected_version_info) {
-    $version = ModuleVersion::createFromVersionString($version);
-    $this->assertSame($expected_version_info['patch'], $version->getPatchVersion());
-  }
-
-  /**
    * @covers ::getVersionExtra
    *
    * @dataProvider providerVersionInfos
@@ -57,14 +37,12 @@ class ModuleVersionTest extends UnitTestCase {
    *
    * @dataProvider providerCreateFromSupportBranch
    */
-  public function testCreateFromSupportBranch($branch, $expected_major, $expected_minor) {
+  public function testCreateFromSupportBranch($branch, $expected_major) {
     $version = ModuleVersion::createFromSupportBranch($branch);
     $this->assertInstanceOf(ModuleVersion::class, $version);
     $this->assertSame($expected_major, $version->getMajorVersion());
-    $this->assertSame($expected_minor, $version->getMinorVersion());
     // Version extra and Patch version can't be determined from a branch.
     $this->assertSame(NULL, $version->getVersionExtra());
-    $this->assertSame(NULL, $version->getPatchVersion());
   }
 
   /**
@@ -75,22 +53,22 @@ class ModuleVersionTest extends UnitTestCase {
       '0.' => [
         '0.',
         '0',
-        NULL,
       ],
       '1.' => [
         '1.',
         '1',
-        NULL,
       ],
       '0.1.' => [
         '0.1.',
         '0',
-        '1',
       ],
       '1.2.' => [
         '1.2.',
         '1',
-        '2',
+      ],
+      '8.x-1.' => [
+        '8.x-1.',
+        '1',
       ],
     ];
   }
@@ -107,8 +85,6 @@ class ModuleVersionTest extends UnitTestCase {
         '8.x-1.3',
         [
           'major' => '1',
-          'minor' => NULL,
-          'patch' => '3',
           'extra' => NULL,
         ],
       ],
@@ -116,8 +92,6 @@ class ModuleVersionTest extends UnitTestCase {
         '8.x-1.0',
         [
           'major' => '1',
-          'minor' => NULL,
-          'patch' => '0',
           'extra' => NULL,
         ],
       ],
@@ -125,8 +99,6 @@ class ModuleVersionTest extends UnitTestCase {
         '8.x-1.0-dev',
         [
           'major' => '1',
-          'minor' => NULL,
-          'patch' => '0',
           'extra' => 'dev',
         ],
       ],
@@ -134,8 +106,6 @@ class ModuleVersionTest extends UnitTestCase {
         '8.x-1.3-dev',
         [
           'major' => '1',
-          'minor' => NULL,
-          'patch' => '3',
           'extra' => 'dev',
         ],
       ],
@@ -143,8 +113,6 @@ class ModuleVersionTest extends UnitTestCase {
         '0.1',
         [
           'major' => '0',
-          'minor' => NULL,
-          'patch' => '1',
           'extra' => NULL,
         ],
       ],
@@ -152,8 +120,6 @@ class ModuleVersionTest extends UnitTestCase {
         '1.0',
         [
           'major' => '1',
-          'minor' => NULL,
-          'patch' => '0',
           'extra' => NULL,
         ],
       ],
@@ -161,8 +127,6 @@ class ModuleVersionTest extends UnitTestCase {
         '1.3',
         [
           'major' => '1',
-          'minor' => NULL,
-          'patch' => '3',
           'extra' => NULL,
         ],
       ],
@@ -170,8 +134,6 @@ class ModuleVersionTest extends UnitTestCase {
         '1.0-dev',
         [
           'major' => '1',
-          'minor' => NULL,
-          'patch' => '0',
           'extra' => 'dev',
         ],
       ],
@@ -179,8 +141,6 @@ class ModuleVersionTest extends UnitTestCase {
         '1.3-dev',
         [
           'major' => '1',
-          'minor' => NULL,
-          'patch' => '3',
           'extra' => 'dev',
         ],
       ],
@@ -188,8 +148,6 @@ class ModuleVersionTest extends UnitTestCase {
         '0.2.0',
         [
           'major' => '0',
-          'minor' => '2',
-          'patch' => '0',
           'extra' => NULL,
         ],
       ],
@@ -197,8 +155,6 @@ class ModuleVersionTest extends UnitTestCase {
         '1.2.0',
         [
           'major' => '1',
-          'minor' => '2',
-          'patch' => '0',
           'extra' => NULL,
         ],
       ],
@@ -206,8 +162,6 @@ class ModuleVersionTest extends UnitTestCase {
         '1.0.3',
         [
           'major' => '1',
-          'minor' => '0',
-          'patch' => '3',
           'extra' => NULL,
         ],
       ],
@@ -215,8 +169,6 @@ class ModuleVersionTest extends UnitTestCase {
         '1.2.3',
         [
           'major' => '1',
-          'minor' => '2',
-          'patch' => '3',
           'extra' => NULL,
         ],
       ],
@@ -224,8 +176,6 @@ class ModuleVersionTest extends UnitTestCase {
         '1.2.0-dev',
         [
           'major' => '1',
-          'minor' => '2',
-          'patch' => '0',
           'extra' => 'dev',
         ],
       ],
@@ -233,8 +183,6 @@ class ModuleVersionTest extends UnitTestCase {
         '1.2.3-dev',
         [
           'major' => '1',
-          'minor' => '2',
-          'patch' => '3',
           'extra' => 'dev',
         ],
       ],
@@ -242,8 +190,6 @@ class ModuleVersionTest extends UnitTestCase {
         '1.0.x',
         [
           'major' => '1',
-          'minor' => '0',
-          'patch' => NULL,
           'extra' => NULL,
         ],
       ],
@@ -251,21 +197,10 @@ class ModuleVersionTest extends UnitTestCase {
         '1.2.x',
         [
           'major' => '1',
-          'minor' => '2',
-          'patch' => NULL,
           'extra' => NULL,
         ],
       ],
     ];
-  }
-
-  /**
-   * @covers ::isInSupportBranch
-   *
-   * @dataProvider providerIsInSupportBranch
-   */
-  public function testIsInSupportBranch($version, $branch, $expected_result) {
-    $this->assertEquals($expected_result, ModuleVersion::createFromVersionString($version)->isInSupportBranch($branch));
   }
 
   /**

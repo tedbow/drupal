@@ -262,22 +262,21 @@ function update_calculate_project_update_status(&$project_data, $available) {
   }
 
   // Figure out the target major version.
-  $existing_module_version = ModuleVersion::createFromVersionString($project_data['existing_version']);
-  $existing_major = $existing_module_version->getMajorVersion();
+  $existing_major = ModuleVersion::createFromVersionString($project_data['existing_version'])->getMajorVersion();
   $supported_branches = [];
   if (isset($available['supported_branches'])) {
     $supported_branches = explode(',', $available['supported_branches']);
   }
 
-  $is_in_supported_branch = function (ModuleVersion $version) use ($supported_branches) {
+  $is_in_supported_branch = function ($version) use ($supported_branches) {
     foreach ($supported_branches as $supported_branch) {
-      if ($version->isInSupportBranch($supported_branch)) {
+      if (strpos($version, $supported_branch) === 0) {
         return TRUE;
       }
     }
     return FALSE;
   };
-  if ($is_in_supported_branch($existing_module_version)) {
+  if ($is_in_supported_branch($project_data['existing_version'])) {
     // Still supported, stay at the current major version.
     $target_major = $existing_major;
   }
@@ -411,7 +410,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
         && $release_major_version == $target_major) {
       if ($release_module_version->getVersionExtra() === NULL) {
         $project_data['recommended'] = $release['version'];
-        $project_data['releases'][$release['version']] = $release_patch_changed;
+        $project_data['releases'][$release['version']] = $release;
       }
     }
 
