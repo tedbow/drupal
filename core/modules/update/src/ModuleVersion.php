@@ -17,11 +17,18 @@ class ModuleVersion {
   const CORE_COMPATIBILITY_PREFIX = \Drupal::CORE_COMPATIBILITY . '-';
 
   /**
-   * The module version.
+   * The major version.
    *
    * @var string
    */
-  protected $version;
+  protected $majorVersion;
+
+  /**
+   * The version extra string.
+   *
+   * @var string|null
+   */
+  protected $versionExtra;
 
   /**
    * Constructs a module version object from a version string.
@@ -33,17 +40,25 @@ class ModuleVersion {
    *   The module version instance.
    */
   public static function createFromVersionString($version_string) {
-    return new static($version_string);
+    $version_string = strpos($version_string, static::CORE_COMPATIBILITY_PREFIX) === 0 ? str_replace(static::CORE_COMPATIBILITY_PREFIX, '', $version_string) : $version_string;
+    $version_parts = explode('.', $version_string);
+    $major_version = $version_parts[0];
+    $last_part_split = explode('-', array_pop($version_parts));
+    $version_extra = count($last_part_split) === 1 ? NULL : $last_part_split[1];
+    return new static($major_version, $version_extra);
   }
 
   /**
    * Constructs a ModuleVersion object.
    *
-   * @param string $version
-   *   The version number.
+   * @param string $major_version
+   *   The major version.
+   * @param string|null $version_extra
+   *   The extra version string.
    */
-  protected function __construct($version) {
-    $this->version = $version;
+  protected function __construct($major_version, $version_extra) {
+    $this->majorVersion = $major_version;
+    $this->versionExtra = $version_extra;
   }
 
   /**
@@ -69,8 +84,7 @@ class ModuleVersion {
    *   The major version.
    */
   public function getMajorVersion() {
-    $version_string = strpos($this->version, static::CORE_COMPATIBILITY_PREFIX) === 0 ? str_replace(static::CORE_COMPATIBILITY_PREFIX, '', $this->version) : $this->version;
-    return explode('.', $version_string)[0];
+    return $this->majorVersion;
   }
 
   /**
@@ -80,9 +94,7 @@ class ModuleVersion {
    *   The version extra string if available otherwise NULL.
    */
   public function getVersionExtra() {
-    $version_parts = explode('.', $this->version);
-    $last_part_split = explode('-', array_pop($version_parts));
-    return count($last_part_split) == 1 ? NULL : $last_part_split[1];
+    return $this->versionExtra;
   }
 
 }
