@@ -10,6 +10,11 @@ namespace Drupal\update;
 class ModuleVersion {
 
   /**
+   * @todo remove all methods except major and extra, maybe isInSupportBranch
+   * 
+   */
+
+  /**
    * The core compatibility prefix used in version strings.
    */
   const CORE_COMPATIBILITY_PREFIX = \Drupal::CORE_COMPATIBILITY . '-';
