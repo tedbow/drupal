@@ -40,9 +40,6 @@ class ModuleVersion {
    *   The module version instance.
    */
   public static function createFromVersionString($version_string) {
-    if (is_object($version_string)) {
-      throw new \Exception(print_r($version_string, TRUE));
-    }
     $version_string = strpos($version_string, static::CORE_COMPATIBILITY_PREFIX) === 0 ? str_replace(static::CORE_COMPATIBILITY_PREFIX, '', $version_string) : $version_string;
     $version_parts = explode('.', $version_string);
     $major_version = $version_parts[0];
