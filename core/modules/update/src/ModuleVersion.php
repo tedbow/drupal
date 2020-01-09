@@ -10,15 +10,17 @@ namespace Drupal\update;
 class ModuleVersion {
 
   /**
-   * @todo remove all methods except major and extra, maybe isInSupportBranch
-   *
-   */
-
-  /**
    * The core compatibility prefix used in version strings.
+   *
+   * @var string
    */
   const CORE_COMPATIBILITY_PREFIX = \Drupal::CORE_COMPATIBILITY . '-';
 
+  /**
+   * The module version.
+   *
+   * @var string
+   */
   protected $version;
 
   /**
@@ -37,16 +39,8 @@ class ModuleVersion {
   /**
    * Constructs a ModuleVersion object.
    *
-   * @param string $major_version
-   *   The major version.
-   * @param string|null $minor_version
-   *   The minor version.
-   * @param string|null $patch_version
-   *   The patch version.
-   * @param string|null $version_extra
-   *   The extra version string.
-   * @param bool $use_core_compatibility_prefix
-   *   Whether to use the core compatibility prefix.
+   * @param string $version
+   *   The version number.
    */
   protected function __construct($version) {
     $this->version = $version;

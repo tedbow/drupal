@@ -41,7 +41,7 @@ class ModuleVersionTest extends UnitTestCase {
     $version = ModuleVersion::createFromSupportBranch($branch);
     $this->assertInstanceOf(ModuleVersion::class, $version);
     $this->assertSame($expected_major, $version->getMajorVersion());
-    // Version extra and Patch version can't be determined from a branch.
+    // Version extra can't be determined from a branch.
     $this->assertSame(NULL, $version->getVersionExtra());
   }
 
