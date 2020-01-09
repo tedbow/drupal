@@ -203,42 +203,4 @@ class ModuleVersionTest extends UnitTestCase {
     ];
   }
 
-  /**
-   * Data provider for testIsInSupportBranch().
-   */
-  public function providerIsInSupportBranch() {
-    return [
-      [
-        '1.2.3',
-        '1.',
-        TRUE,
-      ],
-      [
-        '1.2.3',
-        '1.2.',
-        TRUE,
-      ],
-      [
-        '1.2.3',
-        '1.3.',
-        FALSE,
-      ],
-      [
-        '1.2.3',
-        '2.',
-        FALSE,
-      ],
-      [
-        '1.2.3',
-        '2.2.',
-        FALSE,
-      ],
-      [
-        '1.2.3',
-        '2.3.',
-        FALSE,
-      ],
-    ];
-  }
-
 }

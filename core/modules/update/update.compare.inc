@@ -301,9 +301,6 @@ function update_calculate_project_update_status(&$project_data, $available) {
   // what they have is unsupported and let them figure it out.
   $target_major = max($existing_major, $target_major);
 
-  $release_patch_changed = '';
-  $patch = '';
-
   // If the project is marked as UpdateFetcherInterface::FETCH_PENDING, it
   // means that the data we currently have (if any) is stale, and we've got a
   // task queued up to (re)fetch the data. In that case, we mark it as such,
