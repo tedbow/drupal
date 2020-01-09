@@ -364,7 +364,6 @@ function update_calculate_project_update_status(&$project_data, $available) {
     }
 
     $release_major_version = $release_module_version->getMajorVersion();
-    $release_patch_version = $release_module_version->getPatchVersion();
     // See if this is a higher major version than our target and yet still
     // supported. If so, record it as an "Also available" release.
     // Note: Some projects have a HEAD release from CVS days, which could
@@ -409,15 +408,10 @@ function update_calculate_project_update_status(&$project_data, $available) {
     // Look for the 'recommended' version if we haven't found it yet (see
     // phpdoc at the top of this function for the definition).
     if (!isset($project_data['recommended'])
-        && $release_major_version == $target_major
-        && $release_patch_version !== NULL) {
-      if ($patch != $release_patch_version) {
-        $patch = $release_patch_version;
-        $release_patch_changed = $release;
-      }
-      if ($release_module_version->getVersionExtra() === NULL && $patch == $release_patch_version) {
-        $project_data['recommended'] = $release_patch_changed['version'];
-        $project_data['releases'][$release_patch_changed['version']] = $release_patch_changed;
+        && $release_major_version == $target_major) {
+      if ($release_module_version->getVersionExtra() === NULL) {
+        $project_data['recommended'] = $release['version'];
+        $project_data['releases'][$release['version']] = $release_patch_changed;
       }
     }
 
