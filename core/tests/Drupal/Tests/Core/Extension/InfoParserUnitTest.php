@@ -140,6 +140,42 @@ MISSING_CORE_AND_CORE_VERSION_REQUIREMENT;
     }
   }
 
+
+  /**
+   * Tests that missing 'core' key is detected when needed.
+   *
+   * @covers ::parse
+   */
+  public function testMissingCore() {
+    $missing_core = <<<MISSING_CORE
+# info.yml for testing core and core_version_requirement.
+version: VERSION
+core_version_requirement: ^8 || ^9
+type: module
+name: Skynet
+dependencies:
+  - self_awareness
+MISSING_CORE;
+
+    vfsStream::setup('modules');
+    vfsStream::create([
+      'fixtures' => [
+        'missing_core.info.txt' => $missing_core,
+        'missing_core-duplicate.info.txt' => $missing_core,
+      ],
+    ]);
+    // Set the expected exception for the 2nd call to parse().
+    $this->expectException(InfoParserException::class);
+
+
+    try {
+      $this->infoParser->parse(vfsStream::url('modules/fixtures/missing_core.info.txt'));
+    }
+    catch (InfoParserException $exception) {
+      $this->infoParser->parse(vfsStream::url('modules/fixtures/missing_core-duplicate.info.txt'));
+    }
+  }
+
   /**
    * Tests that Testing package modules use a default core_version_requirement.
    *
