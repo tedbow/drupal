@@ -81,10 +81,11 @@ class ProjectSecurityData {
    *     supported.
    *   If the support is based on support until a specific date the array will
    *   have the following keys:
-   *   - support_end_date (string): The month support will end for the existing
-   *     version in the format 'YYYY-MM'
-   *   - (optional) support_ending_warn_date (string): The date after which a
-   *     warning should be displayed about upgrading to another version.
+   *   - support_end_date (string): The month or date support will end for the
+   *     existing version. It can be in either 'YYYY-MM' or 'YYYY-MM-DD' format.
+   *   - (optional) support_ending_warn_date (string): The date, in the format
+   *     'YYYY-MM-DD', after which a warning should be displayed about upgrading
+   *     to another version.
    */
   public function getCoverageInfo() {
     $info = [];
