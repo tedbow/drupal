@@ -98,7 +98,6 @@ abstract class UpdateTestBase extends BrowserTestBase {
     $this->config('update_test.settings')->set('xml_map', $xml_map)->save();
     // Manually check the update status.
     $this->drupalGet('admin/reports/updates');
-    file_put_contents("/Users/ted.bowman/Sites/www/test-{$xml_map['drupal']}.html", $this->getSession()->getPage()->getOuterHtml());
     $this->clickLink(t('Check manually'));
     $this->checkForMetaRefresh();
   }

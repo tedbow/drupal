@@ -397,6 +397,7 @@ class UpdateCoreTest extends UpdateTestBase {
     // Ensure that messages are under the correct heading which could be
     // 'Checked', 'Warnings found', or 'Errors found'.
     $requirements_section_element = $requirements_details->getParent();
+    file_put_contents("/Users/ted.bowman/Sites/www/test-$fixture.html", $this->getSession()->getPage()->getOuterHtml());
     $this->assertCount(1, $requirements_section_element->findAll('css', "h3:contains('$requirements_section_heading')"));
     $actual_message = $requirements_details->find('css', 'div.description')->getText();
     $this->assertNotEmpty($actual_message);
@@ -559,6 +560,13 @@ class UpdateCoreTest extends UpdateTestBase {
     // 6 months.
     $test_cases['8.9.0, lts 6 month'] = $test_cases['8.9.0, lts'];
     $test_cases['8.9.0, lts 6 month']['mock_date'] = '2021-10-31';
+    $test_cases['8.8.0, supported, last day warn'] = $test_cases['8.8.0, supported, 6 months warn'];
+    $test_cases['8.8.0, supported, last day warn']['mock_date'] = '2020-12-31';
+    foreach (array_keys($test_cases) as $array_key) {
+      if (empty($test_cases[$array_key]['mock_date'])) {
+        unset($test_cases[$array_key]);
+      }
+    }
     return $test_cases;
   }
 

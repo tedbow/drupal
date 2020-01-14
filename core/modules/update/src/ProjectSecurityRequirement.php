@@ -176,7 +176,7 @@ class ProjectSecurityRequirement {
     /** @var \Drupal\Component\Datetime\Time $time */
     $time = \Drupal::service('datetime.time');
     $request_time = $time->getRequestTime();
-    if ($end_timestamp <= $request_time) {
+    if ($end_timestamp < $request_time) {
       // Support is over.
       $requirement['value'] = $this->t('Unsupported minor version');
       $requirement['severity'] = REQUIREMENT_ERROR;
