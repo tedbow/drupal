@@ -172,28 +172,29 @@ class ProjectSecurityRequirement {
   private function getDateEndRequirement() {
     $requirement = [];
     $security_info = $this->projectData['security_coverage_info'];
-    $end_timestamp = \DateTime::createFromFormat('Y-m', $security_info['support_end_date'])->getTimestamp();
+    $date_format = count(explode('-', $security_info['support_end_date'])) === 3 ? 'Y-m-d' : 'Y-m';
+    $end_timestamp = \DateTime::createFromFormat($date_format, $security_info['support_end_date'])->getTimestamp();
+    /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
+    $date_formatter = \Drupal::service('date.formatter');
     /** @var \Drupal\Component\Datetime\Time $time */
     $time = \Drupal::service('datetime.time');
-    $request_time = $time->getRequestTime();
-    if ($end_timestamp < $request_time) {
+    $current_date = $date_formatter->format($time->getRequestTime(), 'custom', $date_format);
+    if ($security_info['support_end_date'] <= $current_date) {
       // Support is over.
       $requirement['value'] = $this->t('Unsupported minor version');
       $requirement['severity'] = REQUIREMENT_ERROR;
       $requirement['description'] = $this->getVersionNotSupportedMessage();
     }
     else {
-      /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
-      $date_formatter = \Drupal::service('date.formatter');
       $requirement['value'] = $this->t('Supported minor version');
       $requirement['severity'] = REQUIREMENT_INFO;
       $translation_arguments = [
         '%project' => $this->projectData['title'],
         '%version' => $this->existingVersion,
-        '%date' => $date_formatter->format($end_timestamp, 'custom', 'F Y'),
+        '%date' => $date_format === 'Y-m-d' ? $security_info['support_end_date'] : $date_formatter->format($end_timestamp, 'custom', 'F Y'),
       ];
       $requirement['description'] = '<p>' . $this->t('The installed minor version of %project, %version, will stop receiving official security support after  %date.', $translation_arguments) . '</p>';
-      if (isset($security_info['support_ending_warn_date']) && \DateTime::createFromFormat('Y-m', $security_info['support_ending_warn_date'])->getTimestamp() <= $request_time) {
+      if (isset($security_info['support_ending_warn_date']) && $security_info['support_ending_warn_date'] <= $date_formatter->format($time->getRequestTime(), 'custom', 'Y-m-d')) {
         $requirement['description'] .= '<p>' . $this->t('Update to a supported minor version soon to continue receiving security updates.') . '</p>';
         $requirement['severity'] = REQUIREMENT_WARNING;
       }
