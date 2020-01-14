@@ -81,8 +81,8 @@ class ProjectSecurityData {
    *     supported.
    *   If the support is based on support until a specific date the array will
    *   have the following keys:
-   *   - support_end_date (string): The date support will end for the existing
-   *     version in the format 'YYYY-MM-DD'
+   *   - support_end_date (string): The month support will end for the existing
+   *     version in the format 'YYYY-MM'
    *   - (optional) support_ending_warn_date (string): The date after which a
    *     warning should be displayed about upgrading to another version.
    */
@@ -101,11 +101,11 @@ class ProjectSecurityData {
     // Support for Drupal 8's LTS release and the version before are based on
     // specific dates.
     if ($existing_release['version_major'] === '8' && $existing_release['version_minor'] === '8') {
-      $info['support_end_date'] = '2020-12-02';
-      $info['support_ending_warn_date'] = '2020-06-02';
+      $info['support_end_date'] = '2020-12';
+      $info['support_ending_warn_date'] = '2020-06';
     }
     elseif ($existing_release['version_major'] === '8' && $existing_release['version_minor'] === '9') {
-      $info['support_end_date'] = '2021-11-01';
+      $info['support_end_date'] = '2021-11';
     }
     elseif ($support_until_release = $this->getSupportUntilReleaseInfo()) {
       $info['support_end_version'] = $support_until_release['version'];

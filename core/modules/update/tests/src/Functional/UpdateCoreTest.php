@@ -379,6 +379,8 @@ class UpdateCoreTest extends UpdateTestBase {
     $this->setSystemInfo($installed_version);
     $this->refreshUpdateStatus(['drupal' => $fixture]);
     $this->drupalGet('admin/reports/status');
+    $u = "$installed_version-$fixture-$mock_date";
+
 
     if (empty($requirements_section_heading)) {
       $this->assertSession()->pageTextNotContains('Drupal core security coverage');
@@ -436,28 +438,28 @@ class UpdateCoreTest extends UpdateTestBase {
         'installed_version' => '8.1.0',
         'fixture' => 'sec.2.0_3.0-rc1',
         'requirements_section_heading' => 'Warnings found',
-        'message' => "The installed minor version of Drupal, 8.1, will receive security updates until the release of 8.3.0.Update to 8.2 or higher soon to continue receiving security updates. $see_available_message$release_coverage_message",
+        'message' => "The installed minor version of Drupal, 8.1, will stop receiving official security support after the release of 8.3.0.Update to 8.2 or higher soon to continue receiving security updates. $see_available_message$release_coverage_message",
         'mock_date' => '',
       ],
       '8.1.0, supported' => [
         'installed_version' => '8.1.0',
         'fixture' => 'sec.2.0',
         'requirements_section_heading' => 'Warnings found',
-        'message' => "The installed minor version of Drupal, 8.1, will receive security updates until the release of 8.3.0.Update to 8.2 or higher soon to continue receiving security updates. $see_available_message$release_coverage_message",
+        'message' => "The installed minor version of Drupal, 8.1, will stop receiving official security support after the release of 8.3.0.Update to 8.2 or higher soon to continue receiving security updates. $see_available_message$release_coverage_message",
         'mock_date' => '',
       ],
       '8.2.0, supported with 3rc' => [
         'installed_version' => '8.2.0',
         'fixture' => 'sec.2.0_3.0-rc1',
         'requirements_section_heading' => 'Checked',
-        'message' => "The installed minor version of Drupal, 8.2, will receive security updates until the release of 8.4.0.$release_coverage_message",
+        'message' => "The installed minor version of Drupal, 8.2, will stop receiving official security support after the release of 8.4.0.$release_coverage_message",
         'mock_date' => '',
       ],
       '8.2.0, supported' => [
         'installed_version' => '8.2.0',
         'fixture' => 'sec.2.0',
         'requirements_section_heading' => 'Checked',
-        'message' => "The installed minor version of Drupal, 8.2, will receive security updates until the release of 8.4.0.$release_coverage_message",
+        'message' => "The installed minor version of Drupal, 8.2, will stop receiving official security support after the release of 8.4.0.$release_coverage_message",
         'mock_date' => '',
       ],
       // Ensure we don't show messages for pre-release or dev versions.
@@ -490,7 +492,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'installed_version' => '8.2.0',
         'fixture' => 'sec.2.0_9.0.0',
         'requirements_section_heading' => 'Warnings found',
-        'message' => "The installed minor version of Drupal, 8.2, will receive security updates until the release of 8.4.0.Update to 8.3 or higher soon to continue receiving security updates. $see_available_message$release_coverage_message",
+        'message' => "The installed minor version of Drupal, 8.2, will stop receiving official security support after the release of 8.4.0.Update to 8.3 or higher soon to continue receiving security updates. $see_available_message$release_coverage_message",
         'mock_date' => '',
       ],
       // Ensure that if LTS support window is finished a message is displayed.
@@ -499,7 +501,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'fixture' => 'sec.9.0',
         'requirements_section_heading' => 'Errors found',
         'message' => "The installed minor version of Drupal, 8.9, is no longer supported and will not receive security updates.$update_asap_message $see_available_message",
-        'mock_date' => '2021-11-02',
+        'mock_date' => '2021-12-01',
       ],
       // Ensure that if the 8.8 support window is finished a message is
       // displayed.
@@ -508,7 +510,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'fixture' => 'sec.9.0',
         'requirements_section_heading' => 'Errors found',
         'message' => "The installed minor version of Drupal, 8.8, is no longer supported and will not receive security updates.$update_asap_message $see_available_message",
-        'mock_date' => '2020-12-03',
+        'mock_date' => '2021-01-01',
       ],
       // Ensure that if LTS support window is not finished a message is
       // displayed.
@@ -516,7 +518,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'installed_version' => '8.9.0',
         'fixture' => 'sec.9.0',
         'requirements_section_heading' => 'Checked',
-        'message' => 'The installed minor version of Drupal, 8.9, will receive security updates until 2021-11-01.',
+        'message' => 'The installed minor version of Drupal, 8.9, will stop receiving official security support after November 2021.',
         'mock_date' => '2021-01-01',
       ],
       // Ensure that if the 8.8 support window is not finished a message is
@@ -525,7 +527,7 @@ class UpdateCoreTest extends UpdateTestBase {
         'installed_version' => '8.8.0',
         'fixture' => 'sec.9.0',
         'requirements_section_heading' => 'Checked',
-        'message' => 'The installed minor version of Drupal, 8.8, will receive security updates until 2020-12-02.',
+        'message' => 'The installed minor version of Drupal, 8.8, will stop receiving official security support after December 2020.',
         'mock_date' => '2020-06-01',
       ],
       // Ensure that if the 8.8 support window is not finished but it is within
@@ -534,22 +536,22 @@ class UpdateCoreTest extends UpdateTestBase {
         'installed_version' => '8.8.0',
         'fixture' => 'sec.9.0',
         'requirements_section_heading' => 'Warnings found',
-        'message' => "The installed minor version of Drupal, 8.8, will receive security updates until 2020-12-02.$update_soon_message",
-        'mock_date' => '2020-06-02',
+        'message' => "The installed minor version of Drupal, 8.8, will stop receiving official security support after December 2020.$update_soon_message",
+        'mock_date' => '2020-07-01',
       ],
       // Ensure the end dates for 8.8 and 8.9 only apply to major version 8.
       '9.9.0' => [
         'installed_version' => '9.9.0',
         'fixture' => 'sec.9.9.0',
         'requirements_section_heading' => 'Checked',
-        'message' => "The installed minor version of Drupal, 9.9, will receive security updates until the release of 9.11.0.$release_coverage_message",
+        'message' => "The installed minor version of Drupal, 9.9, will stop receiving official security support after the release of 9.11.0.$release_coverage_message",
         'mock_date' => '',
       ],
       '9.8.0' => [
         'installed_version' => '9.8.0',
         'fixture' => 'sec.9.9.0',
         'requirements_section_heading' => 'Warnings found',
-        'message' => "The installed minor version of Drupal, 9.8, will receive security updates until the release of 9.10.0.Update to 9.9 or higher soon to continue receiving security updates. $see_available_message$release_coverage_message",
+        'message' => "The installed minor version of Drupal, 9.8, will stop receiving official security support after the release of 9.10.0.Update to 9.9 or higher soon to continue receiving security updates. $see_available_message$release_coverage_message",
         'mock_date' => '',
       ],
     ];
