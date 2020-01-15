@@ -7,7 +7,7 @@ namespace Drupal\update;
  *
  * @internal
  */
-class ModuleVersion {
+final class ModuleVersion {
 
   /**
    * The '8.x-' prefix is used on contrib module version numbers.
@@ -65,7 +65,7 @@ class ModuleVersion {
    * @param string|null $version_extra
    *   The extra version string.
    */
-  protected function __construct($major_version, $version_extra) {
+  private function __construct($major_version, $version_extra) {
     $this->majorVersion = $major_version;
     $this->versionExtra = $version_extra;
   }
@@ -73,8 +73,8 @@ class ModuleVersion {
   /**
    * Constructs a module version object from a support branch.
    *
-   * This can be used to determine the major and minor versions. The patch
-   * version will always be NULL.
+   * This can be used to determine the major version of the branch.
+   * ::getVersionExtra() will always return NULL for branches.
    *
    * @param string $branch
    *   The support branch.
@@ -100,7 +100,7 @@ class ModuleVersion {
    * Gets the version extra string at the end of the version number.
    *
    * @return string|null
-   *   The version extra string if available otherwise NULL.
+   *   The version extra string if available, or otherwise NULL.
    */
   public function getVersionExtra() {
     return $this->versionExtra;

@@ -148,8 +148,8 @@ function update_calculate_project_data($available) {
  * with an error and the next project is considered.
  *
  * If the project itself is valid, the function decides what major release
- * series to consider. The project defines the currently supported development
- * branches, so the first step is to make sure the development branch of the
+ * series to consider. The project defines the currently supported branches for
+ * the project, so the first step is to make sure the development branch of the
  * current version is still supported. If so, then the major version of the
  * current version is used. If the current version is not in a supported branch,
  * the next supported branch is used to determine the major version to use.
