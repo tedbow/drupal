@@ -262,7 +262,13 @@ function update_calculate_project_update_status(&$project_data, $available) {
   }
 
   // Figure out the target major version.
-  $existing_major = ModuleVersion::createFromVersionString($project_data['existing_version'])->getMajorVersion();
+  try {
+    $existing_major = ModuleVersion::createFromVersionString($project_data['existing_version'])->getMajorVersion();
+  }
+  catch (UnexpectedValueException $exception) {
+    // If the version has an unexpected value we can't determine updates.
+    return;
+  }
   $supported_branches = [];
   if (isset($available['supported_branches'])) {
     $supported_branches = explode(',', $available['supported_branches']);
@@ -282,10 +288,23 @@ function update_calculate_project_update_status(&$project_data, $available) {
   }
   elseif ($supported_branches) {
     // We know the current release is unsupported since it is not in
-    // 'supported_branches' list. We should use the next supported branch for
-    // the target major version.
-    $target_major = ModuleVersion::createFromSupportBranch($supported_branches[0])->getMajorVersion();
+    // 'supported_branches' list. We should use the next valid supported
+    // branch for the target major version.
     $project_data['status'] = UpdateManagerInterface::NOT_SUPPORTED;
+    foreach ($supported_branches as $supported_branch) {
+      try {
+        $target_major = ModuleVersion::createFromSupportBranch($supported_branch)->getMajorVersion();
+
+      }
+      catch (UnexpectedValueException $exception) {
+        continue;
+      }
+    }
+    if (!isset($target_major)) {
+      // If there are no valid support branches us the current major.
+      $target_major = $existing_major;
+    }
+
   }
   else {
     // Malformed XML file? Stick with the current branch.
@@ -323,7 +342,12 @@ function update_calculate_project_update_status(&$project_data, $available) {
   $recommended_release = NULL;
 
   foreach ($available['releases'] as $version => $release) {
-    $release_module_version = ModuleVersion::createFromVersionString($release['version']);
+    try {
+      $release_module_version = ModuleVersion::createFromVersionString($release['version']);
+    }
+    catch (UnexpectedValueException $exception) {
+      continue;
+    }
     // First, if this is the existing release, check a few conditions.
     if ($project_data['existing_version'] === $version) {
       if (isset($release['terms']['Release type']) &&
