@@ -10,11 +10,11 @@ namespace Drupal\update;
 class ModuleVersion {
 
   /**
-   * The core compatibility prefix used in version strings.
+   * The '8.x-' prefix is used on contrib module version numbers.
    *
    * @var string
    */
-  const CORE_COMPATIBILITY_PREFIX = \Drupal::CORE_COMPATIBILITY . '-';
+  const CORE_PREFIX = '8.x-';
 
   /**
    * The major version.
@@ -40,7 +40,16 @@ class ModuleVersion {
    *   The module version instance.
    */
   public static function createFromVersionString($version_string) {
-    $version_string = strpos($version_string, static::CORE_COMPATIBILITY_PREFIX) === 0 ? str_replace(static::CORE_COMPATIBILITY_PREFIX, '', $version_string) : $version_string;
+    if (strpos($version_string, static::CORE_PREFIX) === 0) {
+      $version_string = str_replace(static::CORE_PREFIX, '', $version_string);
+    }
+    else {
+      // Ensure the version string has no unsupported core prefixes.
+      $dot_x_position = strpos($version_string, '.x-');
+      if ($dot_x_position === 1 || $dot_x_position === 2) {
+        throw new \UnexpectedValueException("Unexpected version core prefix in $version_string. The only core prefix expected in \Drupal\update\ModuleVersion is '8.x-.");
+      }
+    }
     $version_parts = explode('.', $version_string);
     $major_version = $version_parts[0];
     $last_part_split = explode('-', array_pop($version_parts));

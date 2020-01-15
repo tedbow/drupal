@@ -33,6 +33,28 @@ class ModuleVersionTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::createFromVersionString
+   *
+   * @dataProvider providerInvalidVersionCorePrefix
+   */
+  public function testInvalidVersionCorePrefix($version_string) {
+    $this->expectException(\UnexpectedValueException::class);
+    $this->expectExceptionMessage("Unexpected version core prefix in $version_string. The only core prefix expected in \Drupal\update\ModuleVersion is '8.x-.");
+    ModuleVersion::createFromVersionString($version_string);
+  }
+
+  /**
+   * @covers ::createFromSupportBranch
+   *
+   * @dataProvider providerInvalidBranchCorePrefix
+   */
+  public function testInvalidBranchCorePrefix($branch) {
+    $this->expectException(\UnexpectedValueException::class);
+    $this->expectExceptionMessage("Unexpected version core prefix in {$branch}x. The only core prefix expected in \Drupal\update\ModuleVersion is '8.x-.");
+    ModuleVersion::createFromSupportBranch($branch);
+  }
+
+  /**
    * @covers ::createFromSupportBranch
    *
    * @dataProvider providerCreateFromSupportBranch
@@ -200,6 +222,30 @@ class ModuleVersionTest extends UnitTestCase {
           'extra' => NULL,
         ],
       ],
+    ];
+  }
+
+  /**
+   * Data provider for testInvalidVersionCorePrefix().
+   */
+  public function providerInvalidVersionCorePrefix() {
+    return [
+      ['6.x-1.0'],
+      ['7.x-1.x'],
+      ['9.x-1.x'],
+      ['10.x-1.x'],
+    ];
+  }
+
+  /**
+   * Data provider for testInvalidBranchCorePrefix().
+   */
+  public function providerInvalidBranchCorePrefix() {
+    return [
+      ['6.x-1.'],
+      ['7.x-1.'],
+      ['9.x-1.'],
+      ['10.x-1.'],
     ];
   }
 
