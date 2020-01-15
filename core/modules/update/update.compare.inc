@@ -390,10 +390,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
     $release_major_version = $release_module_version->getMajorVersion();
     // See if this is a higher major version than our target and yet still
     // supported. If so, record it as an "Also available" release.
-    // Note: Some projects have a HEAD release from CVS days, which could
-    // be one of those being compared. They would not have version_major
-    // set, so we must call isset first.
-    if ($release_major_version !== NULL && $release_major_version > $target_major) {
+    if ($release_major_version > $target_major) {
       if ($is_in_supported_branch($release['version'])) {
         if (!isset($project_data['also'])) {
           $project_data['also'] = [];
@@ -436,7 +433,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
       $release_version_without_extra = $release['version'];
     }
 
-    // Look for the 'recommended' version if we haven't found it yet (SEE
+    // Look for the 'recommended' version if we haven't found it yet (see
     // phpdoc at the top of this function for the definition).
     if (!isset($project_data['recommended'])
         && $release_major_version == $target_major) {

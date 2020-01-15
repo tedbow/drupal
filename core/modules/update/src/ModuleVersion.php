@@ -52,6 +52,9 @@ final class ModuleVersion {
     }
     $version_parts = explode('.', $version_string);
     $major_version = $version_parts[0];
+    if (!is_numeric($major_version)) {
+      throw new \UnexpectedValueException("Unexpected version major in $version_string.");
+    }
     $last_part_split = explode('-', array_pop($version_parts));
     $version_extra = count($last_part_split) === 1 ? NULL : $last_part_split[1];
     return new static($major_version, $version_extra);
