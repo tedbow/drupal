@@ -54,18 +54,18 @@ class ModuleVersionTest extends UnitTestCase {
           'extra' => NULL,
         ],
       ],
-      '8.x-1.0-dev' => [
-        '8.x-1.0-dev',
+      '8.x-1.0-alpha1' => [
+        '8.x-1.0-alpha1',
         [
           'major' => '1',
-          'extra' => 'dev',
+          'extra' => 'alpha1',
         ],
       ],
-      '8.x-1.3-dev' => [
-        '8.x-1.3-dev',
+      '8.x-1.3-alpha1' => [
+        '8.x-1.3-alpha1',
         [
           'major' => '1',
-          'extra' => 'dev',
+          'extra' => 'alpha1',
         ],
       ],
       '0.1' => [
@@ -89,18 +89,18 @@ class ModuleVersionTest extends UnitTestCase {
           'extra' => NULL,
         ],
       ],
-      '1.0-dev' => [
-        '1.0-dev',
+      '1.0-alpha1' => [
+        '1.0-alpha1',
         [
           'major' => '1',
-          'extra' => 'dev',
+          'extra' => 'alpha1',
         ],
       ],
-      '1.3-dev' => [
-        '1.3-dev',
+      '1.3-alpha1' => [
+        '1.3-alpha1',
         [
           'major' => '1',
-          'extra' => 'dev',
+          'extra' => 'alpha1',
         ],
       ],
       '0.2.0' => [
@@ -131,17 +131,45 @@ class ModuleVersionTest extends UnitTestCase {
           'extra' => NULL,
         ],
       ],
-      '1.2.0-dev' => [
-        '1.2.0-dev',
+      '1.2.0-alpha1' => [
+        '1.2.0-alpha1',
+        [
+          'major' => '1',
+          'extra' => 'alpha1',
+        ],
+      ],
+      '1.2.3-alpha1' => [
+        '1.2.3-alpha1',
+        [
+          'major' => '1',
+          'extra' => 'alpha1',
+        ],
+      ],
+      '8.x-1.x-dev' => [
+        '8.x-1.x-dev',
         [
           'major' => '1',
           'extra' => 'dev',
         ],
       ],
-      '1.2.3-dev' => [
-        '1.2.3-dev',
+      '8.x-8.x-dev' => [
+        '8.x-8.x-dev',
+        [
+          'major' => '8',
+          'extra' => 'dev',
+        ],
+      ],
+      '1.x-dev' => [
+        '1.x-dev',
         [
           'major' => '1',
+          'extra' => 'dev',
+        ],
+      ],
+      '8.x-dev' => [
+        '8.x-dev',
+        [
+          'major' => '8',
           'extra' => 'dev',
         ],
       ],
@@ -177,7 +205,7 @@ class ModuleVersionTest extends UnitTestCase {
    * Data provider for testInvalidVersionNumber().
    */
   public function providerInvalidVersionNumber() {
-    return $this->createKeyedTestCases([
+    return static::createKeyedTestCases([
       '',
       '8',
       'x',
@@ -214,7 +242,7 @@ class ModuleVersionTest extends UnitTestCase {
    * Data provider for testInvalidVersionCorePrefix().
    */
   public function providerInvalidVersionCorePrefix() {
-    return $this->createKeyedTestCases([
+    return static::createKeyedTestCases([
       '6.x-1.0',
       '7.x-1.x',
       '9.x-1.x',
@@ -237,7 +265,7 @@ class ModuleVersionTest extends UnitTestCase {
    * Data provider for testInvalidBranchCorePrefix().
    */
   public function providerInvalidBranchCorePrefix() {
-    return $this->createKeyedTestCases([
+    return static::createKeyedTestCases([
       '6.x-1.',
       '7.x-1.',
       '9.x-1.',
