@@ -41,10 +41,8 @@ final class ModuleVersion {
    */
   public static function createFromVersionString($version_string) {
     $original_version = $version_string;
-    if (strpos($version_string, static::CORE_PREFIX) === 0) {
-      if ($version_string !== '8.x-dev') {
-        $version_string = preg_replace('/8\.x-/', '', $version_string, 1);
-      }
+    if (strpos($version_string, static::CORE_PREFIX) === 0 && $version_string !== '8.x-dev') {
+      $version_string = preg_replace('/8\.x-/', '', $version_string, 1);
     }
     else {
       // Ensure the version string has no unsupported core prefixes.
