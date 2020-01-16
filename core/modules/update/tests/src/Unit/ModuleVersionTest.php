@@ -164,6 +164,7 @@ class ModuleVersionTest extends UnitTestCase {
 
   /**
    * @covers ::createFromVersionString
+   *
    * @dataProvider providerInvalidVersionNumber
    */
   public function testInvalidVersionNumber($version_string) {
@@ -172,6 +173,9 @@ class ModuleVersionTest extends UnitTestCase {
     ModuleVersion::createFromVersionString($version_string);
   }
 
+  /**
+   * Data provider for testInvalidVersionNumber().
+   */
   public function providerInvalidVersionNumber() {
     return $this->createKeyedTestCases([
       '8',
@@ -292,6 +296,9 @@ class ModuleVersionTest extends UnitTestCase {
     ModuleVersion::createFromSupportBranch($branch);
   }
 
+  /**
+   * Data provider for testInvalidBranch().
+   */
   public function provideInvalidBranch() {
     return self::createKeyedTestCases([
       '8.x-1.0',
@@ -306,9 +313,14 @@ class ModuleVersionTest extends UnitTestCase {
   }
 
   /**
-   * @param array $test_arguments
+   * Creates test case arrays for data provider methods.
    *
-   * @return array|false
+   * @param string[] $test_arguments
+   *   The test arguments.
+   *
+   * @return array
+   *   An array with $test_arguments as keys and each element of $test_arguments
+   *   as a single item array
    */
   protected static function createKeyedTestCases(array $test_arguments) {
     return array_combine(
