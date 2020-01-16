@@ -178,6 +178,7 @@ class ModuleVersionTest extends UnitTestCase {
    */
   public function providerInvalidVersionNumber() {
     return $this->createKeyedTestCases([
+      '',
       '8',
       'x',
       'xx',
