@@ -148,13 +148,14 @@ function update_calculate_project_data($available) {
  * with an error and the next project is considered.
  *
  * If the project itself is valid, the function decides what major release
- * series to consider. The project defines the currently supported branches for
- * the project, so the first step is to make sure the development branch of the
- * current version is still supported. If so, then the major version of the
- * current version is used. If the current version is not in a supported branch,
- * the next supported branch is used to determine the major version to use.
- * There's also a check to make sure that this function never recommends an
- * earlier release than the currently installed major version.
+ * series to consider. The project defines its currently supported branches in
+ * its Drupal.org for the project, so the first step is to make sure the
+ * development branch of the current version is still supported. If so, then the
+ * major version of the current version is used. If the current version is not
+ * in a supported branch, the next supported branch is used to determine the
+ * major version to use. There's also a check to make sure that this function
+ * never recommends an earlier release than the currently installed major
+ * version.
  *
  * Given a target major version, the available releases are scanned looking for
  * the specific release to recommend (avoiding beta releases and development
@@ -301,7 +302,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
       }
     }
     if (!isset($target_major)) {
-      // If there are no valid support branches us the current major.
+      // If there are no valid support branches, use the current major.
       $target_major = $existing_major;
     }
 
