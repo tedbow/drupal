@@ -40,6 +40,7 @@ final class ModuleVersion {
    *   The module version instance.
    */
   public static function createFromVersionString($version_string) {
+    $original_version = $version_string;
     if (strpos($version_string, static::CORE_PREFIX) === 0) {
       $version_string = str_replace(static::CORE_PREFIX, '', $version_string);
     }
@@ -52,11 +53,15 @@ final class ModuleVersion {
     }
     $version_parts = explode('.', $version_string);
     $major_version = $version_parts[0];
-    if (!is_numeric($major_version)) {
-      throw new \UnexpectedValueException("Unexpected version major in $version_string.");
-    }
-    $last_part_split = explode('-', array_pop($version_parts));
+    $version_parts_count = count($version_parts);
+    $last_part_split = explode('-', $version_parts[count($version_parts) - 1]);
     $version_extra = count($last_part_split) === 1 ? NULL : $last_part_split[1];
+    if ($version_parts_count > 3 || $version_parts_count < 2
+       || !is_numeric($major_version)
+       || ($version_parts_count === 3 && !is_numeric($version_parts[1]))
+       || (!is_numeric($last_part_split[0]) && $last_part_split !== 'x' && $version_extra !== 'dev')) {
+      throw new \UnexpectedValueException("Unexpected version number in $original_version.");
+    }
     return new static($major_version, $version_extra);
   }
 
@@ -86,7 +91,10 @@ final class ModuleVersion {
    *   The module version instance.
    */
   public static function createFromSupportBranch($branch) {
-    return static::createFromVersionString($branch . 'x');
+    if (substr($branch, -1) !== '.') {
+      throw new \UnexpectedValueException("Invalid support branch: $branch");
+    }
+    return static::createFromVersionString($branch . '0');
   }
 
   /**
