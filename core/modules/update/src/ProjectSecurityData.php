@@ -7,10 +7,9 @@ namespace Drupal\update;
  *
  * @internal
  *   This class implements logic to determine security coverage for Drupal core
- *   according to Drupal core security policy. It should not be extended or
- *   called directly.
+ *   according to Drupal core security policy. It should not be called directly.
  */
-class ProjectSecurityData {
+final class ProjectSecurityData {
 
   /**
    * The number of minor versions of Drupal core that are supported.

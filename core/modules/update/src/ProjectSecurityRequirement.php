@@ -13,10 +13,9 @@ use Drupal\Core\Url;
  *
  * @internal
  *   This class implements logic to determine security coverage for Drupal core
- *   according to Drupal core security policy. It should not be extended or
- *   called directly.
+ *   according to Drupal core security policy. It should not be called directly.
  */
-class ProjectSecurityRequirement {
+final class ProjectSecurityRequirement {
 
   use StringTranslationTrait;
 
@@ -149,16 +148,7 @@ class ProjectSecurityRequirement {
       // site owner update.
       $message = $this->getVersionNotSupportedMessage();
     }
-    if ($this->projectData['project_type'] === 'core' && $this->projectData['name'] === 'drupal') {
-      // Provide a link to the Drupal core documentation on release cycles
-      // if the installed Drupal core minor is not supported.
-      $message .= '<p>' . $this->t(
-          'Visit the <a href=":url">release cycle overview</a> for more information on supported releases.',
-          [
-            ':url' => 'https://www.drupal.org/core/release-cycle-overview',
-          ]
-        ) . '</p>';
-    }
+    $message .= $this->getReleaseCycleLink();
 
     return Markup::create($message);
   }
@@ -172,14 +162,16 @@ class ProjectSecurityRequirement {
   private function getDateEndRequirement() {
     $requirement = [];
     $security_info = $this->projectData['security_coverage_info'];
-    $date_format = count(explode('-', $security_info['support_end_date'])) === 3 ? 'Y-m-d' : 'Y-m';
-    $end_timestamp = \DateTime::createFromFormat($date_format, $security_info['support_end_date'])->getTimestamp();
-    /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
-    $date_formatter = \Drupal::service('date.formatter');
     /** @var \Drupal\Component\Datetime\Time $time */
     $time = \Drupal::service('datetime.time');
-    $current_date = $date_formatter->format($time->getRequestTime(), 'custom', $date_format);
-    if ($security_info['support_end_date'] <= $current_date) {
+    /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
+    $date_formatter = \Drupal::service('date.formatter');
+    // 'support_end_date' will either be in format 'Y-m-d' or 'Y-m'.
+    $date_format = substr_count($security_info['support_end_date'], '-') === 2 ? 'Y-m-d' : 'Y-m';
+    $comparable_request_date = $date_formatter->format($time->getRequestTime(), 'custom', $date_format);
+    $end_timestamp = \DateTime::createFromFormat($date_format, $security_info['support_end_date'])->getTimestamp();
+    $formatted_end_date = $date_format === 'Y-m-d' ? $security_info['support_end_date'] : $date_formatter->format($end_timestamp, 'custom', 'F Y');
+    if ($security_info['support_end_date'] <= $comparable_request_date) {
       // Support is over.
       $requirement['value'] = $this->t('Unsupported minor version');
       $requirement['severity'] = REQUIREMENT_ERROR;
@@ -191,16 +183,18 @@ class ProjectSecurityRequirement {
       $translation_arguments = [
         '%project' => $this->projectData['title'],
         '%version' => $this->existingVersion,
-        '%date' => $date_format === 'Y-m-d' ? $security_info['support_end_date'] : $date_formatter->format($end_timestamp, 'custom', 'F Y'),
+        '%date' => $formatted_end_date,
       ];
       $requirement['description'] = '<p>' . $this->t('The installed minor version of %project, %version, will stop receiving official security support after  %date.', $translation_arguments) . '</p>';
-      if (isset($security_info['support_ending_warn_date']) && $security_info['support_ending_warn_date'] <= $date_formatter->format($time->getRequestTime(), 'custom', 'Y-m-d')) {
+      // 'support_ending_warn_date' will always be in the format 'Y-m-d'.
+      $request_date = $date_formatter->format($time->getRequestTime(), 'custom', 'Y-m-d');
+      if (isset($security_info['support_ending_warn_date']) && $security_info['support_ending_warn_date'] <= $request_date) {
         $requirement['description'] .= '<p>' . $this->t('Update to a supported minor version soon to continue receiving security updates.') . '</p>';
         $requirement['severity'] = REQUIREMENT_WARNING;
       }
     }
     if (isset($requirement['description'])) {
-      $requirement['description'] = Markup::create($requirement['description']);
+      $requirement['description'] = Markup::create($requirement['description'] . $this->getReleaseCycleLink());
     }
     return $requirement;
   }
@@ -231,11 +225,26 @@ class ProjectSecurityRequirement {
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
    *   The message.
    */
-  private static function getAvailableUpdatesMessage() {
-    return t(
+  private function getAvailableUpdatesMessage() {
+    return $this->t(
       'See the <a href=":update_status_report">available updates</a> page for more information.',
       [':update_status_report' => Url::fromRoute('update.status')->toString()]
     );
+  }
+
+  /**
+   * Gets a link the release cycle page on drupal.org.
+   *
+   * @return string
+   *   A link to the release cycle page on drupal.org.
+   */
+  private function getReleaseCycleLink(): string {
+    return '<p>' . $this->t(
+        'Visit the <a href=":url">release cycle overview</a> for more information on supported releases.',
+        [
+          ':url' => 'https://www.drupal.org/core/release-cycle-overview',
+        ]
+      ) . '</p>';
   }
 
 }
