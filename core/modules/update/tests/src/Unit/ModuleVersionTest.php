@@ -197,7 +197,7 @@ class ModuleVersionTest extends UnitTestCase {
    */
   public function testInvalidVersionNumber($version_string) {
     $this->expectException(\UnexpectedValueException::class);
-    $this->expectExceptionMessage("Unexpected version number in $version_string.");
+    $this->expectExceptionMessage("Unexpected version number in: $version_string");
     ModuleVersion::createFromVersionString($version_string);
   }
 
@@ -234,7 +234,7 @@ class ModuleVersionTest extends UnitTestCase {
    */
   public function testInvalidVersionCorePrefix($version_string) {
     $this->expectException(\UnexpectedValueException::class);
-    $this->expectExceptionMessage("Unexpected version core prefix in $version_string. The only core prefix expected in \Drupal\update\ModuleVersion is '8.x-.");
+    $this->expectExceptionMessage("Unexpected version core prefix in $version_string. The only core prefix expected in \Drupal\update\ModuleVersion is: 8.x-");
     ModuleVersion::createFromVersionString($version_string);
   }
 
@@ -254,10 +254,13 @@ class ModuleVersionTest extends UnitTestCase {
    * @covers ::createFromSupportBranch
    *
    * @dataProvider providerInvalidBranchCorePrefix
+   *
+   * @param string $branch
+   *   The branch to test.
    */
   public function testInvalidBranchCorePrefix($branch) {
     $this->expectException(\UnexpectedValueException::class);
-    $this->expectExceptionMessage("Unexpected version core prefix in {$branch}0. The only core prefix expected in \Drupal\update\ModuleVersion is '8.x-.");
+    $this->expectExceptionMessage("Unexpected version core prefix in {$branch}0. The only core prefix expected in \Drupal\update\ModuleVersion is: 8.x-");
     ModuleVersion::createFromSupportBranch($branch);
   }
 
@@ -277,6 +280,12 @@ class ModuleVersionTest extends UnitTestCase {
    * @covers ::createFromSupportBranch
    *
    * @dataProvider providerCreateFromSupportBranch
+   *
+   * @param string $branch
+   *   The branch to test.
+   *
+   * @param string $expected_major
+   *   The expected major version.
    */
   public function testCreateFromSupportBranch($branch, $expected_major) {
     $version = ModuleVersion::createFromSupportBranch($branch);
@@ -318,6 +327,9 @@ class ModuleVersionTest extends UnitTestCase {
    * @covers ::createFromSupportBranch
    *
    * @dataProvider provideInvalidBranch
+   *
+   * @param string $branch
+   *   The branch to test.
    */
   public function testInvalidBranch($branch) {
     $this->expectException(\UnexpectedValueException::class);

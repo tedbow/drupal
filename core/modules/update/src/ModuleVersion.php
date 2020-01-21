@@ -6,6 +6,8 @@ namespace Drupal\update;
  * Provides a module version value object.
  *
  * @internal
+ *
+ * @see https://www.drupal.org/drupalorg/docs/apis/update-status-xml.
  */
 final class ModuleVersion {
 
@@ -50,7 +52,7 @@ final class ModuleVersion {
       if ($dot_x_position === 1 || $dot_x_position === 2) {
         $after_core_prefix = explode('.x-', $version_string)[1];
         if ($after_core_prefix !== 'dev') {
-          throw new \UnexpectedValueException("Unexpected version core prefix in $version_string. The only core prefix expected in \Drupal\update\ModuleVersion is '8.x-.");
+          throw new \UnexpectedValueException("Unexpected version core prefix in $version_string. The only core prefix expected in \Drupal\update\ModuleVersion is: 8.x-");
         }
       }
     }
@@ -66,7 +68,7 @@ final class ModuleVersion {
       // allowed is in development versions like 8.x-1.x-dev, 1.2.x-dev or
       // 1.x-dev.
        || (!is_numeric($last_part_split[0]) && $last_part_split !== 'x' && $version_extra !== 'dev')) {
-      throw new \UnexpectedValueException("Unexpected version number in $original_version.");
+      throw new \UnexpectedValueException("Unexpected version number in: $original_version");
     }
     return new static($major_version, $version_extra);
   }
