@@ -188,7 +188,7 @@ final class ProjectSecurityRequirement {
       $requirement['description'] = '<p>' . $this->t('The installed minor version of %project, %version, will stop receiving official security support after  %date.', $translation_arguments) . '</p>';
       // 'support_ending_warn_date' will always be in the format 'Y-m-d'.
       $request_date = $date_formatter->format($time->getRequestTime(), 'custom', 'Y-m-d');
-      if (isset($security_info['support_ending_warn_date']) && $security_info['support_ending_warn_date'] <= $request_date) {
+      if (!empty($security_info['support_ending_warn_date']) && $security_info['support_ending_warn_date'] <= $request_date) {
         $requirement['description'] .= '<p>' . $this->t('Update to a supported minor version soon to continue receiving security updates.') . '</p>';
         $requirement['severity'] = REQUIREMENT_WARNING;
       }

@@ -17,6 +17,23 @@ final class ProjectSecurityData {
   const CORE_MINORS_SUPPORTED = 2;
 
   /**
+   * Define constants for versions with support end dates.
+   *
+   * Two types of constants are supported:
+   * - SUPPORT_END_DATE_[VERSION_MAJOR]_[VERSION_MINOR]: A date in 'Y-m-d' or
+   *   'Y-m' format.
+   * - SUPPORT_ENDING_WARN_DATE__[VERSION_MAJOR]_[VERSION_MINOR]: A date in
+   *   'Y-m-d' format.
+   *
+   * @see \Drupal\update\ProjectSecurityRequirement::getDateEndRequirement()
+   */
+  const SUPPORT_END_DATE_8_8 = '2020-12-02';
+
+  const SUPPORT_ENDING_WARN_DATE_8_8 = '2020-06-02';
+
+  const SUPPORT_END_DATE_8_9 = '2021-11';
+
+  /**
    * The Drupal project data.
    *
    * The following keys are used in this class:
@@ -98,14 +115,11 @@ final class ProjectSecurityData {
       return [];
     }
     $existing_release = $this->releases[$this->projectData['existing_version']];
-    // Support for Drupal 8's LTS release and the version before are based on
-    // specific dates.
-    if ($existing_release['version_major'] === '8' && $existing_release['version_minor'] === '8') {
-      $info['support_end_date'] = '2020-12-02';
-      $info['support_ending_warn_date'] = '2020-06-02';
-    }
-    elseif ($existing_release['version_major'] === '8' && $existing_release['version_minor'] === '9') {
-      $info['support_end_date'] = '2021-11';
+    // Check if the installed version has a specific end date defined.
+    $version_suffix = $existing_release['version_major'] . '_' . $existing_release['version_minor'];
+    if (defined("self::SUPPORT_END_DATE_$version_suffix")) {
+      $info['support_end_date'] = constant("self::SUPPORT_END_DATE_$version_suffix");
+      $info['support_ending_warn_date'] = defined("self::SUPPORT_ENDING_WARN_DATE_$version_suffix") ? constant("self::SUPPORT_ENDING_WARN_DATE_$version_suffix") : NULL;
     }
     elseif ($support_until_release = $this->getSupportUntilReleaseInfo()) {
       $info['support_end_version'] = $support_until_release['version'];
