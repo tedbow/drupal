@@ -16,8 +16,13 @@ class ModuleVersionTest extends UnitTestCase {
    * @covers ::getMajorVersion
    *
    * @dataProvider providerVersionInfos
+   *
+   * @param string $version
+   *   The version string to test.
+   * @param array $expected_version_info
+   *   The expected version information.
    */
-  public function testGetMajorVersion($version, $expected_version_info) {
+  public function testGetMajorVersion($version, array $expected_version_info) {
     $version = ModuleVersion::createFromVersionString($version);
     $this->assertSame($expected_version_info['major'], $version->getMajorVersion());
   }
@@ -26,8 +31,13 @@ class ModuleVersionTest extends UnitTestCase {
    * @covers ::getVersionExtra
    *
    * @dataProvider providerVersionInfos
+   *
+   * @param string $version
+   *   The version string to test.
+   * @param array $expected_version_info
+   *   The expected version information.
    */
-  public function testGetVersionExtra($version, $expected_version_info) {
+  public function testGetVersionExtra($version, array $expected_version_info) {
     $version = ModuleVersion::createFromVersionString($version);
     $this->assertSame($expected_version_info['extra'], $version->getVersionExtra());
   }
@@ -39,6 +49,11 @@ class ModuleVersionTest extends UnitTestCase {
    *   Arrays of version information.
    */
   public function providerVersionInfos() {
+    // Data provider values are:
+    // - The version number to test.
+    // - Array of expected version information with the following keys:
+    //   -'major': The expected result from ::getMajorVersion().
+    //   -'extra': The expected result from ::getVersionExtra().
     return [
       '8.x-1.3' => [
         '8.x-1.3',
@@ -194,11 +209,14 @@ class ModuleVersionTest extends UnitTestCase {
    * @covers ::createFromVersionString
    *
    * @dataProvider providerInvalidVersionNumber
+   *
+   * @param string $version
+   *   The version string to test.
    */
-  public function testInvalidVersionNumber($version_string) {
+  public function testInvalidVersionNumber($version) {
     $this->expectException(\UnexpectedValueException::class);
-    $this->expectExceptionMessage("Unexpected version number in: $version_string");
-    ModuleVersion::createFromVersionString($version_string);
+    $this->expectExceptionMessage("Unexpected version number in: $version");
+    ModuleVersion::createFromVersionString($version);
   }
 
   /**
@@ -231,11 +249,14 @@ class ModuleVersionTest extends UnitTestCase {
    * @covers ::createFromVersionString
    *
    * @dataProvider providerInvalidVersionCorePrefix
+   *
+   * @param string $version
+   *   The version string to test.
    */
-  public function testInvalidVersionCorePrefix($version_string) {
+  public function testInvalidVersionCorePrefix($version) {
     $this->expectException(\UnexpectedValueException::class);
-    $this->expectExceptionMessage("Unexpected version core prefix in $version_string. The only core prefix expected in \Drupal\update\ModuleVersion is: 8.x-");
-    ModuleVersion::createFromVersionString($version_string);
+    $this->expectExceptionMessage("Unexpected version core prefix in $version. The only core prefix expected in \Drupal\update\ModuleVersion is: 8.x-");
+    ModuleVersion::createFromVersionString($version);
   }
 
   /**
@@ -283,7 +304,6 @@ class ModuleVersionTest extends UnitTestCase {
    *
    * @param string $branch
    *   The branch to test.
-   *
    * @param string $expected_major
    *   The expected major version.
    */
@@ -296,9 +316,14 @@ class ModuleVersionTest extends UnitTestCase {
   }
 
   /**
-   * Data provider for providerCreateFromSupportBranch().
+   * Data provider for testCreateFromSupportBranch().
    */
   public function providerCreateFromSupportBranch() {
+    // Data provider values are:
+    // - The version number to test.
+    // - Array of expected version information with the following keys:
+    //   -'major': The expected result from ::getMajorVersion().
+    //   -'extra': The expected result from ::getVersionExtra().
     return [
       '0.' => [
         '0.',

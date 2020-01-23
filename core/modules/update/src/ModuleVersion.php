@@ -28,6 +28,9 @@ final class ModuleVersion {
   /**
    * The version extra string.
    *
+   * For example, if the module version is '2.0.3-alpha1', then the version
+   * extra string is 'alpha1'.
+   *
    * @var string|null
    */
   protected $versionExtra;
