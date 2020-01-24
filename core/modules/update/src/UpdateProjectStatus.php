@@ -10,11 +10,17 @@ namespace Drupal\update;
 final class UpdateProjectStatus {
 
   /**
+   * An array containing information about a specific project.
+   *
    * @var array
    */
   protected $projectData;
 
   /**
+   * Data about available project releases of a specific project.
+   *
+   * @see update_get_available()
+   *
    * @var array
    */
   protected $availableReleases;
@@ -200,7 +206,7 @@ final class UpdateProjectStatus {
           $target_major = ModuleVersion::createFromSupportBranch($supported_branch)
             ->getMajorVersion();
 
-        } catch (UnexpectedValueException $exception) {
+        } catch (\UnexpectedValueException $exception) {
           continue;
         }
       }
