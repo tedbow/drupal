@@ -2,6 +2,9 @@
 
 namespace Drupal\update;
 
+use Composer\Semver\Semver;
+use function Sodium\compare;
+
 /**
  * Utility class to calculate project update status.
  *
@@ -180,48 +183,36 @@ final class UpdateProjectStatus {
       return;
     }
 
-    // Figure out the target major version.
-    try {
-      $existing_major = ModuleVersion::createFromVersionString($this->projectData['existing_version'])
-        ->getMajorVersion();
-    } catch (UnexpectedValueException $exception) {
-      // If the version has an unexpected value we can't determine updates.
-      return;
-    }
-
-    $is_in_supported_branch = function ($version) use ($supported_branches) {
-      foreach ($supported_branches as $supported_branch) {
-        if (strpos($version, $supported_branch) === 0) {
-          return TRUE;
-        }
-      }
-      return FALSE;
-    };
+    // Figure out the target support branch.
     $existing_supported_branch = $this->getVersionSupportedBranch($this->projectData['existing_version']);
     $target_supported_branch = $existing_supported_branch;
     if (empty($target_supported_branch)) {
+      // We know the current release is unsupported since it is not in
+      // 'supported_branches' list. We should use the next valid supported
+      // branch for the target major version.
       $this->projectData['status'] = UpdateManagerInterface::NOT_SUPPORTED;
       if ($this->supportedBranches) {
-        // We know the current release is unsupported since it is not in
-        // 'supported_branches' list. We should use the next valid supported
-        // branch for the target major version.
         $this->projectData['status'] = UpdateManagerInterface::NOT_SUPPORTED;
-        $target_supported_branch = $this->supportedBranches[0];
-      }
-      else {
-        // No supported branches.
-        return;
+        foreach ($this->supportedBranches as $supported_branch) {
+          // Make sure we never tell the admin to downgrade. If we recommended an
+          // earlier version than the one they're running, they'd face an
+          // impossible data migration problem, since Drupal never supports a DB
+          // downgrade path. In the unfortunate case that what they're running is
+          // unsupported, and there's nothing newer for them to upgrade to, we
+          // can't print out a "Recommended version", but just have to tell them
+          // what they have is unsupported and let them figure it out.
+          if (!$this->isSupportBranchAfterVersion($supported_branch, $this->projectData['existing_version'])) {
+            $target_supported_branch = $supported_branch;
+            break;
+          }
+        }
       }
     }
+    if (empty($target_supported_branch)) {
+      return;
+    }
 
-    // Make sure we never tell the admin to downgrade. If we recommended an
-    // earlier version than the one they're running, they'd face an
-    // impossible data migration problem, since Drupal never supports a DB
-    // downgrade path. In the unfortunate case that what they're running is
-    // unsupported, and there's nothing newer for them to upgrade to, we
-    // can't print out a "Recommended version", but just have to tell them
-    // what they have is unsupported and let them figure it out.
-    $target_major = max($existing_major, $target_major);
+
 
 
     // If the project is marked as UpdateFetcherInterface::FETCH_PENDING, it
@@ -248,7 +239,7 @@ final class UpdateProjectStatus {
     foreach ($this->availableReleases['releases'] as $version => $release) {
       try {
         $release_module_version = ModuleVersion::createFromVersionString($release['version']);
-      } catch (UnexpectedValueException $exception) {
+      } catch (\UnexpectedValueException $exception) {
         continue;
       }
       // First, if this is the existing release, check a few conditions.
@@ -293,7 +284,7 @@ final class UpdateProjectStatus {
       $release_major_version = $release_module_version->getMajorVersion();
       // See if this is a higher major version than our target and yet still
       // supported. If so, record it as an "Also available" release.
-      if ($release_major_version > $target_major) {
+      if ($this->compareSupportBranches($this->getVersionSupportedBranch($release_major_version, $target_supported_branch)) {
         if ($is_in_supported_branch($release['version'])) {
           if (!isset($this->projectData['also'])) {
             $this->projectData['also'] = [];
@@ -455,6 +446,35 @@ final class UpdateProjectStatus {
       }
     }
     return NULL;
+  }
+
+  /**
+   * @param string $supported_branch
+   * @param string $version
+   */
+  private function isSupportBranchAfterVersion($supported_branch, $version) {
+    $branch_without_core_prefix = ModuleVersion::removeCorePrefix($supported_branch);
+    $version_without_core_prefix = ModuleVersion::removeCorePrefix($version);
+    if (Semver::satisfies($version_without_core_prefix, "<= $version_without_core_prefix.0")) {
+      return FALSE;
+    }
+    $branch_support_level = rtrim($branch_without_core_prefix, '.');
+    if (Semver::satisfies($version_without_core_prefix, "~$branch_support_level")) {
+      return FALSE;
+    }
+    return TRUE;
+  }
+
+  /**
+   * @param $getVersionSupportedBranch
+   */
+  private function compareSupportBranches($branch1, $branch2) {
+    $branch1 = ModuleVersion::removeCorePrefix($branch1);
+    $branch2 = ModuleVersion::removeCorePrefix($branch2);
+    if ($branch1 === $branch2) {
+      return 0;
+    }
+
   }
 
 }

@@ -46,10 +46,8 @@ final class ModuleVersion {
    */
   public static function createFromVersionString($version_string) {
     $original_version = $version_string;
-    if (strpos($version_string, static::CORE_PREFIX) === 0 && $version_string !== '8.x-dev') {
-      $version_string = preg_replace('/8\.x-/', '', $version_string, 1);
-    }
-    else {
+    $version_string = static::removeCorePrefix($version_string);
+    if ($version_string !== $original_version) {
       // Ensure the version string has no unsupported core prefixes.
       $dot_x_position = strpos($version_string, '.x-');
       if ($dot_x_position === 1 || $dot_x_position === 2) {
@@ -106,6 +104,13 @@ final class ModuleVersion {
       throw new \UnexpectedValueException("Invalid support branch: $branch");
     }
     return static::createFromVersionString($branch . '0');
+  }
+
+  public static function removeCorePrefix($version_string) {
+    if (strpos($version_string, static::CORE_PREFIX) === 0 && $version_string !== '8.x-dev') {
+      return preg_replace('/8\.x-/', '', $version_string, 1);
+    }
+    return $version_string;
   }
 
   /**
