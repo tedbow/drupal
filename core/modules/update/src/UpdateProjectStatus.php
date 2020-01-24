@@ -25,6 +25,11 @@ final class UpdateProjectStatus {
    */
   protected $availableReleases;
 
+  /**
+   * @var array
+   */
+  protected $supportedBranches;
+
 
   /**
    * UpdateProjectStatus constructor.
@@ -36,6 +41,10 @@ final class UpdateProjectStatus {
   public function __construct(array $project_data, array $available_releases) {
     $this->projectData = $project_data;
     $this->availableReleases = $available_releases;
+    $this->supportedBranches = [];
+    if (isset($this->availableReleases['supported_branches'])) {
+       $this->supportedBranches = explode(',', $this->availableReleases['supported_branches']);
+    }
   }
 
   /**
@@ -179,10 +188,6 @@ final class UpdateProjectStatus {
       // If the version has an unexpected value we can't determine updates.
       return;
     }
-    $supported_branches = [];
-    if (isset($this->availableReleases['supported_branches'])) {
-      $supported_branches = explode(',', $this->availableReleases['supported_branches']);
-    }
 
     $is_in_supported_branch = function ($version) use ($supported_branches) {
       foreach ($supported_branches as $supported_branch) {
@@ -192,33 +197,21 @@ final class UpdateProjectStatus {
       }
       return FALSE;
     };
-    if ($is_in_supported_branch($this->projectData['existing_version'])) {
-      // Still supported, stay at the current major version.
-      $target_major = $existing_major;
-    }
-    elseif ($supported_branches) {
-      // We know the current release is unsupported since it is not in
-      // 'supported_branches' list. We should use the next valid supported
-      // branch for the target major version.
+    $existing_supported_branch = $this->getVersionSupportedBranch($this->projectData['existing_version']);
+    $target_supported_branch = $existing_supported_branch;
+    if (empty($target_supported_branch)) {
       $this->projectData['status'] = UpdateManagerInterface::NOT_SUPPORTED;
-      foreach ($supported_branches as $supported_branch) {
-        try {
-          $target_major = ModuleVersion::createFromSupportBranch($supported_branch)
-            ->getMajorVersion();
-
-        } catch (\UnexpectedValueException $exception) {
-          continue;
-        }
+      if ($this->supportedBranches) {
+        // We know the current release is unsupported since it is not in
+        // 'supported_branches' list. We should use the next valid supported
+        // branch for the target major version.
+        $this->projectData['status'] = UpdateManagerInterface::NOT_SUPPORTED;
+        $target_supported_branch = $this->supportedBranches[0];
       }
-      if (!isset($target_major)) {
-        // If there are no valid support branches, use the current major.
-        $target_major = $existing_major;
+      else {
+        // No supported branches.
+        return;
       }
-
-    }
-    else {
-      // Malformed XML file? Stick with the current branch.
-      $target_major = $existing_major;
     }
 
     // Make sure we never tell the admin to downgrade. If we recommended an
@@ -229,6 +222,7 @@ final class UpdateProjectStatus {
     // can't print out a "Recommended version", but just have to tell them
     // what they have is unsupported and let them figure it out.
     $target_major = max($existing_major, $target_major);
+
 
     // If the project is marked as UpdateFetcherInterface::FETCH_PENDING, it
     // means that the data we currently have (if any) is stale, and we've got a
@@ -448,4 +442,19 @@ final class UpdateProjectStatus {
     }
     return;
   }
+
+  /**
+   * @param $version
+   *
+   * @return string|null
+   */
+  private function getVersionSupportedBranch($version) {
+    foreach ($this->supportedBranches as $supported_branch) {
+      if (strpos($version, $supported_branch) === 0) {
+        return $supported_branch;
+      }
+    }
+    return NULL;
+  }
+
 }
