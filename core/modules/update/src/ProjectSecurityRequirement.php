@@ -20,6 +20,15 @@ final class ProjectSecurityRequirement {
   use StringTranslationTrait;
 
   /**
+   * Security coverage information for the project.
+   *
+   * @see \Drupal\update\ProjectSecurityData::getCoverageInfo().
+   *
+   * @var array
+   */
+  private $securityCoverageInfo;
+
+  /**
    * The next version after the installed version in the format [MAJOR].[MINOR].
    *
    * @var string
@@ -61,13 +70,35 @@ final class ProjectSecurityRequirement {
    *   calling \Drupal\update\ProjectSecurityData::getCoverageInfo() before
    *   calling this method.
    */
-  public function __construct(array $project_data) {
-    $this->projectData = $project_data;
-    if (isset($this->projectData['existing_version'])) {
-      list($major, $minor) = explode('.', $this->projectData['existing_version']);
-      $this->existingVersion = "$major.$minor";
-      $this->nextVersion = "$major." . ((int) $minor + 1);
+  private function __construct(array $security_coverage_info = [], $existing_version = NULL, $next_version = NULL) {
+    $this->securityCoverageInfo = $security_coverage_info;
+    $this->existingVersion = $existing_version;
+    $this->nextVersion = $next_version;
+  }
+
+  /**
+   * Constructs a ProjectSecurityRequirement object from project data.
+   *
+   * @param array $project_data
+   *   Project data form Drupal\update\UpdateManagerInterface::getProjects().
+   *   The 'security_coverage_info' key should be set by
+   *   calling \Drupal\update\ProjectSecurityData::getCoverageInfo() before
+   *   calling this method.
+   *
+   * @return \Drupal\update\ProjectSecurityRequirement
+   *  The ProjectSecurityRequirement instance.
+   */
+  public static function createFromProjectDataArray(array $project_data) {
+    if ($project_data['project_type'] !== 'core' || $project_data['name'] !== 'drupal' || empty($project_data['security_coverage_info'])) {
+      return new static();
     }
+    if (isset($project_data['existing_version'])) {
+      list($major, $minor) = explode('.', $project_data['existing_version']);
+      $existing_version = "$major.$minor";
+      $next_version = "$major." . ((int) $minor + 1);
+      return new static($project_data['security_coverage_info'], $existing_version, $next_version);
+    }
+    return new static($project_data['security_coverage_info']);
   }
 
   /**
@@ -77,13 +108,10 @@ final class ProjectSecurityRequirement {
    *   Requirements array as specified by hook_requirements().
    */
   public function getRequirement() {
-    if ($this->projectData['project_type'] !== 'core' || $this->projectData['name'] !== 'drupal') {
-      return NULL;
-    }
-    if (isset($this->projectData['security_coverage_info']['support_end_version'])) {
+    if (isset($this->securityCoverageInfo['support_end_version'])) {
       $requirement = $this->getVersionEndRequirement();
     }
-    elseif (isset($this->projectData['security_coverage_info']['support_end_date'])) {
+    elseif (isset($this->securityCoverageInfo['support_end_date'])) {
       $requirement = $this->getDateEndRequirement();
     }
     else {
@@ -101,12 +129,11 @@ final class ProjectSecurityRequirement {
    */
   private function getVersionEndRequirement() {
     $requirement = [];
-    $security_coverage_info = $this->projectData['security_coverage_info'];
     if ($security_coverage_message = $this->getVersionEndCoverageMessage()) {
       $requirement['description'] = $security_coverage_message;
-      if ($security_coverage_info['additional_minors_coverage'] > 0) {
+      if ($this->securityCoverageInfo['additional_minors_coverage'] > 0) {
         $requirement['value'] = $this->t('Supported minor version');
-        $requirement['severity'] = $security_coverage_info['additional_minors_coverage'] > 1 ? REQUIREMENT_INFO : REQUIREMENT_WARNING;
+        $requirement['severity'] = $this->securityCoverageInfo['additional_minors_coverage'] > 1 ? REQUIREMENT_INFO : REQUIREMENT_WARNING;
       }
       else {
         $requirement['value'] = $this->t('Unsupported minor version');
@@ -125,18 +152,17 @@ final class ProjectSecurityRequirement {
    * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
    */
   private function getVersionEndCoverageMessage() {
-    $security_info = $this->projectData['security_coverage_info'];
-    if ($security_info['additional_minors_coverage'] > 0) {
+    if ($this->securityCoverageInfo['additional_minors_coverage'] > 0) {
       // If the installed minor version will be supported until newer minor
       // versions are released inform the user.
       $translation_arguments = [
         '%project' => $this->projectData['title'],
         '%version' => $this->existingVersion,
-        '%coverage_version' => $security_info['support_end_version'],
+        '%coverage_version' => $this->securityCoverageInfo['support_end_version'],
       ];
       $message = '<p>' . $this->t('The installed minor version of %project, %version, will stop receiving official security support after the release of %coverage_version.', $translation_arguments) . '</p>';
 
-      if ($security_info['additional_minors_coverage'] === 1) {
+      if ($this->securityCoverageInfo['additional_minors_coverage'] === 1) {
         // If the installed minor version will only be supported for 1 newer
         // minor core version encourage the site owner to update soon.
         $message .= '<p>' . $this->t('Update to %next_minor or higher soon to continue receiving security updates.', ['%next_minor' => $this->nextVersion])
@@ -161,17 +187,16 @@ final class ProjectSecurityRequirement {
    */
   private function getDateEndRequirement() {
     $requirement = [];
-    $security_info = $this->projectData['security_coverage_info'];
     /** @var \Drupal\Component\Datetime\Time $time */
     $time = \Drupal::service('datetime.time');
     /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
     $date_formatter = \Drupal::service('date.formatter');
     // 'support_end_date' will either be in format 'Y-m-d' or 'Y-m'.
-    $date_format = substr_count($security_info['support_end_date'], '-') === 2 ? 'Y-m-d' : 'Y-m';
+    $date_format = substr_count($this->securityCoverageInfo['support_end_date'], '-') === 2 ? 'Y-m-d' : 'Y-m';
     $comparable_request_date = $date_formatter->format($time->getRequestTime(), 'custom', $date_format);
-    $end_timestamp = \DateTime::createFromFormat($date_format, $security_info['support_end_date'])->getTimestamp();
-    $formatted_end_date = $date_format === 'Y-m-d' ? $security_info['support_end_date'] : $date_formatter->format($end_timestamp, 'custom', 'F Y');
-    if ($security_info['support_end_date'] <= $comparable_request_date) {
+    $end_timestamp = \DateTime::createFromFormat($date_format, $this->securityCoverageInfo['support_end_date'])->getTimestamp();
+    $formatted_end_date = $date_format === 'Y-m-d' ? $this->securityCoverageInfo['support_end_date'] : $date_formatter->format($end_timestamp, 'custom', 'F Y');
+    if ($this->securityCoverageInfo['support_end_date'] <= $comparable_request_date) {
       // Support is over.
       $requirement['value'] = $this->t('Unsupported minor version');
       $requirement['severity'] = REQUIREMENT_ERROR;
@@ -188,7 +213,7 @@ final class ProjectSecurityRequirement {
       $requirement['description'] = '<p>' . $this->t('The installed minor version of %project, %version, will stop receiving official security support after  %date.', $translation_arguments) . '</p>';
       // 'support_ending_warn_date' will always be in the format 'Y-m-d'.
       $request_date = $date_formatter->format($time->getRequestTime(), 'custom', 'Y-m-d');
-      if (!empty($security_info['support_ending_warn_date']) && $security_info['support_ending_warn_date'] <= $request_date) {
+      if (!empty($this->securityCoverageInfo['support_ending_warn_date']) && $this->securityCoverageInfo['support_ending_warn_date'] <= $request_date) {
         $requirement['description'] .= '<p>' . $this->t('Update to a supported minor version soon to continue receiving security updates.') . '</p>';
         $requirement['severity'] = REQUIREMENT_WARNING;
       }
@@ -238,7 +263,7 @@ final class ProjectSecurityRequirement {
    * @return string
    *   A link to the release cycle page on drupal.org.
    */
-  private function getReleaseCycleLink(): string {
+  private function getReleaseCycleLink() {
     return '<p>' . $this->t(
         'Visit the <a href=":url">release cycle overview</a> for more information on supported releases.',
         [

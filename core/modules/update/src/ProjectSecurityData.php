@@ -75,10 +75,27 @@ final class ProjectSecurityData {
    * @param array $releases
    *   Project releases as returned by update_get_available().
    */
-  public function __construct(array $project_data, array $releases) {
+  private function __construct(array $project_data, array $releases) {
     $this->projectData = $project_data;
     $this->releases = $releases;
   }
+
+  /**
+   * Constructs a ProjectSecurityData object.
+   *
+   * @param array $project_data
+   *   Project data from Drupal\update\UpdateManagerInterface::getProjects() and
+   *   processed by update_process_project_info().
+   * @param array $releases
+   *   Project releases as returned by update_get_available().
+   *
+   * @return \Drupal\update\ProjectSecurityData
+   *   The ProjectSecurityData instance.
+   */
+  public static function createFormProjectDataAndReleases(array $project_data, array $releases) {
+    return new static($project_data, $releases);
+  }
+
 
   /**
    * Gets the security coverage information for a project.
