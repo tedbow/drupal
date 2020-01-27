@@ -85,12 +85,6 @@ final class ProjectSecurityData {
       // Only Drupal core has an explicit coverage range.
       return new static();
     }
-    $existing_version = $project_data['existing_version'];
-    if (!isset($releases[$existing_version])) {
-      // If the existing version does not have a release we cannot get the
-      // security coverage information.
-      return new static();
-    }
     return new static($project_data['existing_version'], $releases);
   }
 
@@ -119,7 +113,9 @@ final class ProjectSecurityData {
    *     to another version.
    */
   public function getCoverageInfo() {
-    if (empty($this->existingVersion) || empty($this->releases)) {
+    if (empty($this->releases[$this->existingVersion])) {
+      // If the existing version does not have a release we cannot get the
+      // security coverage information.
       return [];
     }
     $info = [];
