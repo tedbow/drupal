@@ -20,6 +20,13 @@ final class ProjectSecurityRequirement {
   use StringTranslationTrait;
 
   /**
+   * The project title.
+   *
+   * @var string|null
+   */
+  protected $projectTitle;
+
+  /**
    * Security coverage information for the project.
    *
    * @see \Drupal\update\ProjectSecurityData::getCoverageInfo().
@@ -31,46 +38,33 @@ final class ProjectSecurityRequirement {
   /**
    * The next version after the installed version in the format [MAJOR].[MINOR].
    *
-   * @var string
+   * @var string|null
    */
   private $nextVersion;
 
   /**
    * The installed version in the format [MAJOR].[MINOR].
    *
-   * @var string
+   * @var string|null
    */
   private $existingVersion;
 
   /**
-   * Drupal project data.
-   *
-   * @var array
-   *
-   * The following keys are used in this class:
-   * - existing_version (string): The version of the project that is installed
-   *   on the site.
-   * - security_coverage_info (array): The security coverage information as
-   *   returned by \Drupal\update\ProjectSecurityData::getCoverageInfo().
-   * - project_type (string): The type of project.
-   * - name (string): The project machine name.
-   *
-   * @see \Drupal\update\UpdateManagerInterface::getProjects()
-   * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
-   * @see update_process_project_info()
-   */
-  private $projectData;
-
-  /**
    * Constructs a ProjectSecurityRequirement object.
    *
-   * @param array $project_data
-   *   Project data form Drupal\update\UpdateManagerInterface::getProjects().
-   *   The 'security_coverage_info' key should be set by
-   *   calling \Drupal\update\ProjectSecurityData::getCoverageInfo() before
-   *   calling this method.
+   * @param string|null $project_title
+   *   The project title.
+   * @param array $security_coverage_info
+   *   Security coverage information as set
+   * @param string|null $existing_version
+   *   The next version after the installed version in the format
+   *   [MAJOR].[MINOR].
+   * @param string|null $next_version
+   *   The next version after the installed version in the format
+   * [MAJOR].[MINOR].
    */
-  private function __construct(array $security_coverage_info = [], $existing_version = NULL, $next_version = NULL) {
+  private function __construct($project_title = NULL, array $security_coverage_info = [], $existing_version = NULL, $next_version = NULL) {
+    $this->projectTitle = $project_title;
     $this->securityCoverageInfo = $security_coverage_info;
     $this->existingVersion = $existing_version;
     $this->nextVersion = $next_version;
@@ -83,10 +77,21 @@ final class ProjectSecurityRequirement {
    *   Project data form Drupal\update\UpdateManagerInterface::getProjects().
    *   The 'security_coverage_info' key should be set by
    *   calling \Drupal\update\ProjectSecurityData::getCoverageInfo() before
-   *   calling this method.
+   *   calling this method. The following keys are used in this method:
+   *   - existing_version (string): The version of the project that is installed
+   *     on the site.
+   *   - security_coverage_info (array): The security coverage information as
+   *     returned by \Drupal\update\ProjectSecurityData::getCoverageInfo().
+   *   - project_type (string): The type of project.
+   *   - name (string): The project machine name.
+   *   - title (string): The project title.
    *
    * @return \Drupal\update\ProjectSecurityRequirement
    *  The ProjectSecurityRequirement instance.
+   *
+   * @see \Drupal\update\UpdateManagerInterface::getProjects()
+   * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
+   * @see update_process_project_info()
    */
   public static function createFromProjectDataArray(array $project_data) {
     if ($project_data['project_type'] !== 'core' || $project_data['name'] !== 'drupal' || empty($project_data['security_coverage_info'])) {
@@ -96,9 +101,9 @@ final class ProjectSecurityRequirement {
       list($major, $minor) = explode('.', $project_data['existing_version']);
       $existing_version = "$major.$minor";
       $next_version = "$major." . ((int) $minor + 1);
-      return new static($project_data['security_coverage_info'], $existing_version, $next_version);
+      return new static($project_data['title'], $project_data['security_coverage_info'], $existing_version, $next_version);
     }
-    return new static($project_data['security_coverage_info']);
+    return new static($project_data['title'], $project_data['security_coverage_info']);
   }
 
   /**
@@ -156,7 +161,7 @@ final class ProjectSecurityRequirement {
       // If the installed minor version will be supported until newer minor
       // versions are released inform the user.
       $translation_arguments = [
-        '%project' => $this->projectData['title'],
+        '%project' => $this->projectTitle,
         '%version' => $this->existingVersion,
         '%coverage_version' => $this->securityCoverageInfo['support_end_version'],
       ];
@@ -206,7 +211,7 @@ final class ProjectSecurityRequirement {
       $requirement['value'] = $this->t('Supported minor version');
       $requirement['severity'] = REQUIREMENT_INFO;
       $translation_arguments = [
-        '%project' => $this->projectData['title'],
+        '%project' => $this->projectTitle,
         '%version' => $this->existingVersion,
         '%date' => $formatted_end_date,
       ];
@@ -231,17 +236,16 @@ final class ProjectSecurityRequirement {
    *   The message for an unsupported version.
    */
   private function getVersionNotSupportedMessage() {
-    $message = '<p>' . $this->t(
+    return '<p>' . $this->t(
         'The installed minor version of %project, %version, is no longer supported and will not receive security updates.',
         [
-          '%project' => $this->projectData['title'],
+          '%project' => $this->projectTitle,
           '%version' => $this->existingVersion,
         ])
       . '</p><p>'
       . $this->t(
         'Update to a supported minor as soon as possible to continue receiving security updates.')
       . ' ' . static::getAvailableUpdatesMessage() . '</p>';
-    return $message;
   }
 
   /**
