@@ -34,22 +34,6 @@ final class ProjectSecurityData {
   const SUPPORT_END_DATE_8_9 = '2021-11';
 
   /**
-   * The Drupal project data.
-   *
-   * The following keys are used in this class:
-   * - existing_version (string): The version of the project that is installed
-   *   on the site.
-   * - project_type (string): The type of project.
-   * - name (string): The project machine name.
-   *
-   * @var array
-   *
-   * @see \Drupal\update\UpdateManagerInterface::getProjects()
-   * @see update_process_project_info()
-   */
-  protected $projectData;
-
-  /**
    * Releases as returned by update_get_available().
    *
    * @var array
@@ -67,16 +51,20 @@ final class ProjectSecurityData {
   protected $releases;
 
   /**
+   * @var string|null
+   */
+  protected $existingVersion;
+
+  /**
    * Constructs a ProjectSecurityData object.
    *
-   * @param array $project_data
-   *   Project data from Drupal\update\UpdateManagerInterface::getProjects() and
-   *   processed by update_process_project_info().
+   * @param string $existing_version
+   *   The existing version of the project.
    * @param array $releases
    *   Project releases as returned by update_get_available().
    */
-  private function __construct(array $project_data, array $releases) {
-    $this->projectData = $project_data;
+  private function __construct($existing_version = NULL, array $releases = []) {
+    $this->existingVersion = $existing_version;
     $this->releases = $releases;
   }
 
@@ -93,7 +81,17 @@ final class ProjectSecurityData {
    *   The ProjectSecurityData instance.
    */
   public static function createFormProjectDataAndReleases(array $project_data, array $releases) {
-    return new static($project_data, $releases);
+    if (!($project_data['project_type'] === 'core' && $project_data['name'] === 'drupal')) {
+      // Only Drupal core has an explicit coverage range.
+      return new static();
+    }
+    $existing_version = $project_data['existing_version'];
+    if (!isset($releases[$existing_version])) {
+      // If the existing version does not have a release we cannot get the
+      // security coverage information.
+      return new static();
+    }
+    return new static($project_data['existing_version'], $releases);
   }
 
 
@@ -121,20 +119,14 @@ final class ProjectSecurityData {
    *     to another version.
    */
   public function getCoverageInfo() {
+    if (empty($this->existingVersion) || empty($this->releases)) {
+      return [];
+    }
     $info = [];
-    if (!($this->projectData['project_type'] === 'core' && $this->projectData['name'] === 'drupal')) {
-      // Only Drupal core has an explicit coverage range.
-      return [];
-    }
-    if (empty($this->releases[$this->projectData['existing_version']])) {
-      // If the existing version does not have a release we cannot get the
-      // security coverage information.
-      return [];
-    }
-    $existing_release_version = ModuleVersion::createFromVersionString($this->projectData['existing_version']);
+    $existing_release_version = ModuleVersion::createFromVersionString($this->existingVersion);
 
     // Check if the installed version has a specific end date defined.
-    $version_suffix = $existing_release_version->getMajorVersion() . '_' . $this->getCoreMinorVersion($this->projectData['existing_version']);
+    $version_suffix = $existing_release_version->getMajorVersion() . '_' . $this->getCoreMinorVersion($this->existingVersion);
     if (defined("self::SUPPORT_END_DATE_$version_suffix")) {
       $info['support_end_date'] = constant("self::SUPPORT_END_DATE_$version_suffix");
       $info['support_ending_warn_date'] = defined("self::SUPPORT_ENDING_WARN_DATE_$version_suffix") ? constant("self::SUPPORT_ENDING_WARN_DATE_$version_suffix") : NULL;
@@ -161,18 +153,18 @@ final class ProjectSecurityData {
    *   - version (string): The version number.
    */
   private function getSupportUntilReleaseInfo() {
-    if (empty($this->releases[$this->projectData['existing_version']])) {
+    if (empty($this->releases[$this->existingVersion])) {
       return [];
     }
 
-    $existing_release_version = ModuleVersion::createFromVersionString($this->projectData['existing_version']);
+    $existing_release_version = ModuleVersion::createFromVersionString($this->existingVersion);
     if (!empty($existing_release_version->getVersionExtra())) {
       return [];
     }
 
     $support_until_release = [
       'version_major' => (int) $existing_release_version->getMajorVersion(),
-      'version_minor' => $this->getCoreMinorVersion($this->projectData['existing_version']) + static::CORE_MINORS_SUPPORTED,
+      'version_minor' => $this->getCoreMinorVersion($this->existingVersion) + static::CORE_MINORS_SUPPORTED,
     ];
     $support_until_release['version'] = "{$support_until_release['version_major']}.{$support_until_release['version_minor']}.0";
     return $support_until_release;
