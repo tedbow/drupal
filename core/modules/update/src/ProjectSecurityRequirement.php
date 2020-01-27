@@ -110,7 +110,8 @@ final class ProjectSecurityRequirement {
    * Gets the security coverage requirement if any.
    *
    * @return array
-   *   Requirements array as specified by hook_requirements().
+   *   Requirements array as specified by hook_requirements() or an empty array
+   *   if no requirements can be determined.
    */
   public function getRequirement() {
     if (isset($this->securityCoverageInfo['support_end_version'])) {
