@@ -131,9 +131,10 @@ final class ProjectSecurityData {
       // security coverage information.
       return [];
     }
-    $existing_release = $this->releases[$this->projectData['existing_version']];
+    $existing_release_version = ModuleVersion::createFromVersionString($this->projectData['existing_version']);
+
     // Check if the installed version has a specific end date defined.
-    $version_suffix = $existing_release['version_major'] . '_' . $existing_release['version_minor'];
+    $version_suffix = $existing_release_version->getMajorVersion() . '_' . $this->getCoreMinorVersion($this->projectData['existing_version']);
     if (defined("self::SUPPORT_END_DATE_$version_suffix")) {
       $info['support_end_date'] = constant("self::SUPPORT_END_DATE_$version_suffix");
       $info['support_ending_warn_date'] = defined("self::SUPPORT_ENDING_WARN_DATE_$version_suffix") ? constant("self::SUPPORT_ENDING_WARN_DATE_$version_suffix") : NULL;
@@ -164,14 +165,14 @@ final class ProjectSecurityData {
       return [];
     }
 
-    $existing_release = $this->releases[$this->projectData['existing_version']];
-    if (!empty($existing_release['version_extra'])) {
+    $existing_release_version = ModuleVersion::createFromVersionString($this->projectData['existing_version']);
+    if (!empty($existing_release_version->getVersionExtra())) {
       return [];
     }
 
     $support_until_release = [
-      'version_major' => (int) $existing_release['version_major'],
-      'version_minor' => ((int) $existing_release['version_minor']) + static::CORE_MINORS_SUPPORTED,
+      'version_major' => (int) $existing_release_version->getMajorVersion(),
+      'version_minor' => $this->getCoreMinorVersion($this->projectData['existing_version']) + static::CORE_MINORS_SUPPORTED,
     ];
     $support_until_release['version'] = "{$support_until_release['version_major']}.{$support_until_release['version_minor']}.0";
     return $support_until_release;
@@ -189,14 +190,27 @@ final class ProjectSecurityData {
    */
   private function getAdditionalSecuritySupportedMinors(array $security_supported_release_info) {
     foreach ($this->releases as $release) {
-      if ((int) $release['version_major'] === $security_supported_release_info['version_major'] && $release['status'] === 'published' && empty($release['version_extra'])) {
-        $latest_minor = (int) $release['version_minor'];
+      $release_version = ModuleVersion::createFromVersionString($release['version']);
+      if ((int) $release_version->getMajorVersion() === $security_supported_release_info['version_major'] && $release['status'] === 'published' && empty($release['version_extra'])) {
+        $latest_minor = $this->getCoreMinorVersion($release['version']);
         break;
       }
     }
     return isset($latest_minor)
       ? $security_supported_release_info['version_minor'] - $latest_minor
       : NULL;
+  }
+
+  /**
+   * Gets the minor version for a core version string.
+   *
+   * @param string $core_version
+   *
+   * @return int
+   *   The minor version as an integer.
+   */
+  private function getCoreMinorVersion($core_version) {
+    return (int)(explode('.', $core_version)[1]);
   }
 
 }
