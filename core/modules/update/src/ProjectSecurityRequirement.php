@@ -121,14 +121,14 @@ final class ProjectSecurityRequirement {
       $requirement = $this->getDateEndRequirement();
     }
     else {
-      return NULL;
+      return [];
     }
     $requirement['title'] = $this->t('Drupal core security coverage');
     return $requirement;
   }
 
   /**
-   * Get the requirements array based on support to a specific version.
+   * Gets the requirements array based on support to a specific version.
    *
    * @return array
    *   Requirements array as specified by hook_requirements().
@@ -216,7 +216,7 @@ final class ProjectSecurityRequirement {
         '%version' => $this->existingVersion,
         '%date' => $formatted_end_date,
       ];
-      $requirement['description'] = '<p>' . $this->t('The installed minor version of %project, %version, will stop receiving official security support after  %date.', $translation_arguments) . '</p>';
+      $requirement['description'] = '<p>' . $this->t('The installed minor version of %project, %version, will stop receiving official security support after %date.', $translation_arguments) . '</p>';
       // 'support_ending_warn_date' will always be in the format 'Y-m-d'.
       $request_date = $date_formatter->format($time->getRequestTime(), 'custom', 'Y-m-d');
       if (!empty($this->securityCoverageInfo['support_ending_warn_date']) && $this->securityCoverageInfo['support_ending_warn_date'] <= $request_date) {
@@ -224,9 +224,7 @@ final class ProjectSecurityRequirement {
         $requirement['severity'] = REQUIREMENT_WARNING;
       }
     }
-    if (isset($requirement['description'])) {
-      $requirement['description'] = Markup::create($requirement['description'] . $this->getReleaseCycleLink());
-    }
+    $requirement['description'] = Markup::create($requirement['description'] . $this->getReleaseCycleLink());
     return $requirement;
   }
 
@@ -244,8 +242,7 @@ final class ProjectSecurityRequirement {
           '%version' => $this->existingVersion,
         ])
       . '</p><p>'
-      . $this->t(
-        'Update to a supported minor as soon as possible to continue receiving security updates.')
+      . $this->t('Update to a supported minor as soon as possible to continue receiving security updates.')
       . ' ' . static::getAvailableUpdatesMessage() . '</p>';
   }
 
@@ -271,9 +268,7 @@ final class ProjectSecurityRequirement {
   private function getReleaseCycleLink() {
     return '<p>' . $this->t(
         'Visit the <a href=":url">release cycle overview</a> for more information on supported releases.',
-        [
-          ':url' => 'https://www.drupal.org/core/release-cycle-overview',
-        ]
+        [':url' => 'https://www.drupal.org/core/release-cycle-overview']
       ) . '</p>';
   }
 
