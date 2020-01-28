@@ -53,6 +53,9 @@ final class ProjectSecurityData {
   /**
    * The existing version of the project.
    *
+   * Because this class only handles the Drupal core project values will be
+   * semantic version numbers such as 8.8.0, 8.8.0-alpha1 or 9.0.0.
+   *
    * @var string|null
    */
   protected $existingVersion;
