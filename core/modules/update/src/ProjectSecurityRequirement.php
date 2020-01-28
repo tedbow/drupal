@@ -61,7 +61,7 @@ final class ProjectSecurityRequirement {
    *   [MAJOR].[MINOR].
    * @param string|null $next_version
    *   The next version after the installed version in the format
-   * [MAJOR].[MINOR].
+   *   [MAJOR].[MINOR].
    */
   private function __construct($project_title = NULL, array $security_coverage_info = [], $existing_version = NULL, $next_version = NULL) {
     $this->projectTitle = $project_title;
@@ -87,7 +87,7 @@ final class ProjectSecurityRequirement {
    *   - title (string): The project title.
    *
    * @return \Drupal\update\ProjectSecurityRequirement
-   *  The ProjectSecurityRequirement instance.
+   *   The ProjectSecurityRequirement instance.
    *
    * @see \Drupal\update\UpdateManagerInterface::getProjects()
    * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()

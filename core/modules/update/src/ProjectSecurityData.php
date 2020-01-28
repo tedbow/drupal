@@ -93,7 +93,6 @@ final class ProjectSecurityData {
     return new static($project_data['existing_version'], $releases);
   }
 
-
   /**
    * Gets the security coverage information for a project.
    *
@@ -203,7 +202,7 @@ final class ProjectSecurityData {
    *   The minor version as an integer.
    */
   private function getCoreMinorVersion($core_version) {
-    return (int)(explode('.', $core_version)[1]);
+    return (int) (explode('.', $core_version)[1]);
   }
 
 }
