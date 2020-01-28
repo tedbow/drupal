@@ -389,7 +389,6 @@ class UpdateCoreTest extends UpdateTestBase {
       'css',
       'details.system-status-report__entry:contains("Drupal core security coverage")'
     );
-    file_put_contents("/Users/ted.bowman/Sites/www/test.html", $this->getSession()->getPage()->getOuterHtml());
     // Ensure we only have 1 security message section.
     $this->assertCount(1, $all_requirements_details);
     $requirements_details = $all_requirements_details[0];
