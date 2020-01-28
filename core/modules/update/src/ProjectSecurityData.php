@@ -51,6 +51,8 @@ final class ProjectSecurityData {
   protected $releases;
 
   /**
+   * The existing version of the project.
+   * 
    * @var string|null
    */
   protected $existingVersion;
