@@ -435,6 +435,8 @@ final class UpdateProjectStatus {
   }
 
   /**
+   * Gets the support branch for a version.
+   *
    * @param $version
    *
    * @return string|null
@@ -449,6 +451,11 @@ final class UpdateProjectStatus {
   }
 
   /**
+   * Determines if a support branch would be after a specified version.
+   *
+   * Support branches can be in 3 formats, 8.x-1., 1., 1.1.. Versions can be
+   * in the format 8.x-1.1 or 1.0.1.
+   *
    * @param string $supported_branch
    * @param string $version
    */
@@ -466,7 +473,16 @@ final class UpdateProjectStatus {
   }
 
   /**
-   * @param $getVersionSupportedBranch
+   * Compares to support branches.
+   *
+   * Support branches can be in 3 formats, 8.x-1., 1., 1.1.. Comparison should
+   * ignore the core prefix and @todo more
+   *
+   * @param string $branch1
+   * @param string $branch2
+   *
+   * @return int
+   *
    */
   private function compareSupportBranches($branch1, $branch2) {
     $branch1 = ModuleVersion::removeCorePrefix($branch1);
@@ -474,6 +490,7 @@ final class UpdateProjectStatus {
     if ($branch1 === $branch2) {
       return 0;
     }
+    // @todo finish
 
   }
 
