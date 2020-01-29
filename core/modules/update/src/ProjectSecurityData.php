@@ -40,9 +40,9 @@ final class ProjectSecurityData {
    *
    * Each release item in the array has metadata about that release. This class
    * uses the keys:
+   * - status (string): The status of the release.
    * - version_major (string): The major version of the release.
    * - version_minor (string): The minor version of the release.
-   * - status (string): The status of the release.
    * - version_extra (string): The extra string at the end of the version string
    *   such as '-dev', '-rc', '-alpha1', etc.
    *
