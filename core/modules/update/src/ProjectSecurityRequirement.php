@@ -162,11 +162,11 @@ final class ProjectSecurityRequirement {
       // If the installed minor version will be supported until newer minor
       // versions are released inform the user.
       $translation_arguments = [
-        '%project' => $this->projectTitle,
-        '%version' => $this->existingVersion,
-        '%coverage_version' => $this->securityCoverageInfo['support_end_version'],
+        '@project' => $this->projectTitle,
+        '@version' => $this->existingVersion,
+        '@coverage_version' => $this->securityCoverageInfo['support_end_version'],
       ];
-      $message = '<p>' . $this->t('The installed minor version of %project (%version), will stop receiving official security support after the release of %coverage_version.', $translation_arguments) . '</p>';
+      $message = '<p>' . $this->t('The installed minor version of @project (@version), will stop receiving official security support after the release of @coverage_version.', $translation_arguments) . '</p>';
 
       if ($this->securityCoverageInfo['additional_minors_coverage'] === 1) {
         // If the installed minor version will only be supported for 1 newer
@@ -212,11 +212,11 @@ final class ProjectSecurityRequirement {
       $requirement['value'] = $this->t('Supported minor version');
       $requirement['severity'] = REQUIREMENT_INFO;
       $translation_arguments = [
-        '%project' => $this->projectTitle,
-        '%version' => $this->existingVersion,
-        '%date' => $formatted_end_date,
+        '@project' => $this->projectTitle,
+        '@version' => $this->existingVersion,
+        '@date' => $formatted_end_date,
       ];
-      $requirement['description'] = '<p>' . $this->t('The installed minor version of %project (%version), will stop receiving official security support after %date.', $translation_arguments) . '</p>';
+      $requirement['description'] = '<p>' . $this->t('The installed minor version of @project (@version), will stop receiving official security support after @date.', $translation_arguments) . '</p>';
       // 'support_ending_warn_date' will always be in the format 'Y-m-d'.
       $request_date = $date_formatter->format($time->getRequestTime(), 'custom', 'Y-m-d');
       if (!empty($this->securityCoverageInfo['support_ending_warn_date']) && $this->securityCoverageInfo['support_ending_warn_date'] <= $request_date) {
@@ -236,10 +236,10 @@ final class ProjectSecurityRequirement {
    */
   private function getVersionNotSupportedMessage() {
     return '<p>' . $this->t(
-        'The installed minor version of %project, %version, is no longer supported and will not receive security updates.',
+        'The installed minor version of @project (@version), is no longer supported and will not receive security updates.',
         [
-          '%project' => $this->projectTitle,
-          '%version' => $this->existingVersion,
+          '@project' => $this->projectTitle,
+          '@version' => $this->existingVersion,
         ])
       . '</p><p>'
       . $this->t('Update to a supported minor as soon as possible to continue receiving security updates.')
