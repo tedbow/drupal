@@ -101,15 +101,16 @@ final class ProjectSecurityData {
    * @return array
    *   The security coverage information or an empty array if no security
    *   information is available for the project. If security coverage is based
-   *   on support until a specific version the array will have the following
+   *   on support until a specific version, the array will have the following
    *   keys:
    *   - support_end_version (string): The minor version the existing version
    *     is supported until.
    *   - additional_minors_coverage (int): The number of additional minor
-   *     releases after the latest full release the existing version will be
-   *     supported.
-   *   If the support is based on support until a specific date the array will
-   *   have the following keys:
+   *     versions the existing version will be supported. For example if this
+   *     value is 2 and the existing version is 9.0.1, the 9.0.x branch will
+   *     be supported until the release of version 9.2.0.
+   *   If the security coverage is based on support until a specific date, the
+   *   array will have the following keys:
    *   - support_end_date (string): The month or date support will end for the
    *     existing version. It can be in either 'YYYY-MM' or 'YYYY-MM-DD' format.
    *   - (optional) support_ending_warn_date (string): The date, in the format
