@@ -198,10 +198,22 @@ final class ProjectSecurityRequirement {
     /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
     $date_formatter = \Drupal::service('date.formatter');
     // 'support_end_date' will either be in format 'Y-m-d' or 'Y-m'.
-    $date_format = substr_count($this->securityCoverageInfo['support_end_date'], '-') === 2 ? 'Y-m-d' : 'Y-m';
+    if (substr_count($this->securityCoverageInfo['support_end_date'], '-') === 2) {
+      $date_format = 'Y-m-d';
+      $full_support_end_date = $this->securityCoverageInfo['support_end_date'];
+    }
+    else {
+      $date_format = 'Y-m';
+      // If the date does not include a day use '15'. When calling
+      // \DateTime::createFromFormat() the current day will be used if one is
+      // not provided. This may cause the month to be wrong at the beginning or
+      // end of the month. '15' will never be displayed because we are using the
+      // 'Y-m' format.
+      $full_support_end_date = $this->securityCoverageInfo['support_end_date'] . '-15';
+    }
+    $support_end_timestamp = \DateTime::createFromFormat('Y-m-d', $full_support_end_date)->getTimestamp();
+    $formatted_end_date = $date_format === 'Y-m-d' ? $this->securityCoverageInfo['support_end_date'] : $date_formatter->format($support_end_timestamp, 'custom', 'F Y');
     $comparable_request_date = $date_formatter->format($time->getRequestTime(), 'custom', $date_format);
-    $end_timestamp = \DateTime::createFromFormat($date_format, $this->securityCoverageInfo['support_end_date'])->getTimestamp();
-    $formatted_end_date = $date_format === 'Y-m-d' ? $this->securityCoverageInfo['support_end_date'] : $date_formatter->format($end_timestamp, 'custom', 'F Y');
     if ($this->securityCoverageInfo['support_end_date'] <= $comparable_request_date) {
       // Support is over.
       $requirement['value'] = $this->t('Unsupported minor version');
