@@ -127,7 +127,7 @@ final class ProjectSecurityData {
     $existing_release_version = ModuleVersion::createFromVersionString($this->existingVersion);
 
     // Check if the installed version has a specific end date defined.
-    $version_suffix = $existing_release_version->getMajorVersion() . '_' . $this->getCoreMinorVersion($this->existingVersion);
+    $version_suffix = $existing_release_version->getMajorVersion() . '_' . $this->getSemanticMinorVersion($this->existingVersion);
     if (defined("self::SUPPORT_END_DATE_$version_suffix")) {
       $info['support_end_date'] = constant("self::SUPPORT_END_DATE_$version_suffix");
       $info['support_ending_warn_date'] = defined("self::SUPPORT_ENDING_WARN_DATE_$version_suffix") ? constant("self::SUPPORT_ENDING_WARN_DATE_$version_suffix") : NULL;
@@ -147,7 +147,7 @@ final class ProjectSecurityData {
    *    method should not return a version beyond that minor.
    *
    * @return array
-   *   If release information is not available an empty array is returned
+   *   If release information is not available an empty array is returned,
    *   otherwise the release information with the following keys:
    *   - version_major (int): The major version of the release.
    *   - version_minor (int): The minor version of the release.
@@ -160,12 +160,13 @@ final class ProjectSecurityData {
 
     $existing_release_version = ModuleVersion::createFromVersionString($this->existingVersion);
     if (!empty($existing_release_version->getVersionExtra())) {
+      // Only full releases receive security coverage.
       return [];
     }
 
     $support_until_release = [
       'version_major' => (int) $existing_release_version->getMajorVersion(),
-      'version_minor' => $this->getCoreMinorVersion($this->existingVersion) + static::CORE_MINORS_SUPPORTED,
+      'version_minor' => $this->getSemanticMinorVersion($this->existingVersion) + static::CORE_MINORS_SUPPORTED,
     ];
     $support_until_release['version'] = "{$support_until_release['version_major']}.{$support_until_release['version_minor']}.0";
     return $support_until_release;
@@ -174,36 +175,38 @@ final class ProjectSecurityData {
   /**
    * Gets the number of additional minor releases supported.
    *
-   * @param array $security_supported_release_info
-   *   The security supported release as returned by
+   * @param array $supported_release_info
+   *   The security supported release info as returned by
    *   ::getSupportUntilReleaseInfo().
    *
-   * @return int
-   *   The number of additional supported minor releases.
+   * @return int|null
+   *   The number of additional supported minor releases or NULL if this cannot
+   *   be determined.
    */
-  private function getAdditionalSecuritySupportedMinors(array $security_supported_release_info) {
+  private function getAdditionalSecuritySupportedMinors(array $supported_release_info) {
     foreach ($this->releases as $release) {
       $release_version = ModuleVersion::createFromVersionString($release['version']);
-      if ((int) $release_version->getMajorVersion() === $security_supported_release_info['version_major'] && $release['status'] === 'published' && empty($release['version_extra'])) {
-        $latest_minor = $this->getCoreMinorVersion($release['version']);
+      if ((int) $release_version->getMajorVersion() === $supported_release_info['version_major'] && $release['status'] === 'published' && empty($release['version_extra'])) {
+        $latest_minor = $this->getSemanticMinorVersion($release['version']);
         break;
       }
     }
     return isset($latest_minor)
-      ? $security_supported_release_info['version_minor'] - $latest_minor
+      ? $supported_release_info['version_minor'] - $latest_minor
       : NULL;
   }
 
   /**
-   * Gets the minor version for a core version string.
+   * Gets the minor version for a semantic version string.
    *
-   * @param string $core_version
+   * @param string $version
+   *   The semantic version string.
    *
    * @return int
    *   The minor version as an integer.
    */
-  private function getCoreMinorVersion($core_version) {
-    return (int) (explode('.', $core_version)[1]);
+  private function getSemanticMinorVersion($version) {
+    return (int) (explode('.', $version)[1]);
   }
 
 }
