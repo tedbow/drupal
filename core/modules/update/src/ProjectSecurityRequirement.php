@@ -171,7 +171,7 @@ final class ProjectSecurityRequirement {
       if ($this->securityCoverageInfo['additional_minors_coverage'] === 1) {
         // If the installed minor version will only be supported for 1 newer
         // minor core version encourage the site owner to update soon.
-        $message .= '<p>' . $this->t('Update to %next_minor or higher soon to continue receiving security updates.', ['%next_minor' => $this->nextVersion])
+        $message .= '<p>' . $this->t('Update to @next_minor or higher soon to continue receiving security updates.', ['@next_minor' => $this->nextVersion])
           . ' ' . static::getAvailableUpdatesMessage() . '</p>';
       }
     }
