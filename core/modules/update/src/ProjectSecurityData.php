@@ -34,7 +34,7 @@ final class ProjectSecurityData {
   const SUPPORT_END_DATE_8_9 = '2021-11';
 
   /**
-   * The existing version of the project.
+   * The existing (currently installed) version of the project.
    *
    * Because this class only handles the Drupal core project, values will be
    * semantic version numbers such as 8.8.0, 8.8.0-alpha1 or 9.0.0.
@@ -64,7 +64,7 @@ final class ProjectSecurityData {
    * Constructs a ProjectSecurityData object.
    *
    * @param string $existing_version
-   *   The existing version of the project.
+   *   The existing (currently installed) version of the project.
    * @param array $releases
    *   Project releases as returned by update_get_available().
    */
