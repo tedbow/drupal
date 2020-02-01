@@ -22,7 +22,7 @@ final class ProjectSecurityData {
    * Two types of constants are supported:
    * - SUPPORT_END_DATE_[VERSION_MAJOR]_[VERSION_MINOR]: A date in 'Y-m-d' or
    *   'Y-m' format.
-   * - SUPPORT_ENDING_WARN_DATE__[VERSION_MAJOR]_[VERSION_MINOR]: A date in
+   * - SUPPORT_ENDING_WARN_DATE_[VERSION_MAJOR]_[VERSION_MINOR]: A date in
    *   'Y-m-d' format.
    *
    * @see \Drupal\update\ProjectSecurityRequirement::getDateEndRequirement()
@@ -32,6 +32,16 @@ final class ProjectSecurityData {
   const SUPPORT_ENDING_WARN_DATE_8_8 = '2020-06-02';
 
   const SUPPORT_END_DATE_8_9 = '2021-11';
+
+  /**
+   * The existing version of the project.
+   *
+   * Because this class only handles the Drupal core project, values will be
+   * semantic version numbers such as 8.8.0, 8.8.0-alpha1 or 9.0.0.
+   *
+   * @var string|null
+   */
+  protected $existingVersion;
 
   /**
    * Releases as returned by update_get_available().
@@ -51,16 +61,6 @@ final class ProjectSecurityData {
   protected $releases;
 
   /**
-   * The existing version of the project.
-   *
-   * Because this class only handles the Drupal core project values will be
-   * semantic version numbers such as 8.8.0, 8.8.0-alpha1 or 9.0.0.
-   *
-   * @var string|null
-   */
-  protected $existingVersion;
-
-  /**
    * Constructs a ProjectSecurityData object.
    *
    * @param string $existing_version
@@ -74,7 +74,7 @@ final class ProjectSecurityData {
   }
 
   /**
-   * Constructs a ProjectSecurityData object.
+   * Creates a ProjectSecurityData object from project data and releases.
    *
    * @param array $project_data
    *   Project data from Drupal\update\UpdateManagerInterface::getProjects() and
@@ -82,10 +82,9 @@ final class ProjectSecurityData {
    * @param array $releases
    *   Project releases as returned by update_get_available().
    *
-   * @return \Drupal\update\ProjectSecurityData
-   *   The ProjectSecurityData instance.
+   * @return static
    */
-  public static function createFormProjectDataAndReleases(array $project_data, array $releases) {
+  public static function createFromProjectDataAndReleases(array $project_data, array $releases) {
     if (!($project_data['project_type'] === 'core' && $project_data['name'] === 'drupal')) {
       // Only Drupal core has an explicit coverage range.
       return new static();

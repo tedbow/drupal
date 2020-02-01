@@ -490,7 +490,7 @@ function update_calculate_project_update_status(&$project_data, $available) {
   }
 
   /** @var \Drupal\update\ProjectSecurityData $security_data */
-  $security_data = ProjectSecurityData::createFormProjectDataAndReleases($project_data, $available['releases']);
+  $security_data = ProjectSecurityData::createFromProjectDataAndReleases($project_data, $available['releases']);
   $project_data['security_coverage_info'] = $security_data->getCoverageInfo();
 
   if (isset($project_data['status'])) {

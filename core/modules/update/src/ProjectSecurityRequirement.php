@@ -29,9 +29,9 @@ final class ProjectSecurityRequirement {
   /**
    * Security coverage information for the project.
    *
-   * @see \Drupal\update\ProjectSecurityData::getCoverageInfo().
-   *
    * @var array
+   *
+   * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
    */
   private $securityCoverageInfo;
 
@@ -43,7 +43,7 @@ final class ProjectSecurityRequirement {
   private $nextVersion;
 
   /**
-   * The installed version in the format [MAJOR].[MINOR].
+   * The existing (currently installed) version in the format [MAJOR].[MINOR].
    *
    * @var string|null
    */
@@ -55,10 +55,10 @@ final class ProjectSecurityRequirement {
    * @param string|null $project_title
    *   The project title.
    * @param array $security_coverage_info
-   *   Security coverage information as set
+   *   Security coverage information as set by
+   *   \Drupal\update\ProjectSecurityData::getCoverageInfo().
    * @param string|null $existing_version
-   *   The next version after the installed version in the format
-   *   [MAJOR].[MINOR].
+   *   The existing (currently installed) version in the format [MAJOR].[MINOR].
    * @param string|null $next_version
    *   The next version after the installed version in the format
    *   [MAJOR].[MINOR].
@@ -71,10 +71,10 @@ final class ProjectSecurityRequirement {
   }
 
   /**
-   * Constructs a ProjectSecurityRequirement object from project data.
+   * Creates a ProjectSecurityRequirement object from project data.
    *
    * @param array $project_data
-   *   Project data form Drupal\update\UpdateManagerInterface::getProjects().
+   *   Project data from Drupal\update\UpdateManagerInterface::getProjects().
    *   The 'security_coverage_info' key should be set by
    *   calling \Drupal\update\ProjectSecurityData::getCoverageInfo() before
    *   calling this method. The following keys are used in this method:
@@ -86,14 +86,13 @@ final class ProjectSecurityRequirement {
    *   - name (string): The project machine name.
    *   - title (string): The project title.
    *
-   * @return \Drupal\update\ProjectSecurityRequirement
-   *   The ProjectSecurityRequirement instance.
+   * @return static
    *
    * @see \Drupal\update\UpdateManagerInterface::getProjects()
    * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
    * @see update_process_project_info()
    */
-  public static function createFromProjectDataArray(array $project_data) {
+  public static function createFromProjectData(array $project_data) {
     if ($project_data['project_type'] !== 'core' || $project_data['name'] !== 'drupal' || empty($project_data['security_coverage_info'])) {
       return new static();
     }
