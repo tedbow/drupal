@@ -358,7 +358,7 @@ class UpdateCoreTest extends UpdateTestBase {
   }
 
   /**
-   * Tests the Update Manager module when a security update is available.
+   * Tests the security coverage messages for Drupal core versions.
    *
    * @param string $installed_version
    *   The installed Drupal version to test.
