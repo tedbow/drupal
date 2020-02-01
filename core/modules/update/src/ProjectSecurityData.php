@@ -12,12 +12,12 @@ namespace Drupal\update;
 final class ProjectSecurityData {
 
   /**
-   * The number of minor versions of Drupal core that are supported.
+   * The number of minor versions of Drupal core that receive security coverage.
    */
-  const CORE_MINORS_SUPPORTED = 2;
+  const CORE_MINORS_WITH_SECURITY_COVERAGE = 2;
 
   /**
-   * Define constants for versions with support end dates.
+   * Define constants for versions with security coverage end dates.
    *
    * Two types of constants are supported:
    * - SECURITY_COVERAGE_END_DATE_[VERSION_MAJOR]_[VERSION_MINOR]: A date in
@@ -100,22 +100,23 @@ final class ProjectSecurityData {
    * @return array
    *   The security coverage information, or an empty array if no security
    *   information is available for the project. If security coverage is based
-   *   on support until a specific version, the array will have the following
+   *   on release of a specific version, the array will have the following
    *   keys:
    *   - security_coverage_end_version (string): The minor version the existing
-   *     version is supported until.
+   *     version will receive security coverage until.
    *   - additional_minors_coverage (int): The number of additional minor
-   *     versions the existing version will be supported. For example, if this
-   *     value is 2 and the existing version is 9.0.1, the 9.0.x branch will
-   *     be supported until the release of version 9.2.0.
-   *   If the security coverage is based on support until a specific date, the
-   *   array will have the following keys:
-   *   - security_coverage_end_date (string): The month or date support will end
-   *     for the existing version. It can be in either 'YYYY-MM' or 'YYYY-MM-DD'
-   *     format.
-   *   - (optional) security_coverage_ending_warn_date (string): The date, in the format
-   *     'YYYY-MM-DD', after which a warning should be displayed about upgrading
-   *     to another version.
+   *     versions the existing version will receive security coverage. For
+   *     example, if this value is 2 and the existing version is 9.0.1, the
+   *     9.0.x branch will receive security coverage until the release of
+   *     version 9.2.0.
+   *   If the security coverage is based on a specific date, the array will have
+   *   the following keys:
+   *   - security_coverage_end_date (string): The month or date security
+   *     coverage will end for the existing version. It can be in either
+   *     'YYYY-MM' or 'YYYY-MM-DD' format.
+   *   - (optional) security_coverage_ending_warn_date (string): The date, in
+   *     the format 'YYYY-MM-DD', after which a warning should be displayed
+   *     about upgrading to another version.
    */
   public function getCoverageInfo() {
     if (empty($this->releases[$this->existingVersion])) {
@@ -134,13 +135,16 @@ final class ProjectSecurityData {
     }
     elseif ($security_coverage_until_release = $this->getSecurityCoverageUntilReleaseInfo()) {
       $info['security_coverage_end_version'] = $security_coverage_until_release['version'];
-      $info['additional_minors_coverage'] = $this->getAdditionalSecuritySupportedMinors($security_coverage_until_release);
+      $info['additional_minors_coverage'] = $this->getAdditionalSecurityCoveredMinors($security_coverage_until_release);
     }
     return $info;
   }
 
   /**
-   * Gets information about the release the current minor is supported until.
+   * Gets the release the current minor will receive security coverage until.
+   *
+   * For example, if two minor core versions receive security updates and the
+   * current minor version is 8.6, this method will return 8.8.0.
    *
    * @todo In https://www.drupal.org/node/2608062 determine how we will know
    *    what the final minor release of a particular major version will be. This
@@ -164,35 +168,35 @@ final class ProjectSecurityData {
       return [];
     }
 
-    $support_until_release = [
+    $security_covered_until_release = [
       'version_major' => (int) $existing_release_version->getMajorVersion(),
-      'version_minor' => $this->getSemanticMinorVersion($this->existingVersion) + static::CORE_MINORS_SUPPORTED,
+      'version_minor' => $this->getSemanticMinorVersion($this->existingVersion) + static::CORE_MINORS_WITH_SECURITY_COVERAGE,
     ];
-    $support_until_release['version'] = "{$support_until_release['version_major']}.{$support_until_release['version_minor']}.0";
-    return $support_until_release;
+    $security_covered_until_release['version'] = "{$security_covered_until_release['version_major']}.{$security_covered_until_release['version_minor']}.0";
+    return $security_covered_until_release;
   }
 
   /**
-   * Gets the number of additional minor releases supported.
+   * Gets the number of additional minor security covered releases.
    *
-   * @param array $supported_release_info
-   *   The security supported release info as returned by
-   *   ::getSupportUntilReleaseInfo().
+   * @param array $security_covered_release_info
+   *   The security covered release info as returned by
+   *   ::getSecurityCoverageUntilReleaseInfo().
    *
    * @return int|null
-   *   The number of additional supported minor releases or NULL if this cannot
-   *   be determined.
+   *   The number of additional security covered minor releases or NULL if this
+   *   cannot be determined.
    */
-  private function getAdditionalSecuritySupportedMinors(array $supported_release_info) {
+  private function getAdditionalSecurityCoveredMinors(array $security_covered_release_info) {
     foreach ($this->releases as $release) {
       $release_version = ModuleVersion::createFromVersionString($release['version']);
-      if ((int) $release_version->getMajorVersion() === $supported_release_info['version_major'] && $release['status'] === 'published' && empty($release['version_extra'])) {
+      if ((int) $release_version->getMajorVersion() === $security_covered_release_info['version_major'] && $release['status'] === 'published' && empty($release['version_extra'])) {
         $latest_minor = $this->getSemanticMinorVersion($release['version']);
         break;
       }
     }
     return isset($latest_minor)
-      ? $supported_release_info['version_minor'] - $latest_minor
+      ? $security_covered_release_info['version_minor'] - $latest_minor
       : NULL;
   }
 

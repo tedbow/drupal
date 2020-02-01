@@ -127,7 +127,7 @@ final class ProjectSecurityRequirement {
   }
 
   /**
-   * Gets the requirements array based on support to a specific version.
+   * Gets the requirements based on security coverage until a specific version.
    *
    * @return array
    *   Requirements array as specified by hook_requirements().
@@ -149,7 +149,7 @@ final class ProjectSecurityRequirement {
   }
 
   /**
-   * Gets coverage message for additional minor version support.
+   * Gets the message for additional minor version security coverage.
    *
    * @return string|\Drupal\Component\Render\MarkupInterface
    *   The security coverage message, or an empty string if there is none.
@@ -158,8 +158,8 @@ final class ProjectSecurityRequirement {
    */
   private function getVersionEndCoverageMessage() {
     if ($this->securityCoverageInfo['additional_minors_coverage'] > 0) {
-      // If the installed minor version will be supported until newer minor
-      // versions are released inform the user.
+      // If the installed minor version will receive security coverage until
+      // newer minor versions are released inform the user.
       $translation_arguments = [
         '@project' => $this->projectTitle,
         '@version' => $this->existingVersion,
@@ -168,16 +168,17 @@ final class ProjectSecurityRequirement {
       $message = '<p>' . $this->t('The installed minor version of @project (@version), will stop receiving official security support after the release of @coverage_version.', $translation_arguments) . '</p>';
 
       if ($this->securityCoverageInfo['additional_minors_coverage'] === 1) {
-        // If the installed minor version will only be supported for 1 newer
-        // minor core version encourage the site owner to update soon.
+        // If the installed minor version will only receive security coverage
+        // for 1 newer minor core version encourage the site owner to update
+        // soon.
         $message .= '<p>' . $this->t('Update to @next_minor or higher soon to continue receiving security updates.', ['@next_minor' => $this->nextVersion])
           . ' ' . static::getAvailableUpdatesMessage() . '</p>';
       }
     }
     else {
-      // Because the current minor version is no longer supported advise the
-      // site owner update.
-      $message = $this->getVersionNotSupportedMessage();
+      // Because the current minor version no longer has security coverage
+      // advise the site owner to update.
+      $message = $this->getVersionNoSecurityCoverageMessage();
     }
     $message .= $this->getReleaseCycleLink();
 
@@ -210,14 +211,14 @@ final class ProjectSecurityRequirement {
       // 'Y-m' format.
       $full_security_coverage_end_date = $this->securityCoverageInfo['security_coverage_end_date'] . '-15';
     }
-    $support_end_timestamp = \DateTime::createFromFormat('Y-m-d', $full_security_coverage_end_date)->getTimestamp();
-    $formatted_end_date = $date_format === 'Y-m-d' ? $this->securityCoverageInfo['security_coverage_end_date'] : $date_formatter->format($support_end_timestamp, 'custom', 'F Y');
+    $security_coverage_end_timestamp = \DateTime::createFromFormat('Y-m-d', $full_security_coverage_end_date)->getTimestamp();
+    $formatted_end_date = $date_format === 'Y-m-d' ? $this->securityCoverageInfo['security_coverage_end_date'] : $date_formatter->format($security_coverage_end_timestamp, 'custom', 'F Y');
     $comparable_request_date = $date_formatter->format($time->getRequestTime(), 'custom', $date_format);
     if ($this->securityCoverageInfo['security_coverage_end_date'] <= $comparable_request_date) {
-      // Support is over.
+      // Security coverage is over.
       $requirement['value'] = $this->t('Unsupported minor version');
       $requirement['severity'] = REQUIREMENT_ERROR;
-      $requirement['description'] = $this->getVersionNotSupportedMessage();
+      $requirement['description'] = $this->getVersionNoSecurityCoverageMessage();
     }
     else {
       $requirement['value'] = $this->t('Supported minor version');
@@ -241,12 +242,12 @@ final class ProjectSecurityRequirement {
   }
 
   /**
-   * Gets the formatted message for an unsupported project.
+   * Gets the formatted message for a project no security coverage.
    *
    * @return string
-   *   The message for an unsupported version.
+   *   The message for a version with no security coverage.
    */
-  private function getVersionNotSupportedMessage() {
+  private function getVersionNoSecurityCoverageMessage() {
     return '<p>' . $this->t(
         'The installed minor version of @project (@version), is no longer supported and will not receive security updates.',
         [
