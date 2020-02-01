@@ -20,24 +20,24 @@ final class ProjectSecurityData {
    * Define constants for versions with support end dates.
    *
    * Two types of constants are supported:
-   * - SUPPORT_END_DATE_[VERSION_MAJOR]_[VERSION_MINOR]: A date in 'Y-m-d' or
-   *   'Y-m' format.
-   * - SUPPORT_ENDING_WARN_DATE_[VERSION_MAJOR]_[VERSION_MINOR]: A date in
-   *   'Y-m-d' format.
+   * - SECURITY_COVERAGE_END_DATE_[VERSION_MAJOR]_[VERSION_MINOR]: A date in
+   *   'Y-m-d' or 'Y-m' format.
+   * - SECURITY_COVERAGE_ENDING_WARN_DATE_[VERSION_MAJOR]_[VERSION_MINOR]: A
+   *   date in 'Y-m-d' format.
    *
    * @see \Drupal\update\ProjectSecurityRequirement::getDateEndRequirement()
    */
-  const SUPPORT_END_DATE_8_8 = '2020-12-02';
+  const SECURITY_COVERAGE_END_DATE_8_8 = '2020-12-02';
 
-  const SUPPORT_ENDING_WARN_DATE_8_8 = '2020-06-02';
+  const SECURITY_COVERAGE_ENDING_WARN_DATE_8_8 = '2020-06-02';
 
-  const SUPPORT_END_DATE_8_9 = '2021-11';
+  const SECURITY_COVERAGE_END_DATE_8_9 = '2021-11';
 
   /**
    * The existing (currently installed) version of the project.
    *
    * Because this class only handles the Drupal core project, values will be
-   * semantic version numbers such as 8.8.0, 8.8.0-alpha1 or 9.0.0.
+   * semantic version numbers such as 8.8.0, 8.8.0-alpha1, or 9.0.0.
    *
    * @var string|null
    */
@@ -98,21 +98,22 @@ final class ProjectSecurityData {
    * Currently only Drupal core is supported.
    *
    * @return array
-   *   The security coverage information or an empty array if no security
+   *   The security coverage information, or an empty array if no security
    *   information is available for the project. If security coverage is based
    *   on support until a specific version, the array will have the following
    *   keys:
-   *   - support_end_version (string): The minor version the existing version
-   *     is supported until.
+   *   - security_coverage_end_version (string): The minor version the existing
+   *     version is supported until.
    *   - additional_minors_coverage (int): The number of additional minor
-   *     versions the existing version will be supported. For example if this
+   *     versions the existing version will be supported. For example, if this
    *     value is 2 and the existing version is 9.0.1, the 9.0.x branch will
    *     be supported until the release of version 9.2.0.
    *   If the security coverage is based on support until a specific date, the
    *   array will have the following keys:
-   *   - support_end_date (string): The month or date support will end for the
-   *     existing version. It can be in either 'YYYY-MM' or 'YYYY-MM-DD' format.
-   *   - (optional) support_ending_warn_date (string): The date, in the format
+   *   - security_coverage_end_date (string): The month or date support will end
+   *     for the existing version. It can be in either 'YYYY-MM' or 'YYYY-MM-DD'
+   *     format.
+   *   - (optional) security_coverage_ending_warn_date (string): The date, in the format
    *     'YYYY-MM-DD', after which a warning should be displayed about upgrading
    *     to another version.
    */
@@ -127,13 +128,13 @@ final class ProjectSecurityData {
 
     // Check if the installed version has a specific end date defined.
     $version_suffix = $existing_release_version->getMajorVersion() . '_' . $this->getSemanticMinorVersion($this->existingVersion);
-    if (defined("self::SUPPORT_END_DATE_$version_suffix")) {
-      $info['support_end_date'] = constant("self::SUPPORT_END_DATE_$version_suffix");
-      $info['support_ending_warn_date'] = defined("self::SUPPORT_ENDING_WARN_DATE_$version_suffix") ? constant("self::SUPPORT_ENDING_WARN_DATE_$version_suffix") : NULL;
+    if (defined("self::SECURITY_COVERAGE_END_DATE_$version_suffix")) {
+      $info['security_coverage_end_date'] = constant("self::SECURITY_COVERAGE_END_DATE_$version_suffix");
+      $info['security_coverage_ending_warn_date'] = defined("self::SECURITY_COVERAGE_ENDING_WARN_DATE_$version_suffix") ? constant("self::SECURITY_COVERAGE_ENDING_WARN_DATE_$version_suffix") : NULL;
     }
-    elseif ($support_until_release = $this->getSupportUntilReleaseInfo()) {
-      $info['support_end_version'] = $support_until_release['version'];
-      $info['additional_minors_coverage'] = $this->getAdditionalSecuritySupportedMinors($support_until_release);
+    elseif ($security_coverage_until_release = $this->getSecurityCoverageUntilReleaseInfo()) {
+      $info['security_coverage_end_version'] = $security_coverage_until_release['version'];
+      $info['additional_minors_coverage'] = $this->getAdditionalSecuritySupportedMinors($security_coverage_until_release);
     }
     return $info;
   }
@@ -152,7 +153,7 @@ final class ProjectSecurityData {
    *   - version_minor (int): The minor version of the release.
    *   - version (string): The version number.
    */
-  private function getSupportUntilReleaseInfo() {
+  private function getSecurityCoverageUntilReleaseInfo() {
     if (empty($this->releases[$this->existingVersion])) {
       return [];
     }

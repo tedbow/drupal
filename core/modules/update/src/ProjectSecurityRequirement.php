@@ -113,10 +113,10 @@ final class ProjectSecurityRequirement {
    *   if no requirements can be determined.
    */
   public function getRequirement() {
-    if (isset($this->securityCoverageInfo['support_end_version'])) {
+    if (isset($this->securityCoverageInfo['security_coverage_end_version'])) {
       $requirement = $this->getVersionEndRequirement();
     }
-    elseif (isset($this->securityCoverageInfo['support_end_date'])) {
+    elseif (isset($this->securityCoverageInfo['security_coverage_end_date'])) {
       $requirement = $this->getDateEndRequirement();
     }
     else {
@@ -163,7 +163,7 @@ final class ProjectSecurityRequirement {
       $translation_arguments = [
         '@project' => $this->projectTitle,
         '@version' => $this->existingVersion,
-        '@coverage_version' => $this->securityCoverageInfo['support_end_version'],
+        '@coverage_version' => $this->securityCoverageInfo['security_coverage_end_version'],
       ];
       $message = '<p>' . $this->t('The installed minor version of @project (@version), will stop receiving official security support after the release of @coverage_version.', $translation_arguments) . '</p>';
 
@@ -196,10 +196,10 @@ final class ProjectSecurityRequirement {
     $time = \Drupal::service('datetime.time');
     /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
     $date_formatter = \Drupal::service('date.formatter');
-    // 'support_end_date' will either be in format 'Y-m-d' or 'Y-m'.
-    if (substr_count($this->securityCoverageInfo['support_end_date'], '-') === 2) {
+    // 'security_coverage_end_date' will either be in format 'Y-m-d' or 'Y-m'.
+    if (substr_count($this->securityCoverageInfo['security_coverage_end_date'], '-') === 2) {
       $date_format = 'Y-m-d';
-      $full_support_end_date = $this->securityCoverageInfo['support_end_date'];
+      $full_security_coverage_end_date = $this->securityCoverageInfo['security_coverage_end_date'];
     }
     else {
       $date_format = 'Y-m';
@@ -208,12 +208,12 @@ final class ProjectSecurityRequirement {
       // not provided. This may cause the month to be wrong at the beginning or
       // end of the month. '15' will never be displayed because we are using the
       // 'Y-m' format.
-      $full_support_end_date = $this->securityCoverageInfo['support_end_date'] . '-15';
+      $full_security_coverage_end_date = $this->securityCoverageInfo['security_coverage_end_date'] . '-15';
     }
-    $support_end_timestamp = \DateTime::createFromFormat('Y-m-d', $full_support_end_date)->getTimestamp();
-    $formatted_end_date = $date_format === 'Y-m-d' ? $this->securityCoverageInfo['support_end_date'] : $date_formatter->format($support_end_timestamp, 'custom', 'F Y');
+    $support_end_timestamp = \DateTime::createFromFormat('Y-m-d', $full_security_coverage_end_date)->getTimestamp();
+    $formatted_end_date = $date_format === 'Y-m-d' ? $this->securityCoverageInfo['security_coverage_end_date'] : $date_formatter->format($support_end_timestamp, 'custom', 'F Y');
     $comparable_request_date = $date_formatter->format($time->getRequestTime(), 'custom', $date_format);
-    if ($this->securityCoverageInfo['support_end_date'] <= $comparable_request_date) {
+    if ($this->securityCoverageInfo['security_coverage_end_date'] <= $comparable_request_date) {
       // Support is over.
       $requirement['value'] = $this->t('Unsupported minor version');
       $requirement['severity'] = REQUIREMENT_ERROR;
@@ -228,9 +228,10 @@ final class ProjectSecurityRequirement {
         '@date' => $formatted_end_date,
       ];
       $requirement['description'] = '<p>' . $this->t('The installed minor version of @project (@version), will stop receiving official security support after @date.', $translation_arguments) . '</p>';
-      // 'support_ending_warn_date' will always be in the format 'Y-m-d'.
+      // 'security_coverage_ending_warn_date' will always be in the format
+      // 'Y-m-d'.
       $request_date = $date_formatter->format($time->getRequestTime(), 'custom', 'Y-m-d');
-      if (!empty($this->securityCoverageInfo['support_ending_warn_date']) && $this->securityCoverageInfo['support_ending_warn_date'] <= $request_date) {
+      if (!empty($this->securityCoverageInfo['security_coverage_ending_warn_date']) && $this->securityCoverageInfo['security_coverage_ending_warn_date'] <= $request_date) {
         $requirement['description'] .= '<p>' . $this->t('Update to a supported minor version soon to continue receiving security updates.') . '</p>';
         $requirement['severity'] = REQUIREMENT_WARNING;
       }
