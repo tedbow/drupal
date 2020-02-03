@@ -242,7 +242,7 @@ final class ProjectSecurityRequirement {
   }
 
   /**
-   * Gets the formatted message for a project no security coverage.
+   * Gets the formatted message for a project with no security coverage.
    *
    * @return string
    *   The message for a version with no security coverage.
