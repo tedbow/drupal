@@ -133,9 +133,9 @@ final class ProjectSecurityData {
       $info['security_coverage_end_date'] = constant("self::SECURITY_COVERAGE_END_DATE_$version_suffix");
       $info['security_coverage_ending_warn_date'] = defined("self::SECURITY_COVERAGE_ENDING_WARN_DATE_$version_suffix") ? constant("self::SECURITY_COVERAGE_ENDING_WARN_DATE_$version_suffix") : NULL;
     }
-    elseif ($security_coverage_until_release = $this->getSecurityCoverageUntilReleaseInfo()) {
-      $info['security_coverage_end_version'] = $security_coverage_until_release['version'];
-      $info['additional_minors_coverage'] = $this->getAdditionalSecurityCoveredMinors($security_coverage_until_release);
+    elseif ($security_coverage_until_version = $this->getSecurityCoverageUntilVersion()) {
+      $info['security_coverage_end_version'] = $security_coverage_until_version;
+      $info['additional_minors_coverage'] = $this->getAdditionalSecurityCoveredMinors($security_coverage_until_version);
     }
     return $info;
   }
@@ -150,53 +150,46 @@ final class ProjectSecurityData {
    *    what the final minor release of a particular major version will be. This
    *    method should not return a version beyond that minor.
    *
-   * @return array
-   *   If release information is not available an empty array is returned,
-   *   otherwise the release information with the following keys:
-   *   - version_major (int): The major version of the release.
-   *   - version_minor (int): The minor version of the release.
-   *   - version (string): The version number.
+   * @return string|null
+   *   The release the existing version will receive security coverage until.
    */
-  private function getSecurityCoverageUntilReleaseInfo() {
+  private function getSecurityCoverageUntilVersion() {
     if (empty($this->releases[$this->existingVersion])) {
-      return [];
+      return NULL;
     }
 
     $existing_release_version = ModuleVersion::createFromVersionString($this->existingVersion);
     if (!empty($existing_release_version->getVersionExtra())) {
       // Only full releases receive security coverage.
-      return [];
+      return NULL;
     }
 
-    $security_covered_until_release = [
-      'version_major' => (int) $existing_release_version->getMajorVersion(),
-      'version_minor' => $this->getSemanticMinorVersion($this->existingVersion) + static::CORE_MINORS_WITH_SECURITY_COVERAGE,
-    ];
-    $security_covered_until_release['version'] = "{$security_covered_until_release['version_major']}.{$security_covered_until_release['version_minor']}.0";
-    return $security_covered_until_release;
+    return $existing_release_version->getMajorVersion()
+      . ($this->getSemanticMinorVersion($this->existingVersion) + static::CORE_MINORS_WITH_SECURITY_COVERAGE)
+      . '.0';
   }
 
   /**
    * Gets the number of additional minor security covered releases.
    *
-   * @param array $security_covered_release_info
-   *   The security covered release info as returned by
-   *   ::getSecurityCoverageUntilReleaseInfo().
+   * @param string $security_covered_release_version
+   *   The version the existing version will receive security updates until.
    *
    * @return int|null
    *   The number of additional security covered minor releases or NULL if this
    *   cannot be determined.
    */
-  private function getAdditionalSecurityCoveredMinors(array $security_covered_release_info) {
+  private function getAdditionalSecurityCoveredMinors($security_covered_release_version) {
+    $security_covered_version = ModuleVersion::createFromVersionString($security_covered_release_version);
     foreach ($this->releases as $release) {
       $release_version = ModuleVersion::createFromVersionString($release['version']);
-      if ((int) $release_version->getMajorVersion() === $security_covered_release_info['version_major'] && $release['status'] === 'published' && !$release_version->getVersionExtra()) {
+      if ($release_version->getMajorVersion() === $security_covered_version->getMajorVersion() && $release['status'] === 'published' && !$release_version->getVersionExtra()) {
         $latest_minor = $this->getSemanticMinorVersion($release['version']);
         break;
       }
     }
     return isset($latest_minor)
-      ? $security_covered_release_info['version_minor'] - $latest_minor
+      ? $this->getSemanticMinorVersion($security_covered_release_version) - $latest_minor
       : NULL;
   }
 
