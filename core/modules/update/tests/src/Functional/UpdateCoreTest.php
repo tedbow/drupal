@@ -370,7 +370,7 @@ class UpdateCoreTest extends UpdateTestBase {
    *   The expected coverage message.
    * @param string $mock_date
    *   The mock date to use if needed in the format CCYY-MM-DD. If an empty
-   *   string is provided no mock date will be used.
+   *   string is provided, no mock date will be used.
    *
    * @dataProvider securityCoverageMessageProvider
    */

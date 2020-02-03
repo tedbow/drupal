@@ -120,7 +120,7 @@ final class ProjectSecurityData {
    */
   public function getCoverageInfo() {
     if (empty($this->releases[$this->existingVersion])) {
-      // If the existing version does not have a release we cannot get the
+      // If the existing version does not have a release, we cannot get the
       // security coverage information.
       return [];
     }

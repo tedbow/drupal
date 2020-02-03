@@ -109,7 +109,7 @@ final class ProjectSecurityRequirement {
    * Gets the security coverage requirement if any.
    *
    * @return array
-   *   Requirements array as specified by hook_requirements() or an empty array
+   *   Requirements array as specified by hook_requirements(), or an empty array
    *   if no requirements can be determined.
    */
   public function getRequirement() {
@@ -159,7 +159,7 @@ final class ProjectSecurityRequirement {
   private function getVersionEndCoverageMessage() {
     if ($this->securityCoverageInfo['additional_minors_coverage'] > 0) {
       // If the installed minor version will receive security coverage until
-      // newer minor versions are released inform the user.
+      // newer minor versions are released, inform the user.
       $translation_arguments = [
         '@project' => $this->projectTitle,
         '@version' => $this->existingVersion,
@@ -169,14 +169,14 @@ final class ProjectSecurityRequirement {
 
       if ($this->securityCoverageInfo['additional_minors_coverage'] === 1) {
         // If the installed minor version will only receive security coverage
-        // for 1 newer minor core version encourage the site owner to update
+        // for 1 newer minor core version, encourage the site owner to update
         // soon.
         $message .= '<p>' . $this->t('Update to @next_minor or higher soon to continue receiving security updates.', ['@next_minor' => $this->nextVersion])
           . ' ' . static::getAvailableUpdatesMessage() . '</p>';
       }
     }
     else {
-      // Because the current minor version no longer has security coverage
+      // Because the current minor version no longer has security coverage,
       // advise the site owner to update.
       $message = $this->getVersionNoSecurityCoverageMessage();
     }
@@ -204,7 +204,7 @@ final class ProjectSecurityRequirement {
     }
     else {
       $date_format = 'Y-m';
-      // If the date does not include a day use '15'. When calling
+      // If the date does not include a day, use '15'. When calling
       // \DateTime::createFromFormat() the current day will be used if one is
       // not provided. This may cause the month to be wrong at the beginning or
       // end of the month. '15' will never be displayed because we are using the
