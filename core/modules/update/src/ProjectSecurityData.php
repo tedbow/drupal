@@ -190,7 +190,7 @@ final class ProjectSecurityData {
   private function getAdditionalSecurityCoveredMinors(array $security_covered_release_info) {
     foreach ($this->releases as $release) {
       $release_version = ModuleVersion::createFromVersionString($release['version']);
-      if ((int) $release_version->getMajorVersion() === $security_covered_release_info['version_major'] && $release['status'] === 'published' && empty($release['version_extra'])) {
+      if ((int) $release_version->getMajorVersion() === $security_covered_release_info['version_major'] && $release['status'] === 'published' && !$release_version->getVersionExtra()) {
         $latest_minor = $this->getSemanticMinorVersion($release['version']);
         break;
       }
