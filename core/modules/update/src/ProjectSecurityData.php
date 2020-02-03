@@ -151,7 +151,8 @@ final class ProjectSecurityData {
    *    method should not return a version beyond that minor.
    *
    * @return string|null
-   *   The release the existing version will receive security coverage until.
+   *   The version the existing version will receive security coverage until or
+   *   NULL if this cannot be determined.
    */
   private function getSecurityCoverageUntilVersion() {
     if (empty($this->releases[$this->existingVersion])) {
@@ -164,7 +165,7 @@ final class ProjectSecurityData {
       return NULL;
     }
 
-    return $existing_release_version->getMajorVersion()
+    return $existing_release_version->getMajorVersion() . '.'
       . ($this->getSemanticMinorVersion($this->existingVersion) + static::CORE_MINORS_WITH_SECURITY_COVERAGE)
       . '.0';
   }
@@ -172,15 +173,15 @@ final class ProjectSecurityData {
   /**
    * Gets the number of additional minor security covered releases.
    *
-   * @param string $security_covered_release_version
+   * @param string $security_covered_version_string
    *   The version the existing version will receive security updates until.
    *
    * @return int|null
    *   The number of additional security covered minor releases or NULL if this
    *   cannot be determined.
    */
-  private function getAdditionalSecurityCoveredMinors($security_covered_release_version) {
-    $security_covered_version = ModuleVersion::createFromVersionString($security_covered_release_version);
+  private function getAdditionalSecurityCoveredMinors($security_covered_version_string) {
+    $security_covered_version = ModuleVersion::createFromVersionString($security_covered_version_string);
     foreach ($this->releases as $release) {
       $release_version = ModuleVersion::createFromVersionString($release['version']);
       if ($release_version->getMajorVersion() === $security_covered_version->getMajorVersion() && $release['status'] === 'published' && !$release_version->getVersionExtra()) {
@@ -189,7 +190,7 @@ final class ProjectSecurityData {
       }
     }
     return isset($latest_minor)
-      ? $this->getSemanticMinorVersion($security_covered_release_version) - $latest_minor
+      ? $this->getSemanticMinorVersion($security_covered_version_string) - $latest_minor
       : NULL;
   }
 
