@@ -53,6 +53,7 @@
             <status>published</status>
             <release_link>http://example.com/drupal-8-1-0-release</release_link>
             <download_link>http://example.com/drupal-8-1-0.tar.gz</download_link>
+            <date>1250424521</date>
             <terms>
                 <term>
                     <name>Release type</name>

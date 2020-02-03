@@ -34,6 +34,7 @@
             <status>published</status>
             <release_link>http://example.com/drupal-8-2-0-release</release_link>
             <download_link>http://example.com/drupal-8-2-0.tar.gz</download_link>
+            <date>1250424641</date>
             <terms>
                 <term>
                     <name>Release type</name>
@@ -52,6 +53,7 @@
             <status>published</status>
             <release_link>http://example.com/drupal-8-2-0-beta2-release</release_link>
             <download_link>http://example.com/drupal-8-2-0-beta2.tar.gz</download_link>
+            <date>1533298080</date>
             <terms>
                 <term><name>Release type</name><value>Bug fixes</value></term>
                 <term><name>Release type</name><value>New features</value></term>
