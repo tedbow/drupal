@@ -38,8 +38,6 @@
             <release_link>http://example.com/drupal-8-3-0-release</release_link>
             <download_link>http://example.com/drupal-8-3-0.tar.gz</download_link>
             <date>1250424641</date>
-            <mdhash>b966255555d9c9b86d480ca08cfaa98e</mdhash>
-            <filesize>4294967296</filesize>
             <terms>
                 <term>
                     <name>Release type</name>

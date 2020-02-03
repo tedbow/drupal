@@ -34,7 +34,6 @@
             <status>published</status>
             <release_link>http://example.com/drupal-8-2-0-release</release_link>
             <download_link>http://example.com/drupal-8-2-0.tar.gz</download_link>
-            <filesize>4294967296</filesize>
             <terms>
                 <term>
                     <name>Release type</name>
@@ -53,7 +52,6 @@
             <status>published</status>
             <release_link>http://example.com/drupal-8-2-0-beta2-release</release_link>
             <download_link>http://example.com/drupal-8-2-0-beta2.tar.gz</download_link>
-            <filesize>16209911</filesize>
             <terms>
                 <term><name>Release type</name><value>Bug fixes</value></term>
                 <term><name>Release type</name><value>New features</value></term>
