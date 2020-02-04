@@ -212,7 +212,9 @@ final class ProjectSecurityRequirement {
       $full_security_coverage_end_date = $this->securityCoverageInfo['security_coverage_end_date'] . '-15';
     }
     $security_coverage_end_timestamp = \DateTime::createFromFormat('Y-m-d', $full_security_coverage_end_date)->getTimestamp();
-    $formatted_end_date = $date_format === 'Y-m-d' ? $this->securityCoverageInfo['security_coverage_end_date'] : $date_formatter->format($security_coverage_end_timestamp, 'custom', 'F Y');
+    $formatted_end_date = $date_format === 'Y-m-d'
+      ? $this->securityCoverageInfo['security_coverage_end_date']
+      : $date_formatter->format($security_coverage_end_timestamp, 'custom', 'F Y');
     $comparable_request_date = $date_formatter->format($time->getRequestTime(), 'custom', $date_format);
     if ($this->securityCoverageInfo['security_coverage_end_date'] <= $comparable_request_date) {
       // Security coverage is over.

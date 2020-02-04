@@ -13,6 +13,10 @@ final class ProjectSecurityData {
 
   /**
    * The number of minor versions of Drupal core that receive security coverage.
+   *
+   * For example, if this value is 2 and the existing version is 9.0.1, the
+   * 9.0.x branch will receive security coverage until the release of version
+   * 9.2.0.
    */
   const CORE_MINORS_WITH_SECURITY_COVERAGE = 2;
 
@@ -102,10 +106,7 @@ final class ProjectSecurityData {
    *   - security_coverage_end_version (string): The minor version the existing
    *     version will receive security coverage until.
    *   - additional_minors_coverage (int): The number of additional minor
-   *     versions the existing version will receive security coverage. For
-   *     example, if this value is 2 and the existing version is 9.0.1, the
-   *     9.0.x branch will receive security coverage until the release of
-   *     version 9.2.0.
+   *     versions the existing version will receive security coverage.
    *   If the security coverage is based on a specific date, the array will have
    *   the following keys:
    *   - security_coverage_end_date (string): The month or date security
@@ -128,7 +129,10 @@ final class ProjectSecurityData {
     $version_suffix = $existing_release_version->getMajorVersion() . '_' . $this->getSemanticMinorVersion($this->existingVersion);
     if (defined("self::SECURITY_COVERAGE_END_DATE_$version_suffix")) {
       $info['security_coverage_end_date'] = constant("self::SECURITY_COVERAGE_END_DATE_$version_suffix");
-      $info['security_coverage_ending_warn_date'] = defined("self::SECURITY_COVERAGE_ENDING_WARN_DATE_$version_suffix") ? constant("self::SECURITY_COVERAGE_ENDING_WARN_DATE_$version_suffix") : NULL;
+      $info['security_coverage_ending_warn_date'] =
+        defined("self::SECURITY_COVERAGE_ENDING_WARN_DATE_$version_suffix")
+          ? constant("self::SECURITY_COVERAGE_ENDING_WARN_DATE_$version_suffix")
+          : NULL;
     }
     elseif ($security_coverage_until_version = $this->getSecurityCoverageUntilVersion()) {
       $info['security_coverage_end_version'] = $security_coverage_until_version;
@@ -139,9 +143,6 @@ final class ProjectSecurityData {
 
   /**
    * Gets the release the current minor will receive security coverage until.
-   *
-   * For example, if two minor core versions receive security updates and the
-   * current minor version is 8.6, this method will return 8.8.0.
    *
    * @todo In https://www.drupal.org/node/2608062 determine how we will know
    *    what the final minor release of a particular major version will be. This
