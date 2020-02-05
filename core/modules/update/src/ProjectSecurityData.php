@@ -37,51 +37,37 @@ final class ProjectSecurityData {
 
   const SECURITY_COVERAGE_END_DATE_8_9 = '2021-11';
 
+  /**
+   * The month or date security coverage will end for the existing version.
+   *
+   * The string can be in either 'YYYY-MM' or 'YYYY-MM-DD' format.
+   *
+   * @var string
+   */
   protected $coverageEndDate;
 
   /**
-   * 
+   * The version until which the existing version receives security coverage.
+   *
    * @var string|null
    */
   protected $coverageEndVersion;
 
   /**
+   * The number of additional minor releases that receive security coverage.
+   *
    * @var int|null
    */
   protected $additionalMinorsCoverage;
 
-
-
+  /**
+   * The date after which a warning should be displayed.
+   *
+   * The date is in the format 'YYYY-MM-DD'.
+   *
+   * @var string|null
+   */
   protected $coverageEndingWarnDate;
-
-  /**
-   * @return mixed|null
-   */
-  public function getCoverageEndingWarnDate() {
-    return $this->coverageEndingWarnDate;
-  }
-
-  /**
-   * @return mixed
-   */
-  public function getCoverageEndDate() {
-    return $this->coverageEndDate;
-  }
-
-  /**
-   * The version
-   * @return string|null
-   */
-  public function getCoverageEndVersion() {
-    return $this->coverageEndVersion;
-  }
-
-  /**
-   * @return int|null
-   */
-  public function getAdditionalMinorsCoverage() {
-    return $this->additionalMinorsCoverage;
-  }
 
   /**
    * Constructs a ProjectSecurityData object.
@@ -92,8 +78,6 @@ final class ProjectSecurityData {
    *   Project releases as returned by update_get_available().
    */
   private function __construct($existing_version = NULL, array $releases = []) {
-    $this->releases = $releases;
-
     if (empty($releases[$existing_version])) {
       // If the existing version does not have a release, we cannot get the
       // security coverage information.
@@ -102,7 +86,7 @@ final class ProjectSecurityData {
     $existing_release_version = ModuleVersion::createFromVersionString($existing_version);
 
     // Check if the installed version has a specific end date defined.
-    $version_suffix = $existing_release_version->getMajorVersion() . '_' . $this->getSemanticMinorVersion($existing_version);
+    $version_suffix = $existing_release_version->getMajorVersion() . '_' . static::getSemanticMinorVersion($existing_version);
     if (defined("self::SECURITY_COVERAGE_END_DATE_$version_suffix")) {
       $this->coverageEndDate = constant("self::SECURITY_COVERAGE_END_DATE_$version_suffix");
       $this->coverageEndingWarnDate =
@@ -112,7 +96,7 @@ final class ProjectSecurityData {
     }
     elseif ($security_coverage_until_version = $this->getSecurityCoverageUntilVersion($existing_version)) {
       $this->coverageEndVersion = $security_coverage_until_version;
-      $this->additionalMinorsCoverage = $this->getAdditionalSecurityCoveredMinors($security_coverage_until_version);
+      $this->additionalMinorsCoverage = $this->getAdditionalSecurityCoveredMinors($security_coverage_until_version, $releases);
     }
   }
 
@@ -135,11 +119,58 @@ final class ProjectSecurityData {
   }
 
   /**
+   * Gets the security coverage end date.
+   *
+   * @return string|null
+   *   The month or date security coverage will end for the existing version. It
+   *   can be in either 'YYYY-MM' or 'YYYY-MM-DD' format.
+   */
+  public function getCoverageEndDate() {
+    return $this->coverageEndDate;
+  }
+
+  /**
+   * Gets the security coverage ending warning date.
+   *
+   * @return mixed|null
+   *   The date, in the format 'YYYY-MM-DD', after which a warning should be
+   *   displayed about upgrading to another version or NULL if not applicable.
+   */
+  public function getCoverageEndingWarnDate() {
+    return $this->coverageEndingWarnDate;
+  }
+
+  /**
+   * Gets the security coverage end version.
+   *
+   * @return string|null
+   *   The version until which the existing version receives security coverage
+   *   or NULL if not applicable.
+   */
+  public function getCoverageEndVersion() {
+    return $this->coverageEndVersion;
+  }
+
+  /**
+   * Gets the number of additional minor releases that receive coverage.
+   *
+   * @return int|null
+   *   The number of additional minor releases that receive security coverage,
+   *   or NULL if not applicable.
+   */
+  public function getAdditionalMinorsCoverage() {
+    return $this->additionalMinorsCoverage;
+  }
+
+  /**
    * Gets the release the current minor will receive security coverage until.
    *
    * @todo In https://www.drupal.org/node/2608062 determine how we will know
    *    what the final minor release of a particular major version will be. This
    *    method should not return a version beyond that minor.
+   *
+   * @param string $existing_version
+   *   The existing (currently installed) version of the project.
    *
    * @return string|null
    *   The version the existing version will receive security coverage until or
@@ -162,22 +193,24 @@ final class ProjectSecurityData {
    *
    * @param string $security_covered_version
    *   The version until which the existing version receives security coverage.
+   * @param array $releases
+   *   Project releases as returned by update_get_available().
    *
    * @return int|null
    *   The number of additional minor releases that receive security coverage,
    *   or NULL if this cannot be determined.
    */
-  private function getAdditionalSecurityCoveredMinors($security_covered_version) {
+  private static function getAdditionalSecurityCoveredMinors($security_covered_version, array $releases) {
     $security_covered_version_major = ModuleVersion::createFromVersionString($security_covered_version)->getMajorVersion();
-    $security_covered_version_minor = $this->getSemanticMinorVersion($security_covered_version);
-    foreach ($this->releases as $release) {
+    $security_covered_version_minor = static::getSemanticMinorVersion($security_covered_version);
+    foreach ($releases as $release) {
       $release_version = ModuleVersion::createFromVersionString($release['version']);
       if ($release_version->getMajorVersion() === $security_covered_version_major && $release['status'] === 'published' && !$release_version->getVersionExtra()) {
         // The releases are ordered with the most recent releases first.
         // Therefore if we have found an official, published release with the
         // same major version as $security_covered_version then this release
         // can be used to determine the latest minor.
-        $latest_minor = $this->getSemanticMinorVersion($release['version']);
+        $latest_minor = static::getSemanticMinorVersion($release['version']);
         break;
       }
     }
