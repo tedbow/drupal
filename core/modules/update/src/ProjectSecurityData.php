@@ -179,10 +179,15 @@ final class ProjectSecurityData {
     foreach ($this->releases as $release) {
       $release_version = ModuleVersion::createFromVersionString($release['version']);
       if ($release_version->getMajorVersion() === $security_covered_version->getMajorVersion() && $release['status'] === 'published' && !$release_version->getVersionExtra()) {
+        // The releases are ordered with the most recent releases first.
+        // Therefore if we have found an official, published release with the
+        // same major version as $security_covered_version then this release
+        // can be used to determine the latest minor.
         $latest_minor = $this->getSemanticMinorVersion($release['version']);
         break;
       }
     }
+    // If we were able to determine the latest minor, 
     return isset($latest_minor)
       ? $this->getSemanticMinorVersion($security_covered_version_string) - $latest_minor
       : NULL;
