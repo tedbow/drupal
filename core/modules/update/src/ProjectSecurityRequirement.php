@@ -40,14 +40,14 @@ final class ProjectSecurityRequirement {
    *
    * @var string|null
    */
-  private $nextVersion;
+  private $nextMajorMinorVersion;
 
   /**
    * The existing (currently installed) version in the format [MAJOR].[MINOR].
    *
    * @var string|null
    */
-  private $existingVersion;
+  private $existingMajorMinorVersion;
 
   /**
    * Constructs a ProjectSecurityRequirement object.
@@ -57,17 +57,17 @@ final class ProjectSecurityRequirement {
    * @param array $security_coverage_info
    *   Security coverage information as set by
    *   \Drupal\update\ProjectSecurityData::getCoverageInfo().
-   * @param string|null $existing_version
+   * @param string|null $existing_major_minor_version
    *   The existing (currently installed) version in the format [MAJOR].[MINOR].
-   * @param string|null $next_version
+   * @param string|null $next_major_minor_version
    *   The next version after the installed version in the format
    *   [MAJOR].[MINOR].
    */
-  private function __construct($project_title = NULL, array $security_coverage_info = [], $existing_version = NULL, $next_version = NULL) {
+  private function __construct($project_title = NULL, array $security_coverage_info = [], $existing_major_minor_version = NULL, $next_major_minor_version = NULL) {
     $this->projectTitle = $project_title;
     $this->securityCoverageInfo = $security_coverage_info;
-    $this->existingVersion = $existing_version;
-    $this->nextVersion = $next_version;
+    $this->existingMajorMinorVersion = $existing_major_minor_version;
+    $this->nextMajorMinorVersion = $next_major_minor_version;
   }
 
   /**
@@ -106,7 +106,7 @@ final class ProjectSecurityRequirement {
   }
 
   /**
-   * Gets the security coverage requirement if any.
+   * Gets the security coverage requirement, if any.
    *
    * @return array
    *   Requirements array as specified by hook_requirements(), or an empty array
@@ -162,7 +162,7 @@ final class ProjectSecurityRequirement {
       // newer minor versions are released, inform the user.
       $translation_arguments = [
         '@project' => $this->projectTitle,
-        '@version' => $this->existingVersion,
+        '@version' => $this->existingMajorMinorVersion,
         '@coverage_version' => $this->securityCoverageInfo['security_coverage_end_version'],
       ];
       $message = '<p>' . $this->t('The installed minor version of @project (@version), will stop receiving official security support after the release of @coverage_version.', $translation_arguments) . '</p>';
@@ -171,7 +171,7 @@ final class ProjectSecurityRequirement {
         // If the installed minor version will only receive security coverage
         // for 1 newer minor core version, encourage the site owner to update
         // soon.
-        $message .= '<p>' . $this->t('Update to @next_minor or higher soon to continue receiving security updates.', ['@next_minor' => $this->nextVersion])
+        $message .= '<p>' . $this->t('Update to @next_minor or higher soon to continue receiving security updates.', ['@next_minor' => $this->nextMajorMinorVersion])
           . ' ' . static::getAvailableUpdatesMessage() . '</p>';
       }
     }
@@ -227,7 +227,7 @@ final class ProjectSecurityRequirement {
       $requirement['severity'] = REQUIREMENT_INFO;
       $translation_arguments = [
         '@project' => $this->projectTitle,
-        '@version' => $this->existingVersion,
+        '@version' => $this->existingMajorMinorVersion,
         '@date' => $formatted_end_date,
       ];
       $requirement['description'] = '<p>' . $this->t('The installed minor version of @project (@version), will stop receiving official security support after @date.', $translation_arguments) . '</p>';
@@ -254,7 +254,7 @@ final class ProjectSecurityRequirement {
         'The installed minor version of @project (@version), is no longer supported and will not receive security updates.',
         [
           '@project' => $this->projectTitle,
-          '@version' => $this->existingVersion,
+          '@version' => $this->existingMajorMinorVersion,
         ])
       . '</p><p>'
       . $this->t('Update to a supported minor as soon as possible to continue receiving security updates.')

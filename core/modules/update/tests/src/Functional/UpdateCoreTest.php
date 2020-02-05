@@ -475,8 +475,9 @@ class UpdateCoreTest extends UpdateTestBase {
         'message' => '',
         'mock_date' => '',
       ],
-      // Ensure that if the next major version is released  and the supported
-      // until version is released we display a no longer supported message.
+      // Ensures the message is correct if the next major version has been
+      // released and the additional minors indicated by
+      // CORE_MINORS_WITH_SECURITY_COVERAGE minors have been released.
       '8.0.0, 9 unsupported' => [
         'installed_version' => '8.0.0',
         'fixture' => 'sec.2.0_9.0.0',
@@ -484,9 +485,10 @@ class UpdateCoreTest extends UpdateTestBase {
         'message' => "The installed minor version of Drupal (8.0), is no longer supported and will not receive security updates.$update_asap_message $see_available_message$release_coverage_message",
         'mock_date' => '',
       ],
-      // Ensure that if the next major version has been released and
-      // the supported until version has not been released we show a message.
-      '8.2.0, 9 no message' => [
+      // Ensures the message is correct if the next major version has been
+      // released and the additional minors indicated by
+      // CORE_MINORS_WITH_SECURITY_COVERAGE minors have not been released.
+      '8.2.0, 9 warning' => [
         'installed_version' => '8.2.0',
         'fixture' => 'sec.2.0_9.0.0',
         'requirements_section_heading' => 'Warnings found',
@@ -497,8 +499,7 @@ class UpdateCoreTest extends UpdateTestBase {
 
     // Drupal 8.8.x test cases.
     $test_cases += [
-      // Ensure that if the 8.8 support window is not finished a message is
-      // displayed.
+      // Ensure that a message is displayed during 8.8's active support.
       '8.8.0, supported' => [
         'installed_version' => '8.8.0',
         'fixture' => 'sec.9.0',
@@ -506,8 +507,8 @@ class UpdateCoreTest extends UpdateTestBase {
         'message' => "The installed minor version of Drupal (8.8), will stop receiving official security support after 2020-12-02.$release_coverage_message",
         'mock_date' => '2020-06-01',
       ],
-      // Ensure that if the 8.8 support window is not finished but it is within
-      // 6 months of closing a message is displayed.
+      // Ensure a warning is displayed if less than six months remain until the
+      // end of 8.8's security coverage.
       '8.8.0, supported, 6 months warn' => [
         'installed_version' => '8.8.0',
         'fixture' => 'sec.9.0',
@@ -516,8 +517,8 @@ class UpdateCoreTest extends UpdateTestBase {
         'mock_date' => '2020-06-02',
       ],
     ];
-    // Ensure that warning message does not change including the last day of
-    // support.
+    // Ensure that the message does not change, including on the last day of
+    // security coverage.
     $test_cases['8.8.0, supported, last day warn'] = $test_cases['8.8.0, supported, 6 months warn'];
     $test_cases['8.8.0, supported, last day warn']['mock_date'] = '2020-12-01';
 
@@ -539,8 +540,8 @@ class UpdateCoreTest extends UpdateTestBase {
       'message' => "The installed minor version of Drupal (8.9), will stop receiving official security support after November 2021.$release_coverage_message",
       'mock_date' => '2021-01-01',
     ];
-    // Ensure that the LTS support window message does not change including the
-    // last day of support.
+    // Ensure that the message does not change, including on the last day of
+    // security coverage.
     $test_cases['8.9.0, lts supported, last day'] = $test_cases['8.9.0, lts supported'];
     $test_cases['8.9.0, lts supported, last day']['mock_date'] = '2021-10-31';
 

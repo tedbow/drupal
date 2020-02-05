@@ -5,7 +5,7 @@ namespace Drupal\update_test\Datetime;
 use Drupal\Component\Datetime\Time;
 
 /**
- * Test service to all altering request time.
+ * Test service for altering the request time.
  */
 class TestTime extends Time {
 

@@ -153,10 +153,6 @@ final class ProjectSecurityData {
    *   NULL if this cannot be determined.
    */
   private function getSecurityCoverageUntilVersion() {
-    if (empty($this->releases[$this->existingVersion])) {
-      return NULL;
-    }
-
     $existing_release_version = ModuleVersion::createFromVersionString($this->existingVersion);
     if (!empty($existing_release_version->getVersionExtra())) {
       // Only full releases receive security coverage.
@@ -172,11 +168,11 @@ final class ProjectSecurityData {
    * Gets the number of additional minor security covered releases.
    *
    * @param string $security_covered_version_string
-   *   The version the existing version will receive security updates until.
+   *   The version until which the existing version receives security coverage.
    *
    * @return int|null
-   *   The number of additional security covered minor releases or NULL if this
-   *   cannot be determined.
+   *   The number of additional minor releases that receive security coverage,
+   *   or NULL if this cannot be determined.
    */
   private function getAdditionalSecurityCoveredMinors($security_covered_version_string) {
     $security_covered_version = ModuleVersion::createFromVersionString($security_covered_version_string);
