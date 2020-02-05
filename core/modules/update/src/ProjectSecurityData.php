@@ -37,6 +37,20 @@ final class ProjectSecurityData {
 
   const SECURITY_COVERAGE_END_DATE_8_9 = '2021-11';
 
+  protected $coverageEndDate;
+
+  /**
+   * 
+   * @var string|null
+   */
+  protected $coverageEndVersion;
+
+  /**
+   * @var int|null
+   */
+  protected $additionalMinorsCoverage;
+
+
 
   protected $coverageEndingWarnDate;
 
@@ -55,6 +69,7 @@ final class ProjectSecurityData {
   }
 
   /**
+   * The version
    * @return string|null
    */
   public function getCoverageEndVersion() {
@@ -67,18 +82,6 @@ final class ProjectSecurityData {
   public function getAdditionalMinorsCoverage() {
     return $this->additionalMinorsCoverage;
   }
-
-  protected $coverageEndDate;
-
-  /**
-   * @var string|null
-   */
-  protected $coverageEndVersion;
-
-  /**
-   * @var int|null
-   */
-  protected $additionalMinorsCoverage;
 
   /**
    * Constructs a ProjectSecurityData object.
@@ -126,8 +129,7 @@ final class ProjectSecurityData {
    */
   public static function createFromProjectDataAndReleases(array $project_data, array $releases) {
     if (!($project_data['project_type'] === 'core' && $project_data['name'] === 'drupal')) {
-      // Only Drupal core has an explicit coverage range.
-      return new static();
+      throw new \UnexpectedValueException('\Drupal\update\ProjectSecurityData can only be used with Drupal core');
     }
     return new static($project_data['existing_version'], $releases);
   }

@@ -22,11 +22,13 @@ final class ProjectSecurityRequirement {
   /**
    * The project title.
    *
-   * @var string|null
+   * @var string
    */
   protected $projectTitle;
 
   /**
+   * The project security data.
+   *
    * @var \Drupal\update\ProjectSecurityData
    */
   protected $projectSecurityData;
@@ -34,14 +36,14 @@ final class ProjectSecurityRequirement {
   /**
    * The next version after the installed version in the format [MAJOR].[MINOR].
    *
-   * @var string|null
+   * @var string
    */
   private $nextMajorMinorVersion;
 
   /**
    * The existing (currently installed) version in the format [MAJOR].[MINOR].
    *
-   * @var string|null
+   * @var string
    */
   private $existingMajorMinorVersion;
 
@@ -49,15 +51,16 @@ final class ProjectSecurityRequirement {
    * Constructs a ProjectSecurityRequirement object.
    *
    * @param \Drupal\update\ProjectSecurityData $project_security_data
-   * @param string|null $project_title
+   *   The project security data.
+   * @param string $project_title
    *   The project title.
-   * @param string|null $existing_major_minor_version
+   * @param string $existing_major_minor_version
    *   The existing (currently installed) version in the format [MAJOR].[MINOR].
-   * @param string|null $next_major_minor_version
+   * @param string $next_major_minor_version
    *   The next version after the installed version in the format
    *   [MAJOR].[MINOR].
    */
-  private function __construct(ProjectSecurityData $project_security_data = NULL, $project_title = NULL, $existing_major_minor_version = NULL, $next_major_minor_version = NULL) {
+  private function __construct(ProjectSecurityData $project_security_data, $project_title, $existing_major_minor_version, $next_major_minor_version) {
     $this->projectSecurityData = $project_security_data;
     $this->projectTitle = $project_title;
     $this->existingMajorMinorVersion = $existing_major_minor_version;
@@ -77,8 +80,8 @@ final class ProjectSecurityRequirement {
    *   - project_type (string): The type of project.
    *   - name (string): The project machine name.
    *   - title (string): The project title.
-   * @param array $releases
-   *   Project releases as returned by update_get_available().
+   * @param \Drupal\update\ProjectSecurityData $project_security_data
+   *   The project security data.
    *
    * @return static
    *
@@ -86,18 +89,17 @@ final class ProjectSecurityRequirement {
    * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
    * @see update_process_project_info()
    */
-  public static function createFromProjectDataAndReleases(array $project_data, array $releases) {
+  public static function createFromProjectDataAndProjectSecurityData(array $project_data, ProjectSecurityData $project_security_data) {
     if ($project_data['project_type'] !== 'core' || $project_data['name'] !== 'drupal') {
-      return new static();
+      throw new \UnexpectedValueException('\Drupal\update\ProjectSecurityRequirement can only be used with Drupal core');
     }
-    $project_security_data = ProjectSecurityData::createFromProjectDataAndReleases($project_data, $releases);
-    if (isset($project_data['existing_version'])) {
-      list($major, $minor) = explode('.', $project_data['existing_version']);
-      $existing_version = "$major.$minor";
-      $next_version = "$major." . ((int) $minor + 1);
-      return new static($project_security_data, $project_data['title'], $existing_version, $next_version);
+    if (!isset($project_data['existing_version'])) {
+      throw new \UnexpectedValueException('The existing of Drupal core could not be determined');
     }
-    return new static($project_security_data, $project_data['title']);
+    list($major, $minor) = explode('.', $project_data['existing_version']);
+    $existing_version = "$major.$minor";
+    $next_version = "$major." . ((int) $minor + 1);
+    return new static($project_security_data, $project_data['title'], $existing_version, $next_version);
   }
 
   /**
