@@ -43,8 +43,7 @@ function update_requirements($phase) {
       // First, populate the requirements for core:
       $requirements['update_core'] = _update_requirement_check($data['drupal'], 'core');
       if (!empty($available['drupal']['releases'])) {
-        $security_data = ProjectSecurityData::createFromProjectDataAndReleases($data['drupal'], $available['drupal']['releases'])->getCoverageInfo();
-        if ($core_coverage_requirement = ProjectSecurityRequirement::createFromProjectDataAndSecurityCoverageInfo($data['drupal'], $security_data)->getRequirement()) {
+        if ($core_coverage_requirement = ProjectSecurityRequirement::createFromProjectDataAndReleases($data['drupal'], $available['drupal']['releases'])->getRequirement()) {
           $requirements['coverage_core'] = $core_coverage_requirement;
         }
       }
