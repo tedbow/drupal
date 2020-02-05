@@ -5,7 +5,6 @@
  * Code required only when comparing available updates to existing data.
  */
 
-use Drupal\update\ProjectSecurityData;
 use Drupal\update\UpdateFetcherInterface;
 use Drupal\update\UpdateManagerInterface;
 use Drupal\update\ModuleVersion;
@@ -190,11 +189,6 @@ function update_calculate_project_data($available) {
  * warned their site is insecure, and links pointing to the release notes for
  * each security update can be included (which, in turn, will link to the
  * official security announcements for each vulnerability).
- *
- * Security coverage metadata is added in a new key 'security_coverage_info'.
- * For details on what this contains:
- *
- * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
  *
  * This function relies on the fact that the .xml release history data comes
  * sorted based on major version and patch level, then finally by release date
@@ -488,10 +482,6 @@ function update_calculate_project_update_status(&$project_data, $available) {
   if (!isset($project_data['recommended']) && isset($project_data['latest_version'])) {
     $project_data['recommended'] = $project_data['latest_version'];
   }
-
-  /** @var \Drupal\update\ProjectSecurityData $security_data */
-  $security_data = ProjectSecurityData::createFromProjectDataAndReleases($project_data, $available['releases']);
-  $project_data['security_coverage_info'] = $security_data->getCoverageInfo();
 
   if (isset($project_data['status'])) {
     // If we already know the status, we're done.

@@ -80,11 +80,12 @@ final class ProjectSecurityRequirement {
    *   calling this method. The following keys are used in this method:
    *   - existing_version (string): The version of the project that is installed
    *     on the site.
-   *   - security_coverage_info (array): The security coverage information as
-   *     returned by \Drupal\update\ProjectSecurityData::getCoverageInfo().
    *   - project_type (string): The type of project.
    *   - name (string): The project machine name.
    *   - title (string): The project title.
+   * @param array $security_coverage_info
+   *   The security coverage information as returned by
+   *   \Drupal\update\ProjectSecurityData::getCoverageInfo().
    *
    * @return static
    *
@@ -92,17 +93,17 @@ final class ProjectSecurityRequirement {
    * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
    * @see update_process_project_info()
    */
-  public static function createFromProjectData(array $project_data) {
-    if ($project_data['project_type'] !== 'core' || $project_data['name'] !== 'drupal' || empty($project_data['security_coverage_info'])) {
+  public static function createFromProjectDataAndSecurityCoverageInfo(array $project_data, array $security_coverage_info) {
+    if ($project_data['project_type'] !== 'core' || $project_data['name'] !== 'drupal' || empty($security_coverage_info)) {
       return new static();
     }
     if (isset($project_data['existing_version'])) {
       list($major, $minor) = explode('.', $project_data['existing_version']);
       $existing_version = "$major.$minor";
       $next_version = "$major." . ((int) $minor + 1);
-      return new static($project_data['title'], $project_data['security_coverage_info'], $existing_version, $next_version);
+      return new static($project_data['title'], $security_coverage_info, $existing_version, $next_version);
     }
-    return new static($project_data['title'], $project_data['security_coverage_info']);
+    return new static($project_data['title'], $security_coverage_info);
   }
 
   /**
