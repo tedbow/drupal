@@ -22,50 +22,47 @@ final class ProjectSecurityRequirement {
   /**
    * The project title.
    *
-   * @var string|null
+   * @var string
    */
   protected $projectTitle;
 
   /**
-   * Security coverage information for the project.
+   * The project security data.
    *
-   * @var array
-   *
-   * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
+   * @var \Drupal\update\ProjectSecurityData
    */
-  private $securityCoverageInfo;
+  protected $projectSecurityData;
 
   /**
    * The next version after the installed version in the format [MAJOR].[MINOR].
    *
-   * @var string|null
+   * @var string
    */
   private $nextMajorMinorVersion;
 
   /**
    * The existing (currently installed) version in the format [MAJOR].[MINOR].
    *
-   * @var string|null
+   * @var string
    */
   private $existingMajorMinorVersion;
 
   /**
    * Constructs a ProjectSecurityRequirement object.
    *
-   * @param string|null $project_title
+   * @param \Drupal\update\ProjectSecurityData $project_security_data
+   *   The project security data.
+   * @param string $project_title
    *   The project title.
-   * @param array $security_coverage_info
-   *   Security coverage information as set by
-   *   \Drupal\update\ProjectSecurityData::getCoverageInfo().
-   * @param string|null $existing_major_minor_version
+   * @param string $existing_major_minor_version
    *   The existing (currently installed) version in the format [MAJOR].[MINOR].
-   * @param string|null $next_major_minor_version
+   * @param string $next_major_minor_version
    *   The next version after the installed version in the format
    *   [MAJOR].[MINOR].
    */
-  private function __construct($project_title = NULL, array $security_coverage_info = [], $existing_major_minor_version = NULL, $next_major_minor_version = NULL) {
+  private function __construct(ProjectSecurityData $project_security_data, $project_title, $existing_major_minor_version, $next_major_minor_version) {
+    $this->projectSecurityData = $project_security_data;
     $this->projectTitle = $project_title;
-    $this->securityCoverageInfo = $security_coverage_info;
     $this->existingMajorMinorVersion = $existing_major_minor_version;
     $this->nextMajorMinorVersion = $next_major_minor_version;
   }
@@ -83,9 +80,8 @@ final class ProjectSecurityRequirement {
    *   - project_type (string): The type of project.
    *   - name (string): The project machine name.
    *   - title (string): The project title.
-   * @param array $security_coverage_info
-   *   The security coverage information as returned by
-   *   \Drupal\update\ProjectSecurityData::getCoverageInfo().
+   * @param \Drupal\update\ProjectSecurityData $project_security_data
+   *   The project security data.
    *
    * @return static
    *
@@ -93,17 +89,17 @@ final class ProjectSecurityRequirement {
    * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
    * @see update_process_project_info()
    */
-  public static function createFromProjectDataAndSecurityCoverageInfo(array $project_data, array $security_coverage_info) {
-    if ($project_data['project_type'] !== 'core' || $project_data['name'] !== 'drupal' || empty($security_coverage_info)) {
-      return new static();
+  public static function createFromProjectDataAndProjectSecurityData(array $project_data, ProjectSecurityData $project_security_data) {
+    if ($project_data['project_type'] !== 'core' || $project_data['name'] !== 'drupal') {
+      throw new \UnexpectedValueException('\Drupal\update\ProjectSecurityRequirement can only be used with Drupal core');
     }
-    if (isset($project_data['existing_version'])) {
-      list($major, $minor) = explode('.', $project_data['existing_version']);
-      $existing_version = "$major.$minor";
-      $next_version = "$major." . ((int) $minor + 1);
-      return new static($project_data['title'], $security_coverage_info, $existing_version, $next_version);
+    if (!isset($project_data['existing_version'])) {
+      throw new \UnexpectedValueException('The existing of Drupal core could not be determined');
     }
-    return new static($project_data['title'], $security_coverage_info);
+    list($major, $minor) = explode('.', $project_data['existing_version']);
+    $existing_version = "$major.$minor";
+    $next_version = "$major." . ((int) $minor + 1);
+    return new static($project_security_data, $project_data['title'], $existing_version, $next_version);
   }
 
   /**
@@ -114,10 +110,10 @@ final class ProjectSecurityRequirement {
    *   if no requirements can be determined.
    */
   public function getRequirement() {
-    if (isset($this->securityCoverageInfo['security_coverage_end_version'])) {
+    if ($this->projectSecurityData->getCoverageEndVersion()) {
       $requirement = $this->getVersionEndRequirement();
     }
-    elseif (isset($this->securityCoverageInfo['security_coverage_end_date'])) {
+    elseif ($this->projectSecurityData->getCoverageEndDate()) {
       $requirement = $this->getDateEndRequirement();
     }
     else {
@@ -137,9 +133,9 @@ final class ProjectSecurityRequirement {
     $requirement = [];
     if ($security_coverage_message = $this->getVersionEndCoverageMessage()) {
       $requirement['description'] = $security_coverage_message;
-      if ($this->securityCoverageInfo['additional_minors_coverage'] > 0) {
+      if ($this->projectSecurityData->getAdditionalMinorsCoverage() > 0) {
         $requirement['value'] = $this->t('Supported minor version');
-        $requirement['severity'] = $this->securityCoverageInfo['additional_minors_coverage'] > 1 ? REQUIREMENT_INFO : REQUIREMENT_WARNING;
+        $requirement['severity'] = $this->projectSecurityData->getAdditionalMinorsCoverage() > 1 ? REQUIREMENT_INFO : REQUIREMENT_WARNING;
       }
       else {
         $requirement['value'] = $this->t('Unsupported minor version');
@@ -158,17 +154,17 @@ final class ProjectSecurityRequirement {
    * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
    */
   private function getVersionEndCoverageMessage() {
-    if ($this->securityCoverageInfo['additional_minors_coverage'] > 0) {
+    if ($this->projectSecurityData->getAdditionalMinorsCoverage() > 0) {
       // If the installed minor version will receive security coverage until
       // newer minor versions are released, inform the user.
       $translation_arguments = [
         '@project' => $this->projectTitle,
         '@version' => $this->existingMajorMinorVersion,
-        '@coverage_version' => $this->securityCoverageInfo['security_coverage_end_version'],
+        '@coverage_version' => $this->projectSecurityData->getCoverageEndVersion(),
       ];
       $message = '<p>' . $this->t('The installed minor version of @project (@version), will stop receiving official security support after the release of @coverage_version.', $translation_arguments) . '</p>';
 
-      if ($this->securityCoverageInfo['additional_minors_coverage'] === 1) {
+      if ($this->projectSecurityData->getAdditionalMinorsCoverage() === 1) {
         // If the installed minor version will only receive security coverage
         // for 1 newer minor core version, encourage the site owner to update
         // soon.
@@ -199,9 +195,9 @@ final class ProjectSecurityRequirement {
     /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
     $date_formatter = \Drupal::service('date.formatter');
     // 'security_coverage_end_date' will either be in format 'Y-m-d' or 'Y-m'.
-    if (substr_count($this->securityCoverageInfo['security_coverage_end_date'], '-') === 2) {
+    if (substr_count($this->projectSecurityData->getCoverageEndDate(), '-') === 2) {
       $date_format = 'Y-m-d';
-      $full_security_coverage_end_date = $this->securityCoverageInfo['security_coverage_end_date'];
+      $full_security_coverage_end_date = $this->projectSecurityData->getCoverageEndDate();
     }
     else {
       $date_format = 'Y-m';
@@ -210,14 +206,14 @@ final class ProjectSecurityRequirement {
       // not provided. This may cause the month to be wrong at the beginning or
       // end of the month. '15' will never be displayed because we are using the
       // 'Y-m' format.
-      $full_security_coverage_end_date = $this->securityCoverageInfo['security_coverage_end_date'] . '-15';
+      $full_security_coverage_end_date = $this->projectSecurityData->getCoverageEndDate() . '-15';
     }
     $security_coverage_end_timestamp = \DateTime::createFromFormat('Y-m-d', $full_security_coverage_end_date)->getTimestamp();
     $formatted_end_date = $date_format === 'Y-m-d'
-      ? $this->securityCoverageInfo['security_coverage_end_date']
+      ? $this->projectSecurityData->getCoverageEndDate()
       : $date_formatter->format($security_coverage_end_timestamp, 'custom', 'F Y');
     $comparable_request_date = $date_formatter->format($time->getRequestTime(), 'custom', $date_format);
-    if ($this->securityCoverageInfo['security_coverage_end_date'] <= $comparable_request_date) {
+    if ($this->projectSecurityData->getCoverageEndDate() <= $comparable_request_date) {
       // Security coverage is over.
       $requirement['value'] = $this->t('Unsupported minor version');
       $requirement['severity'] = REQUIREMENT_ERROR;
@@ -235,7 +231,7 @@ final class ProjectSecurityRequirement {
       // 'security_coverage_ending_warn_date' will always be in the format
       // 'Y-m-d'.
       $request_date = $date_formatter->format($time->getRequestTime(), 'custom', 'Y-m-d');
-      if (!empty($this->securityCoverageInfo['security_coverage_ending_warn_date']) && $this->securityCoverageInfo['security_coverage_ending_warn_date'] <= $request_date) {
+      if (!empty($this->projectSecurityData->getCoverageEndingWarnDate()) && $this->projectSecurityData->getCoverageEndingWarnDate() <= $request_date) {
         $requirement['description'] .= '<p>' . $this->t('Update to a supported minor version soon to continue receiving security updates.') . '</p>';
         $requirement['severity'] = REQUIREMENT_WARNING;
       }
