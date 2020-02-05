@@ -167,18 +167,19 @@ final class ProjectSecurityData {
   /**
    * Gets the number of additional minor security covered releases.
    *
-   * @param string $security_covered_version_string
+   * @param string $security_covered_version
    *   The version until which the existing version receives security coverage.
    *
    * @return int|null
    *   The number of additional minor releases that receive security coverage,
    *   or NULL if this cannot be determined.
    */
-  private function getAdditionalSecurityCoveredMinors($security_covered_version_string) {
-    $security_covered_version = ModuleVersion::createFromVersionString($security_covered_version_string);
+  private function getAdditionalSecurityCoveredMinors($security_covered_version) {
+    $security_covered_version_major = ModuleVersion::createFromVersionString($security_covered_version)->getMajorVersion();
+    $security_covered_version_minor = $this->getSemanticMinorVersion($security_covered_version);
     foreach ($this->releases as $release) {
       $release_version = ModuleVersion::createFromVersionString($release['version']);
-      if ($release_version->getMajorVersion() === $security_covered_version->getMajorVersion() && $release['status'] === 'published' && !$release_version->getVersionExtra()) {
+      if ($release_version->getMajorVersion() === $security_covered_version_major && $release['status'] === 'published' && !$release_version->getVersionExtra()) {
         // The releases are ordered with the most recent releases first.
         // Therefore if we have found an official, published release with the
         // same major version as $security_covered_version then this release
@@ -187,10 +188,11 @@ final class ProjectSecurityData {
         break;
       }
     }
-    // If we were able to determine the latest minor, 
-    return isset($latest_minor)
-      ? $this->getSemanticMinorVersion($security_covered_version_string) - $latest_minor
-      : NULL;
+    // If $latest_minor is set, we know that $latest_minor and
+    // $security_covered_version_minor have the same major version. Therefore we
+    // can simply subtract to determine the number of additional minor security
+    // covered releases.
+    return isset($latest_minor) ? $security_covered_version_minor - $latest_minor : NULL;
   }
 
   /**
