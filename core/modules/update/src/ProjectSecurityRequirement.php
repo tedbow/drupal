@@ -142,9 +142,7 @@ final class ProjectSecurityRequirement {
           'Covered until @end_version',
           ['@end_version' => $this->securityCoverageInfo['security_coverage_end_version']]
         );
-        $requirement['severity'] = $this->securityCoverageInfo['additional_minors_coverage'] > 1
-          ? REQUIREMENT_INFO
-          : REQUIREMENT_WARNING;
+        $requirement['severity'] = $this->securityCoverageInfo['additional_minors_coverage'] > 1 ? REQUIREMENT_INFO : REQUIREMENT_WARNING;
       }
       else {
         $requirement['value'] = $this->t('Coverage has ended');
@@ -185,7 +183,7 @@ final class ProjectSecurityRequirement {
       // advise the site owner to update.
       $message = $this->getVersionNoSecurityCoverageMessage();
     }
-    $message = ltrim("$message ") . $this->getReleaseCycleLink();
+    $message .= ($message ? ' ' : '') . $this->getReleaseCycleLink();
 
     return Markup::create("<p>$message</p>");
   }
@@ -244,7 +242,7 @@ final class ProjectSecurityRequirement {
         $requirement['severity'] = REQUIREMENT_WARNING;
       }
     }
-    $description = ltrim("$description ") . $this->getReleaseCycleLink();
+    $description .= ($description ? ' ' : '') . $this->getReleaseCycleLink();
     $requirement['description'] = Markup::create("<p>$description</p>");
     return $requirement;
   }
