@@ -416,7 +416,6 @@ class UpdateCoreTest extends UpdateTestBase {
     // Ensure that messages are under the correct heading which could be
     // 'Checked', 'Warnings found', or 'Errors found'.
     $requirements_section_element = $requirements_details->getParent();
-    $this->assertCount(1, $requirements_section_element->findAll('css', 'h3'));
     $this->assertCount(1, $requirements_section_element->findAll('css', "h3:contains('$requirements_section_heading')"));
     $actual_message = $requirements_details->find('css', 'div.system-status-report__entry__value')->getText();
     $this->assertNotEmpty($actual_message);
