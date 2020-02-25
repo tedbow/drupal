@@ -155,8 +155,8 @@ final class ProjectSecurityRequirement {
   /**
    * Gets the message for additional minor version security coverage.
    *
-   * @return string|\Drupal\Component\Render\MarkupInterface
-   *   The security coverage message, or an empty string if there is none.
+   * @return array
+   *   A render array containing security coverage message.
    *
    * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
    */
@@ -183,9 +183,9 @@ final class ProjectSecurityRequirement {
       // advise the site owner to update.
       $message = $this->getVersionNoSecurityCoverageMessage();
     }
-    $message .= ($message ? ' ' : '') . $this->getReleaseCycleLink();
-
-    return Markup::create("<p>$message</p>");
+    return [
+      '#markup' => '<p>' . ($message ? ' ' : '') . $this->getReleaseCycleLink() . '</p>',
+    ];
   }
 
   /**
@@ -239,8 +239,9 @@ final class ProjectSecurityRequirement {
         $requirement['severity'] = REQUIREMENT_WARNING;
       }
     }
-    $description .= ($description ? ' ' : '') . $this->getReleaseCycleLink();
-    $requirement['description'] = Markup::create("<p>$description</p>");
+    $requirement['description'] = [
+      '#markup' => '<p>' . ($description ? ' ' : '') . $this->getReleaseCycleLink() . '</p>',
+    ];
     return $requirement;
   }
 
