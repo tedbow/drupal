@@ -291,4 +291,14 @@ abstract class UpdateTestBase extends BrowserTestBase {
     return $update_elements[0];
   }
 
+  /**
+   * Asserts that the update table text does not contain the specified text.
+   *
+   * @param string $text
+   *   The expected text.
+   */
+  protected function assertUpdateTableTextNotContains($text) {
+    $this->assertSession()->elementTextNotContains('css', $this->updateTableLocator, $text);
+  }
+
 }
