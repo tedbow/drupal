@@ -71,7 +71,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
     foreach ([0, 1] as $minor_version) {
       foreach ([0, 1] as $patch_version) {
         foreach (['-alpha1', '-beta1', ''] as $extra_version) {
-          $this->setSystemInfo("8.$minor_version.$patch_version" . $extra_version);
+          $this->setProjectInfo("8.$minor_version.$patch_version" . $extra_version);
           $this->refreshUpdateStatus(['drupal' => "$minor_version.$patch_version" . $extra_version]);
           $this->standardTests();
           // The XML test fixtures for this method all contain the '8.2.0'
@@ -91,7 +91,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
    * Tests the Update Manager module when one normal update is available.
    */
   public function testNormalUpdateAvailable() {
-    $this->setSystemInfo('8.0.0');
+    $this->setProjectInfo('8.0.0');
 
     // Ensure that the update check requires a token.
     $this->drupalGet('admin/reports/updates/check');
@@ -163,7 +163,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
     foreach ([0, 1] as $minor_version) {
       foreach ([0, 1] as $patch_version) {
         foreach (['-alpha1', '-beta1', ''] as $extra_version) {
-          $this->setSystemInfo("8.$minor_version.$patch_version" . $extra_version);
+          $this->setProjectInfo("8.$minor_version.$patch_version" . $extra_version);
           $this->refreshUpdateStatus(['drupal' => '9']);
           $this->standardTests();
           $this->drupalGet('admin/reports/updates');
@@ -198,7 +198,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
    * @dataProvider securityUpdateAvailabilityProvider
    */
   public function testSecurityUpdateAvailability($site_patch_version, array $expected_security_releases, $expected_update_message_type, $fixture) {
-    $this->setSystemInfo("8.$site_patch_version");
+    $this->setProjectInfo("8.$site_patch_version");
     $this->refreshUpdateStatus(['drupal' => $fixture]);
     $this->assertSecurityUpdates('drupal-8', $expected_security_releases, $expected_update_message_type, 'table.update');
   }
@@ -388,7 +388,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
    * Checks the messages at admin/modules when the site is up to date.
    */
   public function testModulePageUpToDate() {
-    $this->setSystemInfo('8.0.0');
+    $this->setProjectInfo('8.0.0');
     // Instead of using refreshUpdateStatus(), set these manually.
     $this->config('update.settings')
       ->set('fetch.url', Url::fromRoute('update_test.update_test')->setAbsolute()->toString())
@@ -422,7 +422,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
    */
   public function testRevokedRelease() {
     foreach (['1.0', '1.0-unsupported'] as $fixture) {
-      $this->setSystemInfo('8.0.2');
+      $this->setProjectInfo('8.0.2');
       $this->refreshUpdateStatus([$this->updateProject => $fixture]);
       $this->standardTests();
       $this->confirmRevokedStatus('8.0.2', '8.1.0', 'Recommended version:');
@@ -446,7 +446,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
    */
   public function testUnsupportedRelease() {
     foreach (['1.0', '1.0-unsupported'] as $fixture) {
-      $this->setSystemInfo('8.0.3');
+      $this->setProjectInfo('8.0.3');
       $this->refreshUpdateStatus([$this->updateProject => $fixture]);
       $this->standardTests();
       $this->confirmUnsupportedStatus('8.0.3', '8.1.0', 'Recommended version:');
