@@ -54,7 +54,6 @@ class UpdateSemanticContribTest extends UpdateSemanticTestBase {
       $this->clickLink(t('Check manually'));
       $this->checkForMetaRefresh();
       $this->assertUpdateTableTextNotContains(t('Security update required!'));
-      file_put_contents("/Users/ted.bowman/Sites/www/test-$install_version.html", $this->getSession()->getPage()->getOuterHtml());
       // All installed versions should indicate that there is update available
       // for the next major version of the module.
       $this->assertVersionUpdateLinks('Also available:', '8.1.0');
