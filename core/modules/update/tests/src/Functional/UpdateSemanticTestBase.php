@@ -72,7 +72,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
       foreach ([0, 1] as $patch_version) {
         foreach (['-alpha1', '-beta1', ''] as $extra_version) {
           $this->setProjectInfo("8.$minor_version.$patch_version" . $extra_version);
-          $this->refreshUpdateStatus(['drupal' => "$minor_version.$patch_version" . $extra_version]);
+          $this->refreshUpdateStatus([$this->updateProject => "$minor_version.$patch_version" . $extra_version]);
           $this->standardTests();
           // The XML test fixtures for this method all contain the '8.2.0'
           // release but because '8.2.0' is not in a supported branch it will
@@ -100,7 +100,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
     foreach ([0, 1] as $minor_version) {
       foreach (['-alpha1', '-beta1', ''] as $extra_version) {
         $full_version = "8.$minor_version.1$extra_version";
-        $this->refreshUpdateStatus(['drupal' => "$minor_version.1" . $extra_version]);
+        $this->refreshUpdateStatus([$this->updateProject => "$minor_version.1" . $extra_version]);
         $this->standardTests();
         $this->drupalGet('admin/reports/updates');
         $this->clickLink(t('Check manually'));
@@ -164,7 +164,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
       foreach ([0, 1] as $patch_version) {
         foreach (['-alpha1', '-beta1', ''] as $extra_version) {
           $this->setProjectInfo("8.$minor_version.$patch_version" . $extra_version);
-          $this->refreshUpdateStatus(['drupal' => '9']);
+          $this->refreshUpdateStatus([$this->updateProject => '9']);
           $this->standardTests();
           $this->drupalGet('admin/reports/updates');
           $this->clickLink(t('Check manually'));
@@ -199,7 +199,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
    */
   public function testSecurityUpdateAvailability($site_patch_version, array $expected_security_releases, $expected_update_message_type, $fixture) {
     $this->setProjectInfo("8.$site_patch_version");
-    $this->refreshUpdateStatus(['drupal' => $fixture]);
+    $this->refreshUpdateStatus([$this->updateProject => $fixture]);
     $this->assertSecurityUpdates('drupal-8', $expected_security_releases, $expected_update_message_type, 'table.update');
   }
 
@@ -394,7 +394,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
       ->set('fetch.url', Url::fromRoute('update_test.update_test')->setAbsolute()->toString())
       ->save();
     $this->config('update_test.settings')
-      ->set('xml_map', ['drupal' => '0.0'])
+      ->set('xml_map', [$this->updateProject => '0.0'])
       ->save();
 
     $this->drupalGet('admin/reports/updates');
