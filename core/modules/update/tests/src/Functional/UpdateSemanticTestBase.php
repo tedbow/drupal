@@ -77,7 +77,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
           // The XML test fixtures for this method all contain the '8.2.0'
           // release but because '8.2.0' is not in a supported branch it will
           // not be in the available updates.
-          $this->assertUpdateTableElementContains('8.2.0');
+          $this->assertUpdateTableElementNotContains('8.2.0');
           $this->assertUpdateTableTextContains(t('Up to date'));
           $this->assertUpdateTableTextNotContains(t('Update available'));
           $this->assertUpdateTableTextNotContains(t('Security update required!'));
@@ -200,7 +200,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
   public function testSecurityUpdateAvailability($site_patch_version, array $expected_security_releases, $expected_update_message_type, $fixture) {
     $this->setProjectInfo("8.$site_patch_version");
     $this->refreshUpdateStatus([$this->updateProject => $fixture]);
-    $this->assertSecurityUpdates('{$this->updateProject}-8', $expected_security_releases, $expected_update_message_type, 'table.update');
+    $this->assertSecurityUpdates("{$this->updateProject}-8", $expected_security_releases, $expected_update_message_type, 'table.update');
   }
 
   /**
@@ -400,10 +400,10 @@ class UpdateSemanticTestBase extends UpdateTestBase {
     $this->drupalGet('admin/reports/updates');
     $this->clickLink(t('Check manually'));
     $this->checkForMetaRefresh();
-    $this->assertUpdateTableTextContains(t('Checked available update data for one project.'));
+    $this->assertText(t('Checked available update data for one project.'));
     $this->drupalGet('admin/modules');
-    $this->assertUpdateTableTextNotContains("There are updates available for your version of {$this->projectTitle}.");
-    $this->assertUpdateTableTextNotContains("There is a security update available for your version of {$this->projectTitle}.");
+    $this->assertNoText("There are updates available for your version of {$this->projectTitle}.");
+    $this->assertNoText("There is a security update available for your version of {$this->projectTitle}.");
   }
 
   /**

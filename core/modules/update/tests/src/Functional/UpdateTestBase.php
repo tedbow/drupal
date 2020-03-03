@@ -275,6 +275,30 @@ abstract class UpdateTestBase extends BrowserTestBase {
   }
 
   /**
+   * Asserts that the update table element HTML contains the specified text.
+   *
+   * @param string $text
+   *   The expected text.
+   *
+   * @see \Behat\Mink\WebAssert::elementNotContains()
+   */
+  protected function assertUpdateTableElementNotContains($text) {
+    $this->assertSession()
+      ->elementNotContains('css', $this->updateTableLocator, $text);
+  }
+
+
+  /**
+   * Asserts that the update table text does not contain the specified text.
+   *
+   * @param string $text
+   *   The expected text.
+   */
+  protected function assertUpdateTableTextNotContains($text) {
+    $this->assertSession()->elementTextNotContains('css', $this->updateTableLocator, $text);
+  }
+
+  /**
    * Finds an update page element by label.
    *
    * @param string $label
@@ -289,16 +313,6 @@ abstract class UpdateTestBase extends BrowserTestBase {
       ->findAll('css', $this->updateTableLocator . " .project-update__version:contains(\"$label\")");
     $this->assertCount(1, $update_elements);
     return $update_elements[0];
-  }
-
-  /**
-   * Asserts that the update table text does not contain the specified text.
-   *
-   * @param string $text
-   *   The expected text.
-   */
-  protected function assertUpdateTableTextNotContains($text) {
-    $this->assertSession()->elementTextNotContains('css', $this->updateTableLocator, $text);
   }
 
 }
