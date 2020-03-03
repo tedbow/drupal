@@ -464,4 +464,8 @@ class UpdateCoreTest extends UpdateSemanticTestBase {
   }
 
 
+  protected function setProjectInfo($version) {
+    parent::setSystemInfo($version);
+  }
+
 }
