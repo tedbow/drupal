@@ -320,6 +320,28 @@ class UpdateCoreTest extends UpdateSemanticTestBase {
   }
 
   /**
+   * Checks the messages at admin/modules when the site is up to date.
+   */
+  public function testModulePageUpToDate() {
+    $this->setProjectInfo('8.0.0');
+    // Instead of using refreshUpdateStatus(), set these manually.
+    $this->config('update.settings')
+      ->set('fetch.url', Url::fromRoute('update_test.update_test')->setAbsolute()->toString())
+      ->save();
+    $this->config('update_test.settings')
+      ->set('xml_map', [$this->updateProject => '0.0'])
+      ->save();
+
+    $this->drupalGet('admin/reports/updates');
+    $this->clickLink(t('Check manually'));
+    $this->checkForMetaRefresh();
+    $this->assertText(t('Checked available update data for one project.'));
+    $this->drupalGet('admin/modules');
+    $this->assertNoText("There are updates available for your version of Drupal.");
+    $this->assertNoText("There is a security update available for your version of Drupal.");
+  }
+
+  /**
    * Checks the messages at admin/modules when an update is missing.
    */
   public function testModulePageRegularUpdate() {
