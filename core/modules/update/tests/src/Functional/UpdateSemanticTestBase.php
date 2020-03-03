@@ -59,18 +59,29 @@ class UpdateSemanticTestBase extends UpdateTestBase {
 
   /**
    * Tests the Update Manager module when no updates are available.
+   *
+   * The XML fixture file 'drupal.1.0.xml' which is one of the XML files this
+   * test uses also contains 2 extra releases that are newer than '8.0.1'. These
+   * releases will not show as available updates because of the following
+   * reasons:
+   * - '8.0.2' is an unpublished release.
+   * - '8.0.3' is marked as 'Release type' 'Unsupported'.
    */
   public function testNoUpdatesAvailable() {
     foreach ([0, 1] as $minor_version) {
       foreach ([0, 1] as $patch_version) {
         foreach (['-alpha1', '-beta1', ''] as $extra_version) {
-          $this->setProjectInfo("8.$minor_version.$patch_version" . $extra_version);
-          $this->refreshUpdateStatus([$this->updateProject => "$minor_version.$patch_version" . $extra_version]);
+          $this->setSystemInfo("8.$minor_version.$patch_version" . $extra_version);
+          $this->refreshUpdateStatus(['drupal' => "$minor_version.$patch_version" . $extra_version]);
           $this->standardTests();
-          $this->assertUpdateTableTextContains(t('Up to date'));
-          $this->assertUpdateTableTextNotContains(t('Update available'));
-          $this->assertUpdateTableTextNotContains(t('Security update required!'));
-          $this->assertUpdateTableContains('check.svg', 'Check icon was found.');
+          // The XML test fixtures for this method all contain the '8.2.0'
+          // release but because '8.2.0' is not in a supported branch it will
+          // not be in the available updates.
+          $this->assertNoRaw('8.2.0');
+          $this->assertText(t('Up to date'));
+          $this->assertNoText(t('Update available'));
+          $this->assertNoText(t('Security update required!'));
+          $this->assertRaw('check.svg', 'Check icon was found.');
         }
       }
     }
@@ -80,7 +91,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
    * Tests the Update Manager module when one normal update is available.
    */
   public function testNormalUpdateAvailable() {
-    $this->setProjectInfo('8.0.0');
+    $this->setSystemInfo('8.0.0');
 
     // Ensure that the update check requires a token.
     $this->drupalGet('admin/reports/updates/check');
@@ -89,53 +100,55 @@ class UpdateSemanticTestBase extends UpdateTestBase {
     foreach ([0, 1] as $minor_version) {
       foreach (['-alpha1', '-beta1', ''] as $extra_version) {
         $full_version = "8.$minor_version.1$extra_version";
-        $this->refreshUpdateStatus([
-          $this->updateProject => "$minor_version.1" . $extra_version,
-        ]);
+        $this->refreshUpdateStatus(['drupal' => "$minor_version.1" . $extra_version]);
         $this->standardTests();
         $this->drupalGet('admin/reports/updates');
         $this->clickLink(t('Check manually'));
         $this->checkForMetaRefresh();
-        $this->assertUpdateTableTextNotContains(t('Security update required!'));
+        $this->assertNoText(t('Security update required!'));
+        // The XML test fixtures for this method all contain the '8.2.0' release
+        // but because '8.2.0' is not in a supported branch it will not be in
+        // the available updates.
+        $this->assertNoRaw('8.2.0');
         switch ($minor_version) {
           case 0:
             // Both stable and unstable releases are available.
             // A stable release is the latest.
             if ($extra_version == '') {
-              $this->assertUpdateTableTextNotContains(t('Up to date'));
-              $this->assertUpdateTableTextContains(t('Update available'));
+              $this->assertNoText(t('Up to date'));
+              $this->assertText(t('Update available'));
               $this->assertVersionUpdateLinks('Recommended version:', $full_version);
-              $this->assertUpdateTableTextNotContains(t('Latest version:'));
-              $this->assertUpdateTableContains('warning.svg', 'Warning icon was found.');
+              $this->assertNoText(t('Latest version:'));
+              $this->assertRaw('warning.svg', 'Warning icon was found.');
             }
             // Only unstable releases are available.
             // An unstable release is the latest.
             else {
-              $this->assertUpdateTableTextContains(t('Up to date'));
-              $this->assertUpdateTableTextNotContains(t('Update available'));
-              $this->assertUpdateTableTextNotContains('Recommended version:');
+              $this->assertText(t('Up to date'));
+              $this->assertNoText(t('Update available'));
+              $this->assertNoText(t('Recommended version:'));
               $this->assertVersionUpdateLinks('Latest version:', $full_version);
-              $this->assertUpdateTableContains('check.svg', 'Check icon was found.');
+              $this->assertRaw('check.svg', 'Check icon was found.');
             }
             break;
           case 1:
             // Both stable and unstable releases are available.
             // A stable release is the latest.
             if ($extra_version == '') {
-              $this->assertUpdateTableTextNotContains(t('Up to date'));
-              $this->assertUpdateTableTextContains(t('Update available'));
+              $this->assertNoText(t('Up to date'));
+              $this->assertText(t('Update available'));
               $this->assertVersionUpdateLinks('Recommended version:', $full_version);
-              $this->assertUpdateTableTextNotContains(t('Latest version:'));
-              $this->assertUpdateTableContains('warning.svg', 'Warning icon was found.');
+              $this->assertNoText(t('Latest version:'));
+              $this->assertRaw('warning.svg', 'Warning icon was found.');
             }
             // Both stable and unstable releases are available.
             // An unstable release is the latest.
             else {
-              $this->assertUpdateTableTextNotContains(t('Up to date'));
-              $this->assertUpdateTableTextContains(t('Update available'));
+              $this->assertNoText(t('Up to date'));
+              $this->assertText(t('Update available'));
               $this->assertVersionUpdateLinks('Recommended version:', '8.1.0');
               $this->assertVersionUpdateLinks('Latest version:', $full_version);
-              $this->assertUpdateTableContains('warning.svg', 'Warning icon was found.');
+              $this->assertRaw('warning.svg', 'Warning icon was found.');
             }
             break;
         }
@@ -150,21 +163,21 @@ class UpdateSemanticTestBase extends UpdateTestBase {
     foreach ([0, 1] as $minor_version) {
       foreach ([0, 1] as $patch_version) {
         foreach (['-alpha1', '-beta1', ''] as $extra_version) {
-          $this->setProjectInfo("8.$minor_version.$patch_version" . $extra_version);
-          $this->refreshUpdateStatus([$this->updateProject => '9']);
+          $this->setSystemInfo("8.$minor_version.$patch_version" . $extra_version);
+          $this->refreshUpdateStatus(['drupal' => '9']);
           $this->standardTests();
           $this->drupalGet('admin/reports/updates');
           $this->clickLink(t('Check manually'));
           $this->checkForMetaRefresh();
-          $this->assertUpdateTableTextNotContains(t('Security update required!'));
-          $this->assertUpdateTableContains(Link::fromTextAndUrl('9.0.0', Url::fromUri("http://example.com/{$this->updateProject}-9-0-0-release"))->toString(), 'Link to release appears.');
-          $this->assertUpdateTableContains(Link::fromTextAndUrl(t('Download'), Url::fromUri("http://example.com/{$this->updateProject}-9-0-0.tar.gz"))->toString(), 'Link to download appears.');
-          $this->assertUpdateTableContains(Link::fromTextAndUrl(t('Release notes'), Url::fromUri("http://example.com/{$this->updateProject}-9-0-0-release"))->toString(), 'Link to release notes appears.');
-          $this->assertUpdateTableTextNotContains(t('Up to date'));
-          $this->assertUpdateTableTextContains(t('Not supported!'));
-          $this->assertUpdateTableTextContains(t('Recommended version:'));
-          $this->assertUpdateTableTextNotContains(t('Latest version:'));
-          $this->assertUpdateTableContains('error.svg', 'Error icon was found.');
+          $this->assertNoText(t('Security update required!'));
+          $this->assertRaw(Link::fromTextAndUrl('9.0.0', Url::fromUri("http://example.com/drupal-9-0-0-release"))->toString(), 'Link to release appears.');
+          $this->assertRaw(Link::fromTextAndUrl(t('Download'), Url::fromUri("http://example.com/drupal-9-0-0.tar.gz"))->toString(), 'Link to download appears.');
+          $this->assertRaw(Link::fromTextAndUrl(t('Release notes'), Url::fromUri("http://example.com/drupal-9-0-0-release"))->toString(), 'Link to release notes appears.');
+          $this->assertNoText(t('Up to date'));
+          $this->assertText(t('Not supported!'));
+          $this->assertText(t('Recommended version:'));
+          $this->assertNoText(t('Latest version:'));
+          $this->assertRaw('error.svg', 'Error icon was found.');
         }
       }
     }
@@ -185,9 +198,9 @@ class UpdateSemanticTestBase extends UpdateTestBase {
    * @dataProvider securityUpdateAvailabilityProvider
    */
   public function testSecurityUpdateAvailability($site_patch_version, array $expected_security_releases, $expected_update_message_type, $fixture) {
-    $this->setProjectInfo("8.$site_patch_version");
-    $this->refreshUpdateStatus([$this->updateProject => $fixture]);
-    $this->assertSecurityUpdates("{$this->updateProject}-8", $expected_security_releases, $expected_update_message_type, $this->updateTableLocator);
+    $this->setSystemInfo("8.$site_patch_version");
+    $this->refreshUpdateStatus(['drupal' => $fixture]);
+    $this->assertSecurityUpdates('drupal-8', $expected_security_releases, $expected_update_message_type, 'table.update');
   }
 
   /**
@@ -230,6 +243,11 @@ class UpdateSemanticTestBase extends UpdateTestBase {
    *   - 8.0.2 Insecure
    *   - 8.0.1 Insecure
    *   - 8.0.0 Insecure
+   * - drupal.sec.1.2_insecure-unsupported
+   *   This file has the exact releases as drupal.sec.1.2_insecure.xml. It has a
+   *   different value for 'supported_branches' that does not contain '8.0.'.
+   *   It is used to ensure that the "Security update required!" is displayed
+   *   even if the currently installed version is in an unsupported branch.
    * - drupal.sec.0.2-rc2-b.xml
    *   - 8.2.0-rc2
    *   - 8.2.0-rc1
@@ -304,6 +322,15 @@ class UpdateSemanticTestBase extends UpdateTestBase {
         'expected_update_message_type' => static::SECURITY_UPDATE_REQUIRED,
         'fixture' => 'sec.1.2_insecure',
       ],
+      // No security release available for site minor release 0.
+      // Site minor is not a supported branch.
+      // Security release available for next minor.
+      '0.0, 1.2, insecure-unsupported' => [
+        'site_patch_version' => '0.0',
+        'expected_security_releases' => ['1.2'],
+        'expected_update_message_type' => static::SECURITY_UPDATE_REQUIRED,
+        'fixture' => 'sec.1.2_insecure-unsupported',
+      ],
       // All releases for minor 0 are secure.
       // Security release available for next minor.
       '0.0, 1.2, secure' => [
@@ -356,30 +383,74 @@ class UpdateSemanticTestBase extends UpdateTestBase {
     return $test_cases;
   }
 
+
   /**
    * Checks the messages at admin/modules when the site is up to date.
    */
   public function testModulePageUpToDate() {
-    $this->setProjectInfo('8.0.0');
+    $this->setSystemInfo('8.0.0');
     // Instead of using refreshUpdateStatus(), set these manually.
     $this->config('update.settings')
       ->set('fetch.url', Url::fromRoute('update_test.update_test')->setAbsolute()->toString())
       ->save();
-    $this->refreshUpdateStatus([$this->updateProject => '0.0']);
+    $this->config('update_test.settings')
+      ->set('xml_map', ['drupal' => '0.0'])
+      ->save();
 
     $this->drupalGet('admin/reports/updates');
     $this->clickLink(t('Check manually'));
     $this->checkForMetaRefresh();
-    if ($this->updateProject === 'drupal') {
-      $this->assertText(t('Checked available update data for one project.'));
-    }
-    else {
-      $this->assertText(t('Checked available update data for 2 projects.'));
-    }
-
+    $this->assertText(t('Checked available update data for one project.'));
     $this->drupalGet('admin/modules');
-    $this->assertNoText("There are updates available for your version of {$this->projectTitle}.");
-    $this->assertNoText("There is a security update available for your version of {$this->projectTitle}.");
+    $this->assertNoText(t('There are updates available for your version of Drupal.'));
+    $this->assertNoText(t('There is a security update available for your version of Drupal.'));
+  }
+
+  /**
+   * Tests messages when a project release is unpublished.
+   *
+   * This test confirms that revoked messages are displayed regardless of
+   * whether the installed version is in a supported branch or not. This test
+   * relies on 2 test XML fixtures that are identical except for the
+   * 'supported_branches' value:
+   * - drupal.1.0.xml
+   *    'supported_branches' is '8.0.,8.1.'.
+   * - drupal.1.0-unsupported.xml
+   *    'supported_branches' is '8.1.'.
+   * They both have an '8.0.2' release that is unpublished and an '8.1.0'
+   * release that is published and is the expected update.
+   */
+  public function testRevokedRelease() {
+    foreach (['1.0', '1.0-unsupported'] as $fixture) {
+      $this->setSystemInfo('8.0.2');
+      $this->refreshUpdateStatus([$this->updateProject => $fixture]);
+      $this->standardTests();
+      $this->confirmRevokedStatus('8.0.2', '8.1.0', 'Recommended version:');
+    }
+  }
+
+  /**
+   * Tests messages when a project release is marked unsupported.
+   *
+   * This test confirms unsupported messages are displayed regardless of whether
+   * the installed version is in a supported branch or not. This test relies on
+   * 2 test XML fixtures that are identical except for the 'supported_branches'
+   * value:
+   * - drupal.1.0.xml
+   *    'supported_branches' is '8.0.,8.1.'.
+   * - drupal.1.0-unsupported.xml
+   *    'supported_branches' is '8.1.'.
+   * They both have an '8.0.3' release that that has the 'Release type' value of
+   * 'unsupported' and an '8.1.0' release that has the 'Release type' value of
+   * 'supported' and is the expected update.
+   */
+  public function testUnsupportedRelease() {
+    foreach (['1.0', '1.0-unsupported'] as $fixture) {
+      $this->setSystemInfo('8.0.3');
+      $this->refreshUpdateStatus([$this->updateProject => $fixture]);
+      $this->standardTests();
+      $this->confirmUnsupportedStatus('8.0.3', '8.1.0', 'Recommended version:');
+    }
   }
 
   /**
@@ -419,6 +490,5 @@ class UpdateSemanticTestBase extends UpdateTestBase {
     }
     $this->config('update_test.settings')->set('system_info', $system_info)->save();
   }
-
 
 }
