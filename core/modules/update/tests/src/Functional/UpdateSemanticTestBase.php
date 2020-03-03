@@ -77,11 +77,11 @@ class UpdateSemanticTestBase extends UpdateTestBase {
           // The XML test fixtures for this method all contain the '8.2.0'
           // release but because '8.2.0' is not in a supported branch it will
           // not be in the available updates.
-          $this->assertNoRaw('8.2.0');
-          $this->assertText(t('Up to date'));
-          $this->assertNoText(t('Update available'));
-          $this->assertNoText(t('Security update required!'));
-          $this->assertRaw('check.svg', 'Check icon was found.');
+          $this->assertUpdateTableElementContains('8.2.0');
+          $this->assertUpdateTableTextContains(t('Up to date'));
+          $this->assertUpdateTableTextNotContains(t('Update available'));
+          $this->assertUpdateTableTextNotContains(t('Security update required!'));
+          $this->assertUpdateTableElementContains('check.svg', 'Check icon was found.');
         }
       }
     }
@@ -105,7 +105,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
         $this->drupalGet('admin/reports/updates');
         $this->clickLink(t('Check manually'));
         $this->checkForMetaRefresh();
-        $this->assertNoText(t('Security update required!'));
+        $this->assertUpdateTableTextNotContains(t('Security update required!'));
         // The XML test fixtures for this method all contain the '8.2.0' release
         // but because '8.2.0' is not in a supported branch it will not be in
         // the available updates.
@@ -115,40 +115,40 @@ class UpdateSemanticTestBase extends UpdateTestBase {
             // Both stable and unstable releases are available.
             // A stable release is the latest.
             if ($extra_version == '') {
-              $this->assertNoText(t('Up to date'));
-              $this->assertText(t('Update available'));
+              $this->assertUpdateTableTextNotContains(t('Up to date'));
+              $this->assertUpdateTableTextContains(t('Update available'));
               $this->assertVersionUpdateLinks('Recommended version:', $full_version);
-              $this->assertNoText(t('Latest version:'));
-              $this->assertRaw('warning.svg', 'Warning icon was found.');
+              $this->assertUpdateTableTextNotContains(t('Latest version:'));
+              $this->assertUpdateTableElementContains('warning.svg', 'Warning icon was found.');
             }
             // Only unstable releases are available.
             // An unstable release is the latest.
             else {
-              $this->assertText(t('Up to date'));
-              $this->assertNoText(t('Update available'));
-              $this->assertNoText(t('Recommended version:'));
+              $this->assertUpdateTableTextContains(t('Up to date'));
+              $this->assertUpdateTableTextNotContains(t('Update available'));
+              $this->assertUpdateTableTextNotContains(t('Recommended version:'));
               $this->assertVersionUpdateLinks('Latest version:', $full_version);
-              $this->assertRaw('check.svg', 'Check icon was found.');
+              $this->assertUpdateTableElementContains('check.svg', 'Check icon was found.');
             }
             break;
           case 1:
             // Both stable and unstable releases are available.
             // A stable release is the latest.
             if ($extra_version == '') {
-              $this->assertNoText(t('Up to date'));
-              $this->assertText(t('Update available'));
+              $this->assertUpdateTableTextNotContains(t('Up to date'));
+              $this->assertUpdateTableTextContains(t('Update available'));
               $this->assertVersionUpdateLinks('Recommended version:', $full_version);
-              $this->assertNoText(t('Latest version:'));
-              $this->assertRaw('warning.svg', 'Warning icon was found.');
+              $this->assertUpdateTableTextNotContains(t('Latest version:'));
+              $this->assertUpdateTableElementContains('warning.svg', 'Warning icon was found.');
             }
             // Both stable and unstable releases are available.
             // An unstable release is the latest.
             else {
-              $this->assertNoText(t('Up to date'));
-              $this->assertText(t('Update available'));
+              $this->assertUpdateTableTextNotContains(t('Up to date'));
+              $this->assertUpdateTableTextContains(t('Update available'));
               $this->assertVersionUpdateLinks('Recommended version:', '8.1.0');
               $this->assertVersionUpdateLinks('Latest version:', $full_version);
-              $this->assertRaw('warning.svg', 'Warning icon was found.');
+              $this->assertUpdateTableElementContains('warning.svg', 'Warning icon was found.');
             }
             break;
         }
@@ -169,15 +169,15 @@ class UpdateSemanticTestBase extends UpdateTestBase {
           $this->drupalGet('admin/reports/updates');
           $this->clickLink(t('Check manually'));
           $this->checkForMetaRefresh();
-          $this->assertNoText(t('Security update required!'));
-          $this->assertRaw(Link::fromTextAndUrl('9.0.0', Url::fromUri("http://example.com/{$this->updateProject}-9-0-0-release"))->toString(), 'Link to release appears.');
-          $this->assertRaw(Link::fromTextAndUrl(t('Download'), Url::fromUri("http://example.com/{$this->updateProject}-9-0-0.tar.gz"))->toString(), 'Link to download appears.');
-          $this->assertRaw(Link::fromTextAndUrl(t('Release notes'), Url::fromUri("http://example.com/{$this->updateProject}-9-0-0-release"))->toString(), 'Link to release notes appears.');
-          $this->assertNoText(t('Up to date'));
-          $this->assertText(t('Not supported!'));
-          $this->assertText(t('Recommended version:'));
-          $this->assertNoText(t('Latest version:'));
-          $this->assertRaw('error.svg', 'Error icon was found.');
+          $this->assertUpdateTableTextNotContains(t('Security update required!'));
+          $this->assertUpdateTableElementContains(Link::fromTextAndUrl('9.0.0', Url::fromUri("http://example.com/{$this->updateProject}-9-0-0-release"))->toString(), 'Link to release appears.');
+          $this->assertUpdateTableElementContains(Link::fromTextAndUrl(t('Download'), Url::fromUri("http://example.com/{$this->updateProject}-9-0-0.tar.gz"))->toString(), 'Link to download appears.');
+          $this->assertUpdateTableElementContains(Link::fromTextAndUrl(t('Release notes'), Url::fromUri("http://example.com/{$this->updateProject}-9-0-0-release"))->toString(), 'Link to release notes appears.');
+          $this->assertUpdateTableTextNotContains(t('Up to date'));
+          $this->assertUpdateTableTextContains(t('Not supported!'));
+          $this->assertUpdateTableTextContains(t('Recommended version:'));
+          $this->assertUpdateTableTextNotContains(t('Latest version:'));
+          $this->assertUpdateTableElementContains('error.svg', 'Error icon was found.');
         }
       }
     }
@@ -400,10 +400,10 @@ class UpdateSemanticTestBase extends UpdateTestBase {
     $this->drupalGet('admin/reports/updates');
     $this->clickLink(t('Check manually'));
     $this->checkForMetaRefresh();
-    $this->assertText(t('Checked available update data for one project.'));
+    $this->assertUpdateTableTextContains(t('Checked available update data for one project.'));
     $this->drupalGet('admin/modules');
-    $this->assertNoText("There are updates available for your version of {$this->projectTitle}.");
-    $this->assertNoText("There is a security update available for your version of {$this->projectTitle}.");
+    $this->assertUpdateTableTextNotContains("There are updates available for your version of {$this->projectTitle}.");
+    $this->assertUpdateTableTextNotContains("There is a security update available for your version of {$this->projectTitle}.");
   }
 
   /**
@@ -490,5 +490,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
     }
     $this->config('update_test.settings')->set('system_info', $system_info)->save();
   }
+
+
 
 }
