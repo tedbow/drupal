@@ -170,9 +170,9 @@ class UpdateSemanticTestBase extends UpdateTestBase {
           $this->clickLink(t('Check manually'));
           $this->checkForMetaRefresh();
           $this->assertNoText(t('Security update required!'));
-          $this->assertRaw(Link::fromTextAndUrl('9.0.0', Url::fromUri("http://example.com/drupal-9-0-0-release"))->toString(), 'Link to release appears.');
-          $this->assertRaw(Link::fromTextAndUrl(t('Download'), Url::fromUri("http://example.com/drupal-9-0-0.tar.gz"))->toString(), 'Link to download appears.');
-          $this->assertRaw(Link::fromTextAndUrl(t('Release notes'), Url::fromUri("http://example.com/drupal-9-0-0-release"))->toString(), 'Link to release notes appears.');
+          $this->assertRaw(Link::fromTextAndUrl('9.0.0', Url::fromUri("http://example.com/{$this->updateProject}-9-0-0-release"))->toString(), 'Link to release appears.');
+          $this->assertRaw(Link::fromTextAndUrl(t('Download'), Url::fromUri("http://example.com/{$this->updateProject}-9-0-0.tar.gz"))->toString(), 'Link to download appears.');
+          $this->assertRaw(Link::fromTextAndUrl(t('Release notes'), Url::fromUri("http://example.com/{$this->updateProject}-9-0-0-release"))->toString(), 'Link to release notes appears.');
           $this->assertNoText(t('Up to date'));
           $this->assertText(t('Not supported!'));
           $this->assertText(t('Recommended version:'));
@@ -200,7 +200,7 @@ class UpdateSemanticTestBase extends UpdateTestBase {
   public function testSecurityUpdateAvailability($site_patch_version, array $expected_security_releases, $expected_update_message_type, $fixture) {
     $this->setProjectInfo("8.$site_patch_version");
     $this->refreshUpdateStatus([$this->updateProject => $fixture]);
-    $this->assertSecurityUpdates('drupal-8', $expected_security_releases, $expected_update_message_type, 'table.update');
+    $this->assertSecurityUpdates('{$this->updateProject}-8', $expected_security_releases, $expected_update_message_type, 'table.update');
   }
 
   /**
@@ -402,8 +402,8 @@ class UpdateSemanticTestBase extends UpdateTestBase {
     $this->checkForMetaRefresh();
     $this->assertText(t('Checked available update data for one project.'));
     $this->drupalGet('admin/modules');
-    $this->assertNoText(t('There are updates available for your version of Drupal.'));
-    $this->assertNoText(t('There is a security update available for your version of Drupal.'));
+    $this->assertNoText("There are updates available for your version of {$this->projectTitle}.");
+    $this->assertNoText("There is a security update available for your version of {$this->projectTitle}.");
   }
 
   /**
