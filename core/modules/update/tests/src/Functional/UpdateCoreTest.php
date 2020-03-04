@@ -495,7 +495,7 @@ class UpdateCoreTest extends UpdateSemanticTestBase {
    * {@inheritdoc}
    */
   protected function setProjectInstalledVersion($version) {
-    parent::setSystemInfo($version);
+    $this->setSystemInfo($version);
   }
 
 }
