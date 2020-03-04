@@ -30,12 +30,6 @@ class UpdateSemanticContribTest extends UpdateSemanticTestBase {
   public static $modules = ['semantic_test'];
 
   /**
-   * {@inheritdoc}
-   */
-  protected function standardTests() {
-  }
-
-  /**
    * Test updates from legacy versions to the semantic versions.
    */
   public function testUpdatesLegacyToSemantic() {
@@ -49,7 +43,7 @@ class UpdateSemanticContribTest extends UpdateSemanticTestBase {
     ];
     $this->refreshUpdateStatus([$this->updateProject => '1.0']);
     foreach ($install_versions as $install_version) {
-      $this->setProjectInfo($install_version);
+      $this->setProjectInstalledVersion($install_version);
       $this->drupalGet('admin/reports/updates');
       $this->clickLink(t('Check manually'));
       $this->checkForMetaRefresh();

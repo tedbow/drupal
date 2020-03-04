@@ -323,7 +323,7 @@ class UpdateCoreTest extends UpdateSemanticTestBase {
    * Checks the messages at admin/modules when the site is up to date.
    */
   public function testModulePageUpToDate() {
-    $this->setProjectInfo('8.0.0');
+    $this->setProjectInstalledVersion('8.0.0');
     // Instead of using refreshUpdateStatus(), set these manually.
     $this->config('update.settings')
       ->set('fetch.url', Url::fromRoute('update_test.update_test')->setAbsolute()->toString())
@@ -477,7 +477,7 @@ class UpdateCoreTest extends UpdateSemanticTestBase {
     $this->assertUrl('admin/reports/updates/install');
   }
 
-  protected function setProjectInfo($version) {
+  protected function setProjectInstalledVersion($version) {
     parent::setSystemInfo($version);
   }
 
