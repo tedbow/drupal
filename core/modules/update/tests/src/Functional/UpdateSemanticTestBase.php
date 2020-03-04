@@ -42,21 +42,6 @@ abstract class UpdateSemanticTestBase extends UpdateTestBase {
   }
 
   /**
-   * Sets the version to x.x.x when no project-specific mapping is defined.
-   *
-   * @param string $version
-   *   The version.
-   */
-  protected function setSystemInfo($version) {
-    $setting = [
-      '#all' => [
-        'version' => $version,
-      ],
-    ];
-    $this->config('update_test.settings')->set('system_info', $setting)->save();
-  }
-
-  /**
    * Tests the Update Manager module when no updates are available.
    *
    * The XML fixture file 'drupal.1.0.xml' which is one of the XML files this
@@ -455,22 +440,6 @@ abstract class UpdateSemanticTestBase extends UpdateTestBase {
    * @param string $version
    *   The version number.
    */
-  protected function setProjectInstalledVersion($version) {
-    $system_info = [
-      $this->updateProject => [
-        'project' => $this->updateProject,
-        'version' => $version,
-        'hidden' => FALSE,
-      ],
-    ];
-    if ($this->updateProject !== 'drupal') {
-      $system_info['drupal'] = [
-        'project' => 'drupal',
-        'version' => '8.0.0',
-        'hidden' => FALSE,
-      ];
-    }
-    $this->config('update_test.settings')->set('system_info', $system_info)->save();
-  }
+  abstract protected function setProjectInstalledVersion($version);
 
 }

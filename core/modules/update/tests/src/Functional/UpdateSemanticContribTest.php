@@ -30,6 +30,28 @@ class UpdateSemanticContribTest extends UpdateSemanticTestBase {
   public static $modules = ['semantic_test'];
 
   /**
+   * {@inheritdoc}
+   */
+  protected function setProjectInstalledVersion($version) {
+    $system_info = [
+      $this->updateProject => [
+        'project' => $this->updateProject,
+        'version' => $version,
+        'hidden' => FALSE,
+      ],
+    ];
+    // Ensure Drupal core on the same version for all test runs.
+    if ($this->updateProject !== 'drupal') {
+      $system_info['drupal'] = [
+        'project' => 'drupal',
+        'version' => '8.0.0',
+        'hidden' => FALSE,
+      ];
+    }
+    $this->config('update_test.settings')->set('system_info', $system_info)->save();
+  }
+
+  /**
    * Test updates from legacy versions to the semantic versions.
    */
   public function testUpdatesLegacyToSemantic() {
@@ -48,6 +70,7 @@ class UpdateSemanticContribTest extends UpdateSemanticTestBase {
       $this->clickLink(t('Check manually'));
       $this->checkForMetaRefresh();
       $this->assertUpdateTableTextNotContains(t('Security update required!'));
+      $this->assertSession()->elementTextContains('css', $this->updateTableLocator . " .project-update__title", $install_version);
       // All installed versions should indicate that there is update available
       // for the next major version of the module.
       $this->assertVersionUpdateLinks('Also available:', '8.1.0');

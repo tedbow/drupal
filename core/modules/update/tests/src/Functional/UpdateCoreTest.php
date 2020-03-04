@@ -42,6 +42,20 @@ class UpdateCoreTest extends UpdateSemanticTestBase {
    */
   protected $projectTitle = 'Drupal';
 
+  /**
+   * Sets the version to x.x.x when no project-specific mapping is defined.
+   *
+   * @param string $version
+   *   The version.
+   */
+  protected function setSystemInfo($version) {
+    $setting = [
+      '#all' => [
+        'version' => $version,
+      ],
+    ];
+    $this->config('update_test.settings')->set('system_info', $setting)->save();
+  }
 
   /**
    * Tests the security coverage messages for Drupal core versions.
@@ -477,6 +491,9 @@ class UpdateCoreTest extends UpdateSemanticTestBase {
     $this->assertUrl('admin/reports/updates/install');
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setProjectInstalledVersion($version) {
     parent::setSystemInfo($version);
   }
