@@ -34,7 +34,6 @@ class UpdateManagerUpdateTest extends UpdateTestBase {
   protected function setUp() {
     parent::setUp();
     $admin_user = $this->drupalCreateUser([
-      'administer modules',
       'administer software updates',
       'administer site configuration',
     ]);
