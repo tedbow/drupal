@@ -215,6 +215,9 @@ class UpdateManagerUpdate extends FormBase {
         $this->removeCheckboxFromRow($entry);
         // If the release has a core_compatibility_message, inject it.
         if (!empty($recommended_release['core_compatibility_message'])) {
+          // @todo In https://www.drupal.org/project/drupal/issues/3121769
+          //   refactor this into something theme-friendly so we don't have a
+          //   classless <div> here.
           $entry['data']['recommended_version']['data']['#template'] .= ' <div>{{ core_compatibility_message }}</div>';
           $entry['data']['recommended_version']['data']['#context']['core_compatibility_message'] = $recommended_release['core_compatibility_message'];
         }
@@ -324,6 +327,9 @@ class UpdateManagerUpdate extends FormBase {
    * that have a checkbox to allow the site admin to select which missing
    * updates to install. This method is only used for the special case tables
    * that have no such checkbox.
+   *
+   * @todo In https://www.drupal.org/project/drupal/issues/3121775 refactor
+   *   self::buildForm() so that we don't need this method at all.
    *
    * @param array[] $row
    *   The render array for a table row.
