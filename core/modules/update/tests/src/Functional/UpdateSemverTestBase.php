@@ -28,7 +28,7 @@ abstract class UpdateSemverTestBase extends UpdateTestBase {
   protected $defaultTheme = 'stark';
 
   /**
-   * The project title.
+   * The title of the project being tested.
    *
    * @var string
    */
@@ -36,7 +36,7 @@ abstract class UpdateSemverTestBase extends UpdateTestBase {
 
   protected function setUp() {
     parent::setUp();
-    $admin_user = $this->drupalCreateUser(['administer site configuration', 'administer modules', 'administer themes']);
+    $admin_user = $this->drupalCreateUser(['administer site configuration']);
     $this->drupalLogin($admin_user);
     $this->drupalPlaceBlock('local_actions_block');
   }

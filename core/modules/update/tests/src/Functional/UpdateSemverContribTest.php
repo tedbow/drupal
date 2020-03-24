@@ -55,7 +55,7 @@ class UpdateSemverContribTest extends UpdateSemverTestBase {
    * Test updates from legacy versions to the semver versions.
    */
   public function testUpdatesLegacyToSemver() {
-    $install_versions = [
+    $installed_versions = [
       '8.x-7.0-alpha1',
       '8.x-7.0-beta1',
       '8.x-7.0',
@@ -63,16 +63,17 @@ class UpdateSemverContribTest extends UpdateSemverTestBase {
       '8.x-7.1-beta1',
       '8.x-7.1',
     ];
-    $this->refreshUpdateStatus([$this->updateProject => '1.0']);
-    foreach ($install_versions as $install_version) {
+    foreach ($installed_versions as $install_version) {
       $this->setProjectInstalledVersion($install_version);
-      $this->drupalGet('admin/reports/updates');
-      $this->clickLink(t('Check manually'));
-      $this->checkForMetaRefresh();
+      $this->refreshUpdateStatus([$this->updateProject => '1.0']);
       $this->assertUpdateTableTextNotContains(t('Security update required!'));
       $this->assertSession()->elementTextContains('css', $this->updateTableLocator . " .project-update__title", $install_version);
-      // All installed versions should indicate that there is update available
-      // for the next major version of the module.
+      // All installed versions should indicate that there is an update
+      // available for the next major version of the module. '8.1.0' is shown
+      // for the next major version because it is the latest full release for
+      // that major.
+      // @todo Determine if both 8.0.0 and 8.0.1 should be expected as "Also
+      //   available" releases in https://www.drupal.org/project/node/3100115.
       $this->assertVersionUpdateLinks('Also available:', '8.1.0');
       if ($install_version === '8.x-7.1') {
         $this->assertUpdateTableTextContains('Up to date');
