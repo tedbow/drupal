@@ -7,7 +7,7 @@ use Drupal\Core\Url;
 use Drupal\Tests\Traits\Core\CronRunTrait;
 
 /**
- * Common test methods for projects that use semantic version releases.
+ * Common test methods for projects that use semver version releases.
  *
  * @group update
  */

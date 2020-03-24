@@ -3,7 +3,7 @@
 namespace Drupal\Tests\update\Functional;
 
 /**
- * Tests the Update Manager module with a contrib module with semantic versions.
+ * Tests the Update Manager module with a contrib module with semver versions.
  *
  * @group update
  */
@@ -22,7 +22,7 @@ class UpdateSemverContribTest extends UpdateSemverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $projectTitle = 'Semantic Test';
+  protected $projectTitle = 'Semver Test';
 
   /**
    * {@inheritdoc}
@@ -52,9 +52,9 @@ class UpdateSemverContribTest extends UpdateSemverTestBase {
   }
 
   /**
-   * Test updates from legacy versions to the semantic versions.
+   * Test updates from legacy versions to the semver versions.
    */
-  public function testUpdatesLegacyToSemantic() {
+  public function testUpdatesLegacyToSemver() {
     $install_versions = [
       '8.x-7.0-alpha1',
       '8.x-7.0-beta1',
@@ -73,6 +73,7 @@ class UpdateSemverContribTest extends UpdateSemverTestBase {
       $this->assertSession()->elementTextContains('css', $this->updateTableLocator . " .project-update__title", $install_version);
       // All installed versions should indicate that there is update available
       // for the next major version of the module.
+      file_put_contents("/Users/ted.bowman/Sites/www/test-$install_version.html", $this->getSession()->getPage()->getOuterHtml());
       $this->assertVersionUpdateLinks('Also available:', '8.1.0');
       if ($install_version === '8.x-7.1') {
         $this->assertUpdateTableTextContains('Up to date');
