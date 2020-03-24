@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project xmlns:dc="http://purl.org/dc/elements/1.1/">
-<title>Semantic Test</title>
-<short_name>semantic_test</short_name>
+<title>Semver Test</title>
+<short_name>semver_test</short_name>
 <dc:creator>Drupal</dc:creator>
 <supported_branches>8.0.,8.1.</supported_branches>
 <project_status>published</project_status>
-<link>http://example.com/project/semantic_test</link>
+<link>http://example.com/project/semver_test</link>
   <terms>
-   <term><name>Projects</name><value>Semantic Test project</value></term>
+   <term><name>Projects</name><value>Semver Test project</value></term>
   </terms>
 <releases>
   <release>
     <!-- This release is not in a supported branch; therefore it should not be recommended. -->
-    <name>Semantic Test 8.2.0</name>
+    <name>Semver Test 8.2.0</name>
     <version>8.2.0</version>
-    <tag>SEMANTIC_TEST-8-2-0</tag>
+    <tag>SEMVER_TEST-8-2-0</tag>
     <status>published</status>
-    <release_link>http://example.com/semantic_test-8-2-0-release</release_link>
-    <download_link>http://example.com/semantic_test-8-2-0.tar.gz</download_link>
+    <release_link>http://example.com/semver_test-8-2-0-release</release_link>
+    <download_link>http://example.com/semver_test-8-2-0.tar.gz</download_link>
     <date>1250425521</date>
     <terms>
       <term><name>Release type</name><value>New features</value></term>
@@ -25,12 +25,12 @@
     </terms>
   </release>
  <release>
-   <name>Semantic Test 8.0.1-alpha1</name>
+   <name>Semver Test 8.0.1-alpha1</name>
    <version>8.0.1-alpha1</version>
-   <tag>SEMANTIC_TEST-8-0-1-alpha1</tag>
+   <tag>SEMVER_TEST-8-0-1-alpha1</tag>
    <status>published</status>
-   <release_link>http://example.com/semantic_test-8-0-1-alpha1-release</release_link>
-   <download_link>http://example.com/semantic_test-8-0-1-alpha1.tar.gz</download_link>
+   <release_link>http://example.com/semver_test-8-0-1-alpha1-release</release_link>
+   <download_link>http://example.com/semver_test-8-0-1-alpha1.tar.gz</download_link>
    <date>1250424521</date>
    <terms>
      <term><name>Release type</name><value>New features</value></term>
@@ -38,12 +38,12 @@
    </terms>
  </release>
  <release>
-   <name>Semantic Test 8.0.0</name>
+   <name>Semver Test 8.0.0</name>
    <version>8.0.0</version>
-   <tag>SEMANTIC_TEST-8-0-0</tag>
+   <tag>SEMVER_TEST-8-0-0</tag>
    <status>published</status>
-   <release_link>http://example.com/semantic_test-8-0-0-release</release_link>
-   <download_link>http://example.com/semantic_test-8-0-0.tar.gz</download_link>
+   <release_link>http://example.com/semver_test-8-0-0-release</release_link>
+   <download_link>http://example.com/semver_test-8-0-0.tar.gz</download_link>
    <date>1250424521</date>
    <terms>
      <term><name>Release type</name><value>New features</value></term>
@@ -51,12 +51,12 @@
    </terms>
  </release>
  <release>
-   <name>Semantic Test 8.0.0-beta1</name>
+   <name>Semver Test 8.0.0-beta1</name>
    <version>8.0.0-beta1</version>
-   <tag>SEMANTIC_TEST-8-0-0-beta1</tag>
+   <tag>SEMVER_TEST-8-0-0-beta1</tag>
    <status>published</status>
-   <release_link>http://example.com/semantic_test-8-0-0-beta1-release</release_link>
-   <download_link>http://example.com/semantic_test-8-0-0-beta1.tar.gz</download_link>
+   <release_link>http://example.com/semver_test-8-0-0-beta1-release</release_link>
+   <download_link>http://example.com/semver_test-8-0-0-beta1.tar.gz</download_link>
    <date>1250424521</date>
    <terms>
      <term><name>Release type</name><value>New features</value></term>
@@ -64,12 +64,12 @@
    </terms>
  </release>
  <release>
-   <name>Semantic Test 8.0.0-alpha1</name>
+   <name>Semver Test 8.0.0-alpha1</name>
    <version>8.0.0-alpha1</version>
-   <tag>SEMANTIC_TEST-8-0-0-alpha1</tag>
+   <tag>SEMVER_TEST-8-0-0-alpha1</tag>
    <status>published</status>
-   <release_link>http://example.com/semantic_test-8-0-0-alpha1-release</release_link>
-   <download_link>http://example.com/semantic_test-8-0-0-alpha1.tar.gz</download_link>
+   <release_link>http://example.com/semver_test-8-0-0-alpha1-release</release_link>
+   <download_link>http://example.com/semver_test-8-0-0-alpha1.tar.gz</download_link>
    <date>1250424521</date>
    <terms>
      <term><name>Release type</name><value>New features</value></term>
