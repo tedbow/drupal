@@ -73,7 +73,6 @@ class UpdateSemverContribTest extends UpdateSemverTestBase {
       $this->assertSession()->elementTextContains('css', $this->updateTableLocator . " .project-update__title", $install_version);
       // All installed versions should indicate that there is update available
       // for the next major version of the module.
-      file_put_contents("/Users/ted.bowman/Sites/www/test-$install_version.html", $this->getSession()->getPage()->getOuterHtml());
       $this->assertVersionUpdateLinks('Also available:', '8.1.0');
       if ($install_version === '8.x-7.1') {
         $this->assertUpdateTableTextContains('Up to date');
