@@ -7,7 +7,7 @@ namespace Drupal\Tests\update\Functional;
  *
  * @group update
  */
-class UpdateSemanticContribTest extends UpdateSemanticTestBase {
+class UpdateSemverContribTest extends UpdateSemverTestBase {
 
   /**
    * {@inheritdoc}
@@ -17,7 +17,7 @@ class UpdateSemanticContribTest extends UpdateSemanticTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $updateProject = 'semantic_test';
+  protected $updateProject = 'semver_test';
 
   /**
    * {@inheritdoc}
@@ -27,7 +27,7 @@ class UpdateSemanticContribTest extends UpdateSemanticTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['semantic_test'];
+  public static $modules = ['semver_test'];
 
   /**
    * {@inheritdoc}

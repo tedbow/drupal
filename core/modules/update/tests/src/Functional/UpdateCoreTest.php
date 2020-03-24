@@ -11,7 +11,7 @@ use Drupal\Tests\Traits\Core\CronRunTrait;
  *
  * @group update
  */
-class UpdateCoreTest extends UpdateSemanticTestBase {
+class UpdateCoreTest extends UpdateSemverTestBase {
 
   use CronRunTrait;
 
