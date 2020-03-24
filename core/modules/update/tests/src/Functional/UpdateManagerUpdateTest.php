@@ -187,18 +187,14 @@ class UpdateManagerUpdateTest extends UpdateTestBase {
 
     if ($compatible) {
       // Verify the number of rows in the table.
-      $assert_session->elementsCount('css', "$compatible_table_locator tbody tr", count($compatible));
+      $assert_session->elementsCount('css', "$compatible_table_locator tr", count($compatible));
       // We never want to see a compatibly range in the compatible table.
       $assert_session->elementTextNotContains('css', $compatible_table_locator, 'Requires Drupal core');
-      $i = 1;
       foreach ($compatible as $module => $version) {
-        $compatible_row = "$compatible_table_locator tbody tr:nth-of-type($i)";
-        // First <td> is the checkbox, so start with td #2.
-        $assert_session->elementTextContains('css', "$compatible_row td:nth-of-type(2)", "$module Update test");
+        $compatible_row = "$compatible_table_locator tr:contains('$module Update test')";
         // Both contrib modules use 8.x-1.0 as the currently-installed version.
-        $assert_session->elementTextContains('css', "$compatible_row td:nth-of-type(3)", '8.x-1.0');
-        $assert_session->elementTextContains('css', "$compatible_row td:nth-of-type(4)", $version);
-        $i++;
+        $assert_session->elementTextContains('css', $compatible_row, '8.x-1.0');
+        $assert_session->elementTextContains('css', $compatible_row, $version);
       }
     }
     else {
@@ -208,16 +204,13 @@ class UpdateManagerUpdateTest extends UpdateTestBase {
 
     if ($incompatible) {
       // Verify the number of rows in the table.
-      $assert_session->elementsCount('css', "$incompatible_table_locator tbody tr", count($incompatible));
-      $i = 1;
+      $assert_session->elementsCount('css', "$incompatible_table_locator tr", count($incompatible));
       foreach ($incompatible as $module => $data) {
-        $incompatible_row = "$incompatible_table_locator tbody tr:nth-of-type($i)";
-        $assert_session->elementTextContains('css', "$incompatible_row td:nth-of-type(1)", "$module Update test");
+        $incompatible_row = "$incompatible_table_locator tr:contains('$module Update test')";
+        $assert_session->elementTextContains('css', $incompatible_row, $data['recommended']);
+        $assert_session->elementTextContains('css', $incompatible_row, 'Requires Drupal core: ' . $data['range']);
         // Both contrib modules use 8.x-1.0 as the currently-installed version.
-        $assert_session->elementTextContains('css', "$incompatible_row td:nth-of-type(2)", '8.x-1.0');
-        $assert_session->elementTextContains('css', "$incompatible_row td:nth-of-type(3)", $data['recommended']);
-        $assert_session->elementTextContains('css', "$incompatible_row td:nth-of-type(3)", 'Requires Drupal core: ' . $data['range']);
-        $i++;
+        $assert_session->elementTextContains('css', $incompatible_row, '8.x-1.0');
       }
     }
     else {
