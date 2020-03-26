@@ -17,7 +17,7 @@
   <status>published</status>
   <release_link>http://example.com/semver_test-8-2-0-rc2-release</release_link>
   <download_link>http://example.com/semver_test-8-2-0-rc2.tar.gz</download_link>
-  <date>1533298080</date>
+  <date>1584195300</date>
   <terms>
    <term><name>Release type</name><value>Bug fixes</value></term>
    <term><name>Release type</name><value>New features</value></term>
@@ -34,7 +34,7 @@
   <status>published</status>
   <release_link>http://example.com/semver_test-8-2-0-rc1-release</release_link>
   <download_link>http://example.com/semver_test-8-2-0-rc1.tar.gz</download_link>
-  <date>1533270485</date>
+  <date>1581603300</date>
   <terms>
    <term><name>Release type</name><value>Insecure</value></term>
    <term><name>Release type</name><value>Bug fixes</value></term>
@@ -51,7 +51,7 @@
   <status>published</status>
   <release_link>http://example.com/semver_test-8-2-0-beta2-release</release_link>
   <download_link>http://example.com/semver_test-8-2-0-beta2.tar.gz</download_link>
-  <date>1533298080</date>
+  <date>1579011300</date>
   <terms>
    <term><name>Release type</name><value>Bug fixes</value></term>
    <term><name>Release type</name><value>New features</value></term>
@@ -68,7 +68,7 @@
   <status>published</status>
   <release_link>http://example.com/semver_test-8-2-0-beta1-release</release_link>
   <download_link>http://example.com/semver_test-8-2-0-beta1.tar.gz</download_link>
-  <date>1533270485</date>
+  <date>1576419300</date>
   <terms>
    <term><name>Release type</name><value>Insecure</value></term>
    <term><name>Release type</name><value>Bug fixes</value></term>
@@ -85,7 +85,7 @@
   <status>published</status>
   <release_link>http://example.com/semver_test-8-2-0-alpha2-release</release_link>
   <download_link>http://example.com/semver_test-8-2-0-alpha2.tar.gz</download_link>
-  <date>1533298080</date>
+  <date>1573827300</date>
   <terms>
    <term><name>Release type</name><value>Bug fixes</value></term>
    <term><name>Release type</name><value>New features</value></term>
@@ -102,7 +102,7 @@
   <status>published</status>
   <release_link>http://example.com/semver_test-8.2.0-alpha1</release_link>
   <download_link>http://example.com/semver_test-8-2-0-alpha1.tar.gz</download_link>
-  <date>1533270485</date>
+  <date>1571235300</date>
   <terms>
    <term><name>Release type</name><value>Insecure</value></term>
    <term><name>Release type</name><value>Bug fixes</value></term>
@@ -115,11 +115,11 @@
  <release>
   <name>Semver Test 8.1.2</name>
   <version>8.1.2</version>
-  <tag>SEMVER_TEST-8-1-2</tag>
+  <tag>8.1.2</tag>
   <status>published</status>
   <release_link>http://example.com/semver_test-8-1-2-release</release_link>
   <download_link>http://example.com/semver_test-8-1-2.tar.gz</download_link>
-  <date>1250424641</date>
+  <date>1568643300</date>
   <terms>
    <term><name>Release type</name><value>New features</value></term>
    <term><name>Release type</name><value>Bug fixes</value></term>
@@ -129,11 +129,11 @@
  <release>
   <name>Semver Test 8.1.1</name>
   <version>8.1.1</version>
-  <tag>SEMVER_TEST-8-1-1</tag>
+  <tag>8.1.1</tag>
   <status>published</status>
   <release_link>http://example.com/semver_test-8-1-1-release</release_link>
   <download_link>http://example.com/semver_test-8-1-1.tar.gz</download_link>
-  <date>1250424581</date>
+  <date>1566051300</date>
   <terms>
    <term><name>Release type</name><value>New features</value></term>
    <term><name>Release type</name><value>Bug fixes</value></term>
@@ -143,11 +143,11 @@
  <release>
   <name>Semver Test 8.1.0</name>
   <version>8.1.0</version>
-  <tag>SEMVER_TEST-8-1-0</tag>
+  <tag>8.1.0</tag>
   <status>published</status>
   <release_link>http://example.com/semver_test-8-1-0-release</release_link>
   <download_link>http://example.com/semver_test-8-1-0.tar.gz</download_link>
-  <date>1250424521</date>
+  <date>1563459300</date>
   <terms>
    <term><name>Release type</name><value>New features</value></term>
    <term><name>Release type</name><value>Bug fixes</value></term>
@@ -157,11 +157,11 @@
  <release>
   <name>Semver Test 8.0.2</name>
   <version>8.0.2</version>
-  <tag>SEMVER_TEST-8-0-2</tag>
+  <tag>8.0.2</tag>
   <status>published</status>
   <release_link>http://example.com/semver_test-8-0-2-release</release_link>
   <download_link>http://example.com/semver_test-8-0-2.tar.gz</download_link>
-  <date>1250424641</date>
+  <date>1560867300</date>
   <terms>
    <term><name>Release type</name><value>New features</value></term>
    <term><name>Release type</name><value>Bug fixes</value></term>
@@ -171,11 +171,11 @@
  <release>
   <name>Semver Test 8.0.1</name>
   <version>8.0.1</version>
-  <tag>SEMVER_TEST-8-0-1</tag>
+  <tag>8.0.1</tag>
   <status>published</status>
   <release_link>http://example.com/semver_test-8-0-1-release</release_link>
   <download_link>http://example.com/semver_test-8-0-1.tar.gz</download_link>
-  <date>1250424581</date>
+  <date>1558275300</date>
   <terms>
    <term><name>Release type</name><value>New features</value></term>
    <term><name>Release type</name><value>Bug fixes</value></term>
@@ -185,11 +185,11 @@
  <release>
   <name>Semver Test 8.0.0</name>
   <version>8.0.0</version>
-  <tag>SEMVER_TEST-8-0-0</tag>
+  <tag>8.0.0</tag>
   <status>published</status>
   <release_link>http://example.com/semver_test-8-0-0-release</release_link>
   <download_link>http://example.com/semver_test-8-0-0.tar.gz</download_link>
-  <date>1250424521</date>
+  <date>1555683300</date>
   <terms>
    <term><name>Release type</name><value>New features</value></term>
    <term><name>Release type</name><value>Bug fixes</value></term>

@@ -39,15 +39,13 @@ class UpdateSemverContribTest extends UpdateSemverTestBase {
         'version' => $version,
         'hidden' => FALSE,
       ],
-    ];
-    // Ensure Drupal core on the same version for all test runs.
-    if ($this->updateProject !== 'drupal') {
-      $system_info['drupal'] = [
+      // Ensure Drupal core on the same version for all test runs.
+      'drupal' => [
         'project' => 'drupal',
         'version' => '8.0.0',
         'hidden' => FALSE,
-      ];
-    }
+      ],
+    ];
     $this->config('update_test.settings')->set('system_info', $system_info)->save();
   }
 

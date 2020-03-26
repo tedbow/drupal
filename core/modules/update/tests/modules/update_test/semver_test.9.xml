@@ -13,11 +13,11 @@
  <release>
    <name>Semver Test 9.0.0</name>
    <version>9.0.0</version>
-   <tag>SEMVER_TEST-9-0-0</tag>
+   <tag>9.0.0</tag>
    <status>published</status>
    <release_link>http://example.com/semver_test-9-0-0-release</release_link>
    <download_link>http://example.com/semver_test-9-0-0.tar.gz</download_link>
-   <date>1250424521</date>
+   <date>1584195300</date>
    <terms>
      <term><name>Release type</name><value>New features</value></term>
      <term><name>Release type</name><value>Bug fixes</value></term>
