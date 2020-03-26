@@ -9,6 +9,9 @@ use Drupal\Tests\Traits\Core\CronRunTrait;
 /**
  * Common test methods for projects that use semver version releases.
  *
+ * For classes that extend this class, the XML fixtures they will start with
+ * ::$projectTitle.
+ *
  * @group update
  */
 abstract class UpdateSemverTestBase extends UpdateTestBase {
@@ -192,15 +195,15 @@ abstract class UpdateSemverTestBase extends UpdateTestBase {
    *
    * These test cases rely on the following fixtures containing the following
    * releases:
-   * - drupal.sec.0.1_0.2.xml
+   * - [::$updateProject].sec.0.1_0.2.xml
    *   - 8.0.2 Security update
    *   - 8.0.1 Security update, Insecure
    *   - 8.0.0 Insecure
-   * - drupal.sec.0.2.xml
+   * - [::$updateProject].sec.0.2.xml
    *   - 8.0.2 Security update
    *   - 8.0.1 Insecure
    *   - 8.0.0 Insecure
-   * - drupal.sec.0.2-rc2.xml
+   * - [::$updateProject].sec.0.2-rc2.xml
    *   - 8.2.0-rc2 Security update
    *   - 8.2.0-rc1 Insecure
    *   - 8.2.0-beta2 Insecure
@@ -213,26 +216,26 @@ abstract class UpdateSemverTestBase extends UpdateTestBase {
    *   - 8.0.2 Security update
    *   - 8.0.1 Insecure
    *   - 8.0.0 Insecure
-   * - drupal.sec.1.2.xml
+   * - [::$updateProject].sec.1.2.xml
    *   - 8.1.2 Security update
    *   - 8.1.1 Insecure
    *   - 8.1.0 Insecure
    *   - 8.0.2
    *   - 8.0.1
    *   - 8.0.0
-   * - drupal.sec.1.2_insecure.xml
+   * - [::$updateProject].sec.1.2_insecure.xml
    *   - 8.1.2 Security update
    *   - 8.1.1 Insecure
    *   - 8.1.0 Insecure
    *   - 8.0.2 Insecure
    *   - 8.0.1 Insecure
    *   - 8.0.0 Insecure
-   * - drupal.sec.1.2_insecure-unsupported
-   *   This file has the exact releases as drupal.sec.1.2_insecure.xml. It has a
+   * - [::$updateProject].sec.1.2_insecure-unsupported
+   *   This file has the exact releases as [::$updateProject].sec.1.2_insecure.xml. It has a
    *   different value for 'supported_branches' that does not contain '8.0.'.
    *   It is used to ensure that the "Security update required!" is displayed
    *   even if the currently installed version is in an unsupported branch.
-   * - drupal.sec.0.2-rc2-b.xml
+   * - [::$updateProject].sec.0.2-rc2-b.xml
    *   - 8.2.0-rc2
    *   - 8.2.0-rc1
    *   - 8.2.0-beta2
@@ -374,9 +377,9 @@ abstract class UpdateSemverTestBase extends UpdateTestBase {
    * whether the installed version is in a supported branch or not. This test
    * relies on 2 test XML fixtures that are identical except for the
    * 'supported_branches' value:
-   * - drupal.1.0.xml
+   * - [::$updateProject].1.0.xml
    *    'supported_branches' is '8.0.,8.1.'.
-   * - drupal.1.0-unsupported.xml
+   * - [::$updateProject].1.0-unsupported.xml
    *    'supported_branches' is '8.1.'.
    * They both have an '8.0.2' release that is unpublished and an '8.1.0'
    * release that is published and is the expected update.
@@ -397,9 +400,9 @@ abstract class UpdateSemverTestBase extends UpdateTestBase {
    * the installed version is in a supported branch or not. This test relies on
    * 2 test XML fixtures that are identical except for the 'supported_branches'
    * value:
-   * - drupal.1.0.xml
+   * - [::$updateProject].1.0.xml
    *    'supported_branches' is '8.0.,8.1.'.
-   * - drupal.1.0-unsupported.xml
+   * - [::$updateProject].1.0-unsupported.xml
    *    'supported_branches' is '8.1.'.
    * They both have an '8.0.3' release that that has the 'Release type' value of
    * 'unsupported' and an '8.1.0' release that has the 'Release type' value of
