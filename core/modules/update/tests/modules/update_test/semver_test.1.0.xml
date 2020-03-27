@@ -168,7 +168,7 @@
      <term><name>Release type</name><value>Bug fixes</value></term>
    </terms>
  </release>
-  <release>
+<release>
     <name>Semver Test 8.x-7.1</name>
     <version>8.x-7.1</version>
     <tag>SEMVER_TEST-8-x-7-1</tag>
@@ -180,8 +180,7 @@
       <term><name>Release type</name><value>New features</value></term>
       <term><name>Release type</name><value>Bug fixes</value></term>
     </terms>
-  </release>
-  <release>
+  </release><release>
     <name>Semver Test 8.x-7.1-beta1</name>
     <version>8.x-7.1-beta1</version>
     <tag>SEMVER_TEST-8-x-7-1-beta1</tag>
@@ -193,8 +192,7 @@
       <term><name>Release type</name><value>New features</value></term>
       <term><name>Release type</name><value>Bug fixes</value></term>
     </terms>
-  </release>
-  <release>
+  </release><release>
     <name>Semver Test 8.x-7.1-alpha1</name>
     <version>8.x-7.1-alpha1</version>
     <tag>SEMVER_TEST-8-x-7-1-alpha1</tag>
@@ -206,8 +204,7 @@
       <term><name>Release type</name><value>New features</value></term>
       <term><name>Release type</name><value>Bug fixes</value></term>
     </terms>
-  </release>
-  <release>
+  </release><release>
     <name>Semver Test 8.x-7.0</name>
     <version>8.x-7.0</version>
     <tag>SEMVER_TEST-8-x-7-0</tag>
@@ -219,8 +216,7 @@
       <term><name>Release type</name><value>New features</value></term>
       <term><name>Release type</name><value>Bug fixes</value></term>
     </terms>
-  </release>
-  <release>
+  </release><release>
     <name>Semver Test 8.x-7.0-beta1</name>
     <version>8.x-7.0-beta1</version>
     <tag>SEMVER_TEST-8-x-7-0-beta1</tag>
@@ -232,8 +228,7 @@
       <term><name>Release type</name><value>New features</value></term>
       <term><name>Release type</name><value>Bug fixes</value></term>
     </terms>
-  </release>
-  <release>
+  </release><release>
     <name>Semver Test 8.x-7.0-alpha1</name>
     <version>8.x-7.0-alpha1</version>
     <tag>SEMVER_TEST-8-x-7-0-alpha1</tag>
@@ -245,6 +240,5 @@
       <term><name>Release type</name><value>New features</value></term>
       <term><name>Release type</name><value>Bug fixes</value></term>
     </terms>
-  </release>
-</releases>
+</release></releases>
 </project>
