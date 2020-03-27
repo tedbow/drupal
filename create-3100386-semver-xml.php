@@ -162,8 +162,9 @@ RELEASES;
 
   $xml = new SimpleXMLElement($contents);
   $xml->supported_branches = "8.x-7.,8.0.,8.1.";
-
-
-
-  return (string) $xml->asXML();;
+  $contents = (string) $xml->asXML();
+  // attempt to clean up indentation.
+  $contents = str_replace("</release><release>", "</release>\n  <release>", $contents);
+  $contents = str_replace("</release></releases>", "  </release>\n</releases>", $contents);
+  return $contents;
 }
