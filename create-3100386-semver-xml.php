@@ -16,6 +16,8 @@ foreach ($xml_files as $xml_file) {
     continue;
   }
   $contents = transformContents($contents);
+
+  if ($new_file_name === '')
   //print "$new_file_name\n";
   file_put_contents($new_file_name, $contents);
 }
