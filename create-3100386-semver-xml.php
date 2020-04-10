@@ -20,11 +20,13 @@ foreach ($xml_files as $xml_file) {
   if (strpos($new_file_name, 'semver_test.1.0.xml') !== FALSE) {
     $contents = addReleases($contents);
     // Duplicate this xml to test 8.x-8 releases.
-    $duplicated = convertLegacyMajor8($contents);
-    $duplicated_file = str_replace('semver_test.1.0.xml', 'semver_test.9.1.0.xml', $new_file_name);
-    file_put_contents($duplicated_file, $duplicated);
+    $contents_legacy8 = convertLegacyMajor8($contents);
+    $legacy8_file = str_replace('semver_test.1.0.xml', 'semver_test.9.1.0.xml', $new_file_name);
+    file_put_contents($legacy8_file, $contents_legacy8);
 
-
+    $contents_legacy_unsupported = str_replace('<supported_branches>8.x-7.,', '<supported_branches>', $contents);
+    $legacy_unsupported_file = str_replace('semver_test.1.0.xml', 'semver_test.1.0-legacy-unsupported.xml', $new_file_name);
+    file_put_contents($legacy_unsupported_file, $contents_legacy_unsupported);
   }
   //print "$new_file_name\n";
   file_put_contents($new_file_name, $contents);
@@ -193,3 +195,4 @@ function convertLegacyMajor8($contents) {
   $contents = str_replace('8-x-7', '8-x-8', $contents);
   return $contents;
 }
+
