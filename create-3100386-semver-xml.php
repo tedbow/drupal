@@ -19,6 +19,11 @@ foreach ($xml_files as $xml_file) {
 
   if (strpos($new_file_name, 'semver_test.1.0.xml') !== FALSE) {
     $contents = addReleases($contents);
+    // Duplicate this xml to test 8.x-8 releases.
+    $duplicated = convertLegacyMajor8($contents);
+    $duplicated_file = str_replace('semver_test.1.0.xml', 'semver_test.9.1.0.xml', $new_file_name);
+    file_put_contents($duplicated_file, $duplicated);
+
 
   }
   //print "$new_file_name\n";
@@ -166,5 +171,25 @@ RELEASES;
   // attempt to clean up indentation.
   $contents = str_replace("</release><release>", "</release>\n  <release>", $contents);
   $contents = str_replace("</release></releases>", "  </release>\n</releases>", $contents);
+  return $contents;
+}
+
+/**
+ * Make test XML that tests 8.x-8.x.
+ *
+ * @param $contents
+ *
+ * @return string
+ */
+function convertLegacyMajor8($contents) {
+  $placeholder = 'EIGHT_DOT_X';
+  $contents = str_replace('8.x', 'EIGHT_DOT_X', $contents);
+  $contents = str_replace('8-x', 'EIGHT_DASH_X', $contents);
+  $contents = str_replace('8.', '9.', $contents);
+  $contents = str_replace('8-', '9-', $contents);
+  $contents = str_replace('EIGHT_DOT_X', '8.x', $contents);
+  $contents = str_replace('EIGHT_DASH_X', '8-x', $contents);
+  $contents = str_replace('8.x-7', '8.x-8', $contents);
+  $contents = str_replace('8-x-7', '8-x-8', $contents);
   return $contents;
 }
