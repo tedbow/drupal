@@ -1,0 +1,17 @@
+services:
+  logger.channel.automatic_updates:
+    parent: logger.channel_base
+    arguments: ['automatic_updates']
+  automatic_updates.disk_space_checker:
+    class: Drupal\automatic_updates\ReadinessChecker\DiskSpace
+    arguments:
+      - '@app.root'
+    tags:
+      - { name: readiness_checker, category: error}
+  automatic_updates.readiness_checker:
+    class: Drupal\automatic_updates\ReadinessChecker\ReadinessCheckerManager
+    arguments:
+      - '@keyvalue'
+      - '@config.factory'
+    tags:
+      - { name: service_collector, tag: readiness_checker, call: addChecker }
