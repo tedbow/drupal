@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\update\Services;
+namespace Drupal\update\Psa;
 
 use Composer\Semver\VersionParser;
 use Drupal\update\ProjectInfoTrait;
@@ -12,6 +12,7 @@ use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Extension\ExtensionList;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\TransferException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -70,22 +71,22 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *   The time service.
    * @param \GuzzleHttp\Client $client
    *   The HTTP client.
-    * @param \Drupal\Core\Extension\ExtensionList $moduleList
+   * @param \Drupal\Core\Extension\ExtensionList $module_list
    *   The module extension list.
-   * @param \Drupal\Core\Extension\ExtensionList $profileList
+   * @param \Drupal\Core\Extension\ExtensionList $profile_list
    *   The profile extension list.
-   * @param \Drupal\Core\Extension\ExtensionList $themeList
+   * @param \Drupal\Core\Extension\ExtensionList $theme_list
    *   The theme extension list.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, CacheBackendInterface $cache, TimeInterface $time, Client $client, ExtensionList $moduleList, ExtensionList $profileList, ExtensionList $themeList, LoggerInterface $logger) {
-    $this->config = $config_factory->get('update_psa.settings');
+  public function __construct(ConfigFactoryInterface $config_factory, CacheBackendInterface $cache, TimeInterface $time, Client $client, ExtensionList $module_list, ExtensionList $profile_list, ExtensionList $theme_list, LoggerInterface $logger) {
+    $this->config = $config_factory->get('update.settings');
     $this->cache = $cache;
     $this->time = $time;
     $this->httpClient = $client;
     $this->logger = $logger;
-    $this->setExtensionLists($moduleList, $themeList, $profileList);
+    $this->setExtensionLists($module_list, $theme_list, $profile_list);
   }
 
   /**
@@ -93,7 +94,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
    */
   public function getPublicServiceMessages() {
     $messages = [];
-    if (!$this->config->get('enable_psa')) {
+    if (!$this->config->get('psa.enable')) {
       return $messages;
     }
 
@@ -101,12 +102,12 @@ class UpdatesPsa implements UpdatesPsaInterface {
       $response = $cache->data;
     }
     else {
-      $psa_endpoint = $this->config->get('psa_endpoint');
+      $psa_endpoint = $this->config->get('psa.endpoint');
       try {
         $response = $this->httpClient->get($psa_endpoint)
           ->getBody()
           ->getContents();
-        $this->cache->set('updates_psa', $response, $this->time->getCurrentTime() + $this->config->get('check_frequency'));
+        $this->cache->set('updates_psa', $response, $this->time->getCurrentTime() + $this->config->get('psa.check_frequency'));
       }
       catch (TransferException $exception) {
         $this->logger->error($exception->getMessage());
@@ -154,7 +155,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
    * @return bool
    *   TRUE if extension exists, else FALSE.
    */
-  protected function isValidExtension($extension_type, $project_name) {
+  protected function isValidExtension(string $extension_type, string $project_name) {
     try {
       $extension_list = $this->getExtensionList($extension_type);
       return $extension_list->exists($project_name) && !empty($extension_list->getAllAvailableInfo()[$project_name]['version']);
@@ -166,14 +167,14 @@ class UpdatesPsa implements UpdatesPsaInterface {
   }
 
   /**
-   * Parse contrib project JSON version strings.
+   * Parses contrib project JSON version strings.
    *
    * @param array $messages
    *   The messages array.
    * @param object $json
    *   The JSON object.
    */
-  protected function contribParser(array &$messages, $json) {
+  protected function contribParser(array &$messages, \stdClass $json) {
     $extension_version = $this->getExtensionList($json->type)->getAllAvailableInfo()[$json->project]['version'];
     $json->insecure = array_filter(array_map(static function ($version) {
       $version_array = explode('-', $version, 2);
@@ -193,7 +194,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
   }
 
   /**
-   * Compare versions and add a message, if appropriate.
+   * Compares versions and add a message, if appropriate.
    *
    * @param array $messages
    *   The messages array.
@@ -204,7 +205,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *
    * @throws \UnexpectedValueException
    */
-  protected function parseConstraints(array &$messages, $json, $current_version) {
+  protected function parseConstraints(array &$messages, \stdClass $json, string $current_version) {
     $version_string = implode('||', $json->insecure);
     if (empty($version_string)) {
       return;
@@ -218,7 +219,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
   }
 
   /**
-   * Return a message.
+   * Returns a message.
    *
    * @param string $title
    *   The title.
@@ -228,7 +229,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
    * @return \Drupal\Component\Render\FormattableMarkup
    *   The PSA or SA message.
    */
-  protected function message($title, $link) {
+  protected function message(string $title, string $link) {
     return new FormattableMarkup('<a href=":url">:message</a>', [
       ':message' => $title,
       ':url' => $link,

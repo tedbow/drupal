@@ -97,15 +97,15 @@ class UpdateSettingsForm extends ConfigFormBase implements ContainerInjectionInt
       '#markup' => '<p>' . $this->t('Public service announcements are compared against the entire code for the site, not just installed extensions.') . '</p>',
     ];
 
-    $form['psa']['enable_psa'] = [
+    $form['psa']['psa.enable'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Show Public service announcements on administrative pages.'),
-      '#default_value' => $config->get('enable_psa'),
+      '#default_value' => $config->get('psa.enable'),
     ];
-    $form['psa']['notify_psa'] = [
+    $form['psa']['notify.psa'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Send email notifications for Public service announcements.'),
-      '#default_value' => $config->get('notify_psa'),
+      '#default_value' => $config->get('notify.psa'),
       '#description' => $this->t('The email addresses listed above will be notified.'),
     ];
 
@@ -161,8 +161,8 @@ class UpdateSettingsForm extends ConfigFormBase implements ContainerInjectionInt
       ->set('check.interval_days', $form_state->getValue('update_check_frequency'))
       ->set('notification.emails', $form_state->get('notify_emails'))
       ->set('notification.threshold', $form_state->getValue('update_notification_threshold'))
-      ->set('enable_psa', $form_state->getValue('enable_psa'))
-      ->set('notify_psa', $form_state->getValue('notify_psa'))
+      ->set('psa.enable', $form_state->getValue('psa.enable'))
+      ->set('psa.notify', $form_state->getValue('psa.notify'))
       ->save();
 
     parent::submitForm($form, $form_state);

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\update\Services;
+namespace Drupal\update\Psa;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -13,11 +13,9 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 
 /**
- * Class EmailNotify.
- *
- * Notify to provided emails when there is a PSA available.
+ * Implementation of the NotifyInterface which uses email for notification.
  */
-class Notify implements NotifyInterface {
+class EmailNotify implements NotifyInterface {
   use StringTranslationTrait;
 
   /**
@@ -30,9 +28,9 @@ class Notify implements NotifyInterface {
   /**
    * The automatic updates service.
    *
-   * @var \Drupal\updates\Services\UpdatesPsaInterface
+   * @var \Drupal\update\Psa\UpdatesPsaInterface
    */
-  protected $UpdatesPsa;
+  protected $updatesPsa;
 
   /**
    * The config factory.
@@ -70,18 +68,11 @@ class Notify implements NotifyInterface {
   protected $entityTypeManager;
 
   /**
-   * Event dispatcher.
-   *
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
-
-  /**
    * EmailNotify constructor.
    *
    * @param \Drupal\Core\Mail\MailManagerInterface $mail_manager
    *   The mail manager.
-   * @param \Drupal\update\Services\UpdatesPsaInterface $updates_psa
+   * @param \Drupal\update\Psa\UpdatesPsaInterface $updates_psa
    *   The automatic updates service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
@@ -98,7 +89,7 @@ class Notify implements NotifyInterface {
    */
   public function __construct(MailManagerInterface $mail_manager, UpdatesPsaInterface $updates_psa, ConfigFactoryInterface $config_factory, LanguageManagerInterface $language_manager, StateInterface $state, TimeInterface $time, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation) {
     $this->mailManager = $mail_manager;
-    $this->UpdatesPsa = $updates_psa;
+    $this->updatesPsa = $updates_psa;
     $this->configFactory = $config_factory;
     $this->languageManager = $language_manager;
     $this->state = $state;
@@ -112,16 +103,16 @@ class Notify implements NotifyInterface {
    */
   public function send() {
     // Don't send mail if notifications are disabled.
-    if (!$this->configFactory->get('update_psa.settings')->get('notify')) {
+    if (!$this->configFactory->get('update.settings')->get('psa.notify')) {
       return;
     }
-    $messages = $this->UpdatesPsa->getPublicServiceMessages();
+    $messages = $this->updatesPsa->getPublicServiceMessages();
     if (!$messages) {
       return;
     }
     $notify_list = $this->configFactory->get('update.settings')->get('notification.emails');
     if (!empty($notify_list)) {
-      $frequency = $this->configFactory->get('update_psa.settings')->get('check_frequency');
+      $frequency = $this->configFactory->get('update.settings')->get('psa.check_frequency');
       $last_check = $this->state->get('update_psa.notify_last_check') ?: 0;
       if (($this->time->getRequestTime() - $last_check) > $frequency) {
         $this->state->set('update_psa.notify_last_check', $this->time->getRequestTime());
@@ -156,13 +147,14 @@ class Notify implements NotifyInterface {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function doSend($to, array $params) {
+  protected function doSend(string $to, array $params) {
+    /** @var \Drupal\user\UserInterface[] $users */
     $users = $this->entityTypeManager->getStorage('user')
       ->loadByProperties(['mail' => $to]);
     foreach ($users as $user) {
       $to_user = reset($users);
       $params['langcode'] = $to_user->getPreferredLangcode();
-      $this->mailManager->mail('update_psa', 'notify', $to, $params['langcode'], $params);
+      $this->mailManager->mail('update', 'psa_notify', $to, $params['langcode'], $params);
     }
   }
 

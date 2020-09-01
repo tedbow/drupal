@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Link;
+use Drupal\Core\StringTranslation\PluralTranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\update\ProjectSecurityData;
 use Drupal\update\ProjectSecurityRequirement;
@@ -186,14 +187,14 @@ function update_update_last_removed() {
  *   The requirements array.
  */
 function _update_psa_requirements(array &$requirements) {
-  if (!\Drupal::config('update_psa.settings')->get('enable_psa')) {
+  if (!\Drupal::config('update.settings')->get('psa.enable')) {
     return;
   }
-  /** @var \Drupal\update\Services\AutomaticUpdatesPsa $psa */
+  /** @var \Drupal\update\Psa\UpdatesPsa $psa */
   $psa = \Drupal::service('update.psa');
   $messages = $psa->getPublicServiceMessages();
   $requirements['update_psa'] = [
-    'title' => t('<a href=":link">Public service announcements</a>', [':link' => 'https://www.drupal.org/docs/8/update/automatic-updates#psas']), 
+    'title' => t('<a href=":link">Public service announcements</a>', [':link' => 'https://www.drupal.org/docs/8/update/automatic-updates#psas']),
     'severity' => REQUIREMENT_OK,
     'value' => t('No announcements requiring attention.'),
   ];

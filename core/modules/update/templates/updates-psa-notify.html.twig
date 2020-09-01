@@ -31,7 +31,7 @@
   {{ 'To see all PSAs, visit <a href="@uri">@uri</a>.'|t({'@uri': 'https://www.drupal.org/security/psa'}) }}
 </p>
 <p>
-  {% set settings_link = path('automatic_updates.settings') %}
+  {% set settings_link = path('update.settings') %}
   {% trans %}
     Your site is currently configured to send these emails when a security update will be made available soon. To change how you are notified, you may <a href="{{ settings_link }}">configure email notifications</a>.
   {% endtrans %}

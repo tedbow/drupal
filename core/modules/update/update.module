@@ -123,7 +123,7 @@ function update_page_top() {
       }
     }
 
-    /** @var \Drupal\update\Services\AutomaticUpdatesPsaInterface $psa */
+    /** @var \Drupal\update\Psa\AutomaticUpdatesPsaInterface $psa */
     $psa = \Drupal::service('update.psa');
     $messages = $psa->getPublicServiceMessages();
     if ($messages) {
@@ -171,6 +171,11 @@ function update_theme() {
       'variables' => ['version' => NULL, 'title' => NULL, 'attributes' => []],
       'file' => 'update.report.inc',
     ],
+    'updates_psa_notify' => [
+      'variables' => [
+        'messages' => [],
+      ],
+    ],
   ];
 }
 
@@ -184,7 +189,7 @@ function update_cron() {
   $last_check = \Drupal::state()->get('update.last_check', 0);
   if ((REQUEST_TIME - $last_check) > $interval) {
     // Checkers should run before updates because of class caching.
-    /** @var \Drupal\update\Services\NotifyInterface $notify */
+    /** @var \Drupal\update\Psa\NotifyInterface $notify */
     $notify = \Drupal::service('update.psa_notify');
     $notify->send();
     // If the configured update interval has elapsed, we want to invalidate
@@ -400,7 +405,8 @@ function update_fetch_data_finished($success, $results) {
  * Constructs the email notification message when the site is out of date.
  *
  * @param $key
- *   Unique key to indicate what message to build, always 'status_notify'.
+ *   Unique key to indicate what message to build, either 'status_notify' or
+ *   'psa_notify'.
  * @param $message
  *   Reference to the message array being built.
  * @param $params
@@ -415,23 +421,32 @@ function update_fetch_data_finished($success, $results) {
  * @see \Drupal\update\UpdateManagerInterface
  */
 function update_mail($key, &$message, $params) {
-  $langcode = $message['langcode'];
-  $language = \Drupal::languageManager()->getLanguage($langcode);
-  $message['subject'] .= t('New release(s) available for @site_name', ['@site_name' => \Drupal::config('system.site')->get('name')], ['langcode' => $langcode]);
-  foreach ($params as $msg_type => $msg_reason) {
-    $message['body'][] = _update_message_text($msg_type, $msg_reason, $langcode);
-  }
-  $message['body'][] = t('See the available updates page for more information:', [], ['langcode' => $langcode]) . "\n" . Url::fromRoute('update.status', [], ['absolute' => TRUE, 'language' => $language])->toString();
-  if (_update_manager_access()) {
-    $message['body'][] = t('You can automatically install your missing updates using the Update manager:', [], ['langcode' => $langcode]) . "\n" . Url::fromRoute('update.report_update', [], ['absolute' => TRUE, 'language' => $language])->toString();
-  }
-  $settings_url = Url::fromRoute('update.settings', [], ['absolute' => TRUE])->toString();
-  if (\Drupal::config('update.settings')->get('notification.threshold') == 'all') {
-    $message['body'][] = t('Your site is currently configured to send these emails when any updates are available. To get notified only for security updates, @url.', ['@url' => $settings_url]);
+  if ($key === 'psa_notify') {
+    $renderer = \Drupal::service('renderer');
+
+    $message['subject'] = $params['subject'];
+    $message['body'][] = $renderer->render($params['body']);
   }
   else {
-    $message['body'][] = t('Your site is currently configured to send these emails only when security updates are available. To get notified for any available updates, @url.', ['@url' => $settings_url]);
+    $langcode = $message['langcode'];
+    $language = \Drupal::languageManager()->getLanguage($langcode);
+    $message['subject'] .= t('New release(s) available for @site_name', ['@site_name' => \Drupal::config('system.site')->get('name')], ['langcode' => $langcode]);
+    foreach ($params as $msg_type => $msg_reason) {
+      $message['body'][] = _update_message_text($msg_type, $msg_reason, $langcode);
+    }
+    $message['body'][] = t('See the available updates page for more information:', [], ['langcode' => $langcode]) . "\n" . Url::fromRoute('update.status', [], ['absolute' => TRUE, 'language' => $language])->toString();
+    if (_update_manager_access()) {
+      $message['body'][] = t('You can automatically install your missing updates using the Update manager:', [], ['langcode' => $langcode]) . "\n" . Url::fromRoute('update.report_update', [], ['absolute' => TRUE, 'language' => $language])->toString();
+    }
+    $settings_url = Url::fromRoute('update.settings', [], ['absolute' => TRUE])->toString();
+    if (\Drupal::config('update.settings')->get('notification.threshold') == 'all') {
+      $message['body'][] = t('Your site is currently configured to send these emails when any updates are available. To get notified only for security updates, @url.', ['@url' => $settings_url]);
+    }
+    else {
+      $message['body'][] = t('Your site is currently configured to send these emails only when security updates are available. To get notified for any available updates, @url.', ['@url' => $settings_url]);
+    }
   }
+
 }
 
 /**

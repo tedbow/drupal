@@ -5,7 +5,7 @@ namespace Drupal\update;
 use Drupal\Core\Extension\ExtensionList;
 
 /**
- * Provide a helper to get project info.
+ * Provides a helper methods to get project info.
  */
 trait ProjectInfoTrait {
 
@@ -25,17 +25,11 @@ trait ProjectInfoTrait {
    * @return \Drupal\Core\Extension\ExtensionList
    *   The extension list service.
    */
-  protected function getExtensionList($extension_type) {
+  protected function getExtensionList(string $extension_type) {
     if (isset($this->extensionLists[$extension_type])) {
-      $list = $this->extensionLists[$extension_type];
+      return $this->extensionLists[$extension_type];
     }
-    else {
-      if (!in_array($extension_type, $this->getExtensionsTypes())) {
-        throw new \UnexpectedValueException("Invalid extension type: $extension_type");
-      }
-      $list = \Drupal::service("extension.list.$extension_type");
-    }
-    return $list;
+    throw new \UnexpectedValueException("Invalid extension type: $extension_type");
   }
 
   /**
@@ -57,16 +51,6 @@ trait ProjectInfoTrait {
   }
 
   /**
-   * Get the extension types.
-   *
-   * @return string[]
-   *   The extension types.
-   */
-  protected function getExtensionsTypes() {
-    return ['module', 'profile', 'theme'];
-  }
-
-  /**
    * Returns an array of info files information of available extensions.
    *
    * @param string $extension_type
@@ -76,7 +60,7 @@ trait ProjectInfoTrait {
    *   An associative array of extension information arrays, keyed by extension
    *   name.
    */
-  protected function getInfos($extension_type) {
+  protected function getInfos(string $extension_type) {
     $file_paths = $this->getExtensionList($extension_type)->getPathnames();
     $infos = $this->getExtensionList($extension_type)->getAllAvailableInfo();
     array_walk($infos, function (array &$info, $key) use ($file_paths) {
@@ -134,7 +118,7 @@ trait ProjectInfoTrait {
    * @return string
    *   The project name or fallback to extension name if project is undefined.
    */
-  protected function getProjectName($extension_name, array $info) {
+  protected function getProjectName(string $extension_name, array $info) {
     $project_name = $extension_name;
     if (isset($info['project'])) {
       $project_name = $info['project'];
@@ -163,7 +147,7 @@ trait ProjectInfoTrait {
    * @return string
    *   The sub string.
    */
-  protected function getSuffix($string, $needle, $default) {
+  protected function getSuffix(string $string, string $needle, string $default) {
     $pos = strrpos($string, $needle);
     return $pos === FALSE ? $default : substr($string, ++$pos);
   }
@@ -179,7 +163,7 @@ trait ProjectInfoTrait {
    * @return array|null
    *   The composer.json as an array or NULL.
    */
-  protected function getComposerJson($extension_name, array $info) {
+  protected function getComposerJson(string $extension_name, array $info) {
     try {
       if ($directory = drupal_get_path($info['type'], $extension_name)) {
         $composer_json = $directory . DIRECTORY_SEPARATOR . 'composer.json';

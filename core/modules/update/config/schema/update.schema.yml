@@ -40,25 +40,19 @@ update.settings:
         threshold:
           type: string
           label: 'Email notification threshold'
-update_psa.settings:
-  type: config_object
-  label: 'Automatic updates settings'
-  mapping:
-    psa_endpoint:
-      type: string
-      label: 'Endpoint URI for PSAs'
-    enable_psa:
-      type: boolean
-      label: 'Enable PSA notices'
-    notify:
-      type: boolean
-      label: 'Notify when PSAs are available'
-    check_frequency:
-      type: integer
-      label: 'Frequency to check for PSAs, defaults to 12 hours'
-    hashes_uri:
-      type: string
-      label: 'Endpoint URI for file hashes'
-    ignored_paths:
-      type: string
-      label: 'List of files paths to ignore when running readiness checks'
+    psa:
+      type: mapping
+      label: 'PSA settings'
+      mapping:
+        endpoint:
+          type: string
+          label: 'Endpoint URI for PSAs'
+        enable:
+          type: boolean
+          label: 'Enable PSA notices'
+        notify:
+          type: boolean
+          label: 'Notify when PSAs are available'
+        check_frequency:
+          type: integer
+          label: 'Frequency to check for PSAs, defaults to 12 hours'

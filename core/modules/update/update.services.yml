@@ -26,7 +26,7 @@ services:
     parent: logger.channel_base
     arguments: ['updates']
   update.psa:
-    class: Drupal\update\Services\UpdatesPsa
+    class: Drupal\update\Psa\UpdatesPsa
     arguments:
       - '@config.factory'
       - '@cache.default'
@@ -37,7 +37,7 @@ services:
       - '@extension.list.theme'
       - '@logger.channel.updates'
   update.psa_notify:
-    class: Drupal\update\Services\Notify
+    class: Drupal\update\Psa\EmailNotify
     arguments:
       - '@plugin.manager.mail'
       - '@update.psa'
