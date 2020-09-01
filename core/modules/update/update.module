@@ -122,6 +122,16 @@ function update_page_top() {
         }
       }
     }
+
+    /** @var \Drupal\update\Services\AutomaticUpdatesPsaInterface $psa */
+    $psa = \Drupal::service('update.psa');
+    $messages = $psa->getPublicServiceMessages();
+    if ($messages) {
+      \Drupal::messenger()->addError(t('Public service announcements:'));
+      foreach ($messages as $message) {
+        \Drupal::messenger()->addError($message);
+      }
+    }
   }
 }
 
@@ -173,6 +183,10 @@ function update_cron() {
   $interval = 60 * 60 * 24 * $frequency;
   $last_check = \Drupal::state()->get('update.last_check', 0);
   if ((REQUEST_TIME - $last_check) > $interval) {
+    // Checkers should run before updates because of class caching.
+    /** @var \Drupal\update\Services\NotifyInterface $notify */
+    $notify = \Drupal::service('update.psa_notify');
+    $notify->send();
     // If the configured update interval has elapsed, we want to invalidate
     // the data for all projects, attempt to re-fetch, and trigger any
     // configured notifications about the new status.

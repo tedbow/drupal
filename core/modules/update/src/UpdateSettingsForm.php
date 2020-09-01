@@ -88,6 +88,27 @@ class UpdateSettingsForm extends ConfigFormBase implements ContainerInjectionInt
       '#description' => t('You can choose to send email only if a security update is available, or to be notified about all newer versions. If there are updates available of Drupal core or any of your installed modules and themes, your site will always print a message on the <a href=":status_report">status report</a> page, and will also display an error message on administration pages if there is a security update.', [':status_report' => Url::fromRoute('system.status')->toString()]),
     ];
 
+    $form['psa'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Public service announcements'),
+      '#open' => TRUE,
+    ];
+    $form['psa']['description'] = [
+      '#markup' => '<p>' . $this->t('Public service announcements are compared against the entire code for the site, not just installed extensions.') . '</p>',
+    ];
+
+    $form['psa']['enable_psa'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show Public service announcements on administrative pages.'),
+      '#default_value' => $config->get('enable_psa'),
+    ];
+    $form['psa']['notify_psa'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Send email notifications for Public service announcements.'),
+      '#default_value' => $config->get('notify_psa'),
+      '#description' => $this->t('The email addresses listed above will be notified.'),
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -140,6 +161,8 @@ class UpdateSettingsForm extends ConfigFormBase implements ContainerInjectionInt
       ->set('check.interval_days', $form_state->getValue('update_check_frequency'))
       ->set('notification.emails', $form_state->get('notify_emails'))
       ->set('notification.threshold', $form_state->getValue('update_notification_threshold'))
+      ->set('enable_psa', $form_state->getValue('enable_psa'))
+      ->set('notify_psa', $form_state->getValue('notify_psa'))
       ->save();
 
     parent::submitForm($form, $form_state);

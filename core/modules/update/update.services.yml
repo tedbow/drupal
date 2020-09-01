@@ -22,3 +22,28 @@ services:
     class: Drupal\update\UpdateRootFactory
     arguments: ['@kernel', '@request_stack']
     public: false
+  logger.channel.updates:
+    parent: logger.channel_base
+    arguments: ['updates']
+  update.psa:
+    class: Drupal\update\Services\UpdatesPsa
+    arguments:
+      - '@config.factory'
+      - '@cache.default'
+      - '@datetime.time'
+      - '@http_client'
+      - '@extension.list.module'
+      - '@extension.list.profile'
+      - '@extension.list.theme'
+      - '@logger.channel.updates'
+  update.psa_notify:
+    class: Drupal\update\Services\Notify
+    arguments:
+      - '@plugin.manager.mail'
+      - '@update.psa'
+      - '@config.factory'
+      - '@language_manager'
+      - '@state'
+      - '@datetime.time'
+      - '@entity_type.manager'
+      - '@string_translation'

@@ -8,3 +8,9 @@ fetch:
 notification:
   emails: {  }
   threshold: all
+psa_endpoint: 'https://updates.drupal.org/psa.json'
+enable_psa: true
+notify: true
+check_frequency: 43200
+hashes_uri: 'https://updates.drupal.org/release-hashes'
+ignored_paths: "modules/*\nthemes/*\nprofiles/*"
