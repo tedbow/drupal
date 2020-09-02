@@ -28,11 +28,25 @@ class PsaTest extends BrowserTestBase {
   protected static $modules = ['update', 'psa_test'];
 
   /**
-   * A user with permission to administer site configuration.
+   * A user with permission to administer site configuration and updates.
    *
    * @var \Drupal\user\UserInterface
    */
   protected $user;
+
+  /**
+   * A working test PSA endpoint.
+   *
+   * @var string
+   */
+  protected $workingEndpoint;
+
+  /**
+   * A non-working test PSA endpoint.
+   *
+   * @var string
+   */
+  protected $nonWorkingEndpoint;
 
   /**
    * {@inheritdoc}
@@ -45,51 +59,55 @@ class PsaTest extends BrowserTestBase {
       'administer software updates',
     ]);
     $this->drupalLogin($this->user);
+    $this->workingEndpoint = $this->buildUrl(Url::fromRoute('psa_test.json_test_controller'));
+    $this->nonWorkingEndpoint = $this->buildUrl(Url::fromRoute('psa_test.json_test_denied_controller'));
   }
 
   /**
    * Tests that a PSA is displayed.
    */
   public function testPsa() {
+    $assert = $this->assertSession();
     // Setup test PSA endpoint.
-    $end_point = $this->buildUrl(Url::fromRoute('psa_test.json_test_controller'));
     $this->config('update.settings')
-      ->set('psa.endpoint', $end_point)
+      ->set('psa.endpoint', $this->workingEndpoint)
       ->save();
     $this->drupalGet(Url::fromRoute('system.admin'));
-    $this->assertSession()->pageTextContains('Critical Release - SA-2019-02-19');
-    $this->assertSession()->pageTextContains('Critical Release - PSA-Really Old');
-    $this->assertSession()->pageTextNotContains('Node - Moderately critical - Access bypass - SA-CONTRIB-2019');
-    $this->assertSession()->pageTextNotContains('Views - Moderately critical - Access bypass - SA-CONTRIB-2019');
+    $assert->pageTextContains('Critical Release - SA-2019-02-19');
+    $assert->pageTextContains('Critical Release - PSA-Really Old');
+    $assert->pageTextNotContains('Node - Moderately critical - Access bypass - SA-CONTRIB-2019');
+    $assert->pageTextNotContains('Views - Moderately critical - Access bypass - SA-CONTRIB-2019');
 
     // Test site status report.
     $this->drupalGet(Url::fromRoute('system.status'));
-    $this->assertSession()->pageTextContains('3 urgent announcements require your attention:');
+    $assert->pageTextContains('3 urgent announcements require your attention:');
 
     // Test cache.
-    $end_point = $this->buildUrl(Url::fromRoute('psa_test.json_test_denied_controller'));
     $this->config('update.settings')
-      ->set('psa.endpoint', $end_point)
+      ->set('psa.endpoint', $this->nonWorkingEndpoint)
       ->save();
     $this->drupalGet(Url::fromRoute('system.admin'));
-    $this->assertSession()->pageTextContains('Critical Release - SA-2019-02-19');
+    $assert->pageTextContains('Critical Release - SA-2019-02-19');
+    $assert->pageTextContains('Critical Release - PSA-Really Old');
+    $assert->pageTextNotContains('Node - Moderately critical - Access bypass - SA-CONTRIB-2019');
+    $assert->pageTextNotContains('Views - Moderately critical - Access bypass - SA-CONTRIB-2019');
 
     // Test transmit errors with JSON endpoint.
     drupal_flush_all_caches();
     $this->drupalGet(Url::fromRoute('system.admin'));
-    $this->assertSession()->pageTextContains("Drupal PSA endpoint $end_point is unreachable.");
+    $assert->pageTextContains("Drupal PSA endpoint {$this->nonWorkingEndpoint} is unreachable.");
+    $assert->pageTextNotContains('Critical Release - SA-2019-02-19');
 
     // Test disabling PSAs.
-    $end_point = $this->buildUrl(Url::fromRoute('psa_test.json_test_controller'));
     $this->config('update.settings')
-      ->set('psa.endpoint', $end_point)
+      ->set('psa.endpoint', $this->workingEndpoint)
       ->set('psa.enable', FALSE)
       ->save();
     drupal_flush_all_caches();
     $this->drupalGet(Url::fromRoute('system.admin'));
-    $this->assertSession()->pageTextNotContains('Critical Release - PSA-2019-02-19');
+    $assert->pageTextNotContains('Critical Release - PSA-2019-02-19');
     $this->drupalGet(Url::fromRoute('system.status'));
-    $this->assertSession()->pageTextNotContains('urgent announcements require your attention');
+    $assert->pageTextNotContains('urgent announcements require your attention');
   }
 
   /**
@@ -97,15 +115,13 @@ class PsaTest extends BrowserTestBase {
    */
   public function testPsaMail() {
     // Setup test PSA endpoint.
-    $end_point = $this->buildUrl(Url::fromRoute('psa_test.json_test_controller'));
     $this->config('update.settings')
-      ->set('psa.endpoint', $end_point)
+      ->set('psa.endpoint', $this->workingEndpoint)
       ->save();
     // Setup a default destination email address.
     $this->config('update.settings')
       ->set('notification.emails', ['admin@example.com'])
       ->save();
-
 
     // Test PSAs on admin pages.
     $this->drupalGet(Url::fromRoute('system.admin'));
