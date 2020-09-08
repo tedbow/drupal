@@ -204,6 +204,8 @@ class UpdatesPsa implements UpdatesPsaInterface {
   }
 
   /**
+   * Gets the contrib version to use for comparisons.
+   *
    * @param $versions
    *   Contrib project versions.
    *
