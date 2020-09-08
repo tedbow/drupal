@@ -25,7 +25,7 @@ class PsaTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['update', 'psa_test'];
+  protected static $modules = ['update', 'psa_test', 'layout_builder_st'];
 
   /**
    * A user with permission to administer site configuration and updates.

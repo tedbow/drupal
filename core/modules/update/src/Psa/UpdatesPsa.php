@@ -119,14 +119,11 @@ class UpdatesPsa implements UpdatesPsaInterface {
       $json_payload = json_decode($response, FALSE);
       if ($json_payload !== NULL) {
         foreach ($json_payload as $json) {
-          if ($json->is_psa && ($json->type === 'core' || $this->isValidExtension($json->type, $json->project))) {
+          if ($json->type !== 'core' && !$this->isValidExtension($json->type, $json->project)) {
+            continue;
+          }
+          if ($json->is_psa || $this->matchesInstalledVersion($json)) {
             $messages[] = $this->message($json->title, $json->link);
-          }
-          elseif ($json->type === 'core') {
-            $this->parseConstraints($messages, $json, \Drupal::VERSION);
-          }
-          elseif ($this->isValidExtension($json->type, $json->project)) {
-            $this->contribParser($messages, $json);
           }
         }
       }
@@ -167,37 +164,8 @@ class UpdatesPsa implements UpdatesPsaInterface {
   }
 
   /**
-   * Parses contrib project JSON version strings.
+   * Determines if the Psa versions match for the installed version of project.
    *
-   * @param array $messages
-   *   The messages array.
-   * @param object $json
-   *   The JSON object.
-   */
-  protected function contribParser(array &$messages, \stdClass $json) {
-    $extension_version = $this->getExtensionList($json->type)->getAllAvailableInfo()[$json->project]['version'];
-    $json->insecure = array_filter(array_map(static function ($version) {
-      $version_array = explode('-', $version, 2);
-      if ($version_array && $version_array[0] === \Drupal::CORE_COMPATIBILITY) {
-        return isset($version_array[1]) ? $version_array[1] : NULL;
-      }
-      if (count($version_array) === 1) {
-        return $version_array[0];
-      }
-      if (count($version_array) === 2 && $version_array[1] === 'dev') {
-        return $version;
-      }
-    }, $json->insecure));
-    $version_array = explode('-', $extension_version, 2);
-    $extension_version = isset($version_array[1]) && $version_array[1] !== 'dev' ? $version_array[1] : $extension_version;
-    $this->parseConstraints($messages, $json, $extension_version);
-  }
-
-  /**
-   * Compares versions and add a message, if appropriate.
-   *
-   * @param array $messages
-   *   The messages array.
    * @param object $json
    *   The JSON object.
    * @param string $current_version
@@ -205,17 +173,16 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *
    * @throws \UnexpectedValueException
    */
-  protected function parseConstraints(array &$messages, \stdClass $json, string $current_version) {
-    $version_string = implode('||', $json->insecure);
+  protected function matchesInstalledVersion(\stdClass $json) {
+    $versions = $json->type === 'core' ? $json->insecure : $this->getContribVersions($json->insecure);
+    $version_string = implode('||', $versions);
     if (empty($version_string)) {
-      return;
+      return FALSE;
     }
     $parser = new VersionParser();
     $psa_constraint = $parser->parseConstraints($version_string);
-    $contrib_constraint = $parser->parseConstraints($current_version);
-    if ($psa_constraint->matches($contrib_constraint)) {
-      $messages[] = $this->message($json->title, $json->link);
-    }
+    $installed_constraint = $parser->parseConstraints($this->getInstalledVersion($json));
+    return $psa_constraint->matches($installed_constraint);
   }
 
   /**
@@ -234,6 +201,46 @@ class UpdatesPsa implements UpdatesPsaInterface {
       ':message' => $title,
       ':url' => $link,
     ]);
+  }
+
+  /**
+   * @param $versions
+   *   Contrib project versions.
+   *
+   * @return string[]
+   */
+  private function getContribVersions($versions) {
+    $versions = array_filter(array_map(static function ($version) {
+      $version_array = explode('-', $version, 2);
+      if ($version_array && $version_array[0] === \Drupal::CORE_COMPATIBILITY) {
+        return isset($version_array[1]) ? $version_array[1] : NULL;
+      }
+      if (count($version_array) === 1) {
+        return $version_array[0];
+      }
+      if (count($version_array) === 2 && $version_array[1] === 'dev') {
+        return $version;
+      }
+    }, $versions));
+    return $versions;
+  }
+
+  /**
+   * Gets the currently installed version of a project.
+   *
+   * @param \stdClass $json
+   *   The Psa information.
+   *
+   * @return string
+   *   The currently installed version.
+   */
+  private function getInstalledVersion(\stdClass $json) {
+    if ($json->type === 'core') {
+      return \Drupal::VERSION;
+    }
+    $extension_version = $this->getExtensionList($json->type)->getAllAvailableInfo()[$json->project]['version'];
+    $version_array = explode('-', $extension_version, 2);
+    return isset($version_array[1]) && $version_array[1] !== 'dev' ? $version_array[1] : $extension_version;
   }
 
 }
