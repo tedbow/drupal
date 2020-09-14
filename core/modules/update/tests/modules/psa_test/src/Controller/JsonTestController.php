@@ -72,7 +72,7 @@ class JsonTestController {
     $feed[] = [
       'title' => 'Token - Moderately critical - Access bypass - SA-CONTRIB-2019',
       'link' => 'https://www.drupal.org/sa-contrib-2019',
-      'project' => 'layout_builder_st',
+      'project' => 'token',
       'type' => 'module',
       'is_psa' => '0',
       'insecure' => ['7.x-1.7', '8.x-1.4'],
