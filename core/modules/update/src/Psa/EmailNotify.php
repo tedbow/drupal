@@ -13,7 +13,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 
 /**
- * Implementation of the NotifyInterface which uses email for notification.
+ * An implementation of the NotifyInterface which uses email for notification.
  */
 class EmailNotify implements NotifyInterface {
   use StringTranslationTrait;
@@ -110,8 +110,8 @@ class EmailNotify implements NotifyInterface {
     if (!$messages) {
       return;
     }
-    $notify_list = $this->configFactory->get('update.settings')->get('notification.emails');
-    if (!empty($notify_list)) {
+    $notify_emails = $this->configFactory->get('update.settings')->get('notification.emails');
+    if (!empty($notify_emails)) {
       $frequency = $this->configFactory->get('update.settings')->get('psa.check_frequency');
       $last_check = $this->state->get('update_psa.notify_last_check') ?: 0;
       if (($this->time->getRequestTime() - $last_check) > $frequency) {
@@ -129,8 +129,8 @@ class EmailNotify implements NotifyInterface {
         ];
         $default_langcode = $this->languageManager->getDefaultLanguage()->getId();
         $params['langcode'] = $default_langcode;
-        foreach ($notify_list as $to) {
-          $this->doSend($to, $params);
+        foreach ($notify_emails as $notify_email) {
+          $this->doSend($notify_email, $params);
         }
       }
     }
@@ -139,22 +139,18 @@ class EmailNotify implements NotifyInterface {
   /**
    * Composes and send the email message.
    *
-   * @param string $to
+   * @param string $email
    *   The email address where the message will be sent.
    * @param array $params
    *   Parameters to build the email.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function doSend(string $to, array $params) {
+  protected function doSend(string $email, array $params) {
     /** @var \Drupal\user\UserInterface[] $users */
     $users = $this->entityTypeManager->getStorage('user')
-      ->loadByProperties(['mail' => $to]);
-    foreach ($users as $user) {
-      $to_user = reset($users);
-      $params['langcode'] = $to_user->getPreferredLangcode();
-      $this->mailManager->mail('update', 'psa_notify', $to, $params['langcode'], $params);
+      ->loadByProperties(['mail' => $email]);
+    if ($user = reset($users)) {
+      $params['langcode'] = $user->getPreferredLangcode();
+      $this->mailManager->mail('update', 'psa_notify', $email, $params['langcode'], $params);
     }
   }
 

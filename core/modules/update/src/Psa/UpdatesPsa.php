@@ -3,7 +3,6 @@
 namespace Drupal\update\Psa;
 
 use Composer\Semver\VersionParser;
-use Drupal\update\ProjectInfoTrait;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -11,14 +10,13 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Extension\ExtensionList;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\update\ProjectInfoTrait;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class UpdatesPsa.
- *
- * Get Public Service Messages when it is available.
+ * Service class to get Public Service Messages.
  */
 class UpdatesPsa implements UpdatesPsaInterface {
   use StringTranslationTrait;
@@ -61,7 +59,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
   protected $logger;
 
   /**
-   * UpdatesPsa constructor.
+   * Constructs a new UpdatesPsa object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
@@ -116,14 +114,15 @@ class UpdatesPsa implements UpdatesPsaInterface {
     }
 
     try {
-      $json_payload = json_decode($response, FALSE);
+      $json_payload = json_decode($response, TRUE);
       if ($json_payload !== NULL) {
         foreach ($json_payload as $json) {
-          if ($json->type !== 'core' && !$this->isValidExtension($json->type, $json->project)) {
+          $sa = SecurityAnnouncement::createFromArray($json);
+          if ($sa->getType() !== 'core' && !$this->isValidExtension($sa->getType(), $sa->getProject())) {
             continue;
           }
-          if ($json->is_psa || $this->matchesInstalledVersion($json)) {
-            $messages[] = $this->message($json->title, $json->link);
+          if ($sa->isPsa() || $this->matchesInstalledVersion($sa)) {
+            $messages[] = $this->message($sa);
           }
         }
       }
@@ -142,7 +141,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
   }
 
   /**
-   * Determine if extension exists and has a version string.
+   * Determines if extension exists and has a version string.
    *
    * @param string $extension_type
    *   The extension type i.e. module, theme, profile.
@@ -166,40 +165,38 @@ class UpdatesPsa implements UpdatesPsaInterface {
   /**
    * Determines if the Psa versions match for the installed version of project.
    *
-   * @param object $json
-   *   The JSON object.
-   * @param string $current_version
-   *   The current extension version.
+   * @param \Drupal\update\Psa\SecurityAnnouncement $sa
+   *   The security announcement.
    *
-   * @throws \UnexpectedValueException
+   * @return bool
+   *   TRUE if security announcement matches the installed version of the
+   *   project, otherwise FALSE.
    */
-  protected function matchesInstalledVersion(\stdClass $json) {
-    $versions = $json->type === 'core' ? $json->insecure : $this->getContribVersions($json->insecure);
+  protected function matchesInstalledVersion(SecurityAnnouncement $sa) {
+    $versions = $sa->getType() === 'core' ? $sa->getInsecureVersions() : $this->getContribVersions($sa->getInsecureVersions());
     $version_string = implode('||', $versions);
     if (empty($version_string)) {
       return FALSE;
     }
     $parser = new VersionParser();
     $psa_constraint = $parser->parseConstraints($version_string);
-    $installed_constraint = $parser->parseConstraints($this->getInstalledVersion($json));
+    $installed_constraint = $parser->parseConstraints($this->getInstalledVersion($sa));
     return $psa_constraint->matches($installed_constraint);
   }
 
   /**
-   * Returns a message.
+   * Returns a message that links the security announcement.
    *
-   * @param string $title
-   *   The title.
-   * @param string $link
-   *   The link.
+   * @param \Drupal\update\Psa\SecurityAnnouncement $sa
+   *   The security announcement
    *
    * @return \Drupal\Component\Render\FormattableMarkup
    *   The PSA or SA message.
    */
-  protected function message(string $title, string $link) {
+  protected function message(SecurityAnnouncement $sa) {
     return new FormattableMarkup('<a href=":url">:message</a>', [
-      ':message' => $title,
-      ':url' => $link,
+      ':message' => $sa->getTitle(),
+      ':url' => $sa->getLink(),
     ]);
   }
 
@@ -230,17 +227,17 @@ class UpdatesPsa implements UpdatesPsaInterface {
   /**
    * Gets the currently installed version of a project.
    *
-   * @param \stdClass $json
-   *   The Psa information.
+   * @param \Drupal\update\Psa\SecurityAnnouncement $sa
+   *   The security announcement.
    *
    * @return string
    *   The currently installed version.
    */
-  private function getInstalledVersion(\stdClass $json) {
-    if ($json->type === 'core') {
+  private function getInstalledVersion(SecurityAnnouncement $sa) {
+    if ($sa->getType() === 'core') {
       return \Drupal::VERSION;
     }
-    $extension_version = $this->getExtensionList($json->type)->getAllAvailableInfo()[$json->project]['version'];
+    $extension_version = $this->getExtensionList($sa->getType())->getAllAvailableInfo()[$sa->getProject()]['version'];
     $version_array = explode('-', $extension_version, 2);
     return isset($version_array[1]) && $version_array[1] !== 'dev' ? $version_array[1] : $extension_version;
   }
