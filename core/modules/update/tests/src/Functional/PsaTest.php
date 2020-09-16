@@ -25,7 +25,7 @@ class PsaTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['update', 'psa_test'];
+  protected static $modules = ['update'];
 
   /**
    * A user with permission to administer site configuration and updates.
@@ -49,6 +49,13 @@ class PsaTest extends BrowserTestBase {
   protected $nonWorkingEndpoint;
 
   /**
+   * A test end PSA endpoint that returns invalid JSON.
+   *
+   * @var string
+   */
+  protected $invalidJsonEndpoint;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() :void {
@@ -59,8 +66,11 @@ class PsaTest extends BrowserTestBase {
       'administer software updates',
     ]);
     $this->drupalLogin($this->user);
-    $this->workingEndpoint = $this->buildUrl(Url::fromRoute('psa_test.json_test_controller'));
-    $this->nonWorkingEndpoint = $this->buildUrl(Url::fromRoute('psa_test.json_test_denied_controller'));
+    $fixtures_path = $this->baseUrl . '/core/modules/update/tests/fixtures/psa_feed';
+    $this->workingEndpoint = "$fixtures_path/valid-json.json";
+    $this->nonWorkingEndpoint = "$fixtures_path/non-existent.json";
+    $this->invalidJsonEndpoint = "$fixtures_path/invalid-json.json";
+
   }
 
   /**
@@ -81,6 +91,8 @@ class PsaTest extends BrowserTestBase {
     // Test site status report.
     $this->drupalGet(Url::fromRoute('system.status'));
     $assert->pageTextContains('3 urgent announcements require your attention:');
+    $assert->pageTextContains('Critical Release - SA-2019-02-19');
+    $assert->pageTextContains('Critical Release - PSA-Really Old');
 
     // Test cache.
     $this->config('update.settings')
@@ -108,6 +120,20 @@ class PsaTest extends BrowserTestBase {
     $assert->pageTextNotContains('Critical Release - PSA-2019-02-19');
     $this->drupalGet(Url::fromRoute('system.status'));
     $assert->pageTextNotContains('urgent announcements require your attention');
+
+    // Test a PSA endpoint that returns invalid JSON.
+    $this->config('update.settings')
+      ->set('psa.endpoint', $this->invalidJsonEndpoint)
+      ->save();
+    $this->setSettingsViaForm('psa_enable', TRUE);
+    drupal_flush_all_caches();
+    $this->drupalGet(Url::fromRoute('system.admin'));
+    $assert->pageTextNotContains('Critical Release - PSA-2019-02-19');
+    $assert->pageTextContains('Public service announcements:');
+    $assert->pageTextContains('Drupal PSA JSON is malformed.');
+    $this->drupalGet(Url::fromRoute('system.status'));
+    $assert->pageTextContains(' 1 urgent announcement requires your attention');
+    $assert->pageTextContains('Drupal PSA JSON is malformed.');
   }
 
   /**
@@ -140,6 +166,26 @@ class PsaTest extends BrowserTestBase {
     $this->setSettingsViaForm('psa_notify', FALSE);
     $notify->send();
     $this->assertCount(0, $this->getMails());
+  }
+
+  /**
+   * Tests sending an email when the PSA JSON is invalid.
+   */
+  public function testInvalidJsonEmail() {
+    // Setup a default destination email address.
+    $this->config('update.settings')
+      ->set('notification.emails', ['admin@example.com'])
+      ->save();
+    $this->setSettingsViaForm('psa_notify', TRUE);
+    $this->config('update.settings')
+      ->set('psa.endpoint', $this->invalidJsonEndpoint)
+      ->save();
+    $this->container->get('cache.default')->delete('updates_psa');
+    $notify = $this->container->get('update.psa_notify');
+    $notify->send();
+    $this->assertCount(1, $this->getMails());
+    $this->assertMailString('subject', '1 urgent Drupal announcement requires your attention', 1);
+    $this->assertMailString('body', 'Drupal PSA JSON is malformed.', 1);
   }
 
   /**
