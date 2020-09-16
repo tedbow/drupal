@@ -2,6 +2,11 @@
 
 namespace Drupal\update\Psa;
 
+use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Type;
+use Symfony\Component\Validator\Validation;
+
 /**
  * A security announcement.
  *
@@ -74,17 +79,17 @@ class SecurityAnnouncement {
   /**
    * Creates a SecurityAnnouncement instance from an array.
    *
-   * @param $data
+   * @param array $data
    *   The security announcement data as returned from the JSON feed.
    *
    * @return static
    *   A new SecurityAnnouncement object.
+   *
+   * @throws \UnexpectedValueException
+   *   Thrown if the array is not a valid PSA.
    */
-  public static function createFromArray($data) {
-    $expected_keys = ['title', 'project', 'type', 'is_psa', 'link', 'insecure'];
-    if (array_diff_key(array_flip($expected_keys), $data)) {
-      throw new \UnexpectedValueException("The PSA item is malformed.");
-    }
+  public static function createFromArray(array $data) {
+    static::validatePsaData($data);
     return new static(
       $data['title'],
       $data['project'],
@@ -93,6 +98,39 @@ class SecurityAnnouncement {
       $data['link'],
       $data['insecure']
     );
+  }
+
+  /**
+   * Validates the PSA data.
+   *
+   * @param array $data
+   *
+   * @throws \UnexpectedValueException
+   *   Thrown if PSA data is not valid.
+   */
+  protected static function validatePsaData(array $data): void {
+    $new_blank_constraints = [
+      new Type(['type' => 'string']),
+      new NotBlank(),
+    ];
+    $collection_constraint = new Collection([
+      'fields' => [
+        'title' => $new_blank_constraints,
+        'project' => $new_blank_constraints,
+        'type' => $new_blank_constraints,
+        'link' => $new_blank_constraints,
+        'is_psa' => new NotBlank(),
+        'insecure' => new Type(['type' => 'array']),
+      ],
+      'allowExtraFields' => TRUE,
+    ]);
+    $violations = Validation::createValidator()->validate($data, $collection_constraint);
+    if ($violations->count()) {
+      foreach ($violations as $violation) {
+        $volition_messages[] = (string) $violation;
+      }
+      throw new \UnexpectedValueException(implode(",  \n", $volition_messages));
+    }
   }
 
   /**

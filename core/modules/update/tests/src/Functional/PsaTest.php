@@ -67,9 +67,9 @@ class PsaTest extends BrowserTestBase {
     ]);
     $this->drupalLogin($this->user);
     $fixtures_path = $this->baseUrl . '/core/modules/update/tests/fixtures/psa_feed';
-    $this->workingEndpoint = "$fixtures_path/valid-json.json";
+    $this->workingEndpoint = "$fixtures_path/valid.json";
     $this->nonWorkingEndpoint = "$fixtures_path/non-existent.json";
-    $this->invalidJsonEndpoint = "$fixtures_path/invalid-json.json";
+    $this->invalidJsonEndpoint = "$fixtures_path/invalid.json";
 
   }
 
@@ -107,7 +107,7 @@ class PsaTest extends BrowserTestBase {
     // Test transmit errors with JSON endpoint.
     drupal_flush_all_caches();
     $this->drupalGet(Url::fromRoute('system.admin'));
-    $assert->pageTextContains("Drupal PSA endpoint {$this->nonWorkingEndpoint} is unreachable.");
+    $assert->pageTextContains('Unable to retrieve PSA information from ' . $this->nonWorkingEndpoint);
     $assert->pageTextNotContains('Critical Release - SA-2019-02-19');
 
     // Test disabling PSAs.
@@ -119,7 +119,7 @@ class PsaTest extends BrowserTestBase {
     $this->drupalGet(Url::fromRoute('system.admin'));
     $assert->pageTextNotContains('Critical Release - PSA-2019-02-19');
     $this->drupalGet(Url::fromRoute('system.status'));
-    $assert->pageTextNotContains('urgent announcements require your attention');
+    $assert->pageTextContains(' 3 urgent announcements require your attention');
 
     // Test a PSA endpoint that returns invalid JSON.
     $this->config('update.settings')
@@ -129,10 +129,8 @@ class PsaTest extends BrowserTestBase {
     drupal_flush_all_caches();
     $this->drupalGet(Url::fromRoute('system.admin'));
     $assert->pageTextNotContains('Critical Release - PSA-2019-02-19');
-    $assert->pageTextContains('Public service announcements:');
     $assert->pageTextContains('Drupal PSA JSON is malformed.');
     $this->drupalGet(Url::fromRoute('system.status'));
-    $assert->pageTextContains(' 1 urgent announcement requires your attention');
     $assert->pageTextContains('Drupal PSA JSON is malformed.');
   }
 

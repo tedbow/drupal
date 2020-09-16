@@ -10,8 +10,10 @@ use Drupal\Core\StringTranslation\PluralTranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\update\ProjectSecurityData;
 use Drupal\update\ProjectSecurityRequirement;
+use Drupal\update\Psa\UpdatesPsa;
 use Drupal\update\UpdateFetcherInterface;
 use Drupal\update\UpdateManagerInterface;
+use GuzzleHttp\Exception\TransferException;
 
 /**
  * Implements hook_requirements().
@@ -187,17 +189,32 @@ function update_update_last_removed() {
  *   The requirements array.
  */
 function _update_psa_requirements(array &$requirements) {
-  if (!\Drupal::config('update.settings')->get('psa.enable')) {
-    return;
-  }
-  /** @var \Drupal\update\Psa\UpdatesPsa $psa */
-  $psa = \Drupal::service('update.psa');
-  $messages = $psa->getPublicServiceMessages();
   $requirements['update_psa'] = [
-    'title' => t('<a href=":link">Public service announcements</a>', [':link' => 'https://www.drupal.org/docs/8/update/automatic-updates#psas']),
+    'title' => t('Public service announcements'),
     'severity' => REQUIREMENT_OK,
     'value' => t('No announcements requiring attention.'),
   ];
+  /** @var \Drupal\update\Psa\UpdatesPsaInterface $psa */
+  $psa = \Drupal::service('update.psa');
+  try {
+    $messages = $psa->getPublicServiceMessages();
+  }
+  catch (TransferException $transfer_exception) {
+    $requirements['update_psa']['severity'] = REQUIREMENT_ERROR;
+    $requirements['update_psa']['value'] = t('Unable to retrieve PSA information from ' . \Drupal::config('update.settings')->get('psa.endpoint'));
+    return;
+  }
+  catch (UnexpectedValueException $unexpected_value_exception) {
+    if ($unexpected_value_exception->getCode() === UpdatesPsa::MALFORMED_JSON_EXCEPTION_CODE) {
+      $requirements['update_psa']['severity'] = REQUIREMENT_ERROR;
+      $requirements['update_psa']['value'] = $unexpected_value_exception->getMessage();
+      return;
+    }
+    throw $unexpected_value_exception;
+  }
+
+
+
   if (!empty($messages)) {
     $requirements['update_psa']['severity'] = REQUIREMENT_ERROR;
     $requirements['update_psa']['value'] = new PluralTranslatableMarkup(count($messages), '@count urgent announcement requires your attention:', '@count urgent announcements require your attention:');

@@ -11,6 +11,7 @@ use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\PluralTranslatableMarkup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
+use GuzzleHttp\Exception\TransferException;
 
 /**
  * An implementation of the NotifyInterface which uses email for notification.
@@ -106,32 +107,33 @@ class EmailNotify implements NotifyInterface {
     if (!$this->configFactory->get('update.settings')->get('psa.notify')) {
       return;
     }
+    $frequency = $this->configFactory->get('update.settings')->get('psa.check_frequency');
+    $last_check = $this->state->get('update_psa.notify_last_check') ?: 0;
+    if (($this->time->getRequestTime() - $last_check) < $frequency) {
+      return;
+    }
     $messages = $this->updatesPsa->getPublicServiceMessages();
     if (!$messages) {
       return;
     }
+
     $notify_emails = $this->configFactory->get('update.settings')->get('notification.emails');
     if (!empty($notify_emails)) {
-      $frequency = $this->configFactory->get('update.settings')->get('psa.check_frequency');
-      $last_check = $this->state->get('update_psa.notify_last_check') ?: 0;
-      if (($this->time->getRequestTime() - $last_check) > $frequency) {
-        $this->state->set('update_psa.notify_last_check', $this->time->getRequestTime());
-
-        $params['subject'] = new PluralTranslatableMarkup(
-          count($messages),
-          '@count urgent Drupal announcement requires your attention for @site_name',
-          '@count urgent Drupal announcements require your attention for @site_name',
-          ['@site_name' => $this->configFactory->get('system.site')->get('name')]
-        );
-        $params['body'] = [
-          '#theme' => 'updates_psa_notify',
-          '#messages' => $messages,
-        ];
-        $default_langcode = $this->languageManager->getDefaultLanguage()->getId();
-        $params['langcode'] = $default_langcode;
-        foreach ($notify_emails as $notify_email) {
-          $this->doSend($notify_email, $params);
-        }
+      $this->state->set('update_psa.notify_last_check', $this->time->getRequestTime());
+      $params['subject'] = new PluralTranslatableMarkup(
+        count($messages),
+        '@count urgent Drupal announcement requires your attention for @site_name',
+        '@count urgent Drupal announcements require your attention for @site_name',
+        ['@site_name' => $this->configFactory->get('system.site')->get('name')]
+      );
+      $params['body'] = [
+        '#theme' => 'updates_psa_notify',
+        '#messages' => $messages,
+      ];
+      $default_langcode = $this->languageManager->getDefaultLanguage()->getId();
+      $params['langcode'] = $default_langcode;
+      foreach ($notify_emails as $notify_email) {
+        $this->doSend($notify_email, $params);
       }
     }
   }

@@ -23,6 +23,8 @@ class UpdatesPsa implements UpdatesPsaInterface {
   use DependencySerializationTrait;
   use ProjectInfoTrait;
 
+  const MALFORMED_JSON_EXCEPTION_CODE = 1000;
+
   /**
    * This module's configuration.
    *
@@ -106,32 +108,32 @@ class UpdatesPsa implements UpdatesPsaInterface {
       }
       catch (TransferException $exception) {
         $this->logger->error($exception->getMessage());
-        return [$this->t('Drupal PSA endpoint :url is unreachable.', [':url' => $psa_endpoint])];
+        throw $exception;
       }
     }
 
-    try {
-      $json_payload = json_decode($response, TRUE);
-      if ($json_payload !== NULL) {
-        foreach ($json_payload as $json) {
+    $json_payload = json_decode($response, TRUE);
+    if ($json_payload !== NULL) {
+      foreach ($json_payload as $json) {
+        try {
           $sa = SecurityAnnouncement::createFromArray($json);
-          if ($sa->getProjectType() !== 'core' && !$this->isValidExtension($sa->getProjectType(), $sa->getProject())) {
-            continue;
-          }
-          if ($sa->isPsa() || $this->matchesInstalledVersion($sa)) {
-            $messages[] = $this->message($sa);
-          }
+        }
+        catch (\UnexpectedValueException $unexpected_value_exception) {
+          $this->logger->error('PSA malformed: ' . $unexpected_value_exception->getMessage());
+          throw new \UnexpectedValueException('Drupal PSA JSON is malformed.', static::MALFORMED_JSON_EXCEPTION_CODE);
+        }
+
+        if ($sa->getProjectType() !== 'core' && !$this->isValidExtension($sa->getProjectType(), $sa->getProject())) {
+          continue;
+        }
+        if ($sa->isPsa() || $this->matchesInstalledVersion($sa)) {
+          $messages[] = $this->message($sa);
         }
       }
-      else {
-        $this->logger->error('Drupal PSA JSON is malformed: @response', ['@response' => $response]);
-        $messages[] = $this->t('Drupal PSA JSON is malformed.');
-      }
-
     }
-    catch (\UnexpectedValueException $exception) {
-      $this->logger->error($exception->getMessage());
-      $messages[] = $this->t('Drupal PSA endpoint service is malformed.');
+    else {
+      $this->logger->error('Drupal PSA JSON is malformed: @response', ['@response' => $response]);
+      throw new \UnexpectedValueException('Drupal PSA JSON is malformed.', static::MALFORMED_JSON_EXCEPTION_CODE);
     }
 
     return $messages;
