@@ -92,9 +92,6 @@ class UpdatesPsa implements UpdatesPsaInterface {
    */
   public function getPublicServiceMessages() {
     $messages = [];
-    if (!$this->config->get('psa.enable')) {
-      return $messages;
-    }
 
     if ($cache = $this->cache->get('updates_psa')) {
       $response = $cache->data;

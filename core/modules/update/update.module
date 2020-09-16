@@ -125,11 +125,13 @@ function update_page_top() {
 
     /** @var \Drupal\update\Psa\UpdatesPsaInterface $psa */
     $psa = \Drupal::service('update.psa');
-    $messages = $psa->getPublicServiceMessages();
-    if ($messages) {
-      \Drupal::messenger()->addError(t('Public service announcements:'));
-      foreach ($messages as $message) {
-        \Drupal::messenger()->addError($message);
+    if (\Drupal::config('update.settings')->get('psa.enable')) {
+      $messages = $psa->getPublicServiceMessages();
+      if ($messages) {
+        \Drupal::messenger()->addError(t('Public service announcements:'));
+        foreach ($messages as $message) {
+          \Drupal::messenger()->addError($message);
+        }
       }
     }
   }
