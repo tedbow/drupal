@@ -102,7 +102,7 @@ class PsaTest extends BrowserTestBase {
     $this->config('update.settings')
       ->set('psa.endpoint', $this->workingEndpoint)
       ->save();
-    $this->setSettingsCheckbox('psa_enable', FALSE);
+    $this->setSettingsViaForm('psa_enable', FALSE);
     drupal_flush_all_caches();
     $this->drupalGet(Url::fromRoute('system.admin'));
     $assert->pageTextNotContains('Critical Release - PSA-2019-02-19');
@@ -137,12 +137,20 @@ class PsaTest extends BrowserTestBase {
     // No email should be sent if PSA's are disabled.
     $this->container->get('state')->set('system.test_mail_collector', []);
     $this->container->get('state')->delete('update_psa.notify_last_check');
-    $this->setSettingsCheckbox('psa_notify', FALSE);
+    $this->setSettingsViaForm('psa_notify', FALSE);
     $notify->send();
     $this->assertCount(0, $this->getMails());
   }
 
-  private function setSettingsCheckbox(string $checkbox, bool $enable) {
+  /**
+   * Sets a PSA setting via the settings form.
+   *
+   * @param string $checkbox
+   *   The name of the checkbox.
+   * @param bool $enable
+   *   Whether the setting should be enabled.
+   */
+  private function setSettingsViaForm(string $checkbox, bool $enable) {
     $page = $this->getSession()->getPage();
     $this->drupalGet('admin/reports/updates/settings');
     if ($enable) {

@@ -168,17 +168,37 @@ class UpdatesPsa implements UpdatesPsaInterface {
    * @return bool
    *   TRUE if security announcement matches the installed version of the
    *   project, otherwise FALSE.
+   *
+   * @throws \UnexpectedValueException
+   *   Thrown by \Composer\Semver\VersionParser::parseConstraints() if the
+   *   constraint string is not valid.
    */
   protected function matchesInstalledVersion(SecurityAnnouncement $sa) {
-    $versions = $sa->getProjectType() === 'core' ? $sa->getInsecureVersions() : $this->getContribVersions($sa->getInsecureVersions());
-    $version_string = implode('||', $versions);
-    if (empty($version_string)) {
-      return FALSE;
-    }
     $parser = new VersionParser();
-    $psa_constraint = $parser->parseConstraints($version_string);
-    $installed_constraint = $parser->parseConstraints($this->getInstalledVersion($sa));
-    return $psa_constraint->matches($installed_constraint);
+    $versions = $sa->getProjectType() === 'core' ? $sa->getInsecureVersions() : $this->getContribVersions($sa->getInsecureVersions());
+
+    try {
+      $installed_constraint = $parser->parseConstraints($this->getInstalledVersion($sa));
+    }
+    catch (\UnexpectedValueException $exception) {
+      // If the installed version can not be parsed assume it matches to avoid
+      // not returning a critical PSA.
+      return TRUE;
+    }
+
+    foreach ($versions as $version) {
+      try {
+        if ($parser->parseConstraints($version)->matches($installed_constraint)) {
+          return TRUE;
+        }
+      }
+      catch (\UnexpectedValueException $exception) {
+        // If an individual constraint is throws an exception continue to check
+        // the other versions.
+        continue;
+      }
+    }
+    return FALSE;
   }
 
   /**

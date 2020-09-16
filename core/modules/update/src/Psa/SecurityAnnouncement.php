@@ -82,7 +82,7 @@ class SecurityAnnouncement {
    */
   public static function createFromArray($data) {
     $expected_keys = ['title', 'project', 'type', 'is_psa', 'link', 'insecure'];
-    if (array_diff($expected_keys, array_flip($data))) {
+    if (array_diff_key(array_flip($expected_keys), $data)) {
       throw new \UnexpectedValueException("The PSA item is malformed.");
     }
     return new static(
