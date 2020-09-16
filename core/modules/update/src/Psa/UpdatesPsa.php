@@ -115,7 +115,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
       if ($json_payload !== NULL) {
         foreach ($json_payload as $json) {
           $sa = SecurityAnnouncement::createFromArray($json);
-          if ($sa->getType() !== 'core' && !$this->isValidExtension($sa->getType(), $sa->getProject())) {
+          if ($sa->getProjectType() !== 'core' && !$this->isValidExtension($sa->getProjectType(), $sa->getProject())) {
             continue;
           }
           if ($sa->isPsa() || $this->matchesInstalledVersion($sa)) {
@@ -170,7 +170,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *   project, otherwise FALSE.
    */
   protected function matchesInstalledVersion(SecurityAnnouncement $sa) {
-    $versions = $sa->getType() === 'core' ? $sa->getInsecureVersions() : $this->getContribVersions($sa->getInsecureVersions());
+    $versions = $sa->getProjectType() === 'core' ? $sa->getInsecureVersions() : $this->getContribVersions($sa->getInsecureVersions());
     $version_string = implode('||', $versions);
     if (empty($version_string)) {
       return FALSE;
@@ -231,10 +231,10 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *   The currently installed version.
    */
   private function getInstalledVersion(SecurityAnnouncement $sa) {
-    if ($sa->getType() === 'core') {
+    if ($sa->getProjectType() === 'core') {
       return \Drupal::VERSION;
     }
-    $extension_version = $this->getExtensionList($sa->getType())->getAllAvailableInfo()[$sa->getProject()]['version'];
+    $extension_version = $this->getExtensionList($sa->getProjectType())->getAllAvailableInfo()[$sa->getProject()]['version'];
     $version_array = explode('-', $extension_version, 2);
     return isset($version_array[1]) && $version_array[1] !== 'dev' ? $version_array[1] : $extension_version;
   }

@@ -91,6 +91,7 @@ class UpdateSettingsForm extends ConfigFormBase implements ContainerInjectionInt
     $form['psa'] = [
       '#type' => 'details',
       '#title' => $this->t('Public service announcements'),
+      '#open' => TRUE,
     ];
     $form['psa']['description'] = [
       '#markup' => '<p>' . $this->t('Public service announcements are compared against the entire code for the site, not just installed extensions.') . '</p>',
