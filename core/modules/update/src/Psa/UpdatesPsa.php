@@ -174,7 +174,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *   The project.
    *
    * @return bool
-   *   TRUE if extension exists, else FALSE.
+   *   TRUE if project exists, otherwise FALSE.
    */
   protected function isValidProject(string $project_name) {
     try {
@@ -283,20 +283,24 @@ class UpdatesPsa implements UpdatesPsaInterface {
       return \Drupal::VERSION;
     }
     $project = $this->getProject($sa->getProject());
-    $extension_version = $project['info']['version'];
-    $version_array = explode('-', $extension_version, 2);
-    return isset($version_array[1]) && $version_array[1] !== 'dev' ? $version_array[1] : $extension_version;
+    $project_version = $project['info']['version'];
+    $version_array = explode('-', $project_version, 2);
+    return isset($version_array[1]) && $version_array[1] !== 'dev' ? $version_array[1] : $project_version;
   }
 
   /**
+   * Gets the project information.
+   *
+   * @param string $project_name
+   *
    * @return array
+   *   The project information if the project exists, otherwise an empty array.
    */
-  protected function getProject($project_name): array {
+  protected function getProject(string $project_name): array {
     static $projects = [];
     if (empty($projects)) {
       $projects = $this->updateManager->getProjects();
     }
-
     return $projects[$project_name] ?? [];
   }
 
