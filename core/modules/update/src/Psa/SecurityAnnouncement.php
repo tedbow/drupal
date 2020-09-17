@@ -56,7 +56,6 @@ class SecurityAnnouncement {
    */
   protected $link;
 
-
   /**
    * Constructs a SecurityAnnouncement object.
    *
