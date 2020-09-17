@@ -73,7 +73,6 @@ function update_requirements($phase) {
     }
     _update_psa_requirements($requirements);
   }
-
   return $requirements;
 }
 
