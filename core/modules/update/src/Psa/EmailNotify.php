@@ -11,7 +11,6 @@ use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\PluralTranslatableMarkup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
-use GuzzleHttp\Exception\TransferException;
 
 /**
  * An implementation of the NotifyInterface which uses email for notification.

@@ -138,7 +138,10 @@ function update_page_top() {
         }
       }
       catch (TransferException $transfer_exception) {
-        \Drupal::messenger()->addError(t('Unable to retrieve PSA information from ' . \Drupal::config('update.settings')->get('psa.endpoint')));
+        \Drupal::messenger()->addError(t(
+          'Unable to retrieve PSA information from :url.',
+          [':url'=> \Drupal::config('update.settings')->get('psa.endpoint')]
+        ));
       }
       catch (UnexpectedValueException $unexpected_value_exception) {
         if ($unexpected_value_exception->getCode() === UpdatesPsa::MALFORMED_JSON_EXCEPTION_CODE) {

@@ -182,7 +182,7 @@ class SecurityAnnouncement {
    * Gets the links to the security announcement.
    *
    * @return string
-   *    The link.
+   *   The link.
    */
   public function getLink(): string {
     return $this->link;

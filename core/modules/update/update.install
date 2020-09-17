@@ -202,7 +202,10 @@ function _update_psa_requirements(array &$requirements) {
   }
   catch (TransferException $transfer_exception) {
     $requirements['update_psa']['severity'] = REQUIREMENT_ERROR;
-    $requirements['update_psa']['value'] = t('Unable to retrieve PSA information from ' . \Drupal::config('update.settings')->get('psa.endpoint'));
+    $requirements['update_psa']['value'] = t(
+      'Unable to retrieve PSA information from :url.',
+      ['url' => \Drupal::config('update.settings')->get('psa.endpoint')]
+    );
     return;
   }
   catch (UnexpectedValueException $unexpected_value_exception) {
@@ -213,8 +216,6 @@ function _update_psa_requirements(array &$requirements) {
     }
     throw $unexpected_value_exception;
   }
-
-
 
   if (!empty($messages)) {
     $requirements['update_psa']['severity'] = REQUIREMENT_ERROR;
