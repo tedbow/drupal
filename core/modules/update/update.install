@@ -200,21 +200,10 @@ function _update_psa_requirements(array &$requirements) {
   try {
     $messages = $psa->getPublicServiceMessages();
   }
-  catch (TransferException $transfer_exception) {
+  catch (Exception $exception) {
     $requirements['update_psa']['severity'] = REQUIREMENT_ERROR;
-    $requirements['update_psa']['value'] = t(
-      'Unable to retrieve PSA information from :url.',
-      ['url' => \Drupal::config('update.settings')->get('psa.endpoint')]
-    );
+    $requirements['update_psa']['value'] = UpdatesPsa::getErrorMessageFromException($exception);
     return;
-  }
-  catch (UnexpectedValueException $unexpected_value_exception) {
-    if ($unexpected_value_exception->getCode() === UpdatesPsa::MALFORMED_JSON_EXCEPTION_CODE) {
-      $requirements['update_psa']['severity'] = REQUIREMENT_ERROR;
-      $requirements['update_psa']['value'] = $unexpected_value_exception->getMessage();
-      return;
-    }
-    throw $unexpected_value_exception;
   }
 
   if (!empty($messages)) {

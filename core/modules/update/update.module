@@ -137,19 +137,8 @@ function update_page_top() {
           }
         }
       }
-      catch (TransferException $transfer_exception) {
-        \Drupal::messenger()->addError(t(
-          'Unable to retrieve PSA information from :url.',
-          [':url'=> \Drupal::config('update.settings')->get('psa.endpoint')]
-        ));
-      }
-      catch (UnexpectedValueException $unexpected_value_exception) {
-        if ($unexpected_value_exception->getCode() === UpdatesPsa::MALFORMED_JSON_EXCEPTION_CODE) {
-          \Drupal::messenger()->addError($unexpected_value_exception->getMessage());
-        }
-        else {
-          throw $unexpected_value_exception;
-        }
+      catch (Exception $exception) {
+        \Drupal::messenger()->addError(UpdatesPsa::getErrorMessageFromException($exception));
       }
     }
   }

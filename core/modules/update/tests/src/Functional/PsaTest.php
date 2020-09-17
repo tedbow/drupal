@@ -181,9 +181,7 @@ class PsaTest extends BrowserTestBase {
     $this->container->get('cache.default')->delete('updates_psa');
     $notify = $this->container->get('update.psa_notify');
     $notify->send();
-    $this->assertCount(1, $this->getMails());
-    $this->assertMailString('subject', '1 urgent Drupal announcement requires your attention', 1);
-    $this->assertMailString('body', 'Drupal PSA JSON is malformed.', 1);
+    $this->assertCount(0, $this->getMails());
   }
 
   /**

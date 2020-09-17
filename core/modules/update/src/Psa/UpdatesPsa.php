@@ -23,7 +23,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
   use DependencySerializationTrait;
   use ProjectInfoTrait;
 
-  const MALFORMED_JSON_EXCEPTION_CODE = 1000;
+  protected const MALFORMED_JSON_EXCEPTION_CODE = 1000;
 
   /**
    * This module's configuration.
@@ -120,7 +120,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
         }
         catch (\UnexpectedValueException $unexpected_value_exception) {
           $this->logger->error('PSA malformed: ' . $unexpected_value_exception->getMessage());
-          throw new \UnexpectedValueException('Drupal PSA JSON is malformed.', static::MALFORMED_JSON_EXCEPTION_CODE);
+          throw new \UnexpectedValueException($unexpected_value_exception->getMessage(), static::MALFORMED_JSON_EXCEPTION_CODE);
         }
 
         if ($sa->getProjectType() !== 'core' && !$this->isValidExtension($sa->getProjectType(), $sa->getProject())) {
@@ -137,6 +137,34 @@ class UpdatesPsa implements UpdatesPsaInterface {
     }
 
     return $messages;
+  }
+
+  /**
+   * Gets a message from an exception thrown by ::getPublicServiceMessages().
+   *
+   * @param \Exception $exception
+   *   The exception throw by ::getPublicServiceMessages().
+   * @param bool $throw_unexpected_exceptions
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup|string
+   *   The message to display.
+   *
+   * @throws \Exception Throw if the exception is not expected.
+   */
+  public static function getErrorMessageFromException(\Exception $exception, bool $throw_unexpected_exceptions = TRUE) {
+    if  ($exception instanceof TransferException) {
+      return t(
+        'Unable to retrieve PSA information from :url.',
+        [':url' => \Drupal::config('update.settings')->get('psa.endpoint')]
+      );
+    }
+    elseif (get_class($exception) === \UnexpectedValueException::class && $exception->getCode() === static::MALFORMED_JSON_EXCEPTION_CODE) {
+      return t('Drupal PSA JSON is malformed.');
+    }
+    if ($throw_unexpected_exceptions) {
+      throw $exception;
+    }
+    return $exception->getMessage();
   }
 
   /**

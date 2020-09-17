@@ -11,6 +11,7 @@ use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\PluralTranslatableMarkup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * An implementation of the NotifyInterface which uses email for notification.
@@ -68,6 +69,13 @@ class EmailNotify implements NotifyInterface {
   protected $entityTypeManager;
 
   /**
+   * The logger.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected $logger;
+
+  /**
    * EmailNotify constructor.
    *
    * @param \Drupal\Core\Mail\MailManagerInterface $mail_manager
@@ -86,8 +94,10 @@ class EmailNotify implements NotifyInterface {
    *   Entity type manager.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation service.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   The logger.
    */
-  public function __construct(MailManagerInterface $mail_manager, UpdatesPsaInterface $updates_psa, ConfigFactoryInterface $config_factory, LanguageManagerInterface $language_manager, StateInterface $state, TimeInterface $time, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation) {
+  public function __construct(MailManagerInterface $mail_manager, UpdatesPsaInterface $updates_psa, ConfigFactoryInterface $config_factory, LanguageManagerInterface $language_manager, StateInterface $state, TimeInterface $time, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, LoggerInterface $logger) {
     $this->mailManager = $mail_manager;
     $this->updatesPsa = $updates_psa;
     $this->configFactory = $config_factory;
@@ -96,6 +106,7 @@ class EmailNotify implements NotifyInterface {
     $this->time = $time;
     $this->entityTypeManager = $entity_type_manager;
     $this->stringTranslation = $string_translation;
+    $this->logger = $logger;
   }
 
   /**
@@ -111,7 +122,16 @@ class EmailNotify implements NotifyInterface {
     if (($this->time->getRequestTime() - $last_check) < $frequency) {
       return;
     }
-    $messages = $this->updatesPsa->getPublicServiceMessages();
+    try {
+      $messages = $this->updatesPsa->getPublicServiceMessages();
+    }
+    catch (\Exception $exception) {
+      $this->logger->error($this->t(
+        'Unable to send notification email because of error retrieving PSA feed: @error'),
+        ['@error' => UpdatesPsa::getErrorMessageFromException($exception, FALSE)]
+      );
+      return;
+    }
     if (!$messages) {
       return;
     }
