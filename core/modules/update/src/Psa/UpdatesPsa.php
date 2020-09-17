@@ -8,9 +8,8 @@ use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
-use Drupal\Core\Extension\ExtensionList;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\update\ProjectInfoTrait;
+use Drupal\update\UpdateManagerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
 use Psr\Log\LoggerInterface;
@@ -21,7 +20,6 @@ use Psr\Log\LoggerInterface;
 class UpdatesPsa implements UpdatesPsaInterface {
   use StringTranslationTrait;
   use DependencySerializationTrait;
-  use ProjectInfoTrait;
 
   protected const MALFORMED_JSON_EXCEPTION_CODE = 1000;
 
@@ -61,6 +59,13 @@ class UpdatesPsa implements UpdatesPsaInterface {
   protected $logger;
 
   /**
+   * The update manager.
+   *
+   * @var \Drupal\update\UpdateManagerInterface
+   */
+  protected $updateManager;
+
+  /**
    * Constructs a new UpdatesPsa object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -71,22 +76,17 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *   The time service.
    * @param \GuzzleHttp\Client $client
    *   The HTTP client.
-   * @param \Drupal\Core\Extension\ExtensionList $module_list
-   *   The module extension list.
-   * @param \Drupal\Core\Extension\ExtensionList $profile_list
-   *   The profile extension list.
-   * @param \Drupal\Core\Extension\ExtensionList $theme_list
-   *   The theme extension list.
+   * @param \Drupal\update\UpdateManagerInterface $update_manager
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, CacheBackendInterface $cache, TimeInterface $time, Client $client, ExtensionList $module_list, ExtensionList $profile_list, ExtensionList $theme_list, LoggerInterface $logger) {
+  public function __construct(ConfigFactoryInterface $config_factory, CacheBackendInterface $cache, TimeInterface $time, Client $client, UpdateManagerInterface $update_manager, LoggerInterface $logger) {
     $this->config = $config_factory->get('update.settings');
     $this->cache = $cache;
     $this->time = $time;
     $this->httpClient = $client;
+    $this->updateManager = $update_manager;
     $this->logger = $logger;
-    $this->setExtensionLists($module_list, $theme_list, $profile_list);
   }
 
   /**
@@ -123,7 +123,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
           throw new \UnexpectedValueException($unexpected_value_exception->getMessage(), static::MALFORMED_JSON_EXCEPTION_CODE);
         }
 
-        if ($sa->getProjectType() !== 'core' && !$this->isValidExtension($sa->getProjectType(), $sa->getProject())) {
+        if ($sa->getProjectType() !== 'core' && !$this->isValidProject($sa->getProject())) {
           continue;
         }
         if ($sa->isPsa() || $this->matchesInstalledVersion($sa)) {
@@ -168,20 +168,18 @@ class UpdatesPsa implements UpdatesPsaInterface {
   }
 
   /**
-   * Determines if extension exists and has a version string.
+   * Determines if projects exists and has a version string.
    *
-   * @param string $extension_type
-   *   The extension type i.e. module, theme, profile.
    * @param string $project_name
    *   The project.
    *
    * @return bool
    *   TRUE if extension exists, else FALSE.
    */
-  protected function isValidExtension(string $extension_type, string $project_name) {
+  protected function isValidProject(string $project_name) {
     try {
-      $extension_list = $this->getExtensionList($extension_type);
-      return $extension_list->exists($project_name) && !empty($extension_list->getAllAvailableInfo()[$project_name]['version']);
+      $project = $this->getProject($project_name);
+      return !empty($project['info']['version']);
     }
     catch (\UnexpectedValueException $exception) {
       $this->logger->error($exception->getMessage());
@@ -284,9 +282,22 @@ class UpdatesPsa implements UpdatesPsaInterface {
     if ($sa->getProjectType() === 'core') {
       return \Drupal::VERSION;
     }
-    $extension_version = $this->getExtensionList($sa->getProjectType())->getAllAvailableInfo()[$sa->getProject()]['version'];
+    $project = $this->getProject($sa->getProject());
+    $extension_version = $project['info']['version'];
     $version_array = explode('-', $extension_version, 2);
     return isset($version_array[1]) && $version_array[1] !== 'dev' ? $version_array[1] : $extension_version;
+  }
+
+  /**
+   * @return array
+   */
+  protected function getProject($project_name): array {
+    static $projects = [];
+    if (empty($projects)) {
+      $projects = $this->updateManager->getProjects();
+    }
+
+    return $projects[$project_name] ?? [];
   }
 
 }

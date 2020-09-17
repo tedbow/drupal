@@ -32,9 +32,7 @@ services:
       - '@cache.default'
       - '@datetime.time'
       - '@http_client'
-      - '@extension.list.module'
-      - '@extension.list.profile'
-      - '@extension.list.theme'
+      - '@update.manager'
       - '@logger.channel.updates'
   update.psa_notify:
     class: Drupal\update\Psa\EmailNotify

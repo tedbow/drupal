@@ -1,0 +1,6 @@
+name: 'Test PSA functionality'
+type: module
+description: 'Tests for PSAs'
+package: Testing
+dependencies:
+  - drupal:update

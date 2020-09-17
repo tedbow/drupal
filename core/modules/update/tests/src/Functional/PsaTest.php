@@ -25,7 +25,12 @@ class PsaTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['update'];
+  protected static $modules = [
+    'update',
+    'psa_test',
+    'aaa_update_test',
+    'update_test',
+  ];
 
   /**
    * A user with permission to administer site configuration and updates.
@@ -60,6 +65,21 @@ class PsaTest extends BrowserTestBase {
    */
   protected function setUp() :void {
     parent::setUp();
+    // Alter the 'aaa_update_test' to use the 'aaa_update_project' project name.
+    // The PSA feed will match project name and not extension name.
+    $system_info = [
+      'aaa_update_test' => [
+        'project' => 'aaa_update_project',
+        'version' => '8.x-1.1',
+        'hidden' => FALSE,
+      ],
+      'bbb_update_test' => [
+        'project' => 'bbb_update_project',
+        'version' => '8.x-1.1',
+        'hidden' => FALSE,
+      ],
+    ];
+    $this->config('update_test.settings')->set('system_info', $system_info)->save();
     $this->user = $this->drupalCreateUser([
       'access administration pages',
       'administer site configuration',
@@ -67,8 +87,8 @@ class PsaTest extends BrowserTestBase {
     ]);
     $this->drupalLogin($this->user);
     $fixtures_path = $this->baseUrl . '/core/modules/update/tests/fixtures/psa_feed';
-    $this->workingEndpoint = "$fixtures_path/valid.json";
-    $this->nonWorkingEndpoint = "$fixtures_path/non-existent.json";
+    $this->workingEndpoint = $this->buildUrl(Url::fromRoute('psa_test.json_test_controller'));
+    $this->nonWorkingEndpoint = $this->buildUrl(Url::fromRoute('psa_test.json_test_denied_controller'));
     $this->invalidJsonEndpoint = "$fixtures_path/invalid.json";
 
   }
@@ -85,6 +105,7 @@ class PsaTest extends BrowserTestBase {
     $this->drupalGet(Url::fromRoute('system.admin'));
     $assert->pageTextContains('Critical Release - SA-2019-02-19');
     $assert->pageTextContains('Critical Release - PSA-Really Old');
+    $assert->pageTextContains('AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019');
     $assert->pageTextNotContains('Node - Moderately critical - Access bypass - SA-CONTRIB-2019');
     $assert->pageTextNotContains('Views - Moderately critical - Access bypass - SA-CONTRIB-2019');
 
@@ -93,6 +114,7 @@ class PsaTest extends BrowserTestBase {
     $assert->pageTextContains('3 urgent announcements require your attention:');
     $assert->pageTextContains('Critical Release - SA-2019-02-19');
     $assert->pageTextContains('Critical Release - PSA-Really Old');
+    $assert->pageTextContains('AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019');
 
     // Test cache.
     $this->config('update.settings')
