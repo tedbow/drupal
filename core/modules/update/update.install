@@ -71,8 +71,9 @@ function update_requirements($phase) {
       $requirements['update_core']['reason'] = UpdateFetcherInterface::UNKNOWN;
       $requirements['update_core']['description'] = _update_no_data();
     }
+    _update_psa_requirements($requirements);
   }
-  _update_psa_requirements($requirements);
+
   return $requirements;
 }
 
