@@ -77,6 +77,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
    * @param \GuzzleHttp\Client $client
    *   The HTTP client.
    * @param \Drupal\update\UpdateManagerInterface $update_manager
+   *   The update manager.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    */
@@ -92,7 +93,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
   /**
    * {@inheritdoc}
    */
-  public function getPublicServiceMessages() {
+  public function getPublicServiceMessages() : array {
     $messages = [];
 
     if ($cache = $this->cache->get('updates_psa')) {
@@ -145,14 +146,16 @@ class UpdatesPsa implements UpdatesPsaInterface {
    * @param \Exception $exception
    *   The exception throw by ::getPublicServiceMessages().
    * @param bool $throw_unexpected_exceptions
+   *   Whether to re-throw exceptoins that are not expected.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup|string
    *   The message to display.
    *
-   * @throws \Exception Throw if the exception is not expected.
+   * @throws \Exception
+   *    Throw if the exception is not expected.
    */
   public static function getErrorMessageFromException(\Exception $exception, bool $throw_unexpected_exceptions = TRUE) {
-    if  ($exception instanceof TransferException) {
+    if ($exception instanceof TransferException) {
       return t(
         'Unable to retrieve PSA information from :url.',
         [':url' => \Drupal::config('update.settings')->get('psa.endpoint')]
@@ -176,7 +179,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
    * @return bool
    *   TRUE if project exists, otherwise FALSE.
    */
-  protected function isValidProject(string $project_name) {
+  protected function isValidProject(string $project_name) : bool {
     try {
       $project = $this->getProject($project_name);
       return !empty($project['info']['version']);
@@ -201,7 +204,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *   Thrown by \Composer\Semver\VersionParser::parseConstraints() if the
    *   constraint string is not valid.
    */
-  protected function matchesInstalledVersion(SecurityAnnouncement $sa) {
+  protected function matchesInstalledVersion(SecurityAnnouncement $sa) : bool {
     $parser = new VersionParser();
     $versions = $sa->getProjectType() === 'core' ? $sa->getInsecureVersions() : $this->getContribVersions($sa->getInsecureVersions());
 
@@ -233,12 +236,12 @@ class UpdatesPsa implements UpdatesPsaInterface {
    * Returns a message that links the security announcement.
    *
    * @param \Drupal\update\Psa\SecurityAnnouncement $sa
-   *   The security announcement
+   *   The security announcement.
    *
    * @return \Drupal\Component\Render\FormattableMarkup
    *   The PSA or SA message.
    */
-  protected function message(SecurityAnnouncement $sa) {
+  protected function message(SecurityAnnouncement $sa) : FormattableMarkup {
     return new FormattableMarkup('<a href=":url">:message</a>', [
       ':message' => $sa->getTitle(),
       ':url' => $sa->getLink(),
@@ -248,12 +251,13 @@ class UpdatesPsa implements UpdatesPsaInterface {
   /**
    * Gets the contrib version to use for comparisons.
    *
-   * @param $versions
+   * @param string[] $versions
    *   Contrib project versions.
    *
    * @return string[]
+   *   The versions that can be used for comparison.
    */
-  private function getContribVersions($versions) {
+  private function getContribVersions(array $versions) : array {
     $versions = array_filter(array_map(static function ($version) {
       $version_array = explode('-', $version, 2);
       if ($version_array && $version_array[0] === \Drupal::CORE_COMPATIBILITY) {
@@ -278,7 +282,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
    * @return string
    *   The currently installed version.
    */
-  private function getInstalledVersion(SecurityAnnouncement $sa) {
+  private function getInstalledVersion(SecurityAnnouncement $sa) : string {
     if ($sa->getProjectType() === 'core') {
       return \Drupal::VERSION;
     }
@@ -292,6 +296,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
    * Gets the project information.
    *
    * @param string $project_name
+   *   The project name.
    *
    * @return array
    *   The project information if the project exists, otherwise an empty array.

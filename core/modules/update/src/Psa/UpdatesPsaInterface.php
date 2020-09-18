@@ -10,9 +10,9 @@ interface UpdatesPsaInterface {
   /**
    * Gets public service messages.
    *
-   * @return array
+   * @return \Drupal\Component\Render\FormattableMarkup[]
    *   A array of translatable strings.
    */
-  public function getPublicServiceMessages();
+  public function getPublicServiceMessages() : array;
 
 }
