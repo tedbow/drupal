@@ -194,11 +194,18 @@ class PsaTest extends BrowserTestBase {
     $this->container->get('state')->set(JsonTestController::STATE_EXTRA_ITEM_KEY, TRUE);
     $this->container->get('cron')->run();
     $this->assertCount(1, $this->getMails());
+    $this->assertMailString('subject', '4 urgent Drupal announcements require your attention', 1);
+    $this->assertMailString('body', 'Critical Release - SA-2019-02-19', 1);
+    $this->assertMailString('body', 'A new Critical Release', 1);
 
 
     // No email should be sent if PSA's are disabled.
+    // Wait another 14 hours so that the feed otherwise would be checked again.
+    $date_time->modify('+14 hours');
+    $this->container->get('state')->set('update_test.mock_date', $date_time->format('Y-m-d'));
     $this->container->get('state')->set('system.test_mail_collector', []);
-    $this->container->get('state')->delete('update_psa.notify_last_check');
+    // Do not include the extra item so the message would be different.
+    $this->container->get('state')->set(JsonTestController::STATE_EXTRA_ITEM_KEY, FALSE);
     $this->setSettingsViaForm('psa_notify', FALSE);
     $this->container->get('cron')->run();
     $this->assertCount(0, $this->getMails());

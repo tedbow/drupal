@@ -96,7 +96,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
     $messages = [];
 
     if ($cache = $this->cache->get('updates_psa')) {
-      $response = $cache->;
+      $response = $cache->data;
     }
     else {
       $psa_endpoint = $this->config->get('psa.endpoint');

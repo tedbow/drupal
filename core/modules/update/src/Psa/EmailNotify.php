@@ -142,7 +142,6 @@ class EmailNotify implements NotifyInterface {
 
     $notify_emails = $this->configFactory->get('update.settings')->get('notification.emails');
     if (!empty($notify_emails)) {
-      $this->state->set('update_psa.notify_last_check', $this->time->getRequestTime());
       $params['subject'] = new PluralTranslatableMarkup(
         count($messages),
         '@count urgent Drupal announcement requires your attention for @site_name',
