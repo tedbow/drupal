@@ -5,6 +5,7 @@ namespace Drupal\Tests\update\Functional;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Test\AssertMailTrait;
 use Drupal\Core\Url;
+use Drupal\psa_test\Controller\JsonTestController;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -174,17 +175,32 @@ class PsaTest extends BrowserTestBase {
     $this->assertSession()->pageTextContains('Critical Release - SA-2019-02-19');
 
     // Email should be sent.
-    $notify = $this->container->get('update.psa_notify');
-    $notify->send();
+    $this->container->get('cron')->run();
     $this->assertCount(1, $this->getMails());
     $this->assertMailString('subject', '3 urgent Drupal announcements require your attention', 1);
     $this->assertMailString('body', 'Critical Release - SA-2019-02-19', 1);
+
+    $date_time = new \DateTime();
+    $date_time->modify('+2 days');
+    $this->container->get('state')->set('update_test.mock_date', $date_time->format('Y-m-d'));
+    $this->container->get('state')->set('system.test_mail_collector', []);
+    $this->container->get('cron')->run();
+    $this->assertCount(0, $this->getMails());
+
+    // Wait another 14 hours to that the feed will be checked again.
+    $date_time->modify('+14 hours');
+    $this->container->get('state')->set('update_test.mock_date', $date_time->format('Y-m-d'));
+    $this->container->get('state')->set('system.test_mail_collector', []);
+    $this->container->get('state')->set(JsonTestController::STATE_EXTRA_ITEM_KEY, TRUE);
+    $this->container->get('cron')->run();
+    $this->assertCount(1, $this->getMails());
+
 
     // No email should be sent if PSA's are disabled.
     $this->container->get('state')->set('system.test_mail_collector', []);
     $this->container->get('state')->delete('update_psa.notify_last_check');
     $this->setSettingsViaForm('psa_notify', FALSE);
-    $notify->send();
+    $this->container->get('cron')->run();
     $this->assertCount(0, $this->getMails());
   }
 
@@ -201,8 +217,7 @@ class PsaTest extends BrowserTestBase {
       ->set('psa.endpoint', $this->invalidJsonEndpoint)
       ->save();
     $this->container->get('cache.default')->delete('updates_psa');
-    $notify = $this->container->get('update.psa_notify');
-    $notify->send();
+    $this->container->get('cron')->run();
     $this->assertCount(0, $this->getMails());
   }
 

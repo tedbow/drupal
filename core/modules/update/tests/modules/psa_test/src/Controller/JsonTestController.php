@@ -2,12 +2,15 @@
 
 namespace Drupal\psa_test\Controller;
 
+use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Class JsonTestController.
  */
-class JsonTestController {
+class JsonTestController extends ControllerBase {
+
+  const STATE_EXTRA_ITEM_KEY = 'STATE_EXTRA_ITEM_KEY';
 
   /**
    * Test JSON controller.
@@ -100,6 +103,17 @@ class JsonTestController {
       'insecure' => ['7.x-1.7', '8.x-1.4'],
       'pubDate' => 'Tue, 19 Mar 2019 12:50:00 +0000',
     ];
+    if ($this->state()->get(static::STATE_EXTRA_ITEM_KEY)) {
+      $feed[] = [
+        'title' => 'A new Critical Release',
+        'link' => 'https://www.drupal.org/psa',
+        'project' => 'drupal',
+        'type' => 'core',
+        'is_psa' => '1',
+        'insecure' => [],
+        'pubDate' => 'Tue, 19 Feb 2017 14:11:01 +0000',
+      ];
+    }
     return new JsonResponse($feed);
   }
 

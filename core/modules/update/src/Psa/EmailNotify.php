@@ -19,6 +19,8 @@ use Psr\Log\LoggerInterface;
 class EmailNotify implements NotifyInterface {
   use StringTranslationTrait;
 
+  private const LAST_MESSAGES_STATE_KEY = 'update_psa.last_messages_hash';
+
   /**
    * Mail manager.
    *
@@ -117,11 +119,6 @@ class EmailNotify implements NotifyInterface {
     if (!$this->configFactory->get('update.settings')->get('psa.notify')) {
       return;
     }
-    $frequency = $this->configFactory->get('update.settings')->get('psa.check_frequency');
-    $last_check = $this->state->get('update_psa.notify_last_check') ?: 0;
-    if (($this->time->getRequestTime() - $last_check) < $frequency) {
-      return;
-    }
     try {
       $messages = $this->updatesPsa->getPublicServiceMessages();
     }
@@ -132,7 +129,14 @@ class EmailNotify implements NotifyInterface {
       );
       return;
     }
+
     if (!$messages) {
+      return;
+    }
+
+    $messages_hash = hash('sha256', serialize($messages));
+    // Return if the messages are the same as the last messages sent.
+    if ($messages_hash === $this->state->get(static::LAST_MESSAGES_STATE_KEY)) {
       return;
     }
 
@@ -154,6 +158,7 @@ class EmailNotify implements NotifyInterface {
       foreach ($notify_emails as $notify_email) {
         $this->doSend($notify_email, $params);
       }
+      $this->state->set(static::LAST_MESSAGES_STATE_KEY, $messages_hash);
     }
   }
 
