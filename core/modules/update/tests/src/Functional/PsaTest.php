@@ -198,7 +198,6 @@ class PsaTest extends BrowserTestBase {
     $this->assertMailString('body', 'Critical Release - SA-2019-02-19', 1);
     $this->assertMailString('body', 'A new Critical Release', 1);
 
-
     // No email should be sent if PSA's are disabled.
     // Wait another 14 hours so that the feed otherwise would be checked again.
     $date_time->modify('+14 hours');

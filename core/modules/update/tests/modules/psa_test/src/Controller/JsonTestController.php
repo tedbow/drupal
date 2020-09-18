@@ -6,7 +6,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
- * Class JsonTestController.
+ * Test controller to return a test PSA JSON feed.
  */
 class JsonTestController extends ControllerBase {
 
@@ -16,7 +16,7 @@ class JsonTestController extends ControllerBase {
    * Test JSON controller.
    *
    * @return \Symfony\Component\HttpFoundation\JsonResponse
-   *   Return JSON feed response.
+   *   The JSON feed response.
    */
   public function json() {
     $feed = [];

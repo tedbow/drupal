@@ -146,7 +146,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
    * @param \Exception $exception
    *   The exception throw by ::getPublicServiceMessages().
    * @param bool $throw_unexpected_exceptions
-   *   Whether to re-throw exceptoins that are not expected.
+   *   Whether to re-throw exceptions that are not expected.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup|string
    *   The message to display.
