@@ -115,8 +115,9 @@ class EmailNotify implements NotifyInterface {
    * {@inheritdoc}
    */
   public function send() {
+    $notify_emails = $this->configFactory->get('update.settings')->get('notification.emails');
     // Don't send mail if notifications are disabled.
-    if (!$this->configFactory->get('update.settings')->get('psa.notify')) {
+    if (!$notify_emails || !$this->configFactory->get('update.settings')->get('psa.notify')) {
       return;
     }
     try {
@@ -140,25 +141,22 @@ class EmailNotify implements NotifyInterface {
       return;
     }
 
-    $notify_emails = $this->configFactory->get('update.settings')->get('notification.emails');
-    if (!empty($notify_emails)) {
-      $params['subject'] = new PluralTranslatableMarkup(
-        count($messages),
-        '@count urgent Drupal announcement requires your attention for @site_name',
-        '@count urgent Drupal announcements require your attention for @site_name',
-        ['@site_name' => $this->configFactory->get('system.site')->get('name')]
-      );
-      $params['body'] = [
-        '#theme' => 'updates_psa_notify',
-        '#messages' => $messages,
-      ];
-      $default_langcode = $this->languageManager->getDefaultLanguage()->getId();
-      $params['langcode'] = $default_langcode;
-      foreach ($notify_emails as $notify_email) {
-        $this->doSend($notify_email, $params);
-      }
-      $this->state->set(static::LAST_MESSAGES_STATE_KEY, $messages_hash);
+    $params['subject'] = new PluralTranslatableMarkup(
+      count($messages),
+      '@count urgent Drupal announcement requires your attention for @site_name',
+      '@count urgent Drupal announcements require your attention for @site_name',
+      ['@site_name' => $this->configFactory->get('system.site')->get('name')]
+    );
+    $params['body'] = [
+      '#theme' => 'updates_psa_notify',
+      '#messages' => $messages,
+    ];
+    $default_langcode = $this->languageManager->getDefaultLanguage()->getId();
+    $params['langcode'] = $default_langcode;
+    foreach ($notify_emails as $notify_email) {
+      $this->doSend($notify_email, $params);
     }
+    $this->state->set(static::LAST_MESSAGES_STATE_KEY, $messages_hash);
   }
 
   /**
