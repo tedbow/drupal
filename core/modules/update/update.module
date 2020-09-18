@@ -125,9 +125,9 @@ function update_page_top() {
       }
     }
 
-    /** @var \Drupal\update\Psa\UpdatesPsaInterface $psa */
-    $psa = \Drupal::service('update.psa');
     if (\Drupal::config('update.settings')->get('psa.enable')) {
+      /** @var \Drupal\update\Psa\UpdatesPsaInterface $psa */
+      $psa = \Drupal::service('update.psa');
       try {
         $messages = $psa->getPublicServiceMessages();
         if ($messages) {
