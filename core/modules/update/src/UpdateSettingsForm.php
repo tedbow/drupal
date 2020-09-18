@@ -141,6 +141,9 @@ class UpdateSettingsForm extends ConfigFormBase implements ContainerInjectionInt
         $form_state->setErrorByName('update_notify_emails', $this->t('%emails are not valid email addresses.', ['%emails' => implode(', ', $invalid)]));
       }
     }
+    elseif ($form_state->getValue('psa_notify')) {
+      $form_state->setErrorByName('update_notify_emails',$this->t('If "Send email notifications for Public service announcements." is checked at least one email must be provided.'));
+    }
 
     parent::validateForm($form, $form_state);
   }
