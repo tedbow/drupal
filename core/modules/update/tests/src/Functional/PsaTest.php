@@ -188,7 +188,7 @@ class PsaTest extends BrowserTestBase {
     $this->assertCount(0, $this->getMails());
 
     // Wait another 14 hours to that the feed will be checked again.
-    $date_time->modify('+14 hours');
+    $date_time->modify('+2 days');
     $this->container->get('state')->set('update_test.mock_date', $date_time->format('Y-m-d'));
     $this->container->get('state')->set('system.test_mail_collector', []);
     $this->container->get('state')->set(JsonTestController::STATE_EXTRA_ITEM_KEY, TRUE);
@@ -200,7 +200,7 @@ class PsaTest extends BrowserTestBase {
 
     // No email should be sent if PSA's are disabled.
     // Wait another 14 hours so that the feed otherwise would be checked again.
-    $date_time->modify('+14 hours');
+    $date_time->modify('+2 days');
     $this->container->get('state')->set('update_test.mock_date', $date_time->format('Y-m-d'));
     $this->container->get('state')->set('system.test_mail_collector', []);
     // Do not include the extra item so the message would be different.
