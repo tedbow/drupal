@@ -283,9 +283,6 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *   The currently installed version.
    */
   private function getInstalledVersion(SecurityAnnouncement $sa) : string {
-    if ($sa->getProjectType() === 'core') {
-      return \Drupal::VERSION;
-    }
     $project = $this->getProject($sa->getProject());
     $project_version = $project['info']['version'];
     $version_array = explode('-', $project_version, 2);

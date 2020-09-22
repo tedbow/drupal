@@ -62,6 +62,11 @@ class PsaTest extends BrowserTestBase {
   protected $invalidJsonEndpoint;
 
   /**
+   * @var string
+   */
+  protected $workingEndpointPlus1;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() :void {
@@ -69,6 +74,9 @@ class PsaTest extends BrowserTestBase {
     // Alter the 'aaa_update_test' to use the 'aaa_update_project' project name.
     // The PSA feed will match project name and not extension name.
     $system_info = [
+      '#all' => [
+        'version' => '9.11.0',
+      ],
       'aaa_update_test' => [
         'project' => 'aaa_update_project',
         'version' => '8.x-1.1',
@@ -88,8 +96,9 @@ class PsaTest extends BrowserTestBase {
     ]);
     $this->drupalLogin($this->user);
     $fixtures_path = $this->baseUrl . '/core/modules/update/tests/fixtures/psa_feed';
-    $this->workingEndpoint = $this->buildUrl(Url::fromRoute('psa_test.json_test_controller'));
-    $this->nonWorkingEndpoint = $this->buildUrl(Url::fromRoute('psa_test.json_test_denied_controller'));
+    $this->workingEndpoint = $this->buildUrl('/core/modules/update/tests/fixtures/psa_feed/valid.json');
+    $this->workingEndpointPlus1 = $this->buildUrl('/core/modules/update/tests/fixtures/psa_feed/valid_plus1.json');
+    $this->nonWorkingEndpoint = $this->buildUrl('/core/modules/update/tests/fixtures/psa_feed/missing.json');
     $this->invalidJsonEndpoint = "$fixtures_path/invalid.json";
 
   }
@@ -191,12 +200,14 @@ class PsaTest extends BrowserTestBase {
     $date_time->modify('+2 days');
     $this->container->get('state')->set('update_test.mock_date', $date_time->format('Y-m-d'));
     $this->container->get('state')->set('system.test_mail_collector', []);
-    $this->container->get('state')->set(JsonTestController::STATE_EXTRA_ITEM_KEY, TRUE);
+    $this->config('update.settings')
+      ->set('psa.endpoint', $this->workingEndpointPlus1)
+      ->save();
     $this->container->get('cron')->run();
     $this->assertCount(1, $this->getMails());
     $this->assertMailString('subject', '4 urgent Drupal announcements require your attention', 1);
     $this->assertMailString('body', 'Critical Release - SA-2019-02-19', 1);
-    $this->assertMailString('body', 'A new Critical Release', 1);
+    $this->assertMailString('body', 'Critical Release - PSA because 2020', 1);
 
     // No email should be sent if PSA's are disabled.
     // Wait another 14 hours so that the feed otherwise would be checked again.
