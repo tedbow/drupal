@@ -5,7 +5,6 @@ namespace Drupal\Tests\update\Functional;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Test\AssertMailTrait;
 use Drupal\Core\Url;
-use Drupal\psa_test\Controller\JsonTestController;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -28,7 +27,6 @@ class PsaTest extends BrowserTestBase {
    */
   protected static $modules = [
     'update',
-    'psa_test',
     'aaa_update_test',
     'update_test',
   ];
@@ -185,7 +183,7 @@ class PsaTest extends BrowserTestBase {
 
     // Email should be sent.
     $this->container->get('cron')->run();
-    $this->assertCount(1, $this->getMails());
+    $this->assertCount(1, $this->getPsaEmails());
     $this->assertMailString('subject', '3 urgent Drupal announcements require your attention', 1);
     $this->assertMailString('body', 'Critical Release - SA-2019-02-19', 1);
 
@@ -194,7 +192,7 @@ class PsaTest extends BrowserTestBase {
     $this->container->get('state')->set('update_test.mock_date', $date_time->format('Y-m-d'));
     $this->container->get('state')->set('system.test_mail_collector', []);
     $this->container->get('cron')->run();
-    $this->assertCount(0, $this->getMails());
+    $this->assertCount(0, $this->getPsaEmails());
 
     // Wait another 14 hours to that the feed will be checked again.
     $date_time->modify('+2 days');
@@ -204,7 +202,7 @@ class PsaTest extends BrowserTestBase {
       ->set('psa.endpoint', $this->workingEndpointPlus1)
       ->save();
     $this->container->get('cron')->run();
-    $this->assertCount(1, $this->getMails());
+    $this->assertCount(1, $this->getPsaEmails());
     $this->assertMailString('subject', '4 urgent Drupal announcements require your attention', 1);
     $this->assertMailString('body', 'Critical Release - SA-2019-02-19', 1);
     $this->assertMailString('body', 'Critical Release - PSA because 2020', 1);
@@ -215,10 +213,12 @@ class PsaTest extends BrowserTestBase {
     $this->container->get('state')->set('update_test.mock_date', $date_time->format('Y-m-d'));
     $this->container->get('state')->set('system.test_mail_collector', []);
     // Do not include the extra item so the message would be different.
-    $this->container->get('state')->set(JsonTestController::STATE_EXTRA_ITEM_KEY, FALSE);
+    $this->config('update.settings')
+      ->set('psa.endpoint', $this->workingEndpoint)
+      ->save();
     $this->setSettingsViaForm('psa_notify', FALSE);
     $this->container->get('cron')->run();
-    $this->assertCount(0, $this->getMails());
+    $this->assertCount(0, $this->getPsaEmails());
   }
 
   /**
@@ -235,7 +235,7 @@ class PsaTest extends BrowserTestBase {
       ->save();
     $this->container->get('cache.default')->delete('updates_psa');
     $this->container->get('cron')->run();
-    $this->assertCount(0, $this->getMails());
+    $this->assertCount(0, $this->getPsaEmails());
   }
 
   /**
@@ -256,6 +256,13 @@ class PsaTest extends BrowserTestBase {
       $page->uncheckField($checkbox);
     }
     $page->pressButton('Save configuration');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getPsaEmails() {
+    return $this->getMails(['id' => 'update_psa_notify']);
   }
 
 }
