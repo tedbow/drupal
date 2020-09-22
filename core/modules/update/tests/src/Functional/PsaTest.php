@@ -46,6 +46,13 @@ class PsaTest extends BrowserTestBase {
   protected $workingEndpoint;
 
   /**
+   * A working test PSA endpoint that has 1 more item than $workingEndpoint.
+   *
+   * @var string
+   */
+  protected $workingEndpointPlus1;
+
+  /**
    * A non-working test PSA endpoint.
    *
    * @var string
@@ -58,11 +65,6 @@ class PsaTest extends BrowserTestBase {
    * @var string
    */
   protected $invalidJsonEndpoint;
-
-  /**
-   * @var string
-   */
-  protected $workingEndpointPlus1;
 
   /**
    * {@inheritdoc}
