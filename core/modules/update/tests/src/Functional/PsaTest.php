@@ -195,12 +195,10 @@ class PsaTest extends BrowserTestBase {
     $this->assertCount(0, $this->getPsaEmails());
 
     // Wait another 14 hours to that the feed will be checked again.
-    $date_time->modify('+2 days');
+    $date_time->modify('+14 hours');
     $this->container->get('state')->set('update_test.mock_date', $date_time->format('Y-m-d'));
     $this->container->get('state')->set('system.test_mail_collector', []);
-    $this->config('update.settings')
-      ->set('psa.endpoint', $this->workingEndpointPlus1)
-      ->save();
+    $this->config('update.settings')->set('psa.endpoint', $this->workingEndpointPlus1)->save();
     $this->container->get('cron')->run();
     $this->assertCount(1, $this->getPsaEmails());
     $this->assertMailString('subject', '4 urgent Drupal announcements require your attention', 1);
@@ -209,7 +207,7 @@ class PsaTest extends BrowserTestBase {
 
     // No email should be sent if PSA's are disabled.
     // Wait another 14 hours so that the feed otherwise would be checked again.
-    $date_time->modify('+2 days');
+    $date_time->modify('+14 hours');
     $this->container->get('state')->set('update_test.mock_date', $date_time->format('Y-m-d'));
     $this->container->get('state')->set('system.test_mail_collector', []);
     // Do not include the extra item so the message would be different.
