@@ -67,6 +67,13 @@ class PsaTest extends BrowserTestBase {
   protected $invalidJsonEndpoint;
 
   /**
+   * The cache service.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cache;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() :void {
@@ -101,6 +108,7 @@ class PsaTest extends BrowserTestBase {
     $this->nonWorkingEndpoint = $this->buildUrl('/core/modules/update/tests/fixtures/psa_feed/missing.json');
     $this->invalidJsonEndpoint = "$fixtures_path/invalid.json";
 
+    $this->cache = $this->container->get('cache.default');
   }
 
   /**
@@ -179,9 +187,14 @@ class PsaTest extends BrowserTestBase {
       ->set('notification.emails', ['admin@example.com'])
       ->save();
 
+    // Confirm that PSA cache does not exist.
+    $this->assertFalse($this->cache->get('updates_psa'));
+
     // Test PSAs on admin pages.
     $this->drupalGet(Url::fromRoute('system.admin'));
     $this->assertSession()->pageTextContains('Critical Release - SA-2019-02-19');
+    // Confirm that the PSA cache has been set.
+    $this->assertNotEmpty($this->cache->get('updates_psa'));
 
     // Email should be sent.
     $this->container->get('cron')->run();
@@ -189,16 +202,16 @@ class PsaTest extends BrowserTestBase {
     $this->assertMailString('subject', '3 urgent Drupal announcements require your attention', 1);
     $this->assertMailString('body', 'Critical Release - SA-2019-02-19', 1);
 
-    $date_time = new \DateTime();
-    $date_time->modify('+2 days');
-    $this->container->get('state')->set('update_test.mock_date', $date_time->format('Y-m-d'));
+    // Deleting the PSA cache will not result in another email if the messages
+    // have not changed.
+    $this->cache->delete('updates_psa');
     $this->container->get('state')->set('system.test_mail_collector', []);
     $this->container->get('cron')->run();
     $this->assertCount(0, $this->getPsaEmails());
 
-    // Wait another 14 hours to that the feed will be checked again.
-    $date_time->modify('+14 hours');
-    $this->container->get('state')->set('update_test.mock_date', $date_time->format('Y-m-d'));
+    // Deleting the PSA cache will result in another email if the messages have
+    // changed.
+    $this->cache->delete('updates_psa');
     $this->container->get('state')->set('system.test_mail_collector', []);
     $this->config('update.settings')->set('psa.endpoint', $this->workingEndpointPlus1)->save();
     $this->container->get('cron')->run();
@@ -207,10 +220,9 @@ class PsaTest extends BrowserTestBase {
     $this->assertMailString('body', 'Critical Release - SA-2019-02-19', 1);
     $this->assertMailString('body', 'Critical Release - PSA because 2020', 1);
 
-    // No email should be sent if PSA's are disabled.
-    // Wait another 14 hours so that the feed otherwise would be checked again.
-    $date_time->modify('+14 hours');
-    $this->container->get('state')->set('update_test.mock_date', $date_time->format('Y-m-d'));
+    // No email should be sent if PSA's are disabled even the endpoint has
+    // changed which will have different messages.
+    $this->cache->delete('updates_psa');
     $this->container->get('state')->set('system.test_mail_collector', []);
     // Do not include the extra item so the message would be different.
     $this->config('update.settings')
@@ -233,7 +245,7 @@ class PsaTest extends BrowserTestBase {
     $this->config('update.settings')
       ->set('psa.endpoint', $this->invalidJsonEndpoint)
       ->save();
-    $this->container->get('cache.default')->delete('updates_psa');
+    $this->cache->delete('updates_psa');
     $this->container->get('cron')->run();
     $this->assertCount(0, $this->getPsaEmails());
   }
