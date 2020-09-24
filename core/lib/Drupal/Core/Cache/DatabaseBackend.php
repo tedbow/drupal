@@ -151,7 +151,7 @@ class DatabaseBackend implements CacheBackendInterface {
     $cache->tags = $cache->tags ? explode(' ', $cache->tags) : [];
 
     // Check expire time.
-    $cache->valid = $cache->expire == Cache::PERMANENT || $cache->expire >= \Drupal::time()->getRequestTime();
+    $cache->valid = $cache->expire == Cache::PERMANENT || $cache->expire >= REQUEST_TIME;
 
     // Check if invalidateTags() has been called with any of the items's tags.
     if (!$this->checksumProvider->isValid($cache->checksum, $cache->tags)) {
@@ -336,7 +336,7 @@ class DatabaseBackend implements CacheBackendInterface {
       // Update in chunks when a large array is passed.
       foreach (array_chunk($cids, 1000) as $cids_chunk) {
         $this->connection->update($this->bin)
-          ->fields(['expire' => \Drupal::time()->getRequestTime() - 1])
+          ->fields(['expire' => REQUEST_TIME - 1])
           ->condition('cid', $cids_chunk, 'IN')
           ->execute();
       }
@@ -352,7 +352,7 @@ class DatabaseBackend implements CacheBackendInterface {
   public function invalidateAll() {
     try {
       $this->connection->update($this->bin)
-        ->fields(['expire' => \Drupal::time()->getRequestTime() - 1])
+        ->fields(['expire' => REQUEST_TIME - 1])
         ->execute();
     }
     catch (\Exception $e) {
@@ -383,7 +383,7 @@ class DatabaseBackend implements CacheBackendInterface {
 
       $this->connection->delete($this->bin)
         ->condition('expire', Cache::PERMANENT, '<>')
-        ->condition('expire', \Drupal::time()->getRequestTime(), '<')
+        ->condition('expire', REQUEST_TIME, '<')
         ->execute();
     }
     catch (\Exception $e) {
