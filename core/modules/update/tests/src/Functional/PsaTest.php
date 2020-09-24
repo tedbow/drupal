@@ -204,6 +204,9 @@ class PsaTest extends BrowserTestBase {
 
     // Deleting the PSA cache will not result in another email if the messages
     // have not changed.
+    // @todo Replace deleting the cache directly in the test with faking a later
+    //   date and letting the cache item expire in
+    //   https://www.drupal.org/node/3113971.
     $this->cache->delete('updates_psa');
     $this->container->get('state')->set('system.test_mail_collector', []);
     $this->container->get('cron')->run();
