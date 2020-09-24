@@ -102,9 +102,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
     else {
       $psa_endpoint = $this->config->get('psa.endpoint');
       try {
-        $response = $this->httpClient->get($psa_endpoint)
-          ->getBody()
-          ->getContents();
+        $response = (string) $this->httpClient->get($psa_endpoint)->getBody();
         $this->cache->set('updates_psa', $response, $this->time->getCurrentTime() + $this->config->get('psa.check_frequency'));
       }
       catch (TransferException $exception) {
