@@ -32,8 +32,8 @@
     "pubDate":"Tue, 19 Feb 2017 14:11:01 +0000"
   },
   {
-    "title":"AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019",
-    "link":"https:\/\/www.drupal.org\/sa-contrib-2019",
+    "title":"AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02",
+    "link":"https:\/\/www.drupal.org\/SA-CONTRIB-2019-02-02",
     "project":"aaa_update_project",
     "type":"theme",
     "is_psa":"0",
@@ -44,8 +44,8 @@
     "pubDate":"Tue, 19 Mar 2019 12:50:00 +0000"
   },
   {
-    "title":"AAA Update Test - Moderately critical - Access bypass - SA-CONTRIB-2019",
-    "link":"https:\/\/www.drupal.org\/sa-contrib-2019",
+    "title":"AAA Update Test - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02",
+    "link":"https:\/\/www.drupal.org\/SA-CONTRIB-2019-02-02",
     "project":"aaa_update_test",
     "type":"theme",
     "is_psa":"0",
@@ -56,8 +56,8 @@
     "pubDate":"Tue, 19 Mar 2019 12:50:00 +0000"
   },
   {
-    "title":"BBB Update project - Moderately critical - Access bypass - SA-CONTRIB-2019",
-    "link":"https:\/\/www.drupal.org\/sa-contrib-2019",
+    "title":"BBB Update project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02",
+    "link":"https:\/\/www.drupal.org\/SA-CONTRIB-2019-02-02",
     "project":"bbb_update_project",
     "type":"module",
     "is_psa":"1",
@@ -67,8 +67,8 @@
     "pubDate":"Tue, 19 Mar 2019 12:50:00 +0000"
   },
   {
-    "title":"Missing Project - Moderately critical - Access bypass - SA-CONTRIB-2019",
-    "link":"https:\/\/www.drupal.org\/sa-contrib-2019",
+    "title":"Missing Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02",
+    "link":"https:\/\/www.drupal.org\/SA-CONTRIB-2019-02-02",
     "project":"missing_project",
     "type":"module",
     "is_psa":"1",

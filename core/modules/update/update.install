@@ -188,23 +188,20 @@ function update_update_last_removed() {
  *   The requirements array as specified in hook_requirements().
  */
 function _update_psa_requirements(array &$requirements): void {
-  $requirements['update_psa'] = [
-    'title' => t('Public service announcements'),
-    'severity' => REQUIREMENT_OK,
-    'value' => t('No announcements requiring attention.'),
-  ];
   /** @var \Drupal\update\Psa\UpdatesPsaInterface $psa */
   $psa = \Drupal::service('update.psa');
   try {
     $messages = $psa->getPublicServiceMessages();
   }
   catch (Exception $exception) {
+    $requirements['update_psa']['title'] = t('Public service announcements');
     $requirements['update_psa']['severity'] = REQUIREMENT_ERROR;
     $requirements['update_psa']['value'] = UpdatesPsa::getErrorMessageFromException($exception);
     return;
   }
 
   if (!empty($messages)) {
+    $requirements['update_psa']['title'] = t('Public service announcements');
     $requirements['update_psa']['severity'] = REQUIREMENT_ERROR;
     $requirements['update_psa']['value'] = new PluralTranslatableMarkup(count($messages), '@count urgent announcement requires your attention:', '@count urgent announcements require your attention:');
     $requirements['update_psa']['description'] = [
