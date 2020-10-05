@@ -124,23 +124,21 @@ function update_page_top() {
       }
     }
 
-    if (\Drupal::config('update.settings')->get('psa.enable')) {
-      /** @var \Drupal\update\Psa\UpdatesPsaInterface $psa */
-      $psa = \Drupal::service('update.psa');
-      try {
-        $messages = $psa->getPublicServiceMessages();
-        if ($messages) {
-          \Drupal::messenger()->addError(t('Public service announcements:'));
-          foreach ($messages as $message) {
-            \Drupal::messenger()->addError($message);
-          }
+    /** @var \Drupal\update\Psa\UpdatesPsaInterface $psa */
+    $psa = \Drupal::service('update.psa');
+    try {
+      $messages = $psa->getPublicServiceMessages();
+      if ($messages) {
+        \Drupal::messenger()->addError(t('Public service announcements:'));
+        foreach ($messages as $message) {
+          \Drupal::messenger()->addError($message);
         }
       }
-      catch (Exception $exception) {
-        if (!($exception instanceof TransferException || $exception instanceof UnexpectedValueException)) {
-          // If the exception is unexpected rethrow it.
-          throw $exception;
-        }
+    }
+    catch (Exception $exception) {
+      if (!($exception instanceof TransferException || $exception instanceof UnexpectedValueException)) {
+        // If the exception is unexpected rethrow it.
+        throw $exception;
       }
     }
   }

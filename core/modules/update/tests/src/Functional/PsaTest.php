@@ -150,22 +150,10 @@ class PsaTest extends BrowserTestBase {
     $this->drupalGet(Url::fromRoute('system.admin'));
     $assert->pageTextNotContains('Critical Release - SA-2019-02-19');
 
-    // Test disabling PSAs.
-    $this->config('update.settings')
-      ->set('psa.endpoint', $this->workingEndpoint)
-      ->save();
-    $this->setSettingsViaForm('psa_enable', FALSE);
-    $this->tempStore->delete('updates_psa');
-    $this->drupalGet(Url::fromRoute('system.admin'));
-    $assert->pageTextNotContains('Critical Release - PSA-2019-02-19');
-    $this->drupalGet(Url::fromRoute('system.status'));
-    $assert->pageTextContains(' 3 urgent announcements require your attention');
-
     // Test a PSA endpoint that returns invalid JSON.
     $this->config('update.settings')
       ->set('psa.endpoint', $this->invalidJsonEndpoint)
       ->save();
-    $this->setSettingsViaForm('psa_enable', TRUE);
     $this->tempStore->delete('updates_psa');
     // On admin pages no message should be displayed if the feed is malformed.
     $this->drupalGet(Url::fromRoute('system.admin'));
@@ -224,18 +212,6 @@ class PsaTest extends BrowserTestBase {
     $this->assertMailString('subject', '4 urgent security announcements require your attention', 1);
     $this->assertMailString('body', 'Critical Release - SA-2019-02-19', 1);
     $this->assertMailString('body', 'Critical Release - PSA because 2020', 1);
-
-    // No email should be sent if PSAs are disabled even the endpoint has
-    // changed which will have different messages.
-    $this->tempStore->delete('updates_psa');
-    $this->container->get('state')->set('system.test_mail_collector', []);
-    // Do not include the extra item so the message would be different.
-    $this->config('update.settings')
-      ->set('psa.endpoint', $this->workingEndpoint)
-      ->save();
-    $this->setSettingsViaForm('psa_notify', FALSE);
-    $this->container->get('cron')->run();
-    $this->assertCount(0, $this->getPsaEmails());
   }
 
   /**
@@ -246,33 +222,12 @@ class PsaTest extends BrowserTestBase {
     $this->config('update.settings')
       ->set('notification.emails', ['admin@example.com'])
       ->save();
-    $this->setSettingsViaForm('psa_notify', TRUE);
     $this->config('update.settings')
       ->set('psa.endpoint', $this->invalidJsonEndpoint)
       ->save();
     $this->tempStore->delete('updates_psa');
     $this->container->get('cron')->run();
     $this->assertCount(0, $this->getPsaEmails());
-  }
-
-  /**
-   * Sets a PSA setting via the settings form.
-   *
-   * @param string $checkbox
-   *   The name of the checkbox.
-   * @param bool $enable
-   *   Whether the setting should be enabled.
-   */
-  private function setSettingsViaForm(string $checkbox, bool $enable): void {
-    $page = $this->getSession()->getPage();
-    $this->drupalGet('admin/reports/updates/settings');
-    if ($enable) {
-      $page->checkField($checkbox);
-    }
-    else {
-      $page->uncheckField($checkbox);
-    }
-    $page->pressButton('Save configuration');
   }
 
   /**

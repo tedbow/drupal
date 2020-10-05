@@ -10,6 +10,4 @@ notification:
   threshold: all
 psa:
   endpoint: 'https://updates.drupal.org/psa.json'
-  enable: true
-  notify: true
   check_frequency: 43200

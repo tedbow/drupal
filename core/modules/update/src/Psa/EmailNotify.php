@@ -118,7 +118,7 @@ class EmailNotify implements NotifyInterface {
   public function send(): void {
     $notify_emails = $this->configFactory->get('update.settings')->get('notification.emails');
     // Don't send mail if notifications are disabled.
-    if (!$notify_emails || !$this->configFactory->get('update.settings')->get('psa.notify')) {
+    if (!$notify_emails) {
       return;
     }
     try {

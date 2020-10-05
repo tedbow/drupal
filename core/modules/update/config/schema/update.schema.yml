@@ -47,12 +47,6 @@ update.settings:
         endpoint:
           type: string
           label: 'Endpoint URI for PSAs'
-        enable:
-          type: boolean
-          label: 'Enable PSA notices'
-        notify:
-          type: boolean
-          label: 'Notify when PSAs are available'
         check_frequency:
           type: integer
           label: 'Frequency to check for PSAs, defaults to 12 hours'
