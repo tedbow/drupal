@@ -12,7 +12,6 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\update\UpdateManagerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
-use Psr\Log\LoggerInterface;
 
 /**
  * Defines a service class to get Public Service Messages.
