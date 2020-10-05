@@ -39,7 +39,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
   protected $httpClient;
 
   /**
-   * Update key/value store
+   * Update key/value store.
    *
    * @var \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface
    */
@@ -102,7 +102,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
       $psa_endpoint = $this->config->get('psa.endpoint');
       try {
         $response = (string) $this->httpClient->get($psa_endpoint)->getBody();
-        $this->tempStore->setWithExpire('updates_psa', $response, $this->time->getCurrentTime() + $this->config->get('psa.check_frequency'));
+        $this->tempStore->setWithExpire('updates_psa', $response, $this->config->get('psa.check_frequency'));
       }
       catch (TransferException $exception) {
         $this->logger->error($exception->getMessage());
