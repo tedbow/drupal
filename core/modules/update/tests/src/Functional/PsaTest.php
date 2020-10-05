@@ -148,7 +148,6 @@ class PsaTest extends BrowserTestBase {
     // Test transmit errors with JSON endpoint.
     $this->tempStore->delete('updates_psa');
     $this->drupalGet(Url::fromRoute('system.admin'));
-    file_put_contents("/Users/ted.bowman/sites/test.html", $this->getSession()->getPage()->getOuterHtml());
     $assert->pageTextContains('Unable to retrieve PSA information from ' . $this->nonWorkingEndpoint);
     $assert->pageTextNotContains('Critical Release - SA-2019-02-19');
 
