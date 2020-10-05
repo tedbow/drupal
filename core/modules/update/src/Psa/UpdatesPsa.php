@@ -176,7 +176,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *
    * @return bool
    *   TRUE if security announcement matches the installed version of the
-   *   project, otherwise FALSE.
+   *   project; otherwise FALSE.
    *
    * @throws \UnexpectedValueException
    *   Thrown by \Composer\Semver\VersionParser::parseConstraints() if the
@@ -190,7 +190,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
       $installed_constraint = $parser->parseConstraints($this->getInstalledVersion($sa));
     }
     catch (\UnexpectedValueException $exception) {
-      // If the installed version can not be parsed assume it matches to avoid
+      // If the installed version cannot be parsed, assume it matches to avoid
       // not returning a critical PSA.
       return TRUE;
     }

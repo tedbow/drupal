@@ -171,7 +171,7 @@ class PsaTest extends BrowserTestBase {
     $this->drupalGet(Url::fromRoute('system.admin'));
     $assert->pageTextNotContains('Critical Release - PSA-2019-02-19');
     $assert->pageTextNotContains('Drupal PSA JSON is malformed.');
-    // On status report there should be a message for a malformed feed.
+    // On the status report there should be a message for a malformed feed.
     $this->drupalGet(Url::fromRoute('system.status'));
     $assert->pageTextContains('Drupal PSA JSON is malformed.');
   }
