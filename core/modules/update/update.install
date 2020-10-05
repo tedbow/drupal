@@ -184,10 +184,10 @@ function update_update_last_removed() {
 /**
  * Display requirements from Public service announcements.
  *
- * @param array $requirements
- *   The requirements array.
+ * @param array[] $requirements
+ *   The requirements array as specified in hook_requirements().
  */
-function _update_psa_requirements(array &$requirements) {
+function _update_psa_requirements(array &$requirements): void {
   $requirements['update_psa'] = [
     'title' => t('Public service announcements'),
     'severity' => REQUIREMENT_OK,

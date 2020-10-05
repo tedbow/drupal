@@ -67,11 +67,11 @@ class PsaTest extends BrowserTestBase {
   protected $invalidJsonEndpoint;
 
   /**
-   * The cache service.
+   * The key/value store.
    *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
+   * @var \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface
    */
-  protected $cache;
+  protected $tempStore;
 
   /**
    * {@inheritdoc}
@@ -108,13 +108,14 @@ class PsaTest extends BrowserTestBase {
     $this->nonWorkingEndpoint = $this->buildUrl('/core/modules/update/tests/fixtures/psa_feed/missing.json');
     $this->invalidJsonEndpoint = "$fixtures_path/invalid.json";
 
-    $this->cache = $this->container->get('cache.default');
+    $this->tempStore = $this->container->get('keyvalue.expirable')->get('update');
+
   }
 
   /**
    * Tests that a PSA is displayed.
    */
-  public function testPsa() {
+  public function testPsa(): void {
     $assert = $this->assertSession();
     // Setup test PSA endpoint.
     $this->config('update.settings')
@@ -145,8 +146,9 @@ class PsaTest extends BrowserTestBase {
     $assert->pageTextNotContains('Views - Moderately critical - Access bypass - SA-CONTRIB-2019');
 
     // Test transmit errors with JSON endpoint.
-    drupal_flush_all_caches();
+    $this->tempStore->delete('updates_psa');
     $this->drupalGet(Url::fromRoute('system.admin'));
+    file_put_contents("/Users/ted.bowman/sites/test.html", $this->getSession()->getPage()->getOuterHtml());
     $assert->pageTextContains('Unable to retrieve PSA information from ' . $this->nonWorkingEndpoint);
     $assert->pageTextNotContains('Critical Release - SA-2019-02-19');
 
@@ -155,7 +157,7 @@ class PsaTest extends BrowserTestBase {
       ->set('psa.endpoint', $this->workingEndpoint)
       ->save();
     $this->setSettingsViaForm('psa_enable', FALSE);
-    drupal_flush_all_caches();
+    $this->tempStore->delete('updates_psa');
     $this->drupalGet(Url::fromRoute('system.admin'));
     $assert->pageTextNotContains('Critical Release - PSA-2019-02-19');
     $this->drupalGet(Url::fromRoute('system.status'));
@@ -166,7 +168,7 @@ class PsaTest extends BrowserTestBase {
       ->set('psa.endpoint', $this->invalidJsonEndpoint)
       ->save();
     $this->setSettingsViaForm('psa_enable', TRUE);
-    drupal_flush_all_caches();
+    $this->tempStore->delete('updates_psa');
     $this->drupalGet(Url::fromRoute('system.admin'));
     $assert->pageTextNotContains('Critical Release - PSA-2019-02-19');
     $assert->pageTextContains('Drupal PSA JSON is malformed.');
@@ -177,7 +179,7 @@ class PsaTest extends BrowserTestBase {
   /**
    * Tests sending PSA email notifications.
    */
-  public function testPsaMail() {
+  public function testPsaMail(): void {
     // Setup test PSA endpoint.
     $this->config('update.settings')
       ->set('psa.endpoint', $this->workingEndpoint)
@@ -188,18 +190,18 @@ class PsaTest extends BrowserTestBase {
       ->save();
 
     // Confirm that PSA cache does not exist.
-    $this->assertFalse($this->cache->get('updates_psa'));
+    $this->assertNull($this->tempStore->get('updates_psa'));
 
     // Test PSAs on admin pages.
     $this->drupalGet(Url::fromRoute('system.admin'));
     $this->assertSession()->pageTextContains('Critical Release - SA-2019-02-19');
     // Confirm that the PSA cache has been set.
-    $this->assertNotEmpty($this->cache->get('updates_psa'));
+    $this->assertNotEmpty($this->tempStore->get('updates_psa'));
 
     // Email should be sent.
     $this->container->get('cron')->run();
     $this->assertCount(1, $this->getPsaEmails());
-    $this->assertMailString('subject', '3 urgent Drupal announcements require your attention', 1);
+    $this->assertMailString('subject', '3 urgent security announcements require your attention', 1);
     $this->assertMailString('body', 'Critical Release - SA-2019-02-19', 1);
 
     // Deleting the PSA cache will not result in another email if the messages
@@ -207,25 +209,25 @@ class PsaTest extends BrowserTestBase {
     // @todo Replace deleting the cache directly in the test with faking a later
     //   date and letting the cache item expire in
     //   https://www.drupal.org/node/3113971.
-    $this->cache->delete('updates_psa');
+    $this->tempStore->delete('updates_psa');
     $this->container->get('state')->set('system.test_mail_collector', []);
     $this->container->get('cron')->run();
     $this->assertCount(0, $this->getPsaEmails());
 
-    // Deleting the PSA cache will result in another email if the messages have
-    // changed.
-    $this->cache->delete('updates_psa');
+    // Deleting the PSA tempstore item will result in another email if the
+    // messages have changed.
+    $this->tempStore->delete('updates_psa');
     $this->container->get('state')->set('system.test_mail_collector', []);
     $this->config('update.settings')->set('psa.endpoint', $this->workingEndpointPlus1)->save();
     $this->container->get('cron')->run();
     $this->assertCount(1, $this->getPsaEmails());
-    $this->assertMailString('subject', '4 urgent Drupal announcements require your attention', 1);
+    $this->assertMailString('subject', '4 urgent security announcements require your attention', 1);
     $this->assertMailString('body', 'Critical Release - SA-2019-02-19', 1);
     $this->assertMailString('body', 'Critical Release - PSA because 2020', 1);
 
-    // No email should be sent if PSA's are disabled even the endpoint has
+    // No email should be sent if PSAs are disabled even the endpoint has
     // changed which will have different messages.
-    $this->cache->delete('updates_psa');
+    $this->tempStore->delete('updates_psa');
     $this->container->get('state')->set('system.test_mail_collector', []);
     // Do not include the extra item so the message would be different.
     $this->config('update.settings')
@@ -239,7 +241,7 @@ class PsaTest extends BrowserTestBase {
   /**
    * Tests sending an email when the PSA JSON is invalid.
    */
-  public function testInvalidJsonEmail() {
+  public function testInvalidJsonEmail(): void {
     // Setup a default destination email address.
     $this->config('update.settings')
       ->set('notification.emails', ['admin@example.com'])
@@ -248,7 +250,7 @@ class PsaTest extends BrowserTestBase {
     $this->config('update.settings')
       ->set('psa.endpoint', $this->invalidJsonEndpoint)
       ->save();
-    $this->cache->delete('updates_psa');
+    $this->tempStore->delete('updates_psa');
     $this->container->get('cron')->run();
     $this->assertCount(0, $this->getPsaEmails());
   }
@@ -261,7 +263,7 @@ class PsaTest extends BrowserTestBase {
    * @param bool $enable
    *   Whether the setting should be enabled.
    */
-  private function setSettingsViaForm(string $checkbox, bool $enable) {
+  private function setSettingsViaForm(string $checkbox, bool $enable): void {
     $page = $this->getSession()->getPage();
     $this->drupalGet('admin/reports/updates/settings');
     if ($enable) {
@@ -274,9 +276,12 @@ class PsaTest extends BrowserTestBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Gets an array of 'update_psa_notify' emails sent during this test case.
+   *
+   * @return array
+   *   An array containing email messages captured during the current test.
    */
-  protected function getPsaEmails() {
+  protected function getPsaEmails(): array {
     return $this->getMails(['id' => 'update_psa_notify']);
   }
 

@@ -5,9 +5,9 @@ namespace Drupal\update\Psa;
 use Composer\Semver\VersionParser;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Render\FormattableMarkup;
-use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\update\UpdateManagerInterface;
 use GuzzleHttp\Client;
@@ -15,34 +15,35 @@ use GuzzleHttp\Exception\TransferException;
 use Psr\Log\LoggerInterface;
 
 /**
- * Service class to get Public Service Messages.
+ * Defines a service class to get Public Service Messages.
  */
 class UpdatesPsa implements UpdatesPsaInterface {
+
   use StringTranslationTrait;
   use DependencySerializationTrait;
 
   protected const MALFORMED_JSON_EXCEPTION_CODE = 1000;
 
   /**
-   * This module's configuration.
+   * This 'update.settings' configuration.
    *
    * @var \Drupal\Core\Config\ImmutableConfig
    */
   protected $config;
 
   /**
-   * The http client.
+   * The HTTP client.
    *
    * @var \GuzzleHttp\Client
    */
   protected $httpClient;
 
   /**
-   * The cache backend.
+   * Update key/value store
    *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
+   * @var \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface
    */
-  protected $cache;
+  protected $tempStore;
 
   /**
    * The time service.
@@ -70,8 +71,8 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
-   *   The cache backend.
+   * @param \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface $key_value_factory
+   *   The expirable key/value factory.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    * @param \GuzzleHttp\Client $client
@@ -81,9 +82,9 @@ class UpdatesPsa implements UpdatesPsaInterface {
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, CacheBackendInterface $cache, TimeInterface $time, Client $client, UpdateManagerInterface $update_manager, LoggerInterface $logger) {
+  public function __construct(ConfigFactoryInterface $config_factory, KeyValueExpirableFactoryInterface $key_value_factory, TimeInterface $time, Client $client, UpdateManagerInterface $update_manager, LoggerInterface $logger) {
     $this->config = $config_factory->get('update.settings');
-    $this->cache = $cache;
+    $this->tempStore = $key_value_factory->get('update');
     $this->time = $time;
     $this->httpClient = $client;
     $this->updateManager = $update_manager;
@@ -96,14 +97,12 @@ class UpdatesPsa implements UpdatesPsaInterface {
   public function getPublicServiceMessages() : array {
     $messages = [];
 
-    if ($cache = $this->cache->get('updates_psa')) {
-      $response = $cache->data;
-    }
-    else {
+    $response = $this->tempStore->get('updates_psa');
+    if (!$response) {
       $psa_endpoint = $this->config->get('psa.endpoint');
       try {
         $response = (string) $this->httpClient->get($psa_endpoint)->getBody();
-        $this->cache->set('updates_psa', $response, $this->time->getCurrentTime() + $this->config->get('psa.check_frequency'));
+        $this->tempStore->setWithExpire('updates_psa', $response, $this->time->getCurrentTime() + $this->config->get('psa.check_frequency'));
       }
       catch (TransferException $exception) {
         $this->logger->error($exception->getMessage());

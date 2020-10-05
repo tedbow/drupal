@@ -14,9 +14,10 @@ use Drupal\Core\StringTranslation\TranslationInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * An implementation of the NotifyInterface which uses email for notification.
+ * Provides an implementation of the NotifyInterface using email notifications.
  */
 class EmailNotify implements NotifyInterface {
+
   use StringTranslationTrait;
 
   private const LAST_MESSAGES_STATE_KEY = 'update_psa.last_messages_hash';
@@ -114,7 +115,7 @@ class EmailNotify implements NotifyInterface {
   /**
    * {@inheritdoc}
    */
-  public function send() {
+  public function send(): void {
     $notify_emails = $this->configFactory->get('update.settings')->get('notification.emails');
     // Don't send mail if notifications are disabled.
     if (!$notify_emails || !$this->configFactory->get('update.settings')->get('psa.notify')) {
@@ -143,8 +144,8 @@ class EmailNotify implements NotifyInterface {
 
     $params['subject'] = new PluralTranslatableMarkup(
       count($messages),
-      '@count urgent Drupal announcement requires your attention for @site_name',
-      '@count urgent Drupal announcements require your attention for @site_name',
+      '@count urgent security announcement requires your attention for @site_name',
+      '@count urgent security announcements require your attention for @site_name',
       ['@site_name' => $this->configFactory->get('system.site')->get('name')]
     );
     $params['body'] = [
@@ -164,10 +165,13 @@ class EmailNotify implements NotifyInterface {
    *
    * @param string $email
    *   The email address where the message will be sent.
-   * @param array $params
-   *   Parameters to build the email.
+   * @param mixed[] $params
+   *   The parameters array to build the email consisting of the following keys:
+   *   - subject: The email subject.
+   *   - body: A render array of the email body.
+   *   - langcode: The language for the email.
    */
-  protected function doSend(string $email, array $params) {
+  protected function doSend(string $email, array $params): void {
     /** @var \Drupal\user\UserInterface[] $users */
     $users = $this->entityTypeManager->getStorage('user')
       ->loadByProperties(['mail' => $email]);

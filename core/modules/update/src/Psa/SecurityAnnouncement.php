@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
 
 /**
- * A security announcement.
+ * Provides a security announcement value object.
  *
  * These come form the PSA feed on drupal.org.
  *
@@ -47,7 +47,7 @@ class SecurityAnnouncement {
   /**
    * The currently insecure versions of the project.
    *
-   * @var array
+   * @var string[]
    */
   protected $insecureVersions;
 
@@ -71,8 +71,8 @@ class SecurityAnnouncement {
    *   Whether this announcement is a PSA.
    * @param string $link
    *   The link to the announcement.
-   * @param array $insecure_versions
-   *   The version of the project that currently insecure. For PSA's this is not
+   * @param string $insecure_versions
+   *   The version of the project that currently insecure. For PSAs this is not
    *   a list of versions that will be insecure when the security release is
    *   published.
    */
@@ -88,7 +88,7 @@ class SecurityAnnouncement {
   /**
    * Creates a SecurityAnnouncement instance from an array.
    *
-   * @param array $data
+   * @param mixed[] $data
    *   The security announcement data as returned from the JSON feed.
    *
    * @return static
@@ -97,7 +97,7 @@ class SecurityAnnouncement {
    * @throws \UnexpectedValueException
    *   Thrown if the array is not a valid PSA.
    */
-  public static function createFromArray(array $data) {
+  public static function createFromArray(array $data): SecurityAnnouncement {
     static::validateAnnouncementData($data);
     return new static(
       $data['title'],
@@ -112,7 +112,7 @@ class SecurityAnnouncement {
   /**
    * Validates the PSA data.
    *
-   * @param array $data
+   * @param mixed[] $data
    *   The announcement data.
    *
    * @throws \UnexpectedValueException
@@ -137,9 +137,9 @@ class SecurityAnnouncement {
     $violations = Validation::createValidator()->validate($data, $collection_constraint);
     if ($violations->count()) {
       foreach ($violations as $violation) {
-        $volition_messages[] = (string) $violation;
+        $violation_messages[] = (string) $violation;
       }
-      throw new \UnexpectedValueException(implode(",  \n", $volition_messages));
+      throw new \UnexpectedValueException(implode(",  \n", $violation_messages));
     }
   }
 

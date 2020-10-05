@@ -3,7 +3,7 @@
 namespace Drupal\update\Psa;
 
 /**
- * Defines an interface for sending notification of update PSA's.
+ * Defines an interface for sending notification of update PSAs.
  */
 interface NotifyInterface {
 
