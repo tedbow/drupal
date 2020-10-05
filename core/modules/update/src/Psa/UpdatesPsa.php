@@ -277,6 +277,8 @@ class UpdatesPsa implements UpdatesPsaInterface {
    */
   protected function getProject(string $project_name): array {
     static $projects = [];
+    // @todo Change to get a project even it is disabled. This will probably
+    //   mean not using the project manager because of how it caches.
     if (empty($projects)) {
       $projects = $this->updateManager->getProjects();
     }
