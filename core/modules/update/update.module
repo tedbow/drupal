@@ -20,7 +20,6 @@ use Drupal\Core\Site\Settings;
 use Drupal\update\Psa\UpdatesPsa;
 use Drupal\update\UpdateFetcherInterface;
 use Drupal\update\UpdateManagerInterface;
-use GuzzleHttp\Exception\TransferException;
 
 /**
  * Implements hook_help().

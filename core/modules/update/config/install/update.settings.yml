@@ -13,4 +13,3 @@ psa:
   enable: true
   notify: true
   check_frequency: 43200
-
