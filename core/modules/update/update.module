@@ -20,6 +20,7 @@ use Drupal\Core\Site\Settings;
 use Drupal\update\Psa\UpdatesPsa;
 use Drupal\update\UpdateFetcherInterface;
 use Drupal\update\UpdateManagerInterface;
+use GuzzleHttp\Exception\TransferException;
 
 /**
  * Implements hook_help().
@@ -137,7 +138,10 @@ function update_page_top() {
         }
       }
       catch (Exception $exception) {
-        \Drupal::messenger()->addError(UpdatesPsa::getErrorMessageFromException($exception));
+        if (!($exception instanceof TransferException || $exception instanceof UnexpectedValueException)) {
+          // If the exception is unexpected rethrow it.
+          throw $exception;
+        }
       }
     }
   }

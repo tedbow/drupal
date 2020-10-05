@@ -33,7 +33,6 @@ services:
       - '@datetime.time'
       - '@http_client'
       - '@update.manager'
-      - '@logger.channel.updates'
   update.psa_notify:
     class: Drupal\update\Psa\EmailNotify
     arguments:

@@ -148,7 +148,6 @@ class PsaTest extends BrowserTestBase {
     // Test transmit errors with JSON endpoint.
     $this->tempStore->delete('updates_psa');
     $this->drupalGet(Url::fromRoute('system.admin'));
-    $assert->pageTextContains('Unable to retrieve PSA information from ' . $this->nonWorkingEndpoint);
     $assert->pageTextNotContains('Critical Release - SA-2019-02-19');
 
     // Test disabling PSAs.
@@ -168,9 +167,11 @@ class PsaTest extends BrowserTestBase {
       ->save();
     $this->setSettingsViaForm('psa_enable', TRUE);
     $this->tempStore->delete('updates_psa');
+    // On admin pages no message should be displayed if the feed is malformed.
     $this->drupalGet(Url::fromRoute('system.admin'));
     $assert->pageTextNotContains('Critical Release - PSA-2019-02-19');
-    $assert->pageTextContains('Drupal PSA JSON is malformed.');
+    $assert->pageTextNotContains('Drupal PSA JSON is malformed.');
+    // On status report there should be a message for a malformed feed.
     $this->drupalGet(Url::fromRoute('system.status'));
     $assert->pageTextContains('Drupal PSA JSON is malformed.');
   }

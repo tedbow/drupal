@@ -53,13 +53,6 @@ class UpdatesPsa implements UpdatesPsaInterface {
   protected $time;
 
   /**
-   * The logger.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
    * The update manager.
    *
    * @var \Drupal\update\UpdateManagerInterface
@@ -79,16 +72,13 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *   The HTTP client.
    * @param \Drupal\update\UpdateManagerInterface $update_manager
    *   The update manager.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   The logger.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, KeyValueExpirableFactoryInterface $key_value_factory, TimeInterface $time, Client $client, UpdateManagerInterface $update_manager, LoggerInterface $logger) {
+  public function __construct(ConfigFactoryInterface $config_factory, KeyValueExpirableFactoryInterface $key_value_factory, TimeInterface $time, Client $client, UpdateManagerInterface $update_manager) {
     $this->config = $config_factory->get('update.settings');
     $this->tempStore = $key_value_factory->get('update');
     $this->time = $time;
     $this->httpClient = $client;
     $this->updateManager = $update_manager;
-    $this->logger = $logger;
   }
 
   /**
@@ -100,14 +90,8 @@ class UpdatesPsa implements UpdatesPsaInterface {
     $response = $this->tempStore->get('updates_psa');
     if (!$response) {
       $psa_endpoint = $this->config->get('psa.endpoint');
-      try {
-        $response = (string) $this->httpClient->get($psa_endpoint)->getBody();
-        $this->tempStore->setWithExpire('updates_psa', $response, $this->config->get('psa.check_frequency'));
-      }
-      catch (TransferException $exception) {
-        $this->logger->error($exception->getMessage());
-        throw $exception;
-      }
+      $response = (string) $this->httpClient->get($psa_endpoint)->getBody();
+      $this->tempStore->setWithExpire('updates_psa', $response, $this->config->get('psa.check_frequency'));
     }
 
     $json_payload = json_decode($response, TRUE);
@@ -117,7 +101,6 @@ class UpdatesPsa implements UpdatesPsaInterface {
           $sa = SecurityAnnouncement::createFromArray($json);
         }
         catch (\UnexpectedValueException $unexpected_value_exception) {
-          $this->logger->error('PSA malformed: ' . $unexpected_value_exception->getMessage());
           throw new \UnexpectedValueException($unexpected_value_exception->getMessage(), static::MALFORMED_JSON_EXCEPTION_CODE);
         }
 
@@ -130,7 +113,6 @@ class UpdatesPsa implements UpdatesPsaInterface {
       }
     }
     else {
-      $this->logger->error('Drupal PSA JSON is malformed: @response', ['@response' => $response]);
       throw new \UnexpectedValueException('Drupal PSA JSON is malformed.', static::MALFORMED_JSON_EXCEPTION_CODE);
     }
 
@@ -182,13 +164,12 @@ class UpdatesPsa implements UpdatesPsaInterface {
       return !empty($project['info']['version']);
     }
     catch (\UnexpectedValueException $exception) {
-      $this->logger->error($exception->getMessage());
       return FALSE;
     }
   }
 
   /**
-   * Determines if the Psa versions match for the installed version of project.
+   * Determines if the PSA versions match for the installed version of project.
    *
    * @param \Drupal\update\Psa\SecurityAnnouncement $sa
    *   The security announcement.
