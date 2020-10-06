@@ -88,14 +88,6 @@ class UpdateSettingsForm extends ConfigFormBase implements ContainerInjectionInt
       '#description' => t('You can choose to send email only if a security update is available, or to be notified about all newer versions. If there are updates available of Drupal core or any of your installed modules and themes, your site will always print a message on the <a href=":status_report">status report</a> page, and will also display an error message on administration pages if there is a security update.', [':status_report' => Url::fromRoute('system.status')->toString()]),
     ];
 
-    $form['psa'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Public service announcements'),
-      '#open' => TRUE,
-    ];
-    $form['psa']['description'] = [
-      '#markup' => '<p>' . $this->t('Public service announcements are compared against the entire code for the site, not just installed extensions.') . '</p>',
-    ];
     return parent::buildForm($form, $form_state);
   }
 
@@ -128,9 +120,6 @@ class UpdateSettingsForm extends ConfigFormBase implements ContainerInjectionInt
         $form_state->setErrorByName('update_notify_emails', $this->t('%emails are not valid email addresses.', ['%emails' => implode(', ', $invalid)]));
       }
     }
-    elseif ($form_state->getValue('psa_notify')) {
-      $form_state->setErrorByName('update_notify_emails', $this->t('If "Send email notifications for Public service announcements." is checked at least one email must be provided.'));
-    }
 
     parent::validateForm($form, $form_state);
   }
@@ -151,7 +140,6 @@ class UpdateSettingsForm extends ConfigFormBase implements ContainerInjectionInt
       ->set('check.interval_days', $form_state->getValue('update_check_frequency'))
       ->set('notification.emails', $form_state->get('notify_emails'))
       ->set('notification.threshold', $form_state->getValue('update_notification_threshold'))
-      ->set('psa.notify', $form_state->getValue('psa_notify'))
       ->save();
 
     parent::submitForm($form, $form_state);
