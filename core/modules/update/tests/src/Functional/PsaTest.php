@@ -194,7 +194,6 @@ class PsaTest extends BrowserTestBase {
     $this->assertMailString('body', 'AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02', 1);
     $this->assertMailString('body', 'AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02', 1);
 
-
     // Deleting the PSA cache will not result in another email if the messages
     // have not changed.
     // @todo Replace deleting the cache directly in the test with faking a later
