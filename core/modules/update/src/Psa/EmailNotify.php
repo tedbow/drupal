@@ -152,32 +152,14 @@ class EmailNotify implements NotifyInterface {
       '#messages' => $messages,
     ];
     $default_langcode = $this->languageManager->getDefaultLanguage()->getId();
-    $params['langcode'] = $default_langcode;
     foreach ($notify_emails as $notify_email) {
-      $this->doSend($notify_email, $params);
+      /** @var \Drupal\user\UserInterface[] $users */
+      $users = $this->entityTypeManager->getStorage('user')
+        ->loadByProperties(['mail' => $notify_email]);
+      $params['langcode'] = $users ? (reset($users))->getPreferredLangcode() : $default_langcode;
+      $this->mailManager->mail('update', 'psa_notify', $notify_email, $params['langcode'], $params);
     }
     $this->state->set(static::LAST_MESSAGES_STATE_KEY, $messages_hash);
-  }
-
-  /**
-   * Composes and send the email message.
-   *
-   * @param string $email
-   *   The email address where the message will be sent.
-   * @param mixed[] $params
-   *   The parameters array to build the email consisting of the following keys:
-   *   - subject: The email subject.
-   *   - body: A render array of the email body.
-   *   - langcode: The language for the email.
-   */
-  protected function doSend(string $email, array $params): void {
-    /** @var \Drupal\user\UserInterface[] $users */
-    $users = $this->entityTypeManager->getStorage('user')
-      ->loadByProperties(['mail' => $email]);
-    if ($user = reset($users)) {
-      $params['langcode'] = $user->getPreferredLangcode();
-      $this->mailManager->mail('update', 'psa_notify', $email, $params['langcode'], $params);
-    }
   }
 
 }

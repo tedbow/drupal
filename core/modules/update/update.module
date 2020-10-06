@@ -71,6 +71,26 @@ function update_page_top() {
   $route_match = \Drupal::routeMatch();
   if ($admin_context->isAdminRoute($route_match->getRouteObject()) && \Drupal::currentUser()->hasPermission('administer site configuration')) {
     $route_name = \Drupal::routeMatch()->getRouteName();
+
+    if ($route_name !== 'system.status') {
+      /** @var \Drupal\update\Psa\UpdatesPsaInterface $psa */
+      $psa = \Drupal::service('update.psa');
+      try {
+        $messages = $psa->getPublicServiceMessages();
+        if ($messages) {
+          \Drupal::messenger()->addError(t('Public service announcements:'));
+          foreach ($messages as $message) {
+            \Drupal::messenger()->addError($message);
+          }
+        }
+      }
+      catch (Exception $exception) {
+        if (!($exception instanceof TransferException || $exception instanceof UnexpectedValueException)) {
+          // If the exception is unexpected rethrow it.
+          throw $exception;
+        }
+      }
+    }
     switch ($route_name) {
       // These pages don't need additional nagging.
       case 'update.theme_update':
@@ -121,24 +141,6 @@ function update_page_top() {
             && $status[$type]['reason'] === UpdateManagerInterface::NOT_SECURE) {
           \Drupal::messenger()->addError($status[$type]['description']);
         }
-      }
-    }
-
-    /** @var \Drupal\update\Psa\UpdatesPsaInterface $psa */
-    $psa = \Drupal::service('update.psa');
-    try {
-      $messages = $psa->getPublicServiceMessages();
-      if ($messages) {
-        \Drupal::messenger()->addError(t('Public service announcements:'));
-        foreach ($messages as $message) {
-          \Drupal::messenger()->addError($message);
-        }
-      }
-    }
-    catch (Exception $exception) {
-      if (!($exception instanceof TransferException || $exception instanceof UnexpectedValueException)) {
-        // If the exception is unexpected rethrow it.
-        throw $exception;
       }
     }
   }
