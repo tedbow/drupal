@@ -81,9 +81,6 @@ class PsaTest extends BrowserTestBase {
     // Alter the 'aaa_update_test' to use the 'aaa_update_project' project name.
     // The PSA feed will match project name and not extension name.
     $system_info = [
-      '#all' => [
-        'version' => '9.11.0',
-      ],
       'aaa_update_test' => [
         'project' => 'aaa_update_project',
         'version' => '8.x-1.1',
@@ -103,9 +100,9 @@ class PsaTest extends BrowserTestBase {
     ]);
     $this->drupalLogin($this->user);
     $fixtures_path = $this->baseUrl . '/core/modules/update/tests/fixtures/psa_feed';
-    $this->workingEndpoint = $this->buildUrl('/core/modules/update/tests/fixtures/psa_feed/valid.json');
-    $this->workingEndpointPlus1 = $this->buildUrl('/core/modules/update/tests/fixtures/psa_feed/valid_plus1.json');
-    $this->nonWorkingEndpoint = $this->buildUrl('/core/modules/update/tests/fixtures/psa_feed/missing.json');
+    $this->workingEndpoint = $this->buildUrl('/update-test-json/valid');
+    $this->workingEndpointPlus1 = $this->buildUrl('/update-test-json/valid_plus1');
+    $this->nonWorkingEndpoint = $this->buildUrl('/update-test-json/missing');
     $this->invalidJsonEndpoint = "$fixtures_path/invalid.json";
 
     $this->tempStore = $this->container->get('keyvalue.expirable')->get('update');
@@ -125,15 +122,18 @@ class PsaTest extends BrowserTestBase {
     $assert->pageTextContains('Critical Release - SA-2019-02-19');
     $assert->pageTextContains('Critical Release - PSA-Really Old');
     $assert->pageTextContains('AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02');
+    $assert->pageTextContains('BBB Update project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02');
     $assert->pageTextNotContains('Node - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02');
     $assert->pageTextNotContains('Views - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02');
 
     // Test site status report.
     $this->drupalGet(Url::fromRoute('system.status'));
-    $assert->pageTextContains('3 urgent announcements require your attention:');
+    file_put_contents("/Users/ted.bowman/sites/test.html", $this->getSession()->getPage()->getOuterHtml());
+    $assert->pageTextContains('4 urgent announcements require your attention:');
     $assert->pageTextContains('Critical Release - SA-2019-02-19');
     $assert->pageTextContains('Critical Release - PSA-Really Old');
     $assert->pageTextContains('AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02');
+    $assert->pageTextContains('BBB Update project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02');
 
     // Test cache.
     $this->config('update.settings')
@@ -189,8 +189,12 @@ class PsaTest extends BrowserTestBase {
     // Email should be sent.
     $this->container->get('cron')->run();
     $this->assertCount(1, $this->getPsaEmails());
-    $this->assertMailString('subject', '3 urgent security announcements require your attention', 1);
+    $this->assertMailString('subject', '4 urgent security announcements require your attention', 1);
     $this->assertMailString('body', 'Critical Release - SA-2019-02-19', 1);
+    $this->assertMailString('body', 'Critical Release - PSA-Really Old', 1);
+    $this->assertMailString('body', 'AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02', 1);
+    $this->assertMailString('body', 'AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02', 1);
+
 
     // Deleting the PSA cache will not result in another email if the messages
     // have not changed.
@@ -209,8 +213,11 @@ class PsaTest extends BrowserTestBase {
     $this->config('update.settings')->set('psa.endpoint', $this->workingEndpointPlus1)->save();
     $this->container->get('cron')->run();
     $this->assertCount(1, $this->getPsaEmails());
-    $this->assertMailString('subject', '4 urgent security announcements require your attention', 1);
+    $this->assertMailString('subject', '5 urgent security announcements require your attention', 1);
     $this->assertMailString('body', 'Critical Release - SA-2019-02-19', 1);
+    $this->assertMailString('body', 'Critical Release - PSA-Really Old', 1);
+    $this->assertMailString('body', 'AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02', 1);
+    $this->assertMailString('body', 'AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02', 1);
     $this->assertMailString('body', 'Critical Release - PSA because 2020', 1);
   }
 

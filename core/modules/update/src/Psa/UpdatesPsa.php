@@ -7,9 +7,12 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Extension\ProfileExtensionList;
+use Drupal\Core\Extension\ThemeExtensionList;
 use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\update\UpdateManagerInterface;
+use Drupal\Core\Utility\ProjectInfo;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
 
@@ -52,11 +55,11 @@ class UpdatesPsa implements UpdatesPsaInterface {
   protected $time;
 
   /**
-   * The update manager.
+   * The extension lists.
    *
-   * @var \Drupal\update\UpdateManagerInterface
+   * @var \Drupal\Core\Extension\ExtensionList[]
    */
-  protected $updateManager;
+  protected $extensionLists;
 
   /**
    * Constructs a new UpdatesPsa object.
@@ -69,15 +72,21 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *   The time service.
    * @param \GuzzleHttp\Client $client
    *   The HTTP client.
-   * @param \Drupal\update\UpdateManagerInterface $update_manager
-   *   The update manager.
+   * @param \Drupal\Core\Extension\ModuleExtensionList $module_list
+   *   The module extension list.
+   * @param \Drupal\Core\Extension\ThemeExtensionList $theme_list
+   *   The theme extension list.
+   * @param \Drupal\Core\Extension\ProfileExtensionList $profile_list
+   *   The profile extension list.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, KeyValueExpirableFactoryInterface $key_value_factory, TimeInterface $time, Client $client, UpdateManagerInterface $update_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory, KeyValueExpirableFactoryInterface $key_value_factory, TimeInterface $time, Client $client, ModuleExtensionList $module_list, ThemeExtensionList $theme_list, ProfileExtensionList $profile_list) {
     $this->config = $config_factory->get('update.settings');
     $this->tempStore = $key_value_factory->get('update');
     $this->time = $time;
     $this->httpClient = $client;
-    $this->updateManager = $update_manager;
+    $this->extensionLists['module'] = $module_list;
+    $this->extensionLists['theme'] = $theme_list;
+    $this->extensionLists['profile'] = $profile_list;
   }
 
   /**
@@ -103,7 +112,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
           throw new \UnexpectedValueException($unexpected_value_exception->getMessage(), static::MALFORMED_JSON_EXCEPTION_CODE);
         }
 
-        if ($sa->getProjectType() !== 'core' && !$this->isValidProject($sa->getProject())) {
+        if ($sa->getProjectType() !== 'core' && !$this->isValidProject($sa->getProject(), $sa->getProjectType())) {
           continue;
         }
         if ($sa->isPsa() || $this->matchesInstalledVersion($sa)) {
@@ -152,15 +161,17 @@ class UpdatesPsa implements UpdatesPsaInterface {
    * Determines if projects exists and has a version string.
    *
    * @param string $project_name
-   *   The project.
+   *   The project name.
+   * @param string $project_type
+   *   The project type.
    *
    * @return bool
    *   TRUE if project exists, otherwise FALSE.
    */
-  protected function isValidProject(string $project_name) : bool {
+  protected function isValidProject(string $project_name, string $project_type) : bool {
     try {
-      $project = $this->getProject($project_name);
-      return !empty($project['info']['version']);
+      $project = $this->getProjectInfo($project_name, $project_type);
+      return !empty($project['version']);
     }
     catch (\UnexpectedValueException $exception) {
       return FALSE;
@@ -260,8 +271,11 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *   The currently installed version.
    */
   private function getInstalledVersion(SecurityAnnouncement $sa) : string {
-    $project = $this->getProject($sa->getProject());
-    $project_version = $project['info']['version'];
+    if ($sa->getProjectType() === 'core') {
+      return \Drupal::VERSION;
+    }
+    $project = $this->getProjectInfo($sa->getProject(), $sa->getProjectType());
+    $project_version = $project['version'];
     $version_array = explode('-', $project_version, 2);
     return isset($version_array[1]) && $version_array[1] !== 'dev' ? $version_array[1] : $project_version;
   }
@@ -271,18 +285,24 @@ class UpdatesPsa implements UpdatesPsaInterface {
    *
    * @param string $project_name
    *   The project name.
+   * @param string $project_type
+   *   The project type.
    *
    * @return array
    *   The project information if the project exists, otherwise an empty array.
    */
-  protected function getProject(string $project_name): array {
-    static $projects = [];
-    // @todo Change to get a project even it is disabled. This will probably
-    //   mean not using the project manager because of how it caches.
-    if (empty($projects)) {
-      $projects = $this->updateManager->getProjects();
+  protected function getProjectInfo(string $project_name, string $project_type): array {
+    static $extensions = [];
+    if (!isset($extensions[$project_type])) {
+      $extensions[$project_type] = $this->extensionLists[$project_type]->getList();
     }
-    return $projects[$project_name] ?? [];
+    $project_info = new ProjectInfo();
+    foreach ($extensions[$project_type] as $extension) {
+      if ($project_info->getProjectName($extension) === $project_name) {
+        return $extension->info;
+      }
+    }
+    return [];
   }
 
 }

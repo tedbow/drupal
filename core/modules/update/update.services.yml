@@ -32,7 +32,9 @@ services:
       - '@keyvalue.expirable'
       - '@datetime.time'
       - '@http_client'
-      - '@update.manager'
+      - '@extension.list.module'
+      - '@extension.list.theme'
+      - '@extension.list.profile'
   update.psa_notify:
     class: Drupal\update\Psa\EmailNotify
     arguments:

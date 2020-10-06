@@ -15,7 +15,7 @@
       "8.6.15",
       "7.66",
       "8.7.0",
-      "9.11.0"
+      "[CORE_VERSION]"
     ],
     "is_psa":"0",
     "pubDate":"Tue, 19 Feb 2019 14:11:01 +0000"
@@ -35,7 +35,7 @@
     "title":"AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02",
     "link":"https:\/\/www.drupal.org\/SA-CONTRIB-2019-02-02",
     "project":"aaa_update_project",
-    "type":"theme",
+    "type":"module",
     "is_psa":"0",
     "insecure":[
       "8.x-1.1",
@@ -47,7 +47,7 @@
     "title":"AAA Update Test - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02",
     "link":"https:\/\/www.drupal.org\/SA-CONTRIB-2019-02-02",
     "project":"aaa_update_test",
-    "type":"theme",
+    "type":"module",
     "is_psa":"0",
     "insecure":[
       "8.x-1.1",
