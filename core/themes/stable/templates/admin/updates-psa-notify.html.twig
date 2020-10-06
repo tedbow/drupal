@@ -12,7 +12,7 @@
 
 <p>
   {% trans %}
-    A security update will be made available soon for your Drupal site. To ensure the security of the site, you should prepare the site to immediately apply the update once it is released!
+    An important security announcement is available for your Drupal site. You should read the announcement immediately and follow its instructions.
   {% endtrans %}
 </p>
 <p>
@@ -21,7 +21,7 @@
     See the <a href="{{ status_report }}">site status report page</a> for more information.
   {% endtrans %}
 </p>
-<p>{{ 'Public service announcements:'|t }}</p>
+<p>{{ 'Critical security announcements:'|t }}</p>
 <ul>
   {% for message in messages %}
     <li>{{ message }}</li>
@@ -32,7 +32,4 @@
 </p>
 <p>
   {% set settings_link = path('update.settings') %}
-  {% trans %}
-    Your site is currently configured to send these emails when a security update will be made available soon. To change how you are notified, you may <a href="{{ settings_link }}">configure email notifications</a>.
-  {% endtrans %}
 </p>
