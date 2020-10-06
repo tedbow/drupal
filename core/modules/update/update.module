@@ -71,7 +71,8 @@ function update_page_top() {
   $route_match = \Drupal::routeMatch();
   if ($admin_context->isAdminRoute($route_match->getRouteObject()) && \Drupal::currentUser()->hasPermission('administer site configuration')) {
     $route_name = \Drupal::routeMatch()->getRouteName();
-
+    module_load_install('update');
+    $status = update_requirements('runtime');
     if ($route_name !== 'system.status') {
       /** @var \Drupal\update\Psa\UpdatesPsaInterface $psa */
       $psa = \Drupal::service('update.psa');
@@ -113,8 +114,6 @@ function update_page_top() {
         break;
 
     }
-    module_load_install('update');
-    $status = update_requirements('runtime');
     foreach (['core', 'contrib'] as $report_type) {
       $type = 'update_' . $report_type;
       // hook_requirements() supports render arrays therefore we need to render
