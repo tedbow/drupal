@@ -71,7 +71,7 @@ class SecurityAnnouncement {
    *   Whether this announcement is a PSA.
    * @param string $link
    *   The link to the announcement.
-   * @param string $insecure_versions
+   * @param string[] $insecure_versions
    *   The version of the project that currently insecure. For PSAs this is not
    *   a list of versions that will be insecure when the security release is
    *   published.
