@@ -112,7 +112,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
           throw new \UnexpectedValueException($unexpected_value_exception->getMessage(), static::MALFORMED_JSON_EXCEPTION_CODE);
         }
 
-        if ($sa->getProjectType() !== 'core' && !$this->isValidProject($sa->getProject(), $sa->getProjectType())) {
+        if ($sa->getProjectType() !== 'core' && !$this->getProjectVersion($sa)) {
           continue;
         }
         if ($sa->isPsa() || $this->matchesInstalledVersion($sa)) {
@@ -158,27 +158,6 @@ class UpdatesPsa implements UpdatesPsaInterface {
   }
 
   /**
-   * Determines if projects exists and has a version string.
-   *
-   * @param string $project_name
-   *   The project name.
-   * @param string $project_type
-   *   The project type.
-   *
-   * @return bool
-   *   TRUE if project exists, otherwise FALSE.
-   */
-  protected function isValidProject(string $project_name, string $project_type) : bool {
-    try {
-      $project = $this->getProjectInfo($project_name, $project_type);
-      return !empty($project['version']);
-    }
-    catch (\UnexpectedValueException $exception) {
-      return FALSE;
-    }
-  }
-
-  /**
    * Determines if the PSA versions match for the installed version of project.
    *
    * @param \Drupal\update\Psa\SecurityAnnouncement $sa
@@ -197,7 +176,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
     $versions = $sa->getProjectType() === 'core' ? $sa->getInsecureVersions() : $this->getContribVersions($sa->getInsecureVersions());
 
     try {
-      $installed_constraint = $parser->parseConstraints($this->getInstalledVersion($sa));
+      $installed_constraint = $parser->parseConstraints($this->getExistingVersionConstraint($sa));
     }
     catch (\UnexpectedValueException $exception) {
       // If the installed version cannot be parsed, assume it matches to avoid
@@ -262,47 +241,45 @@ class UpdatesPsa implements UpdatesPsaInterface {
   }
 
   /**
-   * Gets the currently installed version of a project.
+   * Gets the currently existing project version as a constraint string.
    *
    * @param \Drupal\update\Psa\SecurityAnnouncement $sa
    *   The security announcement.
    *
    * @return string
-   *   The currently installed version.
+   *   The existing project version as constraint string.
    */
-  private function getInstalledVersion(SecurityAnnouncement $sa) : string {
+  private function getExistingVersionConstraint(SecurityAnnouncement $sa) : string {
     if ($sa->getProjectType() === 'core') {
       return \Drupal::VERSION;
     }
-    $project = $this->getProjectInfo($sa->getProject(), $sa->getProjectType());
-    $project_version = $project['version'];
+    $project_version = $this->getProjectVersion($sa);
     $version_array = explode('-', $project_version, 2);
     return isset($version_array[1]) && $version_array[1] !== 'dev' ? $version_array[1] : $project_version;
   }
 
   /**
-   * Gets the project information.
+   * Gets the project version.
    *
-   * @param string $project_name
-   *   The project name.
-   * @param string $project_type
-   *   The project type.
+   * @param \Drupal\update\Psa\SecurityAnnouncement $sa
+   *   The security announcement.
    *
-   * @return array
-   *   The project information if the project exists, otherwise an empty array.
+   * @return string
+   *   The project version or an empty string if the project is not available.
    */
-  protected function getProjectInfo(string $project_name, string $project_type): array {
+  protected function getProjectVersion(SecurityAnnouncement $sa): string {
     static $extensions = [];
+    $project_type = $sa->getProjectType();
     if (!isset($extensions[$project_type])) {
       $extensions[$project_type] = $this->extensionLists[$project_type]->getList();
     }
     $project_info = new ProjectInfo();
     foreach ($extensions[$project_type] as $extension) {
-      if ($project_info->getProjectName($extension) === $project_name) {
-        return $extension->info;
+      if ($project_info->getProjectName($extension) === $sa->getProject()) {
+        return $extension->info['version'] ?? '';
       }
     }
-    return [];
+    return '';
   }
 
 }
