@@ -83,7 +83,7 @@ class UpdateSettingsForm extends ConfigFormBase implements ContainerInjectionInt
       '#default_value' => $config->get('notification.threshold'),
       '#options' => [
         'all' => t('All newer versions'),
-        'security' => t('Only security updates'),
+        'security' => t('Only security updates and critical security announcements'),
       ],
       '#description' => t('You can choose to send email only if a security update is available, or to be notified about all newer versions. If there are updates available of Drupal core or any of your installed modules and themes, your site will always print a message on the <a href=":status_report">status report</a> page, and will also display an error message on administration pages if there is a security update.', [':status_report' => Url::fromRoute('system.status')->toString()]),
     ];

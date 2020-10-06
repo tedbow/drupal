@@ -194,14 +194,14 @@ function _update_psa_requirements(array &$requirements): void {
     $messages = $psa->getPublicServiceMessages();
   }
   catch (Exception $exception) {
-    $requirements['update_psa']['title'] = t('Public service announcements');
+    $requirements['update_psa']['title'] = t('Critical security announcements');
     $requirements['update_psa']['severity'] = REQUIREMENT_ERROR;
     $requirements['update_psa']['value'] = UpdatesPsa::getErrorMessageFromException($exception);
     return;
   }
 
   if (!empty($messages)) {
-    $requirements['update_psa']['title'] = t('Public service announcements');
+    $requirements['update_psa']['title'] = t('Critical security announcements');
     $requirements['update_psa']['severity'] = REQUIREMENT_ERROR;
     $requirements['update_psa']['value'] = new PluralTranslatableMarkup(count($messages), '@count urgent announcement requires your attention:', '@count urgent announcements require your attention:');
     $requirements['update_psa']['description'] = [

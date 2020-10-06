@@ -79,7 +79,7 @@ function update_page_top() {
       try {
         $messages = $psa->getPublicServiceMessages();
         if ($messages) {
-          \Drupal::messenger()->addError(t('Public service announcements:'));
+          \Drupal::messenger()->addError(t('Critical security announcements:'));
           foreach ($messages as $message) {
             \Drupal::messenger()->addError($message);
           }
