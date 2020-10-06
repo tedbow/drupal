@@ -128,7 +128,6 @@ class PsaTest extends BrowserTestBase {
 
     // Test site status report.
     $this->drupalGet(Url::fromRoute('system.status'));
-    file_put_contents("/Users/ted.bowman/sites/test.html", $this->getSession()->getPage()->getOuterHtml());
     $assert->pageTextContains('4 urgent announcements require your attention:');
     $assert->pageTextContains('Critical Release - SA-2019-02-19');
     $assert->pageTextContains('Critical Release - PSA-Really Old');
