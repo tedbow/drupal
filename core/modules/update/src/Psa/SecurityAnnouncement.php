@@ -72,9 +72,9 @@ class SecurityAnnouncement {
    * @param string $link
    *   The link to the announcement.
    * @param string[] $insecure_versions
-   *   The version of the project that currently insecure. For PSAs this is not
-   *   a list of versions that will be insecure when the security release is
-   *   published.
+   *   The versions of the project that are currently insecure. For PSAs this
+   *   list does include versions that will be marked as insecure when the new
+   *   security release is published.
    */
   public function __construct(string $title, string $project, string $type, bool $is_psa, string $link, array $insecure_versions) {
     $this->title = $title;
@@ -119,16 +119,16 @@ class SecurityAnnouncement {
    *   Thrown if PSA data is not valid.
    */
   protected static function validateAnnouncementData(array $data): void {
-    $new_blank_constraints = [
+    $not_blank_constraints = [
       new Type(['type' => 'string']),
       new NotBlank(),
     ];
     $collection_constraint = new Collection([
       'fields' => [
-        'title' => $new_blank_constraints,
-        'project' => $new_blank_constraints,
-        'type' => $new_blank_constraints,
-        'link' => $new_blank_constraints,
+        'title' => $not_blank_constraints,
+        'project' => $not_blank_constraints,
+        'type' => $not_blank_constraints,
+        'link' => $not_blank_constraints,
         'is_psa' => new NotBlank(),
         'insecure' => new Type(['type' => 'array']),
       ],
@@ -174,17 +174,17 @@ class SecurityAnnouncement {
   }
 
   /**
-   * Whether the security announcement is PSA or not.
+   * Whether the security announcement is a PSA or not.
    *
    * @return bool
-   *   TRUE if the announcement is a PSA otherwise false.
+   *   TRUE if the announcement is a PSA otherwise, FALSE.
    */
   public function isPsa(): bool {
     return $this->isPsa;
   }
 
   /**
-   * Gets the currently insecure version of the project.
+   * Gets the currently insecure versions of the project.
    *
    * @return string[]
    *   The versions of the project that are currently insecure.
@@ -194,10 +194,10 @@ class SecurityAnnouncement {
   }
 
   /**
-   * Gets the links to the security announcement.
+   * Gets the link to the security announcement.
    *
    * @return string
-   *   The link.
+   *   The link to the PSA.
    */
   public function getLink(): string {
     return $this->link;

@@ -17,7 +17,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
 
 /**
- * Defines a service class to get Public Service Messages.
+ * Defines a service class to get Public Service Announcements.
  */
 class PsaFetcher {
 
@@ -55,7 +55,7 @@ class PsaFetcher {
   protected $time;
 
   /**
-   * The extension lists.
+   * The extension lists keyed by extension type.
    *
    * @var \Drupal\Core\Extension\ExtensionList[]
    */
