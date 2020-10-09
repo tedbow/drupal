@@ -223,7 +223,6 @@ function update_cron() {
     $notify->send();
   }
 
-
   // Clear garbage from disk.
   update_clear_update_disk_cache();
 }

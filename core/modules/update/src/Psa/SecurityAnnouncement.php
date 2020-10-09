@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Validation;
 /**
  * Provides a security announcement value object.
  *
- * These come form the PSA feed on drupal.org.
+ * These come from the PSA feed on drupal.org.
  *
  * @link https://www.drupal.org/docs/8/update/automatic-updates#s-public-service-announcement-psa-feed
  */
@@ -38,11 +38,11 @@ class SecurityAnnouncement {
   protected $type;
 
   /**
-   * Whether this announce is PSA instead of another type of announcement.
+   * Whether this announcement is a PSA instead of another type of announcement.
    *
    * @var bool
    */
-  protected $isPsa;
+  protected $isPSA;
 
   /**
    * The currently insecure versions of the project.
