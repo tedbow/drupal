@@ -19,7 +19,7 @@ use GuzzleHttp\Exception\TransferException;
 /**
  * Defines a service class to get Public Service Messages.
  */
-class PsaFetcher implements PsaFetcherInterface {
+class PsaFetcher {
 
   use StringTranslationTrait;
   use DependencySerializationTrait;
@@ -27,7 +27,7 @@ class PsaFetcher implements PsaFetcherInterface {
   protected const MALFORMED_JSON_EXCEPTION_CODE = 1000;
 
   /**
-   * This 'update.settings' configuration.
+   * The 'update.settings' configuration.
    *
    * @var \Drupal\Core\Config\ImmutableConfig
    */
@@ -41,7 +41,7 @@ class PsaFetcher implements PsaFetcherInterface {
   protected $httpClient;
 
   /**
-   * Update key/value store.
+   * The update key/value store.
    *
    * @var \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface
    */
@@ -90,7 +90,10 @@ class PsaFetcher implements PsaFetcherInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Gets public service messages.
+   *
+   * @return \Drupal\Component\Render\FormattableMarkup[]
+   *   A array of translatable strings.
    */
   public function getPublicServiceMessages() : array {
     $messages = [];

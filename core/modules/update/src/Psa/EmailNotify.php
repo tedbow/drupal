@@ -14,16 +14,16 @@ use Drupal\Core\StringTranslation\TranslationInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Provides an implementation of the NotifyInterface using email notifications.
+ * Provides an service to send email notifications for PSAs.
  */
-class EmailNotify implements NotifyInterface {
+class EmailNotify {
 
   use StringTranslationTrait;
 
   private const LAST_MESSAGES_STATE_KEY = 'update_psa.last_messages_hash';
 
   /**
-   * Mail manager.
+   * The mail manager.
    *
    * @var \Drupal\Core\Mail\MailManagerInterface
    */
@@ -32,7 +32,7 @@ class EmailNotify implements NotifyInterface {
   /**
    * The PSA fetcher service.
    *
-   * @var \Drupal\update\Psa\PsaFetcherInterface
+   * @var \Drupal\update\Psa\PsaFetcher
    */
   protected $psaFetcher;
 
@@ -65,7 +65,7 @@ class EmailNotify implements NotifyInterface {
   protected $time;
 
   /**
-   * Entity type manager.
+   * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
@@ -83,7 +83,7 @@ class EmailNotify implements NotifyInterface {
    *
    * @param \Drupal\Core\Mail\MailManagerInterface $mail_manager
    *   The mail manager.
-   * @param \Drupal\update\Psa\PsaFetcherInterface $psa_fetcher
+   * @param \Drupal\update\Psa\PsaFetcher $psa_fetcher
    *   The PSA fetcher service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
@@ -94,13 +94,13 @@ class EmailNotify implements NotifyInterface {
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   Entity type manager.
+   *   The entity type manager.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation service.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    */
-  public function __construct(MailManagerInterface $mail_manager, PsaFetcherInterface $psa_fetcher, ConfigFactoryInterface $config_factory, LanguageManagerInterface $language_manager, StateInterface $state, TimeInterface $time, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, LoggerInterface $logger) {
+  public function __construct(MailManagerInterface $mail_manager, PsaFetcher $psa_fetcher, ConfigFactoryInterface $config_factory, LanguageManagerInterface $language_manager, StateInterface $state, TimeInterface $time, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, LoggerInterface $logger) {
     $this->mailManager = $mail_manager;
     $this->psaFetcher = $psa_fetcher;
     $this->configFactory = $config_factory;
@@ -113,7 +113,7 @@ class EmailNotify implements NotifyInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Send notification when PSAs are available.
    */
   public function send(): void {
     $notify_emails = $this->configFactory->get('update.settings')->get('notification.emails');
@@ -124,9 +124,9 @@ class EmailNotify implements NotifyInterface {
       $messages = $this->psaFetcher->getPublicServiceMessages();
     }
     catch (\Exception $exception) {
-      $this->logger->error($this->t(
-        'Unable to send notification email because of error retrieving PSA feed: @error'),
-        ['@error' => PsaFetcher::getErrorMessageFromException($exception, FALSE)]
+      $this->logger->error(
+        'Unable to send notification email because of error retrieving PSA feed: %error',
+        ['%error' => PsaFetcher::getErrorMessageFromException($exception, FALSE)]
       );
       return;
     }
@@ -152,10 +152,10 @@ class EmailNotify implements NotifyInterface {
       '#messages' => $messages,
     ];
     $default_langcode = $this->languageManager->getDefaultLanguage()->getId();
+    $user_storage = $this->entityTypeManager->getStorage('user');
     foreach ($notify_emails as $notify_email) {
       /** @var \Drupal\user\UserInterface[] $users */
-      $users = $this->entityTypeManager->getStorage('user')
-        ->loadByProperties(['mail' => $notify_email]);
+      $users = $user_storage->loadByProperties(['mail' => $notify_email]);
       $params['langcode'] = $users ? (reset($users))->getPreferredLangcode() : $default_langcode;
       $this->mailManager->mail('update', 'psa_notify', $notify_email, $params['langcode'], $params);
     }
