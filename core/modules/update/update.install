@@ -188,6 +188,9 @@ function update_update_last_removed() {
  *   The requirements array as specified in hook_requirements().
  */
 function _update_psa_requirements(array &$requirements): void {
+  if (!Drupal::hasService('update.psa_fetcher')) {
+    return;
+  }
   /** @var \Drupal\update\Psa\PsaFetcherInterface $psa */
   $psa = \Drupal::service('update.psa_fetcher');
   try {

@@ -73,7 +73,7 @@ function update_page_top() {
     $route_name = \Drupal::routeMatch()->getRouteName();
     module_load_install('update');
     $status = update_requirements('runtime');
-    if ($route_name !== 'system.status') {
+    if ($route_name !== 'system.status' && \Drupal::hasService('update.psa_fetcher')) {
       /** @var \Drupal\update\Psa\PsaFetcherInterface $psa */
       $psa = \Drupal::service('update.psa_fetcher');
       try {
@@ -217,9 +217,12 @@ function update_cron() {
     _update_cron_notify();
   }
 
-  /** @var \Drupal\update\Psa\NotifyInterface $notify */
-  $notify = \Drupal::service('update.psa_notify');
-  $notify->send();
+  if (\Drupal::hasService('update.psa_notify')) {
+    /** @var \Drupal\update\Psa\NotifyInterface $notify */
+    $notify = \Drupal::service('update.psa_notify');
+    $notify->send();
+  }
+
 
   // Clear garbage from disk.
   update_clear_update_disk_cache();
