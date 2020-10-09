@@ -115,7 +115,7 @@ class PsaFetcher {
           throw new \UnexpectedValueException($unexpected_value_exception->getMessage(), static::MALFORMED_JSON_EXCEPTION_CODE);
         }
 
-        if ($sa->getProjectType() !== 'core' && !$this->getProjectVersion($sa)) {
+        if ($sa->getProjectType() !== 'core' && !$this->getProjectExistingVersion($sa)) {
           continue;
         }
         if ($sa->isPsa() || $this->matchesInstalledVersion($sa)) {
@@ -256,7 +256,7 @@ class PsaFetcher {
     if ($sa->getProjectType() === 'core') {
       return \Drupal::VERSION;
     }
-    $project_version = $this->getProjectVersion($sa);
+    $project_version = $this->getProjectExistingVersion($sa);
     $version_array = explode('-', $project_version, 2);
     return isset($version_array[1]) && $version_array[1] !== 'dev' ? $version_array[1] : $project_version;
   }
@@ -270,7 +270,7 @@ class PsaFetcher {
    * @return string
    *   The project version or an empty string if the project is not available.
    */
-  protected function getProjectVersion(SecurityAnnouncement $sa): string {
+  protected function getProjectExistingVersion(SecurityAnnouncement $sa): string {
     static $extensions = [];
     $project_type = $sa->getProjectType();
     if (!isset($extensions[$project_type])) {
