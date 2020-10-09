@@ -22,11 +22,11 @@ services:
     class: Drupal\update\UpdateRootFactory
     arguments: ['@kernel', '@request_stack']
     public: false
-  logger.channel.updates:
+  logger.channel.update:
     parent: logger.channel_base
-    arguments: ['updates']
-  update.psa:
-    class: Drupal\update\Psa\UpdatesPsa
+    arguments: ['update']
+  update.psa_fetcher:
+    class: Drupal\update\Psa\PsaFetcher
     arguments:
       - '@config.factory'
       - '@keyvalue.expirable'
@@ -39,11 +39,11 @@ services:
     class: Drupal\update\Psa\EmailNotify
     arguments:
       - '@plugin.manager.mail'
-      - '@update.psa'
+      - '@update.psa_fetcher'
       - '@config.factory'
       - '@language_manager'
       - '@state'
       - '@datetime.time'
       - '@entity_type.manager'
       - '@string_translation'
-      - '@logger.channel.updates'
+      - '@logger.channel.update'

@@ -145,7 +145,7 @@ class PsaTest extends BrowserTestBase {
     $assert->pageTextNotContains('Views - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02');
 
     // Tests transmit errors with a JSON endpoint.
-    $this->tempStore->delete('updates_psa');
+    $this->tempStore->delete('psa_response');
     $this->drupalGet(Url::fromRoute('system.admin'));
     $assert->pageTextNotContains('Critical Release - SA-2019-02-19');
 
@@ -153,7 +153,7 @@ class PsaTest extends BrowserTestBase {
     $this->config('update.settings')
       ->set('psa.endpoint', $this->invalidJsonEndpoint)
       ->save();
-    $this->tempStore->delete('updates_psa');
+    $this->tempStore->delete('psa_response');
     // On admin pages no message should be displayed if the feed is malformed.
     $this->drupalGet(Url::fromRoute('system.admin'));
     $assert->pageTextNotContains('Critical Release - PSA-2019-02-19');
@@ -177,13 +177,13 @@ class PsaTest extends BrowserTestBase {
       ->save();
 
     // Confirm that PSA cache does not exist.
-    $this->assertNull($this->tempStore->get('updates_psa'));
+    $this->assertNull($this->tempStore->get('psa_response'));
 
     // Test PSAs on admin pages.
     $this->drupalGet(Url::fromRoute('system.admin'));
     $this->assertSession()->pageTextContains('Critical Release - SA-2019-02-19');
     // Confirm that the PSA cache has been set.
-    $this->assertNotEmpty($this->tempStore->get('updates_psa'));
+    $this->assertNotEmpty($this->tempStore->get('psa_response'));
 
     // Email should be sent.
     $this->container->get('cron')->run();
@@ -199,14 +199,14 @@ class PsaTest extends BrowserTestBase {
     // @todo Replace deleting the cache directly in the test with faking a later
     //   date and letting the cache item expire in
     //   https://www.drupal.org/node/3113971.
-    $this->tempStore->delete('updates_psa');
+    $this->tempStore->delete('psa_response');
     $this->container->get('state')->set('system.test_mail_collector', []);
     $this->container->get('cron')->run();
     $this->assertCount(0, $this->getPsaEmails());
 
     // Deleting the PSA tempstore item will result in another email if the
     // messages have changed.
-    $this->tempStore->delete('updates_psa');
+    $this->tempStore->delete('psa_response');
     $this->container->get('state')->set('system.test_mail_collector', []);
     $this->config('update.settings')->set('psa.endpoint', $this->workingEndpointPlus1)->save();
     $this->container->get('cron')->run();
@@ -230,7 +230,7 @@ class PsaTest extends BrowserTestBase {
     $this->config('update.settings')
       ->set('psa.endpoint', $this->invalidJsonEndpoint)
       ->save();
-    $this->tempStore->delete('updates_psa');
+    $this->tempStore->delete('psa_response');
     $this->container->get('cron')->run();
     $this->assertCount(0, $this->getPsaEmails());
   }

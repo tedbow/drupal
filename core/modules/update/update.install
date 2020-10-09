@@ -10,7 +10,7 @@ use Drupal\Core\StringTranslation\PluralTranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\update\ProjectSecurityData;
 use Drupal\update\ProjectSecurityRequirement;
-use Drupal\update\Psa\UpdatesPsa;
+use Drupal\update\Psa\PsaFetcher;
 use Drupal\update\UpdateFetcherInterface;
 use Drupal\update\UpdateManagerInterface;
 
@@ -188,15 +188,15 @@ function update_update_last_removed() {
  *   The requirements array as specified in hook_requirements().
  */
 function _update_psa_requirements(array &$requirements): void {
-  /** @var \Drupal\update\Psa\UpdatesPsaInterface $psa */
-  $psa = \Drupal::service('update.psa');
+  /** @var \Drupal\update\Psa\PsaFetcherInterface $psa */
+  $psa = \Drupal::service('update.psa_fetcher');
   try {
     $messages = $psa->getPublicServiceMessages();
   }
   catch (Exception $exception) {
     $requirements['update_psa']['title'] = t('Critical security announcements');
     $requirements['update_psa']['severity'] = REQUIREMENT_ERROR;
-    $requirements['update_psa']['value'] = UpdatesPsa::getErrorMessageFromException($exception);
+    $requirements['update_psa']['value'] = PsaFetcher::getErrorMessageFromException($exception);
     return;
   }
 

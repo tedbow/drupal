@@ -74,8 +74,8 @@ function update_page_top() {
     module_load_install('update');
     $status = update_requirements('runtime');
     if ($route_name !== 'system.status') {
-      /** @var \Drupal\update\Psa\UpdatesPsaInterface $psa */
-      $psa = \Drupal::service('update.psa');
+      /** @var \Drupal\update\Psa\PsaFetcherInterface $psa */
+      $psa = \Drupal::service('update.psa_fetcher');
       try {
         $messages = $psa->getPublicServiceMessages();
         if ($messages) {
@@ -181,7 +181,7 @@ function update_theme() {
       'variables' => ['version' => NULL, 'title' => NULL, 'attributes' => []],
       'file' => 'update.report.inc',
     ],
-    'updates_psa_notify' => [
+    'update_psa_notify' => [
       'variables' => [
         'messages' => [],
       ],

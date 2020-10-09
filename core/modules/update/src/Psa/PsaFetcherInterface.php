@@ -5,7 +5,7 @@ namespace Drupal\update\Psa;
 /**
  * Defines an interface to get Public Service Messages.
  */
-interface UpdatesPsaInterface {
+interface PsaFetcherInterface {
 
   /**
    * Gets public service messages.

@@ -19,7 +19,7 @@ use GuzzleHttp\Exception\TransferException;
 /**
  * Defines a service class to get Public Service Messages.
  */
-class UpdatesPsa implements UpdatesPsaInterface {
+class PsaFetcher implements PsaFetcherInterface {
 
   use StringTranslationTrait;
   use DependencySerializationTrait;
@@ -62,7 +62,7 @@ class UpdatesPsa implements UpdatesPsaInterface {
   protected $extensionLists;
 
   /**
-   * Constructs a new UpdatesPsa object.
+   * Constructs a new PsaFetcher object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
@@ -95,11 +95,11 @@ class UpdatesPsa implements UpdatesPsaInterface {
   public function getPublicServiceMessages() : array {
     $messages = [];
 
-    $response = $this->tempStore->get('updates_psa');
+    $response = $this->tempStore->get('psa_response');
     if (!$response) {
       $psa_endpoint = $this->config->get('psa.endpoint');
       $response = (string) $this->httpClient->get($psa_endpoint)->getBody();
-      $this->tempStore->setWithExpire('updates_psa', $response, $this->config->get('psa.check_frequency'));
+      $this->tempStore->setWithExpire('psa_response', $response, $this->config->get('psa.check_frequency'));
     }
 
     $json_payload = json_decode($response, TRUE);

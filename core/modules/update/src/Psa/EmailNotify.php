@@ -30,11 +30,11 @@ class EmailNotify implements NotifyInterface {
   protected $mailManager;
 
   /**
-   * The automatic updates service.
+   * The PSA fetcher service.
    *
-   * @var \Drupal\update\Psa\UpdatesPsaInterface
+   * @var \Drupal\update\Psa\PsaFetcherInterface
    */
-  protected $updatesPsa;
+  protected $psaFetcher;
 
   /**
    * The config factory.
@@ -83,8 +83,8 @@ class EmailNotify implements NotifyInterface {
    *
    * @param \Drupal\Core\Mail\MailManagerInterface $mail_manager
    *   The mail manager.
-   * @param \Drupal\update\Psa\UpdatesPsaInterface $updates_psa
-   *   The automatic updates service.
+   * @param \Drupal\update\Psa\PsaFetcherInterface $psa_fetcher
+   *   The PSA fetcher service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
@@ -100,9 +100,9 @@ class EmailNotify implements NotifyInterface {
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    */
-  public function __construct(MailManagerInterface $mail_manager, UpdatesPsaInterface $updates_psa, ConfigFactoryInterface $config_factory, LanguageManagerInterface $language_manager, StateInterface $state, TimeInterface $time, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, LoggerInterface $logger) {
+  public function __construct(MailManagerInterface $mail_manager, PsaFetcherInterface $psa_fetcher, ConfigFactoryInterface $config_factory, LanguageManagerInterface $language_manager, StateInterface $state, TimeInterface $time, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, LoggerInterface $logger) {
     $this->mailManager = $mail_manager;
-    $this->updatesPsa = $updates_psa;
+    $this->psaFetcher = $psa_fetcher;
     $this->configFactory = $config_factory;
     $this->languageManager = $language_manager;
     $this->state = $state;
@@ -121,12 +121,12 @@ class EmailNotify implements NotifyInterface {
       return;
     }
     try {
-      $messages = $this->updatesPsa->getPublicServiceMessages();
+      $messages = $this->psaFetcher->getPublicServiceMessages();
     }
     catch (\Exception $exception) {
       $this->logger->error($this->t(
         'Unable to send notification email because of error retrieving PSA feed: @error'),
-        ['@error' => UpdatesPsa::getErrorMessageFromException($exception, FALSE)]
+        ['@error' => PsaFetcher::getErrorMessageFromException($exception, FALSE)]
       );
       return;
     }
@@ -148,7 +148,7 @@ class EmailNotify implements NotifyInterface {
       ['@site_name' => $this->configFactory->get('system.site')->get('name')]
     );
     $params['body'] = [
-      '#theme' => 'updates_psa_notify',
+      '#theme' => 'update_psa_notify',
       '#messages' => $messages,
     ];
     $default_langcode = $this->languageManager->getDefaultLanguage()->getId();
