@@ -65,6 +65,11 @@ class PsaFetcherTest extends KernelTestBase {
         'is_psa' => 0,
         'insecure_versions' => ['1.0'],
       ],
+      'not-exact-non-psa-reversed' => [
+        'existing_version' => '8.x-1.0',
+        'is_psa' => 0,
+        'insecure_versions' => ['1.0'],
+      ],
       'exact-psa' => [
         'existing_version' => '8.x-1.0',
         'is_psa' => 1,
