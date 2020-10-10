@@ -11,6 +11,8 @@ use Psr\Http\Message\StreamInterface;
 
 /**
  * @coversDefaultClass \Drupal\update\Psa\PsaFetcher
+ *
+ * @group update
  */
 class PsaFetcherTest extends KernelTestBase {
 
