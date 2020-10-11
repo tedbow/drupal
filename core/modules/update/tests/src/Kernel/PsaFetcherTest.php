@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\update\Unit;
+namespace Drupal\Tests\update\Kernel;
 
 use Drupal\Core\Extension\Extension;
 use Drupal\Core\Extension\ModuleExtensionList;
