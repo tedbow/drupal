@@ -132,8 +132,8 @@ class PsaFetcherTest extends KernelTestBase {
    *
    * @dataProvider providerIgnoreContribAdvisories
    */
-  public function testIgnoreContribAdvisories(string $existing_version, int $is_psa, array $insecure_versions): void {
-    $this->setProphesizedServices(FALSE, $is_psa, $insecure_versions, $existing_version);
+  public function testIgnoreContribAdvisories(bool $is_core, int $is_psa, array $insecure_versions, string $existing_version): void {
+    $this->setProphesizedServices($is_core, $is_psa, $insecure_versions, $existing_version);
     $fetcher = $this->container->get('update.psa_fetcher');
     /** @var \Drupal\Component\Render\FormattableMarkup[] $links */
     $links = $fetcher->getPublicServiceMessages();
@@ -145,49 +145,65 @@ class PsaFetcherTest extends KernelTestBase {
    */
   public function providerIgnoreContribAdvisories() {
     return [
-      'non-matching-non-psa' => [
-        'existing_version' => '8.x-1.0',
+      'contrib:non-matching-non-psa' => [
+        'is_core' => FALSE,
         'is_psa' => 0,
         'insecure_versions' => ['8.x-1.1'],
-      ],
-      'non-matching-not-exact-non-psa' => [
         'existing_version' => '8.x-1.0',
+      ],
+      'contrib:non-matching-not-exact-non-psa' => [
+        'is_core' => FALSE,
         'is_psa' => 0,
         'insecure_versions' => ['1.1'],
-      ],
-      'semver-7major-match-non-psa' => [
-        'existing_version' => '1.0.0',
-        'is_psa' => 0,
-        'insecure_versions' => ['7.x-1.0'],
-      ],
-      'semver-different-majors-non-psa' => [
         'existing_version' => '8.x-1.0',
+      ],
+      'contrib:semver-7major-match-non-psa' => [
+        'is_core' => FALSE,
         'is_psa' => 0,
         'insecure_versions' => ['7.x-1.0'],
+        'existing_version' => '1.0.0',
       ],
-      'no-version-non-psa' => [
-        'existing_version' => '',
+      'contrib:semver-different-majors-non-psa' => [
+        'is_core' => FALSE,
+        'is_psa' => 0,
+        'insecure_versions' => ['7.x-1.0'],
+        'existing_version' => '8.x-1.0',
+      ],
+      'contrib:no-version-non-psa' => [
+        'is_core' => FALSE,
         'is_psa' => 0,
         'insecure_versions' => ['8.x-1.1'],
+        'existing_version' => '',
       ],
-      'insecure-extra-non-psa' => [
-        'existing_version' => '8.x-1.0',
+      'contrib:insecure-extra-non-psa' => [
+        'is_core' => FALSE,
         'is_psa' => 0,
         'insecure_versions' => ['8.x-1.0-extraStringNotSpecial'],
-      ],
-      'insecure-dev-non-psa' => [
         'existing_version' => '8.x-1.0',
+      ],
+      'contrib:insecure-dev-non-psa' => [
+        'is_core' => FALSE,
         'is_psa' => 0,
         'insecure_versions' => ['8.x-1.0-dev'],
+        'existing_version' => '8.x-1.0',
       ],
-      'exiting-dev-non-psa' => [
-        'existing_version' => '8.x-1.0-dev',
+      'contrib:exiting-dev-non-psa' => [
+        'is_core' => FALSE,
         'is_psa' => 0,
         'insecure_versions' => ['8.x-1.0'],
+        'existing_version' => '8.x-1.0-dev',
       ],
     ];
   }
 
+  public function testCoreShowAdvisories() {
+    $this->setProphesizedServices(TRUE, $is_psa, $insecure_versions, $existing_version);
+    $fetcher = $this->container->get('update.psa_fetcher');
+    /** @var \Drupal\Component\Render\FormattableMarkup[] $links */
+    $links = $fetcher->getPublicServiceMessages();
+    static::assertCount(1, $links);
+    $this->assertSame('<a href="http://thesa.com">SA title</a>', (string) $links[0]);
+  }
   /**
    * Sets the 'http_client' and 'extension.list.module' services for the tests.
    *
