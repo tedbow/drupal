@@ -32,7 +32,7 @@ class PsaFetcherTest extends KernelTestBase {
   }
 
   /**
-   * Tests Advisories that should be displayed.
+   * Tests contrib advisories that should be displayed.
    *
    * @param string $existing_version
    *   The existing version of the module.
@@ -43,8 +43,8 @@ class PsaFetcherTest extends KernelTestBase {
    *
    * @dataProvider providerShowAdvisories
    */
-  public function testShowAdvisories(string $existing_version, int $is_psa, array $insecure_versions): void {
-    $this->setProphesizedServices($existing_version, $is_psa, $insecure_versions);
+  public function testShowContribAdvisories(string $existing_version, int $is_psa, array $insecure_versions): void {
+    $this->setProphesizedServices(FALSE, $is_psa, $insecure_versions, $existing_version);
     $fetcher = $this->container->get('update.psa_fetcher');
     /** @var \Drupal\Component\Render\FormattableMarkup[] $links */
     $links = $fetcher->getPublicServiceMessages();
@@ -53,7 +53,7 @@ class PsaFetcherTest extends KernelTestBase {
   }
 
   /**
-   * Dataprovider for testShowAdvisories().
+   * Dataprovider for testShowContribAdvisories().
    */
   public function providerShowAdvisories() {
     return [
@@ -71,6 +71,31 @@ class PsaFetcherTest extends KernelTestBase {
         'existing_version' => '8.x-1.0',
         'is_psa' => 0,
         'insecure_versions' => ['1.0'],
+      ],
+      'semver-non-psa' => [
+        'existing_version' => '1.0.0',
+        'is_psa' => 0,
+        'insecure_versions' => ['1.0.0'],
+      ],
+      'semver-non-exact-non-psa' => [
+        'existing_version' => '1.0.0',
+        'is_psa' => 0,
+        'insecure_versions' => ['1.0'],
+      ],
+      'semver-major-match-non-psa' => [
+        'existing_version' => '1.0.0',
+        'is_psa' => 0,
+        'insecure_versions' => ['8.x-1.0'],
+      ],
+      'existing-extra-non-psa' => [
+        'existing_version' => '8.x-1.0-extraStringNotSpecial',
+        'is_psa' => 0,
+        'insecure_versions' => ['8.x-1.0'],
+      ],
+      'both-extra-non-psa' => [
+        'existing_version' => '8.x-1.0-alsoNotSpecialNotMatching',
+        'is_psa' => 0,
+        'insecure_versions' => ['8.x-1.0-extraStringNotSpecial'],
       ],
       'exact-psa' => [
         'existing_version' => '8.x-1.0',
@@ -105,10 +130,10 @@ class PsaFetcherTest extends KernelTestBase {
    * @param array $insecure_versions
    *   The 'insecure_versions' value for the feed item.
    *
-   * @dataProvider providerIgnoreAdvisories
+   * @dataProvider providerIgnoreContribAdvisories
    */
-  public function testIgnoreAdvisories(string $existing_version, int $is_psa, array $insecure_versions): void {
-    $this->setProphesizedServices($existing_version, $is_psa, $insecure_versions);
+  public function testIgnoreContribAdvisories(string $existing_version, int $is_psa, array $insecure_versions): void {
+    $this->setProphesizedServices(FALSE, $is_psa, $insecure_versions, $existing_version);
     $fetcher = $this->container->get('update.psa_fetcher');
     /** @var \Drupal\Component\Render\FormattableMarkup[] $links */
     $links = $fetcher->getPublicServiceMessages();
@@ -116,19 +141,49 @@ class PsaFetcherTest extends KernelTestBase {
   }
 
   /**
-   * Dataprovider for testIgnoreAdvisories().
+   * Dataprovider for testIgnoreContribAdvisories().
    */
-  public function providerIgnoreAdvisories() {
+  public function providerIgnoreContribAdvisories() {
     return [
       'non-matching-non-psa' => [
         'existing_version' => '8.x-1.0',
         'is_psa' => 0,
         'insecure_versions' => ['8.x-1.1'],
       ],
+      'non-matching-not-exact-non-psa' => [
+        'existing_version' => '8.x-1.0',
+        'is_psa' => 0,
+        'insecure_versions' => ['1.1'],
+      ],
+      'semver-7major-match-non-psa' => [
+        'existing_version' => '1.0.0',
+        'is_psa' => 0,
+        'insecure_versions' => ['7.x-1.0'],
+      ],
+      'semver-different-majors-non-psa' => [
+        'existing_version' => '8.x-1.0',
+        'is_psa' => 0,
+        'insecure_versions' => ['7.x-1.0'],
+      ],
       'no-version-non-psa' => [
         'existing_version' => '',
         'is_psa' => 0,
         'insecure_versions' => ['8.x-1.1'],
+      ],
+      'insecure-extra-non-psa' => [
+        'existing_version' => '8.x-1.0',
+        'is_psa' => 0,
+        'insecure_versions' => ['8.x-1.0-extraStringNotSpecial'],
+      ],
+      'insecure-dev-non-psa' => [
+        'existing_version' => '8.x-1.0',
+        'is_psa' => 0,
+        'insecure_versions' => ['8.x-1.0-dev'],
+      ],
+      'exiting-dev-non-psa' => [
+        'existing_version' => '8.x-1.0-dev',
+        'is_psa' => 0,
+        'insecure_versions' => ['8.x-1.0'],
       ],
     ];
   }
@@ -136,18 +191,20 @@ class PsaFetcherTest extends KernelTestBase {
   /**
    * Sets the 'http_client' and 'extension.list.module' services for the tests.
    *
-   * @param string $existing_version
-   *   The existing version of the module.
+   * @param bool $is_core
+   *   Whether the SA item is for Drupal core.
    * @param int $is_psa
    *   The 'is_psa' value for the feed item.
    * @param array $insecure_versions
    *   The 'insecure_versions' value for the feed item.
+   * @param string|null $existing_version
+   *   The existing version of the module.
    */
-  protected function setProphesizedServices(string $existing_version, int $is_psa, array $insecure_versions): void {
+  protected function setProphesizedServices(bool $is_core, int $is_psa, array $insecure_versions, string $existing_version = NULL): void {
     $sa = [
       'title' => 'SA title',
-      'project' => 'the_project',
-      'type' => 'module',
+      'project' => ($is_core ? 'drupal' : 'the_project'),
+      'type' => ($is_core ? 'core' : 'module'),
       'link' => 'http://thesa.com',
       'insecure' => $insecure_versions,
       'is_psa' => $is_psa,
@@ -162,15 +219,18 @@ class PsaFetcherTest extends KernelTestBase {
       ->willReturn($response->reveal());
     $this->container->set('http_client', $client->reveal());
 
-    $module_list = $this->prophesize(ModuleExtensionList::class);
-    $extension = $this->prophesize(Extension::class)->reveal();
-    $extension->info = [
-      'version' => $existing_version,
-      'project' => 'the_project',
-    ];
-    $module_list->getList()->willReturn([$extension]);
+    if ($existing_version) {
+      $module_list = $this->prophesize(ModuleExtensionList::class);
+      $extension = $this->prophesize(Extension::class)->reveal();
+      $extension->info = [
+        'version' => $existing_version,
+        'project' => 'the_project',
+      ];
+      $module_list->getList()->willReturn([$extension]);
 
-    $this->container->set('extension.list.module', $module_list->reveal());
+      $this->container->set('extension.list.module', $module_list->reveal());
+    }
+
   }
 
 }
