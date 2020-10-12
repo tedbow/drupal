@@ -65,24 +65,6 @@ class PsaFetcherTest extends KernelTestBase {
         ],
         'existing_version' => '8.x-1.0',
       ],
-      'contrib:not-exact:non-psa' => [
-        'feed_item' => [
-          'is_psa' => 0,
-          'type' => 'module',
-          'project' => 'the_project',
-          'insecure' => ['1.0'],
-        ],
-        'existing_version' => '8.x-1.0',
-      ],
-      'contrib:not-exact:non-psa-reversed' => [
-        'feed_item' => [
-          'is_psa' => 0,
-          'type' => 'module',
-          'project' => 'the_project',
-          'insecure' => ['1.0'],
-        ],
-        'existing_version' => '8.x-1.0',
-      ],
       'contrib:semver:non-psa' => [
         'feed_item' => [
           'is_psa' => 0,
@@ -91,43 +73,6 @@ class PsaFetcherTest extends KernelTestBase {
           'insecure' => ['1.0.0'],
         ],
         'existing_version' => '1.0.0',
-      ],
-      'contrib:semver-non-exact:non-psa' => [
-        'feed_item' => [
-          'is_psa' => 0,
-          'type' => 'module',
-          'project' => 'the_project',
-          'insecure' => ['1.0'],
-        ],
-        'existing_version' => '1.0.0',
-      ],
-      'contrib:semver-major-match:non-psa' => [
-        'feed_item' => [
-          'is_psa' => 0,
-          'type' => 'module',
-          'project' => 'the_project',
-          'insecure' => ['1.0'],
-        ],
-        'existing_version' => '1.0.0',
-      ],
-      'contrib:existing-extra:non-psa' => [
-        'feed_item' => [
-          'is_psa' => 0,
-          'type' => 'module',
-          'project' => 'the_project',
-          'insecure' => ['8.x-1.0'],
-        ],
-        'existing_version' => '8.x-1.0-extraStringNotSpecial',
-
-      ],
-      'contrib:both-extra:non-psa' => [
-        'feed_item' => [
-          'is_psa' => 0,
-          'type' => 'module',
-          'project' => 'the_project',
-          'insecure' => ['8.x-1.0-extraStringNotSpecial'],
-        ],
-        'existing_version' => '8.x-1.0-alsoNotSpecialNotMatching',
       ],
       'contrib:exact:psa' => [
         'feed_item' => [
@@ -145,7 +90,7 @@ class PsaFetcherTest extends KernelTestBase {
           'project' => 'the_project',
           'insecure' => ['8.x-1.0'],
         ],
-        'existing_version' => '8.x-1.0',
+        'existing_version' => '1.0',
 
       ],
       'contrib:non-matching:psa' => [
@@ -234,6 +179,15 @@ class PsaFetcherTest extends KernelTestBase {
    */
   public function providerIgnoreAdvisories() {
     return [
+      'contrib:not-exact:non-psa' => [
+        'feed_item' => [
+          'is_psa' => 0,
+          'type' => 'module',
+          'project' => 'the_project',
+          'insecure' => ['1.0'],
+        ],
+        'existing_version' => '8.x-1.0',
+      ],
       'contrib:non-matching:non-psa' => [
         'feed_item' => [
           'is_psa' => 0,
@@ -243,6 +197,33 @@ class PsaFetcherTest extends KernelTestBase {
         ],
         'existing_version' => '8.x-1.0',
       ],
+      'contrib:not-exact:non-psa-reversed' => [
+        'feed_item' => [
+          'is_psa' => 0,
+          'type' => 'module',
+          'project' => 'the_project',
+          'insecure' => ['1.0'],
+        ],
+        'existing_version' => '8.x-1.0',
+      ],
+      'contrib:semver-non-exact:non-psa' => [
+        'feed_item' => [
+          'is_psa' => 0,
+          'type' => 'module',
+          'project' => 'the_project',
+          'insecure' => ['1.0'],
+        ],
+        'existing_version' => '1.0.0',
+      ],
+      'contrib:semver-major-match:non-psa' => [
+        'feed_item' => [
+          'is_psa' => 0,
+          'type' => 'module',
+          'project' => 'the_project',
+          'insecure' => ['1.0'],
+        ],
+        'existing_version' => '1.0.0',
+      ],
       'contrib:non-matching-not-exact:non-psa' => [
         'feed_item' => [
           'is_psa' => 0,
@@ -251,6 +232,15 @@ class PsaFetcherTest extends KernelTestBase {
           'insecure' => ['1.1'],
         ],
         'existing_version' => '8.x-1.0',
+      ],
+      'contrib:both-extra:non-psa' => [
+        'feed_item' => [
+          'is_psa' => 0,
+          'type' => 'module',
+          'project' => 'the_project',
+          'insecure' => ['8.x-1.0-extraStringNotSpecial'],
+        ],
+        'existing_version' => '8.x-1.0-alsoNotSpecialNotMatching',
       ],
       'contrib:semver-7major-match:non-psa' => [
         'feed_item' => [
@@ -346,11 +336,21 @@ class PsaFetcherTest extends KernelTestBase {
           'insecure' => [],
         ],
       ],
+      'contrib:existing-extra:non-psa' => [
+        'feed_item' => [
+          'is_psa' => 0,
+          'type' => 'module',
+          'project' => 'the_project',
+          'insecure' => ['8.x-1.0'],
+        ],
+        'existing_version' => '8.x-1.0-extraStringNotSpecial',
+
+      ],
     ];
   }
 
   /**
-   * Sets the 'http_client' and 'extension.list.module' services for the tests.
+   * Sets prophesized 'http_client' and 'extension.list.module' services.
    *
    * @param mixed[] $feed_item
    *   The feed item to test. 'title' and 'link' are omitted from this array
@@ -385,5 +385,4 @@ class PsaFetcherTest extends KernelTestBase {
       $this->container->set('extension.list.module', $module_list->reveal());
     }
   }
-
 }

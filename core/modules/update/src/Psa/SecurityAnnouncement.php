@@ -42,7 +42,7 @@ class SecurityAnnouncement {
    *
    * @var bool
    */
-  protected $isPSA;
+  protected $isPsa;
 
   /**
    * The currently insecure versions of the project.

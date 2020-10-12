@@ -2,7 +2,6 @@
 
 namespace Drupal\update\Psa;
 
-use Composer\Semver\VersionParser;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -118,7 +117,7 @@ class PsaFetcher {
         if ($sa->getProjectType() !== 'core' && !$this->getProjectExistingVersion($sa)) {
           continue;
         }
-        if ($sa->isPsa() || $this->matchesInstalledVersion($sa)) {
+        if ($sa->isPsa() || $this->matchesExistingVersion($sa)) {
           $messages[] = $this->message($sa);
         }
       }
@@ -161,7 +160,7 @@ class PsaFetcher {
   }
 
   /**
-   * Determines if the PSA versions match for the installed version of project.
+   * Determines if the PSA versions match for the existing version of project.
    *
    * @param \Drupal\update\Psa\SecurityAnnouncement $sa
    *   The security announcement.
@@ -174,30 +173,9 @@ class PsaFetcher {
    *   Thrown by \Composer\Semver\VersionParser::parseConstraints() if the
    *   constraint string is not valid.
    */
-  protected function matchesInstalledVersion(SecurityAnnouncement $sa) : bool {
-    $parser = new VersionParser();
-    $versions = $sa->getProjectType() === 'core' ? $sa->getInsecureVersions() : $this->getContribVersions($sa->getInsecureVersions());
-
-    try {
-      $installed_constraint = $parser->parseConstraints($this->getExistingVersionConstraint($sa));
-    }
-    catch (\UnexpectedValueException $exception) {
-      // If the installed version cannot be parsed, assume it matches to avoid
-      // not returning a critical PSA.
-      return TRUE;
-    }
-
-    foreach ($versions as $version) {
-      try {
-        if ($parser->parseConstraints($version)->matches($installed_constraint)) {
-          return TRUE;
-        }
-      }
-      catch (\UnexpectedValueException $exception) {
-        // If an individual constraint is throws an exception continue to check
-        // the other versions.
-        continue;
-      }
+  protected function matchesExistingVersion(SecurityAnnouncement $sa) : bool {
+    if ($existing_version = $this->getProjectExistingVersion($sa)) {
+      return in_array($existing_version, $sa->getInsecureVersions(), TRUE);
     }
     return FALSE;
   }
@@ -219,49 +197,6 @@ class PsaFetcher {
   }
 
   /**
-   * Gets the contrib version to use for comparisons.
-   *
-   * @param string[] $versions
-   *   Contrib project versions.
-   *
-   * @return string[]
-   *   The versions that can be used for comparison.
-   */
-  private function getContribVersions(array $versions) : array {
-    $versions = array_filter(array_map(static function ($version) {
-      $version_array = explode('-', $version, 2);
-      if ($version_array && $version_array[0] === \Drupal::CORE_COMPATIBILITY) {
-        return isset($version_array[1]) ? $version_array[1] : NULL;
-      }
-      if (count($version_array) === 1) {
-        return $version_array[0];
-      }
-      if (count($version_array) === 2 && $version_array[1] === 'dev') {
-        return $version;
-      }
-    }, $versions));
-    return $versions;
-  }
-
-  /**
-   * Gets the currently existing project version as a constraint string.
-   *
-   * @param \Drupal\update\Psa\SecurityAnnouncement $sa
-   *   The security announcement.
-   *
-   * @return string
-   *   The existing project version as constraint string.
-   */
-  private function getExistingVersionConstraint(SecurityAnnouncement $sa) : string {
-    if ($sa->getProjectType() === 'core') {
-      return \Drupal::VERSION;
-    }
-    $project_version = $this->getProjectExistingVersion($sa);
-    $version_array = explode('-', $project_version, 2);
-    return isset($version_array[1]) && $version_array[1] !== 'dev' ? $version_array[1] : $project_version;
-  }
-
-  /**
    * Gets the project version.
    *
    * @param \Drupal\update\Psa\SecurityAnnouncement $sa
@@ -271,13 +206,15 @@ class PsaFetcher {
    *   The project version or an empty string if the project is not available.
    */
   protected function getProjectExistingVersion(SecurityAnnouncement $sa): string {
-    static $extensions = [];
     $project_type = $sa->getProjectType();
-    if (!isset($extensions[$project_type])) {
-      $extensions[$project_type] = $this->extensionLists[$project_type]->getList();
+    if ($project_type === 'core') {
+      return \Drupal::VERSION;
+    }
+    if (!isset($this->extensionLists[$project_type])) {
+      return '';
     }
     $project_info = new ProjectInfo();
-    foreach ($extensions[$project_type] as $extension) {
+    foreach ($this->extensionLists[$project_type]->getList() as $extension) {
       if ($project_info->getProjectName($extension) === $sa->getProject()) {
         return $extension->info['version'] ?? '';
       }
