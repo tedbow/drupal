@@ -310,7 +310,7 @@ class PsaFetcherTest extends KernelTestBase {
         'feed_item' => [
           'is_psa' => 0,
           'type' => 'module',
-          'project' => 'different_project',
+          'project' => 'non_existing_project',
           'insecure' => ['8.x-1.0'],
         ],
       ],
@@ -318,7 +318,7 @@ class PsaFetcherTest extends KernelTestBase {
         'feed_item' => [
           'is_psa' => 1,
           'type' => 'module',
-          'project' => 'different_project',
+          'project' => 'non_existing_project',
           'insecure' => ['8.x-1.0'],
         ],
       ],
