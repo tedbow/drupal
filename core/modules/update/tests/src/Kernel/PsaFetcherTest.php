@@ -111,6 +111,15 @@ class PsaFetcherTest extends KernelTestBase {
         ],
         'existing_version' => '8.x-2.0',
       ],
+      'contrib:dev:psa' => [
+        'feed_item' => [
+          'is_psa' => 1,
+          'type' => 'module',
+          'project' => 'the_project',
+          'insecure' => [],
+        ],
+        'existing_version' => '8.x-2.x-dev',
+      ],
       'core:exact:non-psa' => [
         'feed_item' => [
           'is_psa' => 0,
@@ -294,7 +303,7 @@ class PsaFetcherTest extends KernelTestBase {
           'project' => 'the_project',
           'insecure' => ['8.x-1.0'],
         ],
-        'existing_version' => '8.x-1.0-dev',
+        'existing_version' => '8.x-1.x-dev',
       ],
       'contrib:non-existing-project:non-psa' => [
         'feed_item' => [
