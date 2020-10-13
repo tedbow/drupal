@@ -394,4 +394,5 @@ class PsaFetcherTest extends KernelTestBase {
       $this->container->set('extension.list.module', $module_list->reveal());
     }
   }
+
 }
