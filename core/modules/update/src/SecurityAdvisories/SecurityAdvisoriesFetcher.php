@@ -16,7 +16,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
 
 /**
- * Defines a service class to get Security Advisories.
+ * Defines a service class to get security advisories.
  */
 class SecurityAdvisoriesFetcher {
 
@@ -89,7 +89,7 @@ class SecurityAdvisoriesFetcher {
   }
 
   /**
-   * Gets Security Advisories.
+   * Gets security advisories.
    *
    * @return \Drupal\Component\Render\FormattableMarkup[]
    *   A array of translatable strings.
@@ -130,7 +130,7 @@ class SecurityAdvisoriesFetcher {
   }
 
   /**
-   * Gets a message from an exception thrown by ::getSecurityAdvisoriesMessages().
+   * Gets a message from an exception from ::getSecurityAdvisoriesMessages().
    *
    * @param \Exception $exception
    *   The exception throw by ::getSecurityAdvisoriesMessages().
@@ -197,7 +197,7 @@ class SecurityAdvisoriesFetcher {
   }
 
   /**
-   * Gets the project version.
+   * Gets the existing project version.
    *
    * @param \Drupal\update\SecurityAdvisories\SecurityAdvisory $sa
    *   The security advisory.

@@ -14,7 +14,7 @@ use Drupal\Core\StringTranslation\TranslationInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Provides an service to send email notifications for Security Advisories.
+ * Provides an service to send email notifications for security advisories.
  */
 class EmailNotify {
 
@@ -30,11 +30,11 @@ class EmailNotify {
   protected $mailManager;
 
   /**
-   * The Security Advisory fetcher service.
+   * The security advisory fetcher service.
    *
    * @var \Drupal\update\SecurityAdvisories\SecurityAdvisoriesFetcher
    */
-  protected $psaFetcher;
+  protected $saFetcher;
 
   /**
    * The config factory.
@@ -84,7 +84,7 @@ class EmailNotify {
    * @param \Drupal\Core\Mail\MailManagerInterface $mail_manager
    *   The mail manager.
    * @param \Drupal\update\SecurityAdvisories\SecurityAdvisoriesFetcher $psa_fetcher
-   *   The Security Advisory fetcher service.
+   *   The security advisory fetcher service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
@@ -102,7 +102,7 @@ class EmailNotify {
    */
   public function __construct(MailManagerInterface $mail_manager, SecurityAdvisoriesFetcher $psa_fetcher, ConfigFactoryInterface $config_factory, LanguageManagerInterface $language_manager, StateInterface $state, TimeInterface $time, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, LoggerInterface $logger) {
     $this->mailManager = $mail_manager;
-    $this->psaFetcher = $psa_fetcher;
+    $this->saFetcher = $psa_fetcher;
     $this->configFactory = $config_factory;
     $this->languageManager = $language_manager;
     $this->state = $state;
@@ -113,7 +113,7 @@ class EmailNotify {
   }
 
   /**
-   * Send notification when Security Advisories are available.
+   * Send notification when security advisories are available.
    */
   public function send(): void {
     $notify_emails = $this->configFactory->get('update.settings')->get('notification.emails');
@@ -121,7 +121,7 @@ class EmailNotify {
       return;
     }
     try {
-      $messages = $this->psaFetcher->getSecurityAdvisoriesMessages();
+      $messages = $this->saFetcher->getSecurityAdvisoriesMessages();
     }
     catch (\Exception $exception) {
       $this->logger->error(

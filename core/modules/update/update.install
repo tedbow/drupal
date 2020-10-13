@@ -182,7 +182,7 @@ function update_update_last_removed() {
 }
 
 /**
- * Display requirements from Security Advisories.
+ * Display requirements from security advisories.
  *
  * @param array[] $requirements
  *   The requirements array as specified in hook_requirements().

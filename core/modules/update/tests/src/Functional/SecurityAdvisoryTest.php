@@ -8,7 +8,7 @@ use Drupal\Core\Url;
 use Drupal\Tests\BrowserTestBase;
 
 /**
- * Tests of Security Advisories functionality.
+ * Tests of security advisories functionality.
  *
  * @group update
  */
@@ -176,13 +176,13 @@ class SecurityAdvisoryTest extends BrowserTestBase {
       ->set('notification.emails', ['admin@example.com'])
       ->save();
 
-    // Confirm that Security Advisory cache does not exist.
+    // Confirm that security advisory cache does not exist.
     $this->assertNull($this->tempStore->get('psa_response'));
 
-    // Test Security Advisories on admin pages.
+    // Test security advisories on admin pages.
     $this->drupalGet(Url::fromRoute('system.admin'));
     $this->assertSession()->pageTextContains('Critical Release - SA-2019-02-19');
-    // Confirm that the Security Advisory cache has been set.
+    // Confirm that the security advisory cache has been set.
     $this->assertNotEmpty($this->tempStore->get('psa_response'));
 
     // Email should be sent.
@@ -194,7 +194,7 @@ class SecurityAdvisoryTest extends BrowserTestBase {
     $this->assertMailString('body', 'AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02', 1);
     $this->assertMailString('body', 'AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02', 1);
 
-    // Deleting the Security Advisory cache will not result in another email if the messages
+    // Deleting the security advisory cache will not result in another email if the messages
     // have not changed.
     // @todo Replace deleting the cache directly in the test with faking a later
     //   date and letting the cache item expire in
@@ -204,7 +204,7 @@ class SecurityAdvisoryTest extends BrowserTestBase {
     $this->container->get('cron')->run();
     $this->assertCount(0, $this->getPsaEmails());
 
-    // Deleting the Security Advisory tempstore item will result in another email if the
+    // Deleting the security advisory tempstore item will result in another email if the
     // messages have changed.
     $this->tempStore->delete('psa_response');
     $this->container->get('state')->set('system.test_mail_collector', []);

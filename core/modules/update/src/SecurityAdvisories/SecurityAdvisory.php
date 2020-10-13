@@ -95,7 +95,7 @@ class SecurityAdvisory {
    *   A new SecurityAdvisories object.
    *
    * @throws \UnexpectedValueException
-   *   Thrown if the array is not a valid Security Advisory.
+   *   Thrown if the array is not a valid security advisory.
    */
   public static function createFromArray(array $data): SecurityAdvisory {
     static::validateAdvisoryData($data);
@@ -110,13 +110,13 @@ class SecurityAdvisory {
   }
 
   /**
-   * Validates the Security Advisory data.
+   * Validates the security advisory data.
    *
    * @param mixed[] $data
    *   The advisory data.
    *
    * @throws \UnexpectedValueException
-   *   Thrown if Security Advisory data is not valid.
+   *   Thrown if security advisory data is not valid.
    */
   protected static function validateAdvisoryData(array $data): void {
     $not_blank_constraints = [
@@ -197,7 +197,7 @@ class SecurityAdvisory {
    * Gets the link to the security advisory.
    *
    * @return string
-   *   The link to the Security Advisory.
+   *   The link to the security advisory.
    */
   public function getLink(): string {
     return $this->link;

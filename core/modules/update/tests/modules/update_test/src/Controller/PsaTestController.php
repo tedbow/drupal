@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Defines a controller to return JSON for Security Advisory tests.
+ * Defines a controller to return JSON for security advisory tests.
  */
 class PsaTestController {
 

@@ -42,11 +42,11 @@ update.settings:
           label: 'Email notification threshold'
     psa:
       type: mapping
-      label: 'Security Advisory settings'
+      label: 'Security advisory settings'
       mapping:
         endpoint:
           type: string
           label: 'Endpoint URI for PSAs'
         check_frequency:
           type: integer
-          label: 'Frequency to check for Security Advisories, defaults to 12 hours'
+          label: 'Frequency to check for security advisories, defaults to 12 hours'
