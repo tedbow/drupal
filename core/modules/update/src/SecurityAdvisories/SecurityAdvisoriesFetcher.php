@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\update\Psa;
+namespace Drupal\update\SecurityAdvisories;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Render\FormattableMarkup;
@@ -16,9 +16,9 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
 
 /**
- * Defines a service class to get Public Service Announcements.
+ * Defines a service class to get Security Advisories.
  */
-class PsaFetcher {
+class SecurityAdvisoriesFetcher {
 
   use StringTranslationTrait;
   use DependencySerializationTrait;
@@ -89,12 +89,12 @@ class PsaFetcher {
   }
 
   /**
-   * Gets public service messages.
+   * Gets Security Advisories.
    *
    * @return \Drupal\Component\Render\FormattableMarkup[]
    *   A array of translatable strings.
    */
-  public function getPublicServiceMessages() : array {
+  public function getSecurityAdvisoriesMessages() : array {
     $messages = [];
 
     $response = $this->tempStore->get('psa_response');
@@ -108,7 +108,7 @@ class PsaFetcher {
     if ($json_payload !== NULL) {
       foreach ($json_payload as $json) {
         try {
-          $sa = SecurityAnnouncement::createFromArray($json);
+          $sa = SecurityAdvisory::createFromArray($json);
         }
         catch (\UnexpectedValueException $unexpected_value_exception) {
           throw new \UnexpectedValueException($unexpected_value_exception->getMessage(), static::MALFORMED_JSON_EXCEPTION_CODE);
@@ -130,10 +130,10 @@ class PsaFetcher {
   }
 
   /**
-   * Gets a message from an exception thrown by ::getPublicServiceMessages().
+   * Gets a message from an exception thrown by ::getSecurityAdvisoriesMessages().
    *
    * @param \Exception $exception
-   *   The exception throw by ::getPublicServiceMessages().
+   *   The exception throw by ::getSecurityAdvisoriesMessages().
    * @param bool $throw_unexpected_exceptions
    *   Whether to re-throw exceptions that are not expected.
    *
@@ -160,20 +160,20 @@ class PsaFetcher {
   }
 
   /**
-   * Determines if the PSA versions match for the existing version of project.
+   * Determines if advisory versions match for the existing version of project.
    *
-   * @param \Drupal\update\Psa\SecurityAnnouncement $sa
-   *   The security announcement.
+   * @param \Drupal\update\SecurityAdvisories\SecurityAdvisory $sa
+   *   The security advisory.
    *
    * @return bool
-   *   TRUE if security announcement matches the installed version of the
+   *   TRUE if security advisory matches the installed version of the
    *   project; otherwise FALSE.
    *
    * @throws \UnexpectedValueException
    *   Thrown by \Composer\Semver\VersionParser::parseConstraints() if the
    *   constraint string is not valid.
    */
-  protected function matchesExistingVersion(SecurityAnnouncement $sa) : bool {
+  protected function matchesExistingVersion(SecurityAdvisory $sa) : bool {
     if ($existing_version = $this->getProjectExistingVersion($sa)) {
       return in_array($existing_version, $sa->getInsecureVersions(), TRUE);
     }
@@ -181,15 +181,15 @@ class PsaFetcher {
   }
 
   /**
-   * Returns a message that links the security announcement.
+   * Returns a message that links the security advisory.
    *
-   * @param \Drupal\update\Psa\SecurityAnnouncement $sa
-   *   The security announcement.
+   * @param \Drupal\update\SecurityAdvisories\SecurityAdvisory $sa
+   *   The security advisory.
    *
    * @return \Drupal\Component\Render\FormattableMarkup
    *   The PSA or SA message.
    */
-  protected function message(SecurityAnnouncement $sa) : FormattableMarkup {
+  protected function message(SecurityAdvisory $sa) : FormattableMarkup {
     return new FormattableMarkup('<a href=":url">:message</a>', [
       ':message' => $sa->getTitle(),
       ':url' => $sa->getLink(),
@@ -199,13 +199,13 @@ class PsaFetcher {
   /**
    * Gets the project version.
    *
-   * @param \Drupal\update\Psa\SecurityAnnouncement $sa
-   *   The security announcement.
+   * @param \Drupal\update\SecurityAdvisories\SecurityAdvisory $sa
+   *   The security advisory.
    *
    * @return string
    *   The project version or an empty string if the project is not available.
    */
-  protected function getProjectExistingVersion(SecurityAnnouncement $sa): string {
+  protected function getProjectExistingVersion(SecurityAdvisory $sa): string {
     $project_type = $sa->getProjectType();
     if ($project_type === 'core') {
       return \Drupal::VERSION;

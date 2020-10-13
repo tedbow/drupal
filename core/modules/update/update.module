@@ -73,11 +73,11 @@ function update_page_top() {
     $route_name = \Drupal::routeMatch()->getRouteName();
     module_load_install('update');
     $status = update_requirements('runtime');
-    if ($route_name !== 'system.status' && \Drupal::hasService('update.psa_fetcher')) {
-      /** @var \Drupal\update\Psa\PsaFetcherInterface $psa */
-      $psa = \Drupal::service('update.psa_fetcher');
+    if ($route_name !== 'system.status' && \Drupal::hasService('update.sa_fetcher')) {
+      /** @var \Drupal\update\SecurityAdvisories\PsaFetcherInterface $psa */
+      $psa = \Drupal::service('update.sa_fetcher');
       try {
-        $messages = $psa->getPublicServiceMessages();
+        $messages = $psa->getSecurityAdvisoriesMessages();
         if ($messages) {
           \Drupal::messenger()->addError(t('Critical security announcements:'));
           foreach ($messages as $message) {
@@ -217,9 +217,9 @@ function update_cron() {
     _update_cron_notify();
   }
 
-  if (\Drupal::hasService('update.psa_notify')) {
-    /** @var \Drupal\update\Psa\NotifyInterface $notify */
-    $notify = \Drupal::service('update.psa_notify');
+  if (\Drupal::hasService('update.sa_notify')) {
+    /** @var \Drupal\update\SecurityAdvisories\NotifyInterface $notify */
+    $notify = \Drupal::service('update.sa_notify');
     $notify->send();
   }
 

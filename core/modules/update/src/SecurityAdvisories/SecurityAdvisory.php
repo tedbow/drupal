@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\update\Psa;
+namespace Drupal\update\SecurityAdvisories;
 
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -8,37 +8,37 @@ use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
 
 /**
- * Provides a security announcement value object.
+ * Provides a security advisory value object.
  *
  * These come from the PSA feed on drupal.org.
  *
  * @link https://www.drupal.org/docs/8/update/automatic-updates#s-public-service-announcement-psa-feed
  */
-class SecurityAnnouncement {
+class SecurityAdvisory {
 
   /**
-   * The title of the announcement.
+   * The title of the advisory.
    *
    * @var string
    */
   protected $title;
 
   /**
-   * The project name for the announcement.
+   * The project name for the advisory.
    *
    * @var string
    */
   protected $project;
 
   /**
-   * The project type for the announcement.
+   * The project type for the advisory.
    *
    * @var string
    */
   protected $type;
 
   /**
-   * Whether this announcement is a PSA instead of another type of announcement.
+   * Whether this advisory is a PSA instead of another type of advisory.
    *
    * @var bool
    */
@@ -52,25 +52,25 @@ class SecurityAnnouncement {
   protected $insecureVersions;
 
   /**
-   * The link to the announcement.
+   * The link to the advisory.
    *
    * @var string
    */
   protected $link;
 
   /**
-   * Constructs a SecurityAnnouncement object.
+   * Constructs a SecurityAdvisories object.
    *
    * @param string $title
-   *   The title of the announcement.
+   *   The title of the advisory.
    * @param string $project
    *   The project name.
    * @param string $type
    *   The project type.
    * @param bool $is_psa
-   *   Whether this announcement is a PSA.
+   *   Whether this advisory is a PSA.
    * @param string $link
-   *   The link to the announcement.
+   *   The link to the advisory.
    * @param string[] $insecure_versions
    *   The versions of the project that are currently insecure. For PSAs this
    *   list does include versions that will be marked as insecure when the new
@@ -86,19 +86,19 @@ class SecurityAnnouncement {
   }
 
   /**
-   * Creates a SecurityAnnouncement instance from an array.
+   * Creates a SecurityAdvisories instance from an array.
    *
    * @param mixed[] $data
-   *   The security announcement data as returned from the JSON feed.
+   *   The security advisory data as returned from the JSON feed.
    *
    * @return static
-   *   A new SecurityAnnouncement object.
+   *   A new SecurityAdvisories object.
    *
    * @throws \UnexpectedValueException
-   *   Thrown if the array is not a valid PSA.
+   *   Thrown if the array is not a valid Security Advisory.
    */
-  public static function createFromArray(array $data): SecurityAnnouncement {
-    static::validateAnnouncementData($data);
+  public static function createFromArray(array $data): SecurityAdvisory {
+    static::validateAdvisoryData($data);
     return new static(
       $data['title'],
       $data['project'],
@@ -110,15 +110,15 @@ class SecurityAnnouncement {
   }
 
   /**
-   * Validates the PSA data.
+   * Validates the Security Advisory data.
    *
    * @param mixed[] $data
-   *   The announcement data.
+   *   The advisory data.
    *
    * @throws \UnexpectedValueException
-   *   Thrown if PSA data is not valid.
+   *   Thrown if Security Advisory data is not valid.
    */
-  protected static function validateAnnouncementData(array $data): void {
+  protected static function validateAdvisoryData(array $data): void {
     $not_blank_constraints = [
       new Type(['type' => 'string']),
       new NotBlank(),
@@ -154,7 +154,7 @@ class SecurityAnnouncement {
   }
 
   /**
-   * Gets the project associated with the announcement.
+   * Gets the project associated with the advisory.
    *
    * @return string
    *   The project name.
@@ -164,7 +164,7 @@ class SecurityAnnouncement {
   }
 
   /**
-   * Gets the type of project associated with the announcement.
+   * Gets the type of project associated with the advisory.
    *
    * @return string
    *   The project type.
@@ -174,10 +174,10 @@ class SecurityAnnouncement {
   }
 
   /**
-   * Whether the security announcement is a PSA or not.
+   * Whether the security advisory is a PSA or not.
    *
    * @return bool
-   *   TRUE if the announcement is a PSA otherwise, FALSE.
+   *   TRUE if the advisory is a PSA otherwise, FALSE.
    */
   public function isPsa(): bool {
     return $this->isPsa;
@@ -194,10 +194,10 @@ class SecurityAnnouncement {
   }
 
   /**
-   * Gets the link to the security announcement.
+   * Gets the link to the security advisory.
    *
    * @return string
-   *   The link to the PSA.
+   *   The link to the Security Advisory.
    */
   public function getLink(): string {
     return $this->link;

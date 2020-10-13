@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\update\Psa;
+namespace Drupal\update\SecurityAdvisories;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -14,13 +14,13 @@ use Drupal\Core\StringTranslation\TranslationInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Provides an service to send email notifications for PSAs.
+ * Provides an service to send email notifications for Security Advisories.
  */
 class EmailNotify {
 
   use StringTranslationTrait;
 
-  private const LAST_MESSAGES_STATE_KEY = 'update_psa.last_messages_hash';
+  private const LAST_MESSAGES_STATE_KEY = 'update_sa.last_messages_hash';
 
   /**
    * The mail manager.
@@ -30,9 +30,9 @@ class EmailNotify {
   protected $mailManager;
 
   /**
-   * The PSA fetcher service.
+   * The Security Advisory fetcher service.
    *
-   * @var \Drupal\update\Psa\PsaFetcher
+   * @var \Drupal\update\SecurityAdvisories\SecurityAdvisoriesFetcher
    */
   protected $psaFetcher;
 
@@ -83,8 +83,8 @@ class EmailNotify {
    *
    * @param \Drupal\Core\Mail\MailManagerInterface $mail_manager
    *   The mail manager.
-   * @param \Drupal\update\Psa\PsaFetcher $psa_fetcher
-   *   The PSA fetcher service.
+   * @param \Drupal\update\SecurityAdvisories\SecurityAdvisoriesFetcher $psa_fetcher
+   *   The Security Advisory fetcher service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
@@ -100,7 +100,7 @@ class EmailNotify {
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    */
-  public function __construct(MailManagerInterface $mail_manager, PsaFetcher $psa_fetcher, ConfigFactoryInterface $config_factory, LanguageManagerInterface $language_manager, StateInterface $state, TimeInterface $time, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, LoggerInterface $logger) {
+  public function __construct(MailManagerInterface $mail_manager, SecurityAdvisoriesFetcher $psa_fetcher, ConfigFactoryInterface $config_factory, LanguageManagerInterface $language_manager, StateInterface $state, TimeInterface $time, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, LoggerInterface $logger) {
     $this->mailManager = $mail_manager;
     $this->psaFetcher = $psa_fetcher;
     $this->configFactory = $config_factory;
@@ -113,7 +113,7 @@ class EmailNotify {
   }
 
   /**
-   * Send notification when PSAs are available.
+   * Send notification when Security Advisories are available.
    */
   public function send(): void {
     $notify_emails = $this->configFactory->get('update.settings')->get('notification.emails');
@@ -121,12 +121,12 @@ class EmailNotify {
       return;
     }
     try {
-      $messages = $this->psaFetcher->getPublicServiceMessages();
+      $messages = $this->psaFetcher->getSecurityAdvisoriesMessages();
     }
     catch (\Exception $exception) {
       $this->logger->error(
         'Unable to send notification email because of error retrieving PSA feed: %error',
-        ['%error' => PsaFetcher::getErrorMessageFromException($exception, FALSE)]
+        ['%error' => SecurityAdvisoriesFetcher::getErrorMessageFromException($exception, FALSE)]
       );
       return;
     }

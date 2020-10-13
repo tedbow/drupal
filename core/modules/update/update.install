@@ -10,7 +10,7 @@ use Drupal\Core\StringTranslation\PluralTranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\update\ProjectSecurityData;
 use Drupal\update\ProjectSecurityRequirement;
-use Drupal\update\Psa\PsaFetcher;
+use Drupal\update\SecurityAdvisories\SecurityAdvisoriesFetcher;
 use Drupal\update\UpdateFetcherInterface;
 use Drupal\update\UpdateManagerInterface;
 
@@ -182,24 +182,24 @@ function update_update_last_removed() {
 }
 
 /**
- * Display requirements from Public service announcements.
+ * Display requirements from Security Advisories.
  *
  * @param array[] $requirements
  *   The requirements array as specified in hook_requirements().
  */
 function _update_psa_requirements(array &$requirements): void {
-  if (!Drupal::hasService('update.psa_fetcher')) {
+  if (!Drupal::hasService('update.sa_fetcher')) {
     return;
   }
-  /** @var \Drupal\update\Psa\PsaFetcherInterface $psa */
-  $psa = \Drupal::service('update.psa_fetcher');
+  /** @var \Drupal\update\SecurityAdvisories\SecurityAdvisoriesFetcher $psa */
+  $psa = \Drupal::service('update.sa_fetcher');
   try {
-    $messages = $psa->getPublicServiceMessages();
+    $messages = $psa->getSecurityAdvisoriesMessages();
   }
   catch (Exception $exception) {
     $requirements['update_psa']['title'] = t('Critical security announcements');
     $requirements['update_psa']['severity'] = REQUIREMENT_ERROR;
-    $requirements['update_psa']['value'] = PsaFetcher::getErrorMessageFromException($exception);
+    $requirements['update_psa']['value'] = SecurityAdvisoriesFetcher::getErrorMessageFromException($exception);
     return;
   }
 

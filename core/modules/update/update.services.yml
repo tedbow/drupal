@@ -25,8 +25,8 @@ services:
   logger.channel.update:
     parent: logger.channel_base
     arguments: ['update']
-  update.psa_fetcher:
-    class: Drupal\update\Psa\PsaFetcher
+  update.sa_fetcher:
+    class: Drupal\update\SecurityAdvisories\SecurityAdvisoriesFetcher
     arguments:
       - '@config.factory'
       - '@keyvalue.expirable'
@@ -35,11 +35,11 @@ services:
       - '@extension.list.module'
       - '@extension.list.theme'
       - '@extension.list.profile'
-  update.psa_notify:
-    class: Drupal\update\Psa\EmailNotify
+  update.sa_notify:
+    class: Drupal\update\SecurityAdvisories\EmailNotify
     arguments:
       - '@plugin.manager.mail'
-      - '@update.psa_fetcher'
+      - '@update.sa_fetcher'
       - '@config.factory'
       - '@language_manager'
       - '@state'

@@ -8,11 +8,11 @@ use Drupal\Core\Url;
 use Drupal\Tests\BrowserTestBase;
 
 /**
- * Tests of PSA functionality.
+ * Tests of Security Advisories functionality.
  *
  * @group update
  */
-class PsaTest extends BrowserTestBase {
+class SecurityAdvisoryTest extends BrowserTestBase {
 
   use AssertMailTrait;
   use StringTranslationTrait;
@@ -176,13 +176,13 @@ class PsaTest extends BrowserTestBase {
       ->set('notification.emails', ['admin@example.com'])
       ->save();
 
-    // Confirm that PSA cache does not exist.
+    // Confirm that Security Advisory cache does not exist.
     $this->assertNull($this->tempStore->get('psa_response'));
 
-    // Test PSAs on admin pages.
+    // Test Security Advisories on admin pages.
     $this->drupalGet(Url::fromRoute('system.admin'));
     $this->assertSession()->pageTextContains('Critical Release - SA-2019-02-19');
-    // Confirm that the PSA cache has been set.
+    // Confirm that the Security Advisory cache has been set.
     $this->assertNotEmpty($this->tempStore->get('psa_response'));
 
     // Email should be sent.
@@ -194,7 +194,7 @@ class PsaTest extends BrowserTestBase {
     $this->assertMailString('body', 'AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02', 1);
     $this->assertMailString('body', 'AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02', 1);
 
-    // Deleting the PSA cache will not result in another email if the messages
+    // Deleting the Security Advisory cache will not result in another email if the messages
     // have not changed.
     // @todo Replace deleting the cache directly in the test with faking a later
     //   date and letting the cache item expire in
@@ -204,7 +204,7 @@ class PsaTest extends BrowserTestBase {
     $this->container->get('cron')->run();
     $this->assertCount(0, $this->getPsaEmails());
 
-    // Deleting the PSA tempstore item will result in another email if the
+    // Deleting the Security Advisory tempstore item will result in another email if the
     // messages have changed.
     $this->tempStore->delete('psa_response');
     $this->container->get('state')->set('system.test_mail_collector', []);

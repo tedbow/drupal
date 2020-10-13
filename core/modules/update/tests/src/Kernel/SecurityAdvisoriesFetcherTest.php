@@ -10,11 +10,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
 /**
- * @coversDefaultClass \Drupal\update\Psa\PsaFetcher
+ * @coversDefaultClass \Drupal\update\SecurityAdvisories\SecurityAdvisoriesFetcher
  *
  * @group update
  */
-class PsaFetcherTest extends KernelTestBase {
+class SecurityAdvisoriesFetcherTest extends KernelTestBase {
 
   /**
    * {@inheritdoc}
@@ -44,9 +44,9 @@ class PsaFetcherTest extends KernelTestBase {
    */
   public function testShowAdvisories(array $feed_item, string $existing_version = NULL): void {
     $this->setProphesizedServices($feed_item, $existing_version);
-    $fetcher = $this->container->get('update.psa_fetcher');
+    $fetcher = $this->container->get('update.sa_fetcher');
     /** @var \Drupal\Component\Render\FormattableMarkup[] $links */
-    $links = $fetcher->getPublicServiceMessages();
+    $links = $fetcher->getSecurityAdvisoriesMessages();
     static::assertCount(1, $links);
     $this->assertSame('<a href="http://thesa.com">SA title</a>', (string) $links[0]);
   }
@@ -177,9 +177,9 @@ class PsaFetcherTest extends KernelTestBase {
    */
   public function testIgnoreAdvisories(array $feed_item, string $existing_version = NULL): void {
     $this->setProphesizedServices($feed_item, $existing_version);
-    $fetcher = $this->container->get('update.psa_fetcher');
+    $fetcher = $this->container->get('update.sa_fetcher');
     /** @var \Drupal\Component\Render\FormattableMarkup[] $links */
-    $links = $fetcher->getPublicServiceMessages();
+    $links = $fetcher->getSecurityAdvisoriesMessages();
     static::assertCount(0, $links);
   }
 
