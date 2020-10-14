@@ -110,7 +110,7 @@ class SecurityAdvisoryTest extends BrowserTestBase {
   }
 
   /**
-   * Tests that a PSA is displayed.
+   * Tests that a security advisory is displayed.
    */
   public function testPsa(): void {
     $assert = $this->assertSession();
@@ -164,7 +164,7 @@ class SecurityAdvisoryTest extends BrowserTestBase {
   }
 
   /**
-   * Tests sending PSA email notifications.
+   * Tests sending security advisory email notifications.
    */
   public function testPsaMail(): void {
     // Set up test PSA endpoint.
@@ -194,8 +194,8 @@ class SecurityAdvisoryTest extends BrowserTestBase {
     $this->assertMailString('body', 'AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02', 1);
     $this->assertMailString('body', 'AAA Update Project - Moderately critical - Access bypass - SA-CONTRIB-2019-02-02', 1);
 
-    // Deleting the security advisory cache will not result in another email if the messages
-    // have not changed.
+    // Deleting the security advisory cache will not result in another email if
+    // the messages have not changed.
     // @todo Replace deleting the cache directly in the test with faking a later
     //   date and letting the cache item expire in
     //   https://www.drupal.org/node/3113971.
@@ -204,8 +204,8 @@ class SecurityAdvisoryTest extends BrowserTestBase {
     $this->container->get('cron')->run();
     $this->assertCount(0, $this->getPsaEmails());
 
-    // Deleting the security advisory tempstore item will result in another email if the
-    // messages have changed.
+    // Deleting the security advisory tempstore item will result in another
+    // email if the messages have changed.
     $this->tempStore->delete('psa_response');
     $this->container->get('state')->set('system.test_mail_collector', []);
     $this->config('update.settings')->set('psa.endpoint', $this->workingEndpointPlus1)->save();

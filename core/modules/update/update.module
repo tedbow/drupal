@@ -74,7 +74,7 @@ function update_page_top() {
     module_load_install('update');
     $status = update_requirements('runtime');
     if ($route_name !== 'system.status' && \Drupal::hasService('update.sa_fetcher')) {
-      /** @var \Drupal\update\SecurityAdvisories\PsaFetcherInterface $psa */
+      /** @var \Drupal\update\SecurityAdvisories\SecurityAdvisoriesFetcher $psa */
       $psa = \Drupal::service('update.sa_fetcher');
       try {
         $messages = $psa->getSecurityAdvisoriesMessages();
@@ -218,7 +218,7 @@ function update_cron() {
   }
 
   if (\Drupal::hasService('update.sa_notify')) {
-    /** @var \Drupal\update\SecurityAdvisories\NotifyInterface $notify */
+    /** @var \Drupal\update\SecurityAdvisories\SecurityAdvisoriesFetcher $notify */
     $notify = \Drupal::service('update.sa_notify');
     $notify->send();
   }
