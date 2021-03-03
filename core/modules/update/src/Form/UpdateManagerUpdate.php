@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Url;
+use Drupal\update\ComposerUpdater;
 use Drupal\update\UpdateFetcherInterface;
 use Drupal\update\UpdateManagerInterface;
 use Drupal\update\ModuleVersion;
@@ -102,6 +103,7 @@ class UpdateManagerUpdate extends FormBase {
     // This stores the actual download link we're going to update from for each
     // project in the form, regardless of if it's enabled or disabled.
     $form['project_downloads'] = ['#tree' => TRUE];
+    $form['project_versions'] = ['#tree' => TRUE];
     $this->moduleHandler->loadInclude('update', 'inc', 'update.compare');
     $project_data = update_calculate_project_data($available);
 
@@ -204,6 +206,7 @@ class UpdateManagerUpdate extends FormBase {
 
       // Drupal core needs to be upgraded manually.
       $needs_manual = $project['project_type'] == 'core';
+      $needs_manual = FALSE;
 
       // If the recommended release for a contributed project is not compatible
       // with the currently installed version of core, list that project in a
@@ -234,12 +237,17 @@ class UpdateManagerUpdate extends FormBase {
           '#type' => 'value',
           '#value' => $recommended_release['download_link'],
         ];
+        $form['project_versions'][$name] = [
+          '#type' => 'value',
+          '#value' => $recommended_release['version'],
+        ];
 
         // Based on what kind of project this is, save the entry into the
         // appropriate subarray.
         switch ($project['project_type']) {
           case 'module':
           case 'theme':
+          case 'core':
             $projects['enabled'][$name] = $entry;
             break;
 
@@ -381,19 +389,14 @@ class UpdateManagerUpdate extends FormBase {
       }
     }
     $operations = [];
+    $projects_versions = [];
     foreach ($projects as $project) {
-      $operations[] = [
-        'update_manager_batch_project_get',
-        [
-          $project,
-          $form_state->getValue(['project_downloads', $project]),
-        ],
-      ];
+      $projects_versions[$project] = $form_state->getValue(['project_versions', $project]);
     }
     $batch = [
       'title' => $this->t('Downloading updates'),
       'init_message' => $this->t('Preparing to download selected updates'),
-      'operations' => $operations,
+      'operations' => [[[ComposerUpdater::class, 'processBatch'], [$projects_versions]]],
       'finished' => 'update_manager_download_batch_finished',
       'file' => drupal_get_path('module', 'update') . '/update.manager.inc',
     ];
