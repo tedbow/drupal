@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Updater\Updater;
+use Drupal\update\ComposerUpdater;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -127,47 +128,15 @@ class UpdateReady extends FormBase {
 
     $projects = $session->remove('update_manager_update_projects');
     if ($projects) {
-      // Make sure the Updater registry is loaded.
-      drupal_get_updaters();
-
-      $updates = [];
-      $directory = _update_manager_extract_directory();
-
-      $project_real_location = NULL;
-      foreach ($projects as $project => $url) {
-        $project_location = $directory . '/' . $project;
-        $updater = Updater::factory($project_location, $this->root);
-        $project_real_location = \Drupal::service('file_system')->realpath($project_location);
-        $updates[] = [
-          'project' => $project,
-          'updater_name' => get_class($updater),
-          'local_url' => $project_real_location,
-        ];
+      if (ComposerUpdater::copyStaged()) {
+        \Drupal::messenger()->addMessage("Update success full. @todo Run update DB.");
+        return $this->redirect('system.db_update');
       }
-
-      // If the owner of the last directory we extracted is the same as the
-      // owner of our configuration directory (e.g. sites/default) where we're
-      // trying to install the code, there's no need to prompt for FTP/SSH
-      // credentials. Instead, we instantiate a Drupal\Core\FileTransfer\Local
-      // and invoke update_authorize_run_update() directly.
-      if (fileowner($project_real_location) == fileowner($this->sitePath)) {
-        $this->moduleHandler->loadInclude('update', 'inc', 'update.authorize');
-        $filetransfer = new Local($this->root, \Drupal::service('file_system'));
-        $response = update_authorize_run_update($filetransfer, $updates);
-        if ($response instanceof Response) {
-          $form_state->setResponse($response);
-        }
-      }
-      // Otherwise, go through the regular workflow to prompt for FTP/SSH
-      // credentials and invoke update_authorize_run_update() indirectly with
-      // whatever FileTransfer object authorize.php creates for us.
       else {
-        // The page title must be passed here to ensure it is initially used
-        // when authorize.php loads for the first time with the FTP/SSH
-        // credentials form.
-        system_authorized_init('update_authorize_run_update', __DIR__ . '/../../update.authorize.inc', [$updates], $this->t('Update manager'));
-        $form_state->setRedirectUrl(system_authorized_get_url());
+        \Drupal::messenger()->addError("Update not success full.");
+        return $this->redirect('update.report_update');
       }
+
     }
   }
 
