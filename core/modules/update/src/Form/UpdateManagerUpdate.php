@@ -428,7 +428,7 @@ class UpdateManagerUpdate extends FormBase {
    */
   protected function getUpdateMethod(): string {
     // @todo Add UI setting.
-    return 'composer';
+    return $this->state->get('update.update_method', 'composer');
   }
 
 }
