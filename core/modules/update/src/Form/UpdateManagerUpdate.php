@@ -205,8 +205,7 @@ class UpdateManagerUpdate extends FormBase {
       $entry['#attributes'] = ['class' => ['update-' . $type]];
 
       // Drupal core needs to be upgraded manually.
-      $needs_manual = $project['project_type'] == 'core';
-      $needs_manual = FALSE;
+      $needs_manual = $this->getUpdateMethod() === 'composer' ? FALSE : $project['project_type'] === 'core';
 
       // If the recommended release for a contributed project is not compatible
       // with the currently installed version of core, list that project in a
@@ -388,19 +387,50 @@ class UpdateManagerUpdate extends FormBase {
         $projects = array_merge($projects, array_keys(array_filter($form_state->getValue($type))));
       }
     }
-    $operations = [];
-    $projects_versions = [];
-    foreach ($projects as $project) {
-      $projects_versions[$project] = $form_state->getValue(['project_versions', $project]);
+    $update_method = $this->getUpdateMethod();
+    if ($update_method === 'composer') {
+      $projects_versions = [];
+      foreach ($projects as $project) {
+        $projects_versions[$project] = $form_state->getValue(['project_versions', $project]);
+      }
+      $batch = [
+        'title' => $this->t('Downloading updates'),
+        'init_message' => $this->t('Preparing to download selected updates'),
+        'operations' => [[[ComposerUpdater::class, 'processBatch'], [$projects_versions]]],
+        'finished' => 'update_manager_download_batch_finished',
+        'file' => drupal_get_path('module', 'update') . '/update.manager.inc',
+      ];
     }
-    $batch = [
-      'title' => $this->t('Downloading updates'),
-      'init_message' => $this->t('Preparing to download selected updates'),
-      'operations' => [[[ComposerUpdater::class, 'processBatch'], [$projects_versions]]],
-      'finished' => 'update_manager_download_batch_finished',
-      'file' => drupal_get_path('module', 'update') . '/update.manager.inc',
-    ];
+    else {
+      $operations = [];
+      foreach ($projects as $project) {
+        $operations[] = [
+          'update_manager_batch_project_get',
+          [
+            $project,
+            $form_state->getValue(['project_downloads', $project]),
+          ],
+        ];
+      }
+      $batch = [
+        'title' => $this->t('Downloading updates'),
+        'init_message' => $this->t('Preparing to download selected updates'),
+        'operations' => $operations,
+        'finished' => 'update_manager_download_batch_finished',
+        'file' => drupal_get_path('module', 'update') . '/update.manager.inc',
+      ];
+
+    }
+
     batch_set($batch);
+  }
+
+  /**
+   * Gets the current update method.
+   */
+  protected function getUpdateMethod(): string {
+    // @todo Add UI setting.
+    return 'composer';
   }
 
 }

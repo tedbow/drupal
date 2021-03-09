@@ -130,7 +130,7 @@ class UpdateReady extends FormBase {
     if ($projects) {
       if (ComposerUpdater::copyStaged()) {
         \Drupal::messenger()->addMessage("Update success full. @todo Run update DB.");
-        return $this->redirect('system.db_update');
+        $form_state->setRedirect('system.db_update');
       }
       else {
         \Drupal::messenger()->addError("Update not success full.");
