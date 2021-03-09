@@ -400,28 +400,26 @@ class UpdateManagerUpdate extends FormBase {
         'finished' => 'update_manager_download_batch_finished',
         'file' => drupal_get_path('module', 'update') . '/update.manager.inc',
       ];
+      batch_set($batch);
+      return;
     }
-    else {
-      $operations = [];
-      foreach ($projects as $project) {
-        $operations[] = [
-          'update_manager_batch_project_get',
-          [
-            $project,
-            $form_state->getValue(['project_downloads', $project]),
-          ],
-        ];
-      }
-      $batch = [
-        'title' => $this->t('Downloading updates'),
-        'init_message' => $this->t('Preparing to download selected updates'),
-        'operations' => $operations,
-        'finished' => 'update_manager_download_batch_finished',
-        'file' => drupal_get_path('module', 'update') . '/update.manager.inc',
+    $operations = [];
+    foreach ($projects as $project) {
+      $operations[] = [
+        'update_manager_batch_project_get',
+        [
+          $project,
+          $form_state->getValue(['project_downloads', $project]),
+        ],
       ];
-
     }
-
+    $batch = [
+      'title' => $this->t('Downloading updates'),
+      'init_message' => $this->t('Preparing to download selected updates'),
+      'operations' => $operations,
+      'finished' => 'update_manager_download_batch_finished',
+      'file' => drupal_get_path('module', 'update') . '/update.manager.inc',
+    ];
     batch_set($batch);
   }
 
