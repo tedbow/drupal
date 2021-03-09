@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Updater\Updater;
+use Drupal\update\ComposerUpdater;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -127,6 +128,18 @@ class UpdateReady extends FormBase {
 
     $projects = $session->remove('update_manager_update_projects');
     if ($projects) {
+      if ($this->getUpdateMethod() === 'composer') {
+        if (ComposerUpdater::copyStaged()) {
+          \Drupal::messenger()->addMessage("Update success full. @todo Run update DB.");
+          $form_state->setRedirect('system.db_update');
+        }
+        else {
+          \Drupal::messenger()->addError("Update not success full.");
+          $form_state->setRedirect('update.report_update');
+        }
+        return;
+      }
+
       // Make sure the Updater registry is loaded.
       drupal_get_updaters();
 
@@ -169,6 +182,14 @@ class UpdateReady extends FormBase {
         $form_state->setRedirectUrl(system_authorized_get_url());
       }
     }
+  }
+
+  /**
+   * Gets the current update method.
+   */
+  protected function getUpdateMethod(): string {
+    // @todo Add UI setting.
+    return $this->state->get('update.update_method', 'composer');
   }
 
 }

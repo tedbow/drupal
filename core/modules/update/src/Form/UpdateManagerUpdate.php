@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Url;
+use Drupal\update\ComposerUpdater;
 use Drupal\update\UpdateFetcherInterface;
 use Drupal\update\UpdateManagerInterface;
 use Drupal\update\ModuleVersion;
@@ -102,6 +103,7 @@ class UpdateManagerUpdate extends FormBase {
     // This stores the actual download link we're going to update from for each
     // project in the form, regardless of if it's enabled or disabled.
     $form['project_downloads'] = ['#tree' => TRUE];
+    $form['project_versions'] = ['#tree' => TRUE];
     $this->moduleHandler->loadInclude('update', 'inc', 'update.compare');
     $project_data = update_calculate_project_data($available);
 
@@ -203,7 +205,7 @@ class UpdateManagerUpdate extends FormBase {
       $entry['#attributes'] = ['class' => ['update-' . $type]];
 
       // Drupal core needs to be upgraded manually.
-      $needs_manual = $project['project_type'] == 'core';
+      $needs_manual = $this->getUpdateMethod() === 'composer' ? FALSE : $project['project_type'] === 'core';
 
       // If the recommended release for a contributed project is not compatible
       // with the currently installed version of core, list that project in a
@@ -234,12 +236,17 @@ class UpdateManagerUpdate extends FormBase {
           '#type' => 'value',
           '#value' => $recommended_release['download_link'],
         ];
+        $form['project_versions'][$name] = [
+          '#type' => 'value',
+          '#value' => $recommended_release['version'],
+        ];
 
         // Based on what kind of project this is, save the entry into the
         // appropriate subarray.
         switch ($project['project_type']) {
           case 'module':
           case 'theme':
+          case 'core':
             $projects['enabled'][$name] = $entry;
             break;
 
@@ -380,6 +387,22 @@ class UpdateManagerUpdate extends FormBase {
         $projects = array_merge($projects, array_keys(array_filter($form_state->getValue($type))));
       }
     }
+    $update_method = $this->getUpdateMethod();
+    if ($update_method === 'composer') {
+      $projects_versions = [];
+      foreach ($projects as $project) {
+        $projects_versions[$project] = $form_state->getValue(['project_versions', $project]);
+      }
+      $batch = [
+        'title' => $this->t('Downloading updates'),
+        'init_message' => $this->t('Preparing to download selected updates'),
+        'operations' => [[[ComposerUpdater::class, 'processBatch'], [$projects_versions]]],
+        'finished' => 'update_manager_download_batch_finished',
+        'file' => drupal_get_path('module', 'update') . '/update.manager.inc',
+      ];
+      batch_set($batch);
+      return;
+    }
     $operations = [];
     foreach ($projects as $project) {
       $operations[] = [
@@ -398,6 +421,14 @@ class UpdateManagerUpdate extends FormBase {
       'file' => drupal_get_path('module', 'update') . '/update.manager.inc',
     ];
     batch_set($batch);
+  }
+
+  /**
+   * Gets the current update method.
+   */
+  protected function getUpdateMethod(): string {
+    // @todo Add UI setting.
+    return $this->state->get('update.update_method', 'composer');
   }
 
 }
