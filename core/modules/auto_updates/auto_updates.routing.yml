@@ -1,0 +1,8 @@
+auto_updates.module_update:
+  path: '/admin/reports/auto-updates/update'
+  defaults:
+    _form: '\Drupal\auto_updates\Form\UpdateForm'
+    _title: 'Update'
+  requirements:
+    _permission: 'administer software updates'
+    _access_update_manager: 'TRUE'
