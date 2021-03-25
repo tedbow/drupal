@@ -1,1 +1,3 @@
 services:
+  auto_updates.calculator:
+    class: Drupal\auto_updates\UpdateCalculator

@@ -1,5 +1,5 @@
 auto_updates.module_update:
   route_name: auto_updates.module_update
   base_route: system.modules_list
-  title: Composer Update
+  title: Update Core
   weight: 10

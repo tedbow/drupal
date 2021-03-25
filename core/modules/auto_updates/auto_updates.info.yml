@@ -4,3 +4,5 @@ description: 'Experimental module to develop automatic updates. Currently the mo
 package: Core (Experimental)
 version: VERSION
 hidden: true
+dependencies:
+  - update
