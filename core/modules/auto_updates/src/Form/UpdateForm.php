@@ -3,6 +3,7 @@
 namespace Drupal\auto_updates\Form;
 
 use Composer\Semver\Semver;
+use Drupal\auto_updates\UpdateCalculator;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -38,6 +39,11 @@ class UpdateForm extends FormBase {
   protected $state;
 
   /**
+   * @var \Drupal\auto_updates\UpdateCalculator
+   */
+  protected $updateCalculator;
+
+  /**
    * Constructs a new UpdateManagerUpdate object.
    *
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
@@ -45,9 +51,10 @@ class UpdateForm extends FormBase {
    * @param \Drupal\Core\State\StateInterface $state
    *   The state service.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, StateInterface $state) {
+  public function __construct(ModuleHandlerInterface $module_handler, StateInterface $state, UpdateCalculator $update_calculator) {
     $this->moduleHandler = $module_handler;
     $this->state = $state;
+    $this->updateCalculator = $update_calculator;
   }
 
   /**
@@ -63,7 +70,8 @@ class UpdateForm extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('module_handler'),
-      $container->get('state')
+      $container->get('state'),
+      $container->get('auto_updates.calculator'),
     );
   }
 
@@ -116,7 +124,7 @@ class UpdateForm extends FormBase {
     }
 
     // Filter out projects which are up to date already.
-    if ($project['status'] == UpdateManagerInterface::CURRENT) {
+    if ($project['status'] === UpdateManagerInterface::CURRENT) {
       $this->messenger()->addMessage('There are no updates available');
       return $form;
     }
@@ -143,30 +151,19 @@ class UpdateForm extends FormBase {
       $this->messenger()->addError('No available update information');
     }
 
-    $recommended_release = $project['releases'][$project['recommended']];
-    $recommended_version_markup = '{{ release_version }} (<a href="{{ release_link }}" title="{{ project_title }}">{{ release_notes }}</a>)';
-    $recommended_version = ExtensionVersion::createFromVersionString($recommended_release['version']);
-    $existing_version = ExtensionVersion::createFromVersionString($project['existing_version']);
-    if ($recommended_version->getMajorVersion() !== $existing_version->getMajorVersion()) {
-      //$recommended_version .= '<div title="{{ major_update_warning_title }}" class="update-major-version-warning">{{ major_update_warning_text }}</div>';
-      $this->messenger()->addWarning("Major version are not supported.");
-      //return $form;
+    $supported_release = $this->updateCalculator->getSupportedUpdateRelease();
+    if (!$supported_release) {
+      $this->messenger()->addWarning("No supported release");
+      return $form;
     }
-    elseif (0 && $recommended_version->getMinorVersion() !== $existing_version->getMinorVersion()) {
-      //$recommended_version .= '<div title="{{ minor_update_warning_title }}" class="update-minor-version-warning">{{ minor_update_warning_text }}</div>';
-      $this->messenger()->addWarning("Minor version updates are not supported.");
-      //return $form;
-    }
-    elseif (Semver::satisfies($project['existing_version'], '>' . $recommended_release['version'])) {
-      $this->messenger()->addError("Cannot downgrade");
-    }
+    $supported_version_markup = '{{ release_version }} (<a href="{{ release_link }}" title="{{ project_title }}">{{ release_notes }}</a>)';
 
-    $recommended_version_markup = [
+    $supported_version_markup = [
       '#type' => 'inline_template',
-      '#template' => $recommended_version_markup,
+      '#template' => $supported_version_markup,
       '#context' => [
-        'release_version' => $recommended_release['version'],
-        'release_link' => $recommended_release['release_link'],
+        'release_version' => $supported_release['version'],
+        'release_link' => $supported_release['release_link'],
         'project_title' => $this->t('Release notes for @project_title', ['@project_title' => $project['title']]),
         'release_notes' => $this->t('Release notes'),
       ],
@@ -176,7 +173,7 @@ class UpdateForm extends FormBase {
     $entry = [
       'title' => $project_name,
       'installed_version' => $project['existing_version'],
-      'recommended_version' => ['data' => $recommended_version_markup],
+      'recommended_version' => ['data' => $supported_version_markup],
     ];
 
 
@@ -188,18 +185,16 @@ class UpdateForm extends FormBase {
         '#markup' => $entry['title'],
       ],
     ];
-    $entry['#attributes'] = ['class' => ['update-' . $type]];
     switch ($project['status']) {
       case UpdateManagerInterface::NOT_SECURE:
       case UpdateManagerInterface::REVOKED:
-        $entry['title'] .= ' ' . $this->t('(Security update)');
-        $entry['#weight'] = -2;
+      $entry['title']['data']['#markup']  .= ' ' . $this->t('(Security update)');
         $type = 'security';
         break;
 
       case UpdateManagerInterface::NOT_SUPPORTED:
         $type = 'unsupported';
-        $entry['title'] .= ' ' . $this->t('(Unsupported)');
+        $entry['title']['data']['#markup']  .= ' ' . $this->t('(Unsupported)');
         $entry['#weight'] = -1;
         break;
 
@@ -216,7 +211,7 @@ class UpdateForm extends FormBase {
     }
     $form['recommended_version']= [
       '#type' => 'value',
-      '#value' => $recommended_release['version'],
+      '#value' => $supported_release['version'],
     ];
 
     $headers = [
